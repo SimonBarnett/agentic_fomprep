@@ -20,7 +20,7 @@ This checkout is the install pack. Do not run it against live/PRI. The runner fa
 cd <this-repo>
 powershell -File tools\Install-OnDev.ps1
 powershell -File tools\Invoke-Recon.ps1
-# edit config\dev.psd1 - pin SqlDatabase, ExecTable, lock columns; set PinComplete = $true
+# config\dev.psd1 is already pinned (WP0); re-run recon if dictionary objects move
 powershell -File tools\Install-OnDev.ps1 -ApplyParkTable
 powershell -File tools\Set-WinrunCredential.ps1
 ```
@@ -117,4 +117,4 @@ On DEV1 after pin: AT1, AT4, AT6, AT7, AT8 must be green for MVP. AT2/AT3 green 
 - Run Form Prep twice concurrently
 - Change live/PRI connection strings
 
-`config/dev.psd1` ships with `PinComplete = $false` and `<PIN>` table names on purpose. Recon on DEV1 fills them. Frozen hosts/SQL instance live in `src/Private/Get-FrozenEnvironment.ps1` and cannot be pointed at PRI by editing config alone.
+`config/dev.psd1` is pinned on CE-PRIORITY-DEV1 (WP0): `SqlDatabase = system`, `ExecTable = dbo.T$EXEC` (id col `T$EXEC`), `LockTable = dbo.EXECPREPLOCK` (join `T$EXEC`), `FormKeysTable = dbo.FORMKEYS`, `FormJoinsTable = dbo.FORMJOINS`, `PinComplete = $true`. `$env:COMPUTERNAME` is the 15-char NetBIOS `CE-PRIORITY-DEV`; DNS hostname is `CE-PRIORITY-DEV1` — both are in `AllowedComputer`. Frozen hosts/SQL instance live in `src/Private/Get-FrozenEnvironment.ps1` and cannot be pointed at PRI by editing config alone.

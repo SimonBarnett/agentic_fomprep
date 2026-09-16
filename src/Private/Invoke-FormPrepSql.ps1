@@ -61,7 +61,8 @@ function Invoke-FormPrepSql {
             $reader = $cmd.ExecuteReader()
             try { $table.Load($reader) } finally { $reader.Close() }
         }
-        return $table
+        # Unary comma: DataTable is IEnumerable, so a bare return unrolls into DataRow(s).
+        return , $table
     } finally {
         $cmd.Dispose()
     }

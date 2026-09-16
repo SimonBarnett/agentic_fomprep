@@ -2,13 +2,14 @@
 -- Identifiers below are the historical CE pattern. PowerShell substitutes
 -- the pinned names from config/dev.psd1 - do not run this file raw until recon.
 
+-- Pinned on DEV1 WP0 (system DB): dbo.T$EXEC + dbo.EXECPREPLOCK, join on T$EXEC.
 -- SELECT E.[ENAME] AS name,
---        E.[EXEC]  AS exec_id,
+--        E.[T$EXEC] AS exec_id,
 --        L.[UPD]   AS upd,
 --        L.[LASTPREPDATE] AS last_prep,
 --        L.[COMPUTERNAME] AS computer,
 --        L.[PID]   AS pid,
 --        L.[LOCKEXPIRY] AS lock_expiry
--- FROM dbo.EXEC E
--- LEFT JOIN dbo.EXECPREPLOCK L ON L.[EXEC] = E.[EXEC]
+-- FROM dbo.[T$EXEC] E
+-- LEFT JOIN dbo.EXECPREPLOCK L ON L.[T$EXEC] = E.[T$EXEC]
 -- WHERE E.[ENAME] IN (@names);

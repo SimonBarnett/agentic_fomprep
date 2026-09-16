@@ -94,7 +94,8 @@ function Test-ConfigMatchesFrozen {
     }
 
     foreach ($name in @($Config.AllowedComputer)) {
-        if ($name -match 'PRI|LIVE|PROD') {
+        # Token match only. 'PRI' as a substring of 'PRIORITY' is not live/PRI.
+        if ($name -match '(?i)(^|[-_])(PRI|LIVE|PROD)([-_]|$)') {
             [void]$reasons.Add("AllowedComputer '$name' looks like live/PRI and is refused")
         }
     }

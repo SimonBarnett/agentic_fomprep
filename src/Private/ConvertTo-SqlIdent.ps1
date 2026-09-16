@@ -1,6 +1,7 @@
 function Test-SqlIdentToken {
     param([string]$Token)
-    return [bool]($Token -match '^[A-Za-z_][A-Za-z0-9_]*$')
+    # Priority dictionary ids use $ (T$EXEC, T$USER). Still reject ; ] whitespace.
+    return [bool]($Token -match '^[A-Za-z_][A-Za-z0-9_$]*$')
 }
 
 function ConvertTo-SqlIdent {

@@ -32,10 +32,11 @@ WHERE EXISTS (
 ORDER BY s.name, t.name;
 
 -- 5. Resolve form names the way Priority does
--- Historical CE pattern: EXEC / TSEXEC with ENAME, EXEC (= numeric id)
--- SELECT TOP 20 *
--- FROM dbo.EXEC
--- WHERE ENAME LIKE 'ZCLA_PARTLONG%';
+-- Pinned WP0 on DEV1: system.dbo.T$EXEC (ENAME, T$EXEC bigint). There is no dbo.EXEC.
+-- SELECT E.ENAME, E.[T$EXEC], L.UPD, L.LASTPREPDATE
+-- FROM dbo.[T$EXEC] E
+-- LEFT JOIN dbo.EXECPREPLOCK L ON L.[T$EXEC] = E.[T$EXEC]
+-- WHERE E.ENAME LIKE 'ZCLA_PARTLONG%';
 
 -- 6. FORMKEYS / FORMJOINS candidates (for post-hooks; do not INSERT until a human dump exists)
 SELECT s.name AS sch, t.name AS tbl

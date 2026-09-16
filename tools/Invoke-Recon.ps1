@@ -37,11 +37,26 @@ try {
     Write-Host 'User databases:'
     $dbs | Format-Table -AutoSize | Out-String | Write-Host
 
-    foreach ($row in $dbs.Rows) {
-        $dbName = [string]$row.name
+    foreach ($row in $dbs) {
+        $dbName = [string]$row['name']
         Write-Host "---- $dbName ----"
-        $dbConn = New-FormPrepSqlConnection -Config $cfg -Database $dbName
         try {
+            $dbConn = New-FormPrepSqlConnection -Config $cfg -Database $dbName
+        } catch {
+            Write-Host "skip ${dbName}: $($_.Exception.Message)"
+            continue
+        }
+        try {
+            $pin = Invoke-FormPrepSql -Connection $dbConn -Query @"
+SELECT o.type_desc, s.name AS sch, o.name AS obj
+FROM sys.objects o
+JOIN sys.schemas s ON s.schema_id = o.schema_id
+WHERE o.name IN ('EXEC','TSEXEC','EXECPREPLOCK','FORMKEYS','FORMJOINS','FORMCLMNS')
+ORDER BY o.name, o.type_desc
+"@
+            Write-Host 'Exact pin candidates (tables/views/synonyms):'
+            $pin | Format-Table -AutoSize | Out-String | Write-Host
+
             $prep = Invoke-FormPrepSql -Connection $dbConn -Query @"
 SELECT s.name AS sch, t.name AS tbl
 FROM sys.tables t
@@ -50,6 +65,16 @@ WHERE t.name LIKE '%PREP%' OR t.name LIKE '%EXEC%' OR t.name LIKE '%FORMKEY%'
 ORDER BY t.name
 "@
             $prep | Format-Table -AutoSize | Out-String | Write-Host
+
+            $keys = Invoke-FormPrepSql -Connection $dbConn -Query @"
+SELECT s.name AS sch, t.name AS tbl
+FROM sys.tables t
+JOIN sys.schemas s ON s.schema_id = t.schema_id
+WHERE t.name LIKE '%FORMKEY%' OR t.name LIKE '%FORMJOIN%' OR t.name LIKE '%FORMCLM%'
+ORDER BY t.name
+"@
+            Write-Host 'FORMKEYS / FORMJOINS / FORMCLM candidates:'
+            $keys | Format-Table -AutoSize | Out-String | Write-Host
 
             $pair = Invoke-FormPrepSql -Connection $dbConn -Query @"
 SELECT s.name AS sch, t.name AS tbl
@@ -61,25 +86,33 @@ WHERE EXISTS (SELECT 1 FROM sys.columns c WHERE c.object_id = t.object_id AND c.
             Write-Host 'Tables with UPD + LASTPREPDATE:'
             $pair | Format-Table -AutoSize | Out-String | Write-Host
 
-            foreach ($t in $pair.Rows) {
-                $ident = ConvertTo-SqlIdent ('{0}.{1}' -f $t.sch, $t.tbl)
+            foreach ($t in $pair) {
+                $sch = [string]$t['sch']
+                $tbl = [string]$t['tbl']
                 $cols = Invoke-FormPrepSql -Connection $dbConn -Query @"
 SELECT c.name, ty.name AS type_name, c.max_length
 FROM sys.columns c
-JOIN sys.types ty ON ty.user_type_id = c.user_type_id
-WHERE c.object_id = OBJECT_ID(@obj)
-"@ -Parameters @{ '@obj' = ('{0}.{1}' -f $t.sch, $t.tbl) }
-                Write-Host "Columns of $ident :"
+JOIN sys.types ty ON ty.user_type_id = c.user_type_id AND ty.system_type_id = c.system_type_id
+JOIN sys.tables tb ON tb.object_id = c.object_id
+JOIN sys.schemas s ON s.schema_id = tb.schema_id
+WHERE s.name = @sch AND tb.name = @tbl
+ORDER BY c.column_id
+"@ -Parameters @{ '@sch' = $sch; '@tbl' = $tbl }
+                Write-Host "Columns of [$sch].[$tbl] :"
                 $cols | Format-Table -AutoSize | Out-String | Write-Host
             }
 
-            try {
-                $forms = Invoke-FormPrepSql -Connection $dbConn -Query "SELECT TOP 20 * FROM dbo.EXEC WHERE ENAME LIKE 'ZCLA_PARTLONG%'"
-                Write-Host 'ZCLA_PARTLONG% via dbo.EXEC:'
-                $forms | Format-Table -AutoSize | Out-String | Write-Host
-            } catch {
-                Write-Host "dbo.EXEC not readable in ${dbName}: $($_.Exception.Message)"
+            foreach ($execObj in @('dbo.[EXEC]', 'dbo.[TSEXEC]', 'dbo.[T$EXEC]')) {
+                try {
+                    $forms = Invoke-FormPrepSql -Connection $dbConn -Query "SELECT TOP 20 ENAME, [T`$EXEC] AS exec_id FROM $execObj WHERE ENAME LIKE 'ZCLA_PARTLONG%'"
+                    Write-Host "ZCLA_PARTLONG% via ${execObj}:"
+                    $forms | Format-Table -AutoSize | Out-String | Write-Host
+                } catch {
+                    Write-Host "${execObj} not readable in ${dbName}: $($_.Exception.Message)"
+                }
             }
+        } catch {
+            Write-Host "error in ${dbName}: $($_.Exception.Message)"
         } finally {
             $dbConn.Close(); $dbConn.Dispose()
         }

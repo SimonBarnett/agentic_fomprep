@@ -60,6 +60,7 @@ if (-not $before) {
     Write-Output (ConvertTo-Json @{ ok = $false; reason = 'name_missing'; name = $Name } -Compress)
     exit 2
 }
+$origUpd = $before.Upd
 if ($ForceUnprepared) {
     [void](Invoke-FormPrepSql -Connection $conn -Query "UPDATE $lockTable SET $lUpd = N'Y' WHERE $lId = @id" -Parameters @{ '@id' = $before.ExecId } -NonQuery)
 }
@@ -83,8 +84,10 @@ try {
 }
 
 $after = Get-OneLock $conn
-if ($ForceUnprepared -and $after -and $after.Upd -ne $before.Upd -and -not (([string]$after.Upd -eq 'N') -and ([int64]$after.LastPrep -gt [int64]$before.LastPrep))) {
-    [void](Invoke-FormPrepSql -Connection $conn -Query "UPDATE $lockTable SET $lUpd = @u WHERE $lId = @id" -Parameters @{ '@u' = $before.Upd; '@id' = $before.ExecId } -NonQuery)
+$advancedTmp = $after -and ([int64]$after.LastPrep -gt [int64]$before.LastPrep)
+$okTmp = $after -and ([string]$after.Upd -eq 'N') -and $advancedTmp
+if ($ForceUnprepared -and -not $okTmp) {
+    [void](Invoke-FormPrepSql -Connection $conn -Query "UPDATE $lockTable SET $lUpd = @u WHERE $lId = @id" -Parameters @{ '@u' = $origUpd; '@id' = $before.ExecId } -NonQuery)
     $after = Get-OneLock $conn
 }
 $conn.Close(); $conn.Dispose()
@@ -108,6 +111,19 @@ if (Test-Path -LiteralPath $errFile) {
     }
 } elseif ($sdk -and $sdk.errors) {
     foreach ($item in @($sdk.errors)) { if ($item -and $item.text) { $errors += $item } }
+}
+
+# SQL is the success gate. On fail, always surface FORMPREPERRS rows (TYPE/MESSAGE/CMESSAGE).
+$formPrepErrs = @($errors | Where-Object { $_.source -eq 'FORMPREPERRS' -and $_.text -and $_.text -notmatch '(?i)open failed|getRows failed' })
+if ($ok) {
+    $errors = @($errors | Where-Object { $_.source -ne 'FORMPREPERRS' })
+} elseif ($formPrepErrs.Count -eq 0) {
+    $errors += [pscustomobject]@{
+        source   = 'FORMPREPERRS'
+        severity = 'Info'
+        formHint = $Name
+        text     = 'FORMPREPERRS returned no rows after failed prep'
+    }
 }
 
 $result = [ordered]@{

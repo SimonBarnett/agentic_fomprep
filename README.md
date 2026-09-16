@@ -36,7 +36,11 @@ powershell -NoProfile -ExecutionPolicy Bypass -File tests\AT4-abort-restores.ps1
 powershell -NoProfile -ExecutionPolicy Bypass -File tools\Set-WinrunCredential.ps1
 ```
 
-Log into https://prioritydev.clarksonevans.co.uk once as Si and save Playwright `storageState` to `C:\Priority\tmp\agent-formprep\si-web-state.json` (ACL: the agent account only).
+Log into https://prioritydev.clarksonevans.co.uk once as Si and save Playwright `storageState` to `C:\Priority\tmp\agent-formprep\si-web-state.json` (ACL: the agent account only). Do **not** put that JSON on inetpub (it is a cookie dump). Capture:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File tools\Save-WebStorageState.ps1
+```
 
 ```powershell
 powershell -File src\Prepare-Forms.ps1 -Names ZCLA_PARTLONGDESC -Environment DEV -WhatIf

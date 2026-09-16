@@ -52,9 +52,9 @@ Inspect:
 
 ```sql
 SELECT * FROM dbo.AGENT_FORMPREP_PARK WHERE restored_at IS NULL;
-SELECT ENAME, UPD, LASTPREPDATE, COMPUTERNAME, PID
+SELECT E.ENAME, L.UPD, L.LASTPREPDATE, L.COMPUTERNAME, L.PID
 FROM dbo.EXECPREPLOCK L
-JOIN dbo.EXEC E ON E.[EXEC] = L.[EXEC]
+JOIN dbo.[T$EXEC] E ON E.[T$EXEC] = L.[T$EXEC]
 WHERE E.ENAME LIKE 'ZCLA_PARTLONG%';
 ```
 
@@ -102,7 +102,7 @@ powershell -File tools\Test-Pack.ps1
 
 That parses every script, checks the JSON schema file, runs `tests/AT6-refuse-non-dev.ps1` and `tests/unit-mutex.ps1`.
 
-On DEV1 after pin: AT4 (WP1 dry 5/5 restore), AT1, AT6, AT7, AT8 must be green for MVP. AT2/AT3 green or waived in this README with a reason. Park table `dbo.AGENT_FORMPREP_PARK` uses bigint `exec_id` / `prev_lastprep` / `prev_pid` to match `EXECPREPLOCK`. `LASTPREPDATE` is bigint (`0` = never). WP2 dump (`-SkipPark -SkipCli -SkipWeb`) writes `sql-before.json` and `capture/emsg.txt` without parking.
+DEV1 evidence for AT4/AT7/AT1 (2026-09-16) is in `tests/last-dev-run.md`. On DEV1 after pin: AT4 (WP1 dry 5/5 restore), AT1, AT6, AT7, AT8 must be green for MVP. AT2/AT3 green or waived in this README with a reason. Park table `dbo.AGENT_FORMPREP_PARK` uses bigint `exec_id` / `prev_lastprep` / `prev_pid` to match `EXECPREPLOCK`. `LASTPREPDATE` is bigint (`0` = never). WP2 dump (`-SkipPark -SkipCli -SkipWeb`) writes `sql-before.json` and `capture/emsg.txt` without parking.
 
 | ID | Script | Off-DEV |
 |----|--------|---------|

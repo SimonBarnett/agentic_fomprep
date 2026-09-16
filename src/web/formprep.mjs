@@ -155,12 +155,17 @@ async function main() {
     await page.getByText(selectors.formPreparation, { exact: false }).first().click();
     await screenshot(page, 'form-prep');
 
-    // Leave Prep Type at Unprepared Forms (default). Click OK.
+    // Leave Prep Type at Unprepared Forms (default). Click OK in the prep dialog, not the first page OK.
     const unprepared = page.getByText(selectors.unpreparedForms, { exact: false }).first();
     try { await unprepared.waitFor({ timeout: 15000 }); } catch { /* default may already be selected */ }
-    await page.getByRole('button', { name: selectors.ok }).first().click();
-    result.progressSeen = true;
-    await screenshot(page, 'progress');
+    const prepDialog = page.locator('[role="dialog"], .modal, .ui-dialog, .p-dialog').filter({ hasText: selectors.formPreparation }).first();
+    const okInDialog = prepDialog.getByRole('button', { name: selectors.ok });
+    if (await okInDialog.count().catch(() => 0)) {
+      await okInDialog.last().click();
+    } else {
+      await page.getByRole('button', { name: selectors.ok }).last().click();
+    }
+    await screenshot(page, 'after-ok');
 
     const deadline = Date.now() + timeoutMs;
     let blocked = false;
@@ -212,10 +217,19 @@ async function main() {
         break;
       }
 
-      // Progress gone and no modal: treat as completed; SQL is the real signal.
-      const progress = page.getByText(selectors.progressText, { exact: false });
-      const progressVisible = await progress.first().isVisible().catch(() => false);
-      if (!progressVisible && result.progressSeen && Date.now() > deadline - timeoutMs + 8000) {
+      // Progress is NOT the Form Preparation menu title (P0-W1). Prefer a progressbar/status.
+      const bar = page.getByRole('progressbar').first();
+      const status = page.getByRole('status').first();
+      const progressLabel = page.getByText(selectors.progressText, { exact: false }).first();
+      const barVis = await bar.isVisible().catch(() => false);
+      const statusVis = await status.isVisible().catch(() => false);
+      const labelVis = selectors.progressText && selectors.progressText !== selectors.formPreparation
+        ? await progressLabel.isVisible().catch(() => false)
+        : false;
+      if (barVis || statusVis || labelVis) {
+        result.progressSeen = true;
+      }
+      if (!barVis && !statusVis && !labelVis && result.progressSeen) {
         result.exitReason = 'completed';
         break;
       }

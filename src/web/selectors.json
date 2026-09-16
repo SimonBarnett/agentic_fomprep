@@ -8,7 +8,7 @@
   "ok": "OK",
   "showReports": "Show Reports",
   "errorsReport": "Errors Report",
-  "progressText": "Form Preparation",
+  "progressText": "Preparing",
   "dangerousDialog": "duplicate|index|rebuild|IGNORE_DUP|Ignore Duplicate|trigger compile",
   "otherSession": "already running|another user|in progress"
 }

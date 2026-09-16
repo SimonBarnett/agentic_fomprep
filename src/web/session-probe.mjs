@@ -48,7 +48,15 @@ async function main() {
       console.log(JSON.stringify({ auth: 'expired', reason: 'login_page', url, title }));
       process.exit(2);
     }
-    console.log(JSON.stringify({ auth: 'ok', reason: 'live_probe', url, title }));
+    // P1-A1b: URL/title is not enough. Dashboard tile must appear.
+    const shortcut = page.getByText('My Shortcuts', { exact: false }).first();
+    try {
+      await shortcut.waitFor({ timeout: Math.min(8000, timeoutMs) });
+    } catch {
+      console.log(JSON.stringify({ auth: 'expired', reason: 'no_shortcuts_tile', url, title }));
+      process.exit(2);
+    }
+    console.log(JSON.stringify({ auth: 'ok', reason: 'live_probe_shortcuts', url, title }));
     process.exit(0);
   } finally {
     await browser.close();

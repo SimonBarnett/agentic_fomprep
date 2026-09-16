@@ -10,8 +10,23 @@ Peer reviews (build-agent handoff):
 - `reviews/agentic_fomprep_Build_Agent_Peer_Review_v2.pdf` (v2 audit, vs `c1b2ebe`)
 - `reviews/agentic_fomprep_Build_Agent_Peer_Review_v3.pdf` (v3 post P0-W1, vs `1d10a6b`)
 - `reviews/agentic_fomprep_Agent_Capability_Gap_Analysis.pdf` (prepare-a-form + get-errors)
+- `reviews/agentic_fomprep_Agent_Working_Method.pdf` (**the method** — how an agent prepares a form and reads errors)
 
 **Hard rule:** never report a form prepared unless `EXECPREPLOCK.UPD='N'` **and** `LASTPREPDATE` moved. Never leave the unprepared estate marked prepared. Never embed passwords in this repo.
+
+### Agent loop (from the working method)
+
+On an unlocked DEV1 desktop, one name first. `SkipCli` is the CLI-wrapper default. If the probe says recapture cookies, **stop** and ask a human. Do not SQL-flip `UPD`. Do not click Ignore Duplicate. Do not `AllUnprepared`.
+
+```powershell
+cd M:\py\agentic_fomprep
+powershell -NoProfile -ExecutionPolicy Bypass -File src\Prepare-Forms.ps1 -Names ZCLA_PARTLONGDESC -Environment DEV -WhatIf
+powershell -NoProfile -ExecutionPolicy Bypass -File src\Prepare-Forms.ps1 -Names ZCLA_PARTLONGDESC -Environment DEV -TimeoutMinutes 15
+powershell -NoProfile -ExecutionPolicy Bypass -File tools\Get-LastFormPrepResult.ps1
+# exit 3: RepairOpenParks only; do not start a second Prepare-Forms until OPEN=0
+```
+
+Trust `prepared[]` / `stillUnprepared[]` / `restoreOk`. `ok=true` only if every requested name compiled and park restored. Playwright finishing and winrun exit 0 are not success.
 
 This checkout is the install pack. Do not run it against live/PRI. The runner fail-closes unless:
 

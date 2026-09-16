@@ -177,8 +177,21 @@ async function main() {
     const companyDlg = await waitVisible(page, (f) => f.getByText(selectors.selectCompany || 'Select Company', { exact: false }), 3000);
     if (companyDlg) {
       const want = selectors.companyName || 'D - Clarkson Evans Live';
-      const opt = await waitVisible(page, (f) => f.getByText(want, { exact: false }), 5000);
-      if (opt) await opt.click();
+      const looksLive = /pri|production|\blive\b/i.test(want);
+      if (looksLive && selectors.allowLiveCompanyLabel !== true) {
+        result.exitReason = 'company_live_refused';
+        writeResult();
+        await browser.close();
+        process.exit(2);
+      }
+      const opt = await waitVisible(page, (f) => f.getByText(want, { exact: true }), 5000);
+      if (!opt) {
+        result.exitReason = 'company_pin_missing';
+        writeResult();
+        await browser.close();
+        process.exit(2);
+      }
+      await opt.click();
       const companyOk = await firstVisible(page, (f) => f.getByRole('button', { name: selectors.ok }));
       if (companyOk) await companyOk.click();
       await screenshot(page, 'company');

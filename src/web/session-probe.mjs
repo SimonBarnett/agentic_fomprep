@@ -15,10 +15,11 @@ const baseUrl = arg('--baseUrl');
 const storageState = arg('--storageState');
 const timeoutMs = Number(arg('--timeoutMs', '10000')) || 10000;
 
-function isLogin(url, title) {
+function isLogin(url, title, body) {
   const u = String(url || '');
   const t = String(title || '');
-  return /login|signin|sign-in|logon/i.test(u) || /login|sign in|logon/i.test(t);
+  const b = String(body || '');
+  return /login|signin|sign-in|logon/i.test(u) || /login|sign in|logon/i.test(t) || /User Name/i.test(b) && /Log In/i.test(b);
 }
 
 async function main() {
@@ -43,16 +44,21 @@ async function main() {
     const page = await context.newPage();
     page.setDefaultTimeout(timeoutMs);
     await page.goto(baseUrl, { waitUntil: 'domcontentloaded', timeout: timeoutMs });
-    const deadline = Date.now() + Math.max(timeoutMs, 20000);
+    const deadline = Date.now() + Math.max(timeoutMs, 40000);
     let found = false;
     let url = page.url();
     let title = await page.title();
     while (Date.now() < deadline) {
       url = page.url();
       title = await page.title();
-      if (isLogin(url, title)) {
+      const body = await page.locator('body').innerText().catch(() => '');
+      if (isLogin(url, title, body)) {
         console.log(JSON.stringify({ auth: 'expired', reason: 'login_page', url, title }));
         process.exit(2);
+      }
+      if (/Clarkson Evans Live/i.test(title) && /\bSi\b/.test(title)) {
+        found = true;
+        break;
       }
       for (const f of page.frames()) {
         for (const text of ['Form Preparation', 'My Shortcuts', 'Select Company']) {

@@ -64,6 +64,11 @@ if ($RepairOpenParks) { $invoke.RepairOpenParks = $RepairOpenParks }
 if ($PSBoundParameters.ContainsKey('RunId')) { $invoke.RunId = $RunId }
 if ($ConfigPath) { $invoke.ConfigPath = $ConfigPath }
 
+# P1-C1 / v3: CLI is a documented no-op on CE DEV. Default SkipCli unless the caller passed it.
+if ($PSCmdlet.ParameterSetName -eq 'Prepare' -and -not $PSBoundParameters.ContainsKey('SkipCli')) {
+    $invoke.SkipCli = $true
+}
+
 $result = Prepare-Forms @invoke
 $code = 2
 if ($result -and $null -ne $result.exitCode) { $code = [int]$result.exitCode }

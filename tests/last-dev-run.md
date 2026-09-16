@@ -2,6 +2,14 @@
 
 Host `$env:COMPUTERNAME`=CE-PRIORITY-DEV (DNS CE-PRIORITY-DEV1). SQL `10.220.0.5\DEV` database `system`. No secrets.
 
+## P0-CO company pin (review v3)
+
+Web Select Company label **D - Clarkson Evans Live** is DEV (`selectors.json` `companyCode=base`, `sqlDatabase=system`). WINRUN company is `base`. `T$EXEC` 101883 exists on `10.220.0.5\DEV`. Did not connect to PRI. `allowLiveCompanyLabel=true` only for that exact pin. Do not click D-Test or D-Global Swap 4.
+
+## P0-BG wait-for-idle (review v3)
+
+`Wait-FormPrepIdle` runs before restore: live PID on this box (process still alive) + 30s quiet Y-count. One-name run while session live: `executor=web parked=2 restored=2` then sibling `ZCLA_PARTLONGDHIST` lastprep `20359477→20359498` (UPD stayed N) — wait was not enough while PID 13048 leftover with LOCKEXPIRY=0. Idle wait now treats leftover PID as live only if `Get-Process -Id` still exists. Re-run blocked: `si-web-state.json` expired (login page). DESC left `UPD=Y` lastprep 20359498 for the next supervised web run. Did not SQL-flip siblings.
+
 ## P0-DDL
 
 `OPEN parks=0`. `dbo.AGENT_FORMPREP_PARK` columns include `prev_lockexpiry`. ApplyParkTable not required this run.

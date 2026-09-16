@@ -424,6 +424,7 @@ WHERE $lUpdCol = 'Y' OR $lIdCol IN ($(($targets | ForEach-Object { $_.ExecId }) 
     } finally {
         if ($parked -and $conn) {
             try {
+                Wait-FormPrepIdle -Connection $conn -Config $cfg -TimeoutSeconds 180 -QuietSeconds 30 -Result $result
                 $restore = Restore-ParkSnapshot -Connection $conn -Config $cfg -RunId $result.runId
                 $result.restoredCount = [int]$restore.RestoredCount
                 $result.restoreOk = [bool]$restore.RestoreOk

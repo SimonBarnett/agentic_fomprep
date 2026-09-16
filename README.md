@@ -1,6 +1,6 @@
 # agentic_fomprep (Priority Form Prep; spelling: formprep)
 
-Unattended Priority **Form Prep** for Clarkson Evans **DEV only**.
+Supervised desktop Form Prep for Clarkson Evans **DEV only** (headed Playwright on an unlocked DEV1 session). Not an overnight unattended agent until session-0 / headless proof exists.
 
 Build plan (v1.0): `CE_Priority_Autonomous_Form_Prep_Build_Plan.pdf`.
 
@@ -8,6 +8,7 @@ Peer reviews (build-agent handoff):
 
 - `reviews/agentic_fomprep_Build_Agent_Peer_Review.pdf` (v1, vs `e9516f4`)
 - `reviews/agentic_fomprep_Build_Agent_Peer_Review_v2.pdf` (v2 audit, vs `c1b2ebe`)
+- `reviews/agentic_fomprep_Build_Agent_Peer_Review_v3.pdf` (v3 post P0-W1, vs `1d10a6b`)
 
 **Hard rule:** never report a form prepared unless `EXECPREPLOCK.UPD='N'` **and** `LASTPREPDATE` moved. Never leave the unprepared estate marked prepared. Never embed passwords in this repo.
 
@@ -48,7 +49,8 @@ powershell -File src\Prepare-Forms.ps1 -Names ZCLA_PARTLONGDESC,ZCLA_PARTLONGDHI
 # WP3 CLI probe (1-form set, no web). Needs CredMan CE/Priority/Si for LASTPREPDATE to move;
 # no_cred / timeout in cli-stdout.txt is a valid WP3 no-op close.
 powershell -File src\Prepare-Forms.ps1 -Names ZCLA_PARTLONGDESC -Environment DEV -SkipWeb -CliTimeoutSeconds 60
-powershell -File src\Prepare-Forms.ps1 -Names ZCLA_PARTLONGDESC -Environment DEV -TimeoutMinutes 15
+# Web is the success path. CLI is a documented no-op on CE DEV (SkipCli is the CLI-wrapper default).
+powershell -NoProfile -ExecutionPolicy Bypass -File src\Prepare-Forms.ps1 -Names ZCLA_PARTLONGDESC -Environment DEV -SkipCli -TimeoutMinutes 15
 ```
 
 After a crash:
@@ -113,7 +115,7 @@ powershell -File tools\Test-Pack.ps1
 
 That parses every script, checks the JSON schema file, runs `tests/AT6-refuse-non-dev.ps1` and `tests/unit-mutex.ps1`.
 
-DEV1 evidence for AT4/AT7/AT1 (2026-09-16) is in `tests/last-dev-run.md`. On DEV1 after pin: AT4 (WP1 dry 5/5 restore), AT1, AT6, AT7, AT8 must be green for MVP. AT2/AT3 green or waived in this README with a reason. Park table `dbo.AGENT_FORMPREP_PARK` uses bigint `exec_id` / `prev_lastprep` / `prev_pid` to match `EXECPREPLOCK`. `LASTPREPDATE` is bigint (`0` = never). WP2 dump (`-SkipPark -SkipCli -SkipWeb`) writes `sql-before.json` and `capture/emsg.txt` without parking.
+DEV1 evidence for AT4/AT7/AT1/P0-W1 (2026-09-16) is in `tests/last-dev-run.md`. CLI is a no-op on CE DEV; web is the success path. Web company label `D - Clarkson Evans Live` is the DEV company (`base` / SQL `system`), not PRI. On DEV1 after pin: AT4 (WP1 dry 5/5 restore), AT1, AT6, AT7, AT8 must be green for MVP. AT2/AT3 green or waived in this README with a reason. Park table `dbo.AGENT_FORMPREP_PARK` uses bigint `exec_id` / `prev_lastprep` / `prev_pid` to match `EXECPREPLOCK`. `LASTPREPDATE` is bigint (`0` = never). WP2 dump (`-SkipPark -SkipCli -SkipWeb`) writes `sql-before.json` and `capture/emsg.txt` without parking.
 
 | ID | Script | Off-DEV |
 |----|--------|---------|

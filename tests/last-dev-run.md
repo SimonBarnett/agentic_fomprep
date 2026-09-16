@@ -2,6 +2,11 @@
 
 Host `$env:COMPUTERNAME`=CE-PRIORITY-DEV (DNS CE-PRIORITY-DEV1). SQL `10.220.0.5\DEV` database `system`. No secrets.
 
+## Restart test 2026-09-16 evening
+
+`Test-Pack PASS`. `OPEN=0`. WhatIf `ZCLA_PARTLONGDESC` exec=101883 upd=Y lastPrep=20359498 wouldPark=2. Real prepare: wrapper 20min killed mid-run; RepairOpenParks restored 2/2 (`ZCLA_INVOICEFIX`, `ZPTI_SALES_ORDER`); OPEN=0. Retry: exit 2 `auth_expired` `probe_timeout`, parked=0. Did not SQL-flip. Cookies need recapture before the next web prepare.
+
+
 ## P0-CO company pin (review v3)
 
 Web Select Company label **D - Clarkson Evans Live** is DEV (`selectors.json` `companyCode=base`, `sqlDatabase=system`). WINRUN company is `base`. `T$EXEC` 101883 exists on `10.220.0.5\DEV`. Did not connect to PRI. `allowLiveCompanyLabel=true` only for that exact pin. Do not click D-Test or D-Global Swap 4.

@@ -64,6 +64,20 @@ exit=0
 WP3 after ZCLA_PARTLONGDESC upd=Y lastPrep=0 parked=2 restored=2
 ```
 
-## P0-W1
+## P0-W1 headed pin (2026-09-16)
 
-`C:\Priority\tmp\agent-formprep\si-web-state.json` is absent. Headed pin of Unprepared Forms was not run. `selectors.json` `pinnedAt` remains unverified. `formprep.mjs` no longer sets `progressSeen` on the menu-title click; OK prefers the prep dialog; progress waits on `progressbar`/`status` or a progress string that is not `Form Preparation`.
+Session: `si-web-state.json` (14 cookies, gitignored). Dashboard has **Form Preparation** tile (no My Shortcuts). **Select Company** dialog: `D - Clarkson Evans Live`.
+
+Run `586beda4-63a1-4e30-9d95-cb5f55218e4b` (`Prepare-Forms -Names ZCLA_PARTLONGDESC -SkipCli`):
+
+```
+before ZCLA_PARTLONGDESC exec=101883 upd=Y lastPrep=0
+exit=0 ok=True parked=4 restored=4 restoreOk=True executor=web auth=ok
+after  ZCLA_PARTLONGDESC upd=N lastPrep=20359477
+```
+
+All three ZCLA_PARTLONG* ended `UPD=N` LASTPREPDATE `20359477` (siblings may have compiled after restore while server prep was still running). Screenshots: `tests/fixtures/web-pin/`. `selectors.json` `pinnedAt=2026-09-16T12:20:00Z`.
+
+## P0-W1 (earlier)
+
+`si-web-state.json` captured 2026-09-16 12:13 (gitignored). See P0-W1 headed pin above.

@@ -50,6 +50,28 @@ function dangerous(text) {
   return new RegExp(selectors.dangerousDialog, 'i').test(String(text || ''));
 }
 
+async function firstVisible(page, builder) {
+  for (const f of page.frames()) {
+    try {
+      const loc = builder(f);
+      if (await loc.first().isVisible().catch(() => false)) return loc.first();
+    } catch {
+      /* frame navigated */
+    }
+  }
+  return null;
+}
+
+async function waitVisible(page, builder, timeoutMs) {
+  const deadline = Date.now() + timeoutMs;
+  while (Date.now() < deadline) {
+    const loc = await firstVisible(page, builder);
+    if (loc) return loc;
+    await page.waitForTimeout(250);
+  }
+  return null;
+}
+
 let shot = 0;
 async function screenshot(page, name) {
   shot += 1;
@@ -118,6 +140,7 @@ async function main() {
   try {
     await page.goto(baseUrl, { waitUntil: 'domcontentloaded', timeout: 30000 });
     await screenshot(page, 'after-goto');
+    let ui = page;
     if (isLogin(page.url(), await page.title())) {
       result.auth = 'expired';
       result.exitReason = 'login_page';
@@ -126,13 +149,14 @@ async function main() {
       process.exit(2);
     }
 
-    // Dashboard shortcuts tile should appear within 20s
-    const shortcut = page.getByText(selectors.dashboardShortcut, { exact: false }).first();
-    try {
-      await shortcut.waitFor({ timeout: 20000 });
-    } catch {
+    const homeTile = await waitVisible(
+      page,
+      (f) => f.getByText(selectors.dashboardShortcut, { exact: true }),
+      25000
+    );
+    if (!homeTile) {
       result.auth = 'expired';
-      result.exitReason = 'no_shortcuts_tile';
+      result.exitReason = 'no_form_preparation_tile';
       writeResult();
       await browser.close();
       process.exit(2);
@@ -150,22 +174,39 @@ async function main() {
       process.exit(3);
     }
 
-    await shortcut.click();
-    await screenshot(page, 'shortcuts');
-    await page.getByText(selectors.formPreparation, { exact: false }).first().click();
-    await screenshot(page, 'form-prep');
-
-    // Leave Prep Type at Unprepared Forms (default). Click OK in the prep dialog, not the first page OK.
-    const unprepared = page.getByText(selectors.unpreparedForms, { exact: false }).first();
-    try { await unprepared.waitFor({ timeout: 15000 }); } catch { /* default may already be selected */ }
-    const prepDialog = page.locator('[role="dialog"], .modal, .ui-dialog, .p-dialog').filter({ hasText: selectors.formPreparation }).first();
-    const okInDialog = prepDialog.getByRole('button', { name: selectors.ok });
-    if (await okInDialog.count().catch(() => 0)) {
-      await okInDialog.last().click();
-    } else {
-      await page.getByRole('button', { name: selectors.ok }).last().click();
+    const companyDlg = await waitVisible(page, (f) => f.getByText(selectors.selectCompany || 'Select Company', { exact: false }), 3000);
+    if (companyDlg) {
+      const want = selectors.companyName || 'D - Clarkson Evans Live';
+      const opt = await waitVisible(page, (f) => f.getByText(want, { exact: false }), 5000);
+      if (opt) await opt.click();
+      const companyOk = await firstVisible(page, (f) => f.getByRole('button', { name: selectors.ok }));
+      if (companyOk) await companyOk.click();
+      await screenshot(page, 'company');
     }
-    await screenshot(page, 'after-ok');
+
+    const formTile = await waitVisible(page, (f) => f.getByText(selectors.formPreparation, { exact: true }), 15000);
+    if (!formTile) {
+      result.exitReason = 'no_form_preparation';
+      writeResult();
+      await browser.close();
+      process.exit(1);
+    }
+    const popupP = page.waitForEvent('popup', { timeout: 20000 }).catch(() => null);
+    await formTile.click();
+    const popup = await popupP;
+    ui = popup || page;
+    await ui.waitForTimeout(2000);
+    await screenshot(ui, 'form-prep');
+
+    await waitVisible(ui, (f) => f.getByText(selectors.unpreparedForms, { exact: false }), 20000);
+    const okBtn = await waitVisible(ui, (f) => f.getByRole('button', { name: selectors.ok }), 10000);
+    if (okBtn) {
+      await okBtn.click();
+    } else {
+      const anyOk = await firstVisible(ui, (f) => f.getByText(selectors.ok, { exact: true }));
+      if (anyOk) await anyOk.click();
+    }
+    await screenshot(ui, 'after-ok');
 
     const deadline = Date.now() + timeoutMs;
     let blocked = false;
@@ -174,11 +215,10 @@ async function main() {
         blocked = true;
         break;
       }
-      // HTML modals (not window.dialog)
-      const modal = page.locator('[role="dialog"], .modal, .ui-dialog, .p-dialog').first();
-      if (await modal.isVisible().catch(() => false)) {
+      const modal = await firstVisible(ui, (f) => f.locator('[role="dialog"], .modal, .ui-dialog, .p-dialog'));
+      if (modal) {
         const text = await modal.innerText().catch(() => '');
-        await screenshot(page, 'html-modal');
+        await screenshot(ui, 'html-modal');
         if (dangerous(text) || !text) {
           result.dialogs.push({ text: text || '(empty modal)', action: 'blocked-run' });
           result.exitReason = 'blocked-run';
@@ -197,19 +237,19 @@ async function main() {
         }
       }
 
-      const show = page.getByText(selectors.showReports, { exact: false });
-      if (await show.first().isVisible().catch(() => false)) {
-        const okBtn = page.getByRole('button', { name: selectors.ok });
-        if (await okBtn.count()) {
+      const show = await firstVisible(ui, (f) => f.getByText(selectors.showReports, { exact: false }));
+      if (show) {
+        const okOnShow = await firstVisible(ui, (f) => f.getByRole('button', { name: selectors.ok }));
+        if (okOnShow) {
           result.dialogs.push({ text: 'Show Reports', action: 'dismissed-safe' });
-          await okBtn.first().click();
+          await okOnShow.click();
         }
       }
 
-      const errTab = page.getByText(selectors.errorsReport, { exact: false });
-      if (await errTab.first().isVisible().catch(() => false)) {
-        await errTab.first().click();
-        const html = await page.content();
+      const errTab = await firstVisible(ui, (f) => f.getByText(selectors.errorsReport, { exact: false }));
+      if (errTab) {
+        await errTab.click();
+        const html = await ui.content();
         const reportPath = path.join(captureDir, 'errors-report.html');
         fs.writeFileSync(reportPath, html);
         result.errorsReportPath = reportPath;
@@ -218,14 +258,14 @@ async function main() {
       }
 
       // Progress is NOT the Form Preparation menu title (P0-W1). Prefer a progressbar/status.
-      const bar = page.getByRole('progressbar').first();
-      const status = page.getByRole('status').first();
-      const progressLabel = page.getByText(selectors.progressText, { exact: false }).first();
-      const barVis = await bar.isVisible().catch(() => false);
-      const statusVis = await status.isVisible().catch(() => false);
-      const labelVis = selectors.progressText && selectors.progressText !== selectors.formPreparation
-        ? await progressLabel.isVisible().catch(() => false)
-        : false;
+      const bar = await firstVisible(ui, (f) => f.getByRole('progressbar'));
+      const status = await firstVisible(ui, (f) => f.getByRole('status'));
+      const progressLabel = selectors.progressText && selectors.progressText !== selectors.formPreparation
+        ? await firstVisible(ui, (f) => f.getByText(selectors.progressText, { exact: false }))
+        : null;
+      const barVis = !!bar;
+      const statusVis = !!status;
+      const labelVis = !!progressLabel;
       if (barVis || statusVis || labelVis) {
         result.progressSeen = true;
       }
@@ -239,7 +279,7 @@ async function main() {
     if (!blocked && result.exitReason === 'started') {
       result.exitReason = 'timeout';
     }
-    await screenshot(page, 'final');
+    await screenshot(ui, 'final');
     try {
       await context.storageState({ path: storageState });
     } catch {

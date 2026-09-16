@@ -36,11 +36,11 @@ function Invoke-WebSessionProbe {
     $psi.RedirectStandardError = $true
     $psi.CreateNoWindow = $true
     $psi.WorkingDirectory = (Split-Path -Parent $probe)
-    $psi.Arguments = ('"{0}" --baseUrl {1} --storageState "{2}" --timeoutMs 10000' -f $probe, $Config.WebBaseUrl, $Config.StorageState)
+    $psi.Arguments = ('"{0}" --baseUrl {1} --storageState "{2}" --timeoutMs 25000' -f $probe, $Config.WebBaseUrl, $Config.StorageState)
     $proc = New-Object System.Diagnostics.Process
     $proc.StartInfo = $psi
     [void]$proc.Start()
-    $exited = $proc.WaitForExit(15000)
+    $exited = $proc.WaitForExit(35000)
     if (-not $exited) {
         try { $proc.Kill() } catch { }
         return [pscustomobject]@{ Auth = 'expired'; Reason = 'probe_timeout'; Path = $Config.StorageState }

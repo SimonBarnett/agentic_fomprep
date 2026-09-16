@@ -36,23 +36,38 @@ async function main() {
     process.exit(2);
   }
 
-  const browser = await chromium.launch({ headless: true });
+  // Headless misses the framed dashboard on this build (P1-A1b). Headed probe matches capture.
+  const browser = await chromium.launch({ headless: false });
   try {
     const context = await browser.newContext({ storageState, viewport: { width: 1200, height: 800 } });
     const page = await context.newPage();
     page.setDefaultTimeout(timeoutMs);
     await page.goto(baseUrl, { waitUntil: 'domcontentloaded', timeout: timeoutMs });
-    const url = page.url();
-    const title = await page.title();
-    if (isLogin(url, title)) {
-      console.log(JSON.stringify({ auth: 'expired', reason: 'login_page', url, title }));
-      process.exit(2);
+    const deadline = Date.now() + Math.max(timeoutMs, 20000);
+    let found = false;
+    let url = page.url();
+    let title = await page.title();
+    while (Date.now() < deadline) {
+      url = page.url();
+      title = await page.title();
+      if (isLogin(url, title)) {
+        console.log(JSON.stringify({ auth: 'expired', reason: 'login_page', url, title }));
+        process.exit(2);
+      }
+      for (const f of page.frames()) {
+        for (const text of ['Form Preparation', 'My Shortcuts', 'Select Company']) {
+          const loc = f.getByText(text, { exact: false }).first();
+          if (await loc.isVisible().catch(() => false)) {
+            found = true;
+            break;
+          }
+        }
+        if (found) break;
+      }
+      if (found) break;
+      await page.waitForTimeout(250);
     }
-    // P1-A1b: URL/title is not enough. Dashboard tile must appear.
-    const shortcut = page.getByText('My Shortcuts', { exact: false }).first();
-    try {
-      await shortcut.waitFor({ timeout: Math.min(8000, timeoutMs) });
-    } catch {
+    if (!found) {
       console.log(JSON.stringify({ auth: 'expired', reason: 'no_shortcuts_tile', url, title }));
       process.exit(2);
     }

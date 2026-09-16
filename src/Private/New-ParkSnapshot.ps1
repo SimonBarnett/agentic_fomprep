@@ -1,28 +1,13 @@
-function ConvertTo-Int64Id {
-    param($Value)
-    if ($null -eq $Value -or $Value -is [DBNull]) { return [int64]0 }
-    return [int64]$Value
-}
-
 function Test-LockIsLive {
     param($Row)
 
     # LOCKEXPIRY is bigint (WP0). 0 / null / PID=0 is stale. No Priority epoch decoder.
-    $pid = ConvertTo-Int64Id $Row.Pid
+    $lockPid = ConvertTo-Int64Id $Row.Pid
     $expVal = ConvertTo-Int64Id $Row.LockExpiry
-    $expiryLive = ($pid -ne 0 -and $expVal -gt 0)
+    $expiryLive = ($lockPid -ne 0 -and $expVal -gt 0)
 
-    $hostLive = $false
-    $computer = [string]$Row.Computer
-    if (-not [string]::IsNullOrWhiteSpace($computer)) {
-        try {
-            $hostLive = Test-Connection -ComputerName $computer -Count 1 -Quiet -ErrorAction SilentlyContinue
-        } catch {
-            $hostLive = $false
-        }
-    }
-
-    return [bool]($expiryLive -or $hostLive)
+    # P1-L1: do not ICMP-ping COMPUTERNAME. Stale DNS names and firewalled ICMP both lie.
+    return [bool]$expiryLive
 }
 
 function Get-OpenParkRows {
@@ -113,8 +98,8 @@ WHERE $lId = @id
         $notIn = $idList -join ', '
 
         $sqlPark = @"
-INSERT INTO $parkTable (run_id, exec_id, ename, prev_upd, prev_lastprep, prev_computer, prev_pid, parked_at)
-SELECT @run, L.$lId, E.$eName, L.$lUpd, L.$lPrep, L.$lComp, L.$lPid, GETDATE()
+INSERT INTO $parkTable (run_id, exec_id, ename, prev_upd, prev_lastprep, prev_computer, prev_pid, prev_lockexpiry, parked_at)
+SELECT @run, L.$lId, E.$eName, L.$lUpd, L.$lPrep, L.$lComp, L.$lPid, L.$lExp, GETDATE()
 FROM $lockTable L
 LEFT JOIN $execTable E ON E.$eId = L.$lId
 WHERE L.$lUpd = 'Y'

@@ -34,10 +34,7 @@ $dummyForced = $false
 $proc = $null
 try {
     $yBefore = Get-YCount $conn
-    Write-Host "AT4 Y-count before=$yBefore"
-    if ($yBefore -ne 3) {
-        throw "AT4 expected global UPD=Y count 3 (the ZCLA trio), got $yBefore. Re-read estate before parking."
-    }
+    Write-Host "AT4 Y-count before=$yBefore (P0-T4: no required constant)"
 
     $zcla = Invoke-FormPrepSql -Connection $conn -Query @"
 SELECT E.$eName AS name, E.$eId AS exec_id, L.$lUpd AS upd, L.$lPrep AS last_prep
@@ -56,8 +53,12 @@ WHERE E.$eName IN (N'ZCLA_PARTLONGDESC', N'ZCLA_PARTLONGDHIST', N'ZCLA_PARTLONGD
         }
     }
 
+    $zclaAlreadyY = @($zclaSnap | Where-Object { ([string]$_.Upd).Trim() -eq 'Y' }).Count
+    $expectedOpen = $yBefore + 5 - $zclaAlreadyY
+    Write-Host "AT4 zclaAlreadyY=$zclaAlreadyY expectedOpen=$expectedOpen"
+
     $dummyTable = Invoke-FormPrepSql -Connection $conn -Query @"
-SELECT TOP 5 E.$eName AS name, E.$eId AS exec_id, L.$lUpd AS upd, L.$lPrep AS last_prep
+SELECT TOP 5 E.$eName AS name, E.$eId AS exec_id, L.$lUpd AS upd, L.$lPrep AS last_prep, L.$lExp AS lock_expiry
 FROM $execTable E
 JOIN $lockTable L ON L.$lId = E.$eId
 WHERE L.$lUpd = N'N'
@@ -74,8 +75,9 @@ ORDER BY E.$eId
         $dummy += [pscustomobject]@{
             Name     = [string]$r.name
             ExecId   = [int64]$r.exec_id
-            OrigUpd  = [string]$r.upd
-            LastPrep = [int64]$r.last_prep
+            OrigUpd     = [string]$r.upd
+            LastPrep    = [int64]$r.last_prep
+            LockExpiry  = [int64]$r.lock_expiry
         }
     }
     Write-Host ("AT4 dummies: {0}" -f (($dummy | ForEach-Object { '{0}={1}' -f $_.Name, $_.ExecId }) -join ', '))
@@ -86,7 +88,8 @@ ORDER BY E.$eId
     }
     $dummyForced = $true
     $yForced = Get-YCount $conn
-    if ($yForced -ne 8) { throw "AT4 expected Y-count 8 after dummy force, got $yForced" }
+    $expectForced = $yBefore + 5
+    if ($yForced -ne $expectForced) { throw "AT4 Y-count after dummy force=$yForced expected $expectForced" }
 
     $outLog = Join-Path $cfg.AgentWork 'at4-hold.out.log'
     $errLog = Join-Path $cfg.AgentWork 'at4-hold.err.log'
@@ -99,18 +102,18 @@ ORDER BY E.$eId
     $proc = Start-Process -FilePath 'powershell.exe' -ArgumentList $arg -WorkingDirectory $script:RepoRoot -PassThru -WindowStyle Hidden -RedirectStandardOutput $outLog -RedirectStandardError $errLog
 
     $openN = 0
-    $deadline = (Get-Date).AddSeconds(25)
+    $deadline = (Get-Date).AddSeconds(90)
     do {
         Start-Sleep -Seconds 1
         $openN = [int](Invoke-FormPrepSql -Connection $conn -Query "SELECT COUNT(*) FROM $parkTable WHERE restored_at IS NULL" -Scalar)
-        if ($openN -ge 5) { break }
+        if ($openN -eq $expectedOpen) { break }
         if ($proc.HasExited) { break }
     } while ((Get-Date) -lt $deadline)
 
-    if ($openN -ne 5) {
+    if ($openN -ne $expectedOpen) {
         $tail = ''
         if (Test-Path -LiteralPath $outLog) { $tail = Get-Content -LiteralPath $outLog -Raw -ErrorAction SilentlyContinue }
-        throw "AT4 park did not reach 5 OPEN rows (open=$openN exited=$($proc.HasExited)). Log: $tail"
+        throw "AT4 park did not reach $expectedOpen OPEN rows (open=$openN exited=$($proc.HasExited)). Log: $tail"
     }
 
     Stop-Process -Id $proc.Id -Force -ErrorAction SilentlyContinue
@@ -139,8 +142,8 @@ ORDER BY E.$eId
     if (-not $repair.restoreOk) {
         throw "AT4 repair restoreOk=false exit=$($repair.exitCode) reason=$($repair.reason) restored=$($repair.restoredCount)"
     }
-    if ([int]$repair.restoredCount -ne 5) {
-        throw "AT4 expected restoredCount=5 got $($repair.restoredCount)"
+    if ([int]$repair.restoredCount -ne $expectedOpen) {
+        throw "AT4 expected restoredCount=$expectedOpen got $($repair.restoredCount)"
     }
 
     $left = [int](Invoke-FormPrepSql -Connection $conn -Query "SELECT COUNT(*) FROM $parkTable WHERE restored_at IS NULL" -Scalar)
@@ -150,6 +153,10 @@ ORDER BY E.$eId
         $cur = Invoke-FormPrepSql -Connection $conn -Query "SELECT $lUpd AS upd FROM $lockTable WHERE $lId = @id" -Parameters @{ '@id' = $d.ExecId } -Scalar
         if ([string]$cur.Trim() -ne 'Y') {
             throw "AT4 dummy $($d.Name) UPD after repair is '$cur' (expected Y prev)"
+        }
+        $expNow = Invoke-FormPrepSql -Connection $conn -Query "SELECT $lExp AS exp FROM $lockTable WHERE $lId = @id" -Parameters @{ '@id' = $d.ExecId } -Scalar
+        if ([int64]$expNow -ne $d.LockExpiry) {
+            throw "AT4 dummy $($d.Name) LOCKEXPIRY $($d.LockExpiry) -> $expNow"
         }
     }
 
@@ -161,13 +168,13 @@ WHERE E.$eName IN (N'ZCLA_PARTLONGDESC', N'ZCLA_PARTLONGDHIST', N'ZCLA_PARTLONGD
 "@
     foreach ($r in $zclaAfter.Rows) {
         $before = $zclaSnap | Where-Object { $_.Name -eq [string]$r.name } | Select-Object -First 1
-        if ([string]$r.upd.Trim() -ne 'Y') { throw "AT4 ZCLA $($r.name) UPD='$($r.upd)' after repair" }
+        if ([string]$r.upd.Trim() -ne $before.Upd.Trim()) { throw "AT4 ZCLA $($r.name) UPD='$($r.upd)' expected '$($before.Upd)'" }
         if ([int64]$r.last_prep -ne $before.LastPrep) {
             throw "AT4 ZCLA $($r.name) LASTPREPDATE changed $($before.LastPrep) -> $($r.last_prep)"
         }
     }
 
-    Write-Host 'AT4 PASS restored 5/5'
+    Write-Host ("AT4 PASS restored {0}/{0} (5 dummies)" -f $expectedOpen)
 } finally {
     if ($proc -and -not $proc.HasExited) {
         try { Stop-Process -Id $proc.Id -Force } catch { }
@@ -196,8 +203,8 @@ WHERE E.$eName IN (N'ZCLA_PARTLONGDESC', N'ZCLA_PARTLONGDHIST', N'ZCLA_PARTLONGD
     try {
         $yEnd = Get-YCount $conn
         Write-Host "AT4 Y-count after cleanup=$yEnd"
-        if ($yEnd -ne 3) {
-            throw "AT4 cleanup left UPD=Y count $yEnd (expected 3)"
+        if ($yEnd -ne $yBefore) {
+            throw "AT4 cleanup left UPD=Y count $yEnd (expected $yBefore)"
         }
     } catch {
         Write-Warning $_.Exception.Message

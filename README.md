@@ -1,4 +1,4 @@
-# agentic_fomprep
+# agentic_fomprep (Priority Form Prep; spelling: formprep)
 
 Unattended Priority **Form Prep** for Clarkson Evans **DEV only**.
 
@@ -13,6 +13,8 @@ This checkout is the install pack. Do not run it against live/PRI. The runner fa
 - web host is `prioritydev.clarksonevans.co.uk`
 - computer is `CE-PRIORITY-DEV1` (or the DEV RDP host you pin in `config/dev.psd1`)
 - `PinComplete = $true` after recon (required for any park)
+
+WINRUN still puts the Si password on the child process command line for the CLI probe window (P1-C1). `cli-stdout.txt` is redacted to `***`. A Process Explorer screenshot during that window is the residual DEV-only risk. Cookie file `si-web-state.json` is not a live session (P0-A1): a 10s Playwright probe runs before park unless `-SkipWeb`. FORMKEYS hook is empty until a human dump (P1-H1). AT2 waived: no `ZCLA_AGENT_PREP_AT2` throwaway form on DEV. AT3 off-DEV fixture covers Ignore Duplicate Values → blocked-run.
 
 ## Install on CE-PRIORITY-DEV1
 
@@ -31,6 +33,7 @@ Log into https://prioritydev.clarksonevans.co.uk once as Si and save Playwright 
 
 ```powershell
 powershell -File src\Prepare-Forms.ps1 -Names ZCLA_PARTLONGDESC -Environment DEV -WhatIf
+powershell -File src\Prepare-Forms.ps1 -Names ZCLA_PARTLONGDESC,ZCLA_PARTLONGDHIST,ZCLA_PARTLONGDREV -Environment DEV -SkipPark -SkipCli -SkipWeb
 powershell -File src\Prepare-Forms.ps1 -Names ZCLA_PARTLONGDESC -Environment DEV -TimeoutMinutes 15
 ```
 
@@ -96,11 +99,11 @@ powershell -File tools\Test-Pack.ps1
 
 That parses every script, checks the JSON schema file, runs `tests/AT6-refuse-non-dev.ps1` and `tests/unit-mutex.ps1`.
 
-On DEV1 after pin: AT4 (WP1 dry 5/5 restore), AT1, AT6, AT7, AT8 must be green for MVP. AT2/AT3 green or waived in this README with a reason. Park table `dbo.AGENT_FORMPREP_PARK` uses bigint `exec_id` / `prev_lastprep` / `prev_pid` to match `EXECPREPLOCK`.
+On DEV1 after pin: AT4 (WP1 dry 5/5 restore), AT1, AT6, AT7, AT8 must be green for MVP. AT2/AT3 green or waived in this README with a reason. Park table `dbo.AGENT_FORMPREP_PARK` uses bigint `exec_id` / `prev_lastprep` / `prev_pid` to match `EXECPREPLOCK`. `LASTPREPDATE` is bigint (`0` = never). WP2 dump (`-SkipPark -SkipCli -SkipWeb`) writes `sql-before.json` and `capture/emsg.txt` without parking.
 
 | ID | Script | Off-DEV |
 |----|--------|---------|
-| AT1 | `tests/AT1-already-prepared.ps1` | skip |
+| AT1 | `tests/AT1-already-prepared.ps1` | skip (DEV1: force-Y then CLI `-SkipWeb`; blocked until CredMan `CE/Priority/Si` and/or live web pin P0-W1) |
 | AT2 | `tests/AT2-broken-trigger.ps1` | skip (needs ZCLA_AGENT_PREP_AT2) |
 | AT3 | `tests/AT3-index-dialog.ps1` | skip (waive until a live/fixture dialog exists) |
 | AT4 | `tests/AT4-abort-restores.ps1` | skip (DEV1: 5 dummy park, kill, RepairOpenParks 5/5) |

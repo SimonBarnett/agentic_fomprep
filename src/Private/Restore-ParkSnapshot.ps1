@@ -13,9 +13,10 @@ function Restore-ParkSnapshot {
     $lPrep = ConvertTo-SqlIdent $Config.LockCols.LastPrep
     $lComp = ConvertTo-SqlIdent $Config.LockCols.Computer
     $lPid = ConvertTo-SqlIdent $Config.LockCols.Pid
+    $lExp = ConvertTo-SqlIdent $Config.LockCols.LockExpiry
 
     $sqlOpen = @"
-SELECT exec_id, prev_upd, prev_lastprep, prev_computer, prev_pid
+SELECT exec_id, prev_upd, prev_lastprep, prev_computer, prev_pid, prev_lockexpiry
 FROM $parkTable
 WHERE run_id = @run AND restored_at IS NULL
 "@
@@ -29,6 +30,7 @@ WHERE run_id = @run AND restored_at IS NULL
         $prevPrep = $(if ($r.prev_lastprep -is [DBNull]) { [int64]0 } else { [int64]$r.prev_lastprep })
         $prevComp = $(if ($r.prev_computer -is [DBNull]) { '' } else { [string]$r.prev_computer })
         $prevPid = $(if ($r.prev_pid -is [DBNull]) { [int64]0 } else { [int64]$r.prev_pid })
+        $prevExp = $(if ($r.prev_lockexpiry -is [DBNull]) { [int64]0 } else { [int64]$r.prev_lockexpiry })
 
         $tx = $Connection.BeginTransaction()
         $script:FormPrepTransaction = $tx
@@ -38,7 +40,8 @@ UPDATE $lockTable
 SET $lUpd = @upd,
     $lPrep = @prep,
     $lComp = @comp,
-    $lPid = @pid
+    $lPid = @pid,
+    $lExp = @exp
 WHERE $lId = @id
 "@
             $n = Invoke-FormPrepSql -Connection $Connection -Query $sqlU -Parameters @{
@@ -46,6 +49,7 @@ WHERE $lId = @id
                 '@prep' = $prevPrep
                 '@comp' = $prevComp
                 '@pid'  = $prevPid
+                '@exp'  = $prevExp
                 '@id'   = $execId
             } -NonQuery
 

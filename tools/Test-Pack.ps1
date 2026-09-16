@@ -62,6 +62,27 @@ if ($LASTEXITCODE -ne 0) {
     $failed++
 }
 
+Write-Host '--- unit-lastprep ---'
+& powershell.exe -NoProfile -ExecutionPolicy Bypass -File (Join-Path $repo 'tests\unit-lastprep.ps1')
+if ($LASTEXITCODE -ne 0) {
+    Write-Host "unit-lastprep FAIL exit $LASTEXITCODE"
+    $failed++
+}
+
+Write-Host '--- unit-lock-execid ---'
+& powershell.exe -NoProfile -ExecutionPolicy Bypass -File (Join-Path $repo 'tests\unit-lock-execid.ps1')
+if ($LASTEXITCODE -ne 0) {
+    Write-Host "unit-lock-execid FAIL exit $LASTEXITCODE"
+    $failed++
+}
+
+Write-Host '--- AT3 fixture ---'
+& powershell.exe -NoProfile -ExecutionPolicy Bypass -File (Join-Path $repo 'tests\AT3-index-dialog.ps1')
+if ($LASTEXITCODE -ne 0) {
+    Write-Host "AT3 FAIL exit $LASTEXITCODE"
+    $failed++
+}
+
 if ($failed -gt 0) {
     Write-Host "Test-Pack FAIL ($failed)"
     exit 1

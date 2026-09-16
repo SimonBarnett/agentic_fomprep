@@ -27,7 +27,7 @@ function Get-VerifyRows {
 }
 
 function Convert-VerifyToResult {
-    param($Result, $Targets, $Resolved)
+    param($Result, $Targets, $Resolved, [switch]$AllowSameDayPrep)
 
     $prepared = @()
     $still = @()
@@ -44,16 +44,24 @@ function Convert-VerifyToResult {
             $pid = $row.Pid
         }
         $advanced = Test-LastPrepAdvanced -Before $t.LastPrep -After $(if ($row) { $row.LastPrep } else { $null })
+        if (-not $advanced -and $AllowSameDayPrep -and $upd -eq 'N') {
+            $afterN = ConvertTo-Int64Id $(if ($row) { $row.LastPrep } else { $null })
+            $beforeN = ConvertTo-Int64Id $t.LastPrep
+            if ($afterN -gt 0 -and $afterN -eq $beforeN) {
+                $advanced = $true
+                Add-FormPrepError -Result $Result -Source 'execpreplock' -Text ("AllowSameDayPrep: LASTPREPDATE unchanged at {0}" -f $afterN) -Severity 'Warning' -FormHint $t.Name
+            }
+        }
         $itemBase = [ordered]@{
             name               = $t.Name
-            execId             = [int]$t.ExecId
+            execId             = [int64]$t.ExecId
             lastPrepDateBefore = (ConvertTo-LastPrepJsonValue $t.LastPrep)
             lastPrepDateAfter  = $after
         }
         if ($upd -eq 'N' -and $advanced) {
             $itemBase.upd = 'N'
             if ($computer) { $itemBase.computer = [string]$computer }
-            if ($null -ne $pid) { $itemBase.pid = [int]$pid }
+            if ($null -ne $pid) { $itemBase.pid = [int64]$pid }
             $prepared += @([pscustomobject]$itemBase)
         } else {
             $itemBase.upd = $(if ($upd) { $upd } else { 'Y' })
@@ -112,7 +120,8 @@ function Prepare-Forms {
         [switch]$ResetLastPrepDate,
         [string]$ConfigPath,
         [switch]$SkipPark,
-        [int]$HoldParkSeconds = 0
+        [int]$HoldParkSeconds = 0,
+        [switch]$AllowSameDayPrep
     )
 
     $started = (Get-Date).ToUniversalTime()
@@ -190,10 +199,39 @@ function Prepare-Forms {
             $result.exitCode = 2
             return $result
         }
+        if ($SkipPark -and -not $WhatIf -and (-not $SkipCli -or -not $SkipWeb)) {
+            Add-FormPrepError -Result $result -Source 'execpreplock' -Text 'SkipPark requires -SkipCli and -SkipWeb (dump-only).' -Severity 'Blocker'
+            $result.reason = 'dump_requires_skip'
+            $result.exitCode = 2
+            return $result
+        }
 
+        $needWeb = -not $WhatIf -and -not $SkipWeb -and -not $SkipPark
         $session = Test-WebSession -Config $cfg
         $result.auth = $session.Auth
-        if ($session.Auth -eq 'expired' -and -not $WhatIf -and -not $SkipWeb) {
+        if ($needWeb -and $session.Auth -eq 'expired') {
+            Add-FormPrepError -Result $result -Source 'execpreplock' -Text ("auth_expired: {0}" -f $session.Reason) -Severity 'Blocker'
+            $result.reason = 'auth_expired'
+            $result.exitCode = 2
+            return $result
+        }
+        if ($needWeb) {
+            if (-not (Get-Command node -ErrorAction SilentlyContinue)) {
+                Add-FormPrepError -Result $result -Source 'execpreplock' -Text 'node_missing: cannot probe session or run web Form Prep' -Severity 'Blocker'
+                $result.reason = 'node_missing'
+                $result.exitCode = 2
+                return $result
+            }
+            $probe = Invoke-WebSessionProbe -Config $cfg
+            $result.auth = $probe.Auth
+            if ($probe.Auth -ne 'ok') {
+                $why = if ($probe.Reason -eq 'node_missing') { 'node_missing' } else { 'auth_expired' }
+                Add-FormPrepError -Result $result -Source 'execpreplock' -Text ("${why}: {0}" -f $probe.Reason) -Severity 'Blocker'
+                $result.reason = $why
+                $result.exitCode = 2
+                return $result
+            }
+        } elseif ($session.Auth -eq 'expired' -and -not $WhatIf -and -not $SkipWeb) {
             Add-FormPrepError -Result $result -Source 'execpreplock' -Text ("auth_expired: {0}" -f $session.Reason) -Severity 'Blocker'
             $result.reason = 'auth_expired'
             $result.exitCode = 2
@@ -210,6 +248,10 @@ function Prepare-Forms {
         }
         $targets = @($resolved.Rows)
 
+        if ($dirs -and -not $WhatIf) {
+            Write-FormPrepSqlSnapshot -Rows $targets -JsonPath (Join-Path $dirs.RunDir 'sql-before.json') -CsvPath (Join-Path $dirs.RunDir 'targets.csv')
+        }
+
         if ($WhatIf) {
             $lockTable = ConvertTo-SqlIdent $cfg.LockTable
             $lUpd = ConvertTo-SqlIdent $cfg.LockCols.Upd
@@ -217,8 +259,8 @@ function Prepare-Forms {
             $targetCount = $targets.Count
             $wouldPark = [Math]::Max(0, $would - $targetCount)
             $result.parkedCount = 0
-            $result.reason = "whatIf wouldPark=$wouldPark currentY=$would targets=$targetCount"
-            Write-Host $result.reason
+            $result.reason = 'whatIf'
+            Write-Host ("whatIf wouldPark={0} currentY={1} targets={2}" -f $wouldPark, $would, $targetCount)
             foreach ($t in $targets) {
                 Write-Host ("  {0} exec={1} upd={2} lastPrep={3}" -f $t.Name, $t.ExecId, $t.Upd, $t.LastPrep)
             }
@@ -228,49 +270,51 @@ function Prepare-Forms {
             return $result
         }
 
-        $lock = Lock-FormPrepMutex -Name $cfg.MutexName -WaitMs $cfg.MutexWaitMs
-        if (-not $lock.Held) {
-            $result.reason = 'mutex_held'
-            $result.exitCode = 2
-            Add-FormPrepError -Result $result -Source 'execpreplock' -Text 'mutex_held' -Severity 'Blocker'
-            return $result
-        }
-        if ($lock.Abandoned) {
-            Add-FormPrepError -Result $result -Source 'execpreplock' -Text 'acquired abandoned mutex; continuing' -Severity 'Warning'
-        }
+        if (-not $SkipPark) {
+            $lock = Lock-FormPrepMutex -Name $cfg.MutexName -WaitMs $cfg.MutexWaitMs
+            if (-not $lock.Held) {
+                $result.reason = 'mutex_held'
+                $result.exitCode = 2
+                Add-FormPrepError -Result $result -Source 'execpreplock' -Text 'mutex_held' -Severity 'Blocker'
+                return $result
+            }
+            if ($lock.Abandoned) {
+                Add-FormPrepError -Result $result -Source 'execpreplock' -Text 'acquired abandoned mutex; continuing' -Severity 'Warning'
+            }
 
-        $otherOpen = Get-OpenParkRows -Connection $conn -Config $cfg -ExceptRunId $result.runId
-        if ($otherOpen.Count -gt 0) {
-            $rid = $otherOpen[0].RunId
-            Add-FormPrepError -Result $result -Source 'execpreplock' -Text "OPEN park rows exist for run_id $rid" -Severity 'Blocker' -FormHint $null
-            $result.reason = 'open_park'
-            $result.exitCode = 2
-            return $result
-        }
+            $otherOpen = Get-OpenParkRows -Connection $conn -Config $cfg -ExceptRunId $result.runId
+            if ($otherOpen.Count -gt 0) {
+                $rid = $otherOpen[0].RunId
+                Add-FormPrepError -Result $result -Source 'execpreplock' -Text "OPEN park rows exist for run_id $rid" -Severity 'Blocker' -FormHint $null
+                $result.reason = 'open_park'
+                $result.exitCode = 2
+                return $result
+            }
 
-        $lUpdCol = ConvertTo-SqlIdent $cfg.LockCols.Upd
-        $lockTable = ConvertTo-SqlIdent $cfg.LockTable
-        $lIdCol = ConvertTo-SqlIdent $cfg.LockCols.ExecId
-        $lPidCol = ConvertTo-SqlIdent $cfg.LockCols.Pid
-        $lExpCol = ConvertTo-SqlIdent $cfg.LockCols.LockExpiry
-        $lCompCol = ConvertTo-SqlIdent $cfg.LockCols.Computer
-        $liveSql = @"
+            $lUpdCol = ConvertTo-SqlIdent $cfg.LockCols.Upd
+            $lockTable = ConvertTo-SqlIdent $cfg.LockTable
+            $lIdCol = ConvertTo-SqlIdent $cfg.LockCols.ExecId
+            $lPidCol = ConvertTo-SqlIdent $cfg.LockCols.Pid
+            $lExpCol = ConvertTo-SqlIdent $cfg.LockCols.LockExpiry
+            $lCompCol = ConvertTo-SqlIdent $cfg.LockCols.Computer
+            $liveSql = @"
 SELECT $lIdCol AS exec_id, $lCompCol AS computer, $lPidCol AS pid, $lExpCol AS lock_expiry
 FROM $lockTable
 WHERE $lUpdCol = 'Y' OR $lIdCol IN ($(($targets | ForEach-Object { $_.ExecId }) -join ','))
 "@
-        $liveTable = Invoke-FormPrepSql -Connection $conn -Query $liveSql
-        foreach ($lr in $liveTable.Rows) {
-            $probe = [pscustomobject]@{
-                Pid        = $(if ($lr.pid -is [DBNull]) { 0 } else { $lr.pid })
-                LockExpiry = $(if ($lr.lock_expiry -is [DBNull]) { $null } else { $lr.lock_expiry })
-                Computer   = $(if ($lr.computer -is [DBNull]) { $null } else { [string]$lr.computer })
-            }
-            if (Test-LockIsLive -Row $probe) {
-                Add-FormPrepError -Result $result -Source 'execpreplock' -Text ("lock_held exec={0} computer={1} pid={2}" -f $lr.exec_id, $probe.Computer, $probe.Pid) -Severity 'Blocker'
-                $result.reason = 'lock_held'
-                $result.exitCode = 2
-                return $result
+            $liveTable = Invoke-FormPrepSql -Connection $conn -Query $liveSql
+            foreach ($lr in $liveTable.Rows) {
+                $probe = [pscustomobject]@{
+                    Pid        = $(if ($lr.pid -is [DBNull]) { 0 } else { $lr.pid })
+                    LockExpiry = $(if ($lr.lock_expiry -is [DBNull]) { $null } else { $lr.lock_expiry })
+                    Computer   = $(if ($lr.computer -is [DBNull]) { $null } else { [string]$lr.computer })
+                }
+                if (Test-LockIsLive -Row $probe) {
+                    Add-FormPrepError -Result $result -Source 'execpreplock' -Text ("lock_held exec={0} computer={1} pid={2}" -f $lr.exec_id, $probe.Computer, $probe.Pid) -Severity 'Blocker'
+                    $result.reason = 'lock_held'
+                    $result.exitCode = 2
+                    return $result
+                }
             }
         }
 
@@ -342,7 +386,19 @@ WHERE $lUpdCol = 'Y' OR $lIdCol IN ($(($targets | ForEach-Object { $_.ExecId }) 
         Get-PrepErrors -Config $cfg -Result $result -Targets $targets -CaptureDir $dirs.Capture
 
         $verified = Get-VerifyRows -Connection $conn -Config $cfg -Targets $targets
-        Convert-VerifyToResult -Result $result -Targets $targets -Resolved $verified
+        Convert-VerifyToResult -Result $result -Targets $targets -Resolved $verified -AllowSameDayPrep:$AllowSameDayPrep
+        if ($dirs) {
+            Write-FormPrepSqlSnapshot -Rows $verified.Rows -JsonPath (Join-Path $dirs.RunDir 'sql-after.json')
+        }
+
+        if ($SkipPark) {
+            $result.reason = 'dump'
+            $result.exitCode = 0
+            $result.ok = $false
+            $result.parkedCount = 0
+            $result.restoreOk = $true
+            $result.executor = 'none'
+        }
 
         if ($PostHooks -and $result.prepared.Count -eq $targets.Count) {
             $hooksOk = Assert-PostHooks -Connection $conn -Config $cfg -Result $result -HookNames $PostHooks

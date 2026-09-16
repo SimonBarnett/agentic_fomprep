@@ -72,6 +72,16 @@ WHERE c.object_id = OBJECT_ID(N'dbo.AGENT_FORMPREP_PARK') AND c.name = N'exec_id
             if ($prepType -ne 'bigint' -or $idType -ne 'bigint') {
                 Write-Host "Park table types are '$idType'/'$prepType'; dropping empty wrong-type table on DEV."
                 [void](Invoke-FormPrepSql -Connection $conn -Query "DROP TABLE dbo.AGENT_FORMPREP_PARK" -NonQuery)
+            } else {
+                $expCol = Invoke-FormPrepSql -Connection $conn -Query @"
+SELECT c.name
+FROM sys.columns c
+WHERE c.object_id = OBJECT_ID(N'dbo.AGENT_FORMPREP_PARK') AND c.name = N'prev_lockexpiry'
+"@ -Scalar
+                if (-not $expCol) {
+                    Write-Host 'P1-R1: adding prev_lockexpiry bigint (OPEN count is 0).'
+                    [void](Invoke-FormPrepSql -Connection $conn -Query "ALTER TABLE dbo.AGENT_FORMPREP_PARK ADD prev_lockexpiry BIGINT NULL" -NonQuery)
+                }
             }
         }
         $sql = Get-Content -LiteralPath (Join-Path $repo 'sql\001_agent_formprep_park.sql') -Raw

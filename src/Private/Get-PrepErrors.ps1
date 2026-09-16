@@ -35,13 +35,17 @@ function Get-PrepErrors {
         $dest = Join-Path $CaptureDir 'emsg.txt'
         [void](Copy-CaptureFile -Source $emsg.FullName -Dest $dest)
         $text = [System.IO.File]::ReadAllText($emsg.FullName)
+        $first = (($text -split '\r?\n') | Where-Object { $_ -ne '' } | Select-Object -First 1)
+        if (-not $first) { $first = $emsg.Name }
+        $errN = 0
+        if ($text -match 'Number of errors\s*=\s*(\d+)') { $errN = [int]$Matches[1] }
         $sev = 'Info'
-        if ($text -match 'Number of errors\s*=\s*([1-9]\d*)') { $sev = 'Warning' }
+        if ($errN -gt 0) { $sev = 'Warning' }
         $hint = $null
         foreach ($n in $nameHints) {
             if ($text -match [regex]::Escape($n)) { $hint = $n; $sev = 'Blocker'; break }
         }
-        Add-FormPrepError -Result $Result -Source 'emsg' -Text $emsg.Name -Severity $sev -FormHint $hint
+        Add-FormPrepError -Result $Result -Source 'emsg' -Text $first -Severity $sev -FormHint $hint
     } else {
         Add-FormPrepError -Result $Result -Source 'emsg' -Text 'no e*msg file in C:\Priority\tmp' -Severity 'Info'
     }

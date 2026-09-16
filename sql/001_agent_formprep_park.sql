@@ -16,6 +16,7 @@ BEGIN
         prev_lastprep BIGINT           NULL,
         prev_computer NVARCHAR(128)    NULL,
         prev_pid      BIGINT           NULL,
+        prev_lockexpiry BIGINT         NULL,
         parked_at     DATETIME         NOT NULL DEFAULT GETDATE(),
         restored_at   DATETIME         NULL,
         restore_ok    CHAR(1)          NULL,

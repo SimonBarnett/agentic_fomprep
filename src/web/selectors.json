@@ -1,0 +1,14 @@
+{
+  "pinnedAt": "unverified-packaged-2026-09-16-pin-on-DEV1",
+  "loginUrlPattern": "login|signin|sign-in|logon|Logon",
+  "loginTitlePattern": "login|sign in|logon",
+  "dashboardShortcut": "My Shortcuts",
+  "formPreparation": "Form Preparation",
+  "unpreparedForms": "Unprepared Forms",
+  "ok": "OK",
+  "showReports": "Show Reports",
+  "errorsReport": "Errors Report",
+  "progressText": "Form Preparation",
+  "dangerousDialog": "duplicate|index|rebuild|IGNORE_DUP|Ignore Duplicate|trigger compile",
+  "otherSession": "already running|another user|in progress"
+}

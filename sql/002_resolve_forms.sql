@@ -1,0 +1,14 @@
+-- Resolve EXEC form names the way Priority does.
+-- Identifiers below are the historical CE pattern. PowerShell substitutes
+-- the pinned names from config/dev.psd1 - do not run this file raw until recon.
+
+-- SELECT E.[ENAME] AS name,
+--        E.[EXEC]  AS exec_id,
+--        L.[UPD]   AS upd,
+--        L.[LASTPREPDATE] AS last_prep,
+--        L.[COMPUTERNAME] AS computer,
+--        L.[PID]   AS pid,
+--        L.[LOCKEXPIRY] AS lock_expiry
+-- FROM dbo.EXEC E
+-- LEFT JOIN dbo.EXECPREPLOCK L ON L.[EXEC] = E.[EXEC]
+-- WHERE E.[ENAME] IN (@names);

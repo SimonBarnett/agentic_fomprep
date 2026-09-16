@@ -1,0 +1,13 @@
+{
+  "name": "ce-formprep-web",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Playwright Form Prep executor for CE Priority DEV. No secrets.",
+  "type": "module",
+  "scripts": {
+    "install-browsers": "playwright install chromium"
+  },
+  "dependencies": {
+    "playwright": "^1.49.0"
+  }
+}

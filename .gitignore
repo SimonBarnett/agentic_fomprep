@@ -2,4 +2,10 @@
 logs/
 si-web-state.json
 last.json
+recon.json
+node_modules/
+src/web/node_modules/
+*.ndjson
+tests/.tmp/
+capture/
 

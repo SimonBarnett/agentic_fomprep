@@ -1,0 +1,104 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://clarksonevans.local/schemas/prepare-forms-result.json",
+  "title": "PrepareFormsResult",
+  "type": "object",
+  "required": [
+    "ok",
+    "runId",
+    "environment",
+    "startedAt",
+    "endedAt",
+    "durationSec",
+    "parkedCount",
+    "restoredCount",
+    "prepared",
+    "stillUnprepared",
+    "errors",
+    "dialogs",
+    "executor"
+  ],
+  "additionalProperties": true,
+  "properties": {
+    "ok": { "type": "boolean" },
+    "runId": { "type": "string", "pattern": "^[0-9a-f-]{36}$" },
+    "environment": { "const": "DEV" },
+    "executor": { "type": "string", "enum": ["none", "cli", "web", "cli+web"] },
+    "startedAt": { "type": "string", "format": "date-time" },
+    "endedAt": { "type": "string", "format": "date-time" },
+    "durationSec": { "type": "integer", "minimum": 0 },
+    "parkedCount": { "type": "integer", "minimum": 0 },
+    "restoredCount": { "type": "integer", "minimum": 0 },
+    "restoreOk": { "type": "boolean" },
+    "prepared": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/formRow" }
+    },
+    "stillUnprepared": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/unpreparedRow" }
+    },
+    "errors": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["source", "text", "severity"],
+        "properties": {
+          "source": {
+            "type": "string",
+            "enum": ["modal", "errors-report", "emsg", "prep.err", "execpreplock", "hook"]
+          },
+          "formHint": { "type": "string" },
+          "text": { "type": "string" },
+          "severity": { "type": "string", "enum": ["Info", "Warning", "Blocker"] }
+        }
+      }
+    },
+    "dialogs": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["text", "action"],
+        "properties": {
+          "text": { "type": "string" },
+          "action": {
+            "type": "string",
+            "enum": ["captured-left", "dismissed-safe", "blocked-run"]
+          }
+        }
+      }
+    },
+    "auth": { "type": "string", "enum": ["ok", "expired", "unknown"] },
+    "whatIf": { "type": "boolean" },
+    "reason": { "type": "string" },
+    "exitCode": { "type": "integer" }
+  },
+  "$defs": {
+    "formRow": {
+      "type": "object",
+      "required": ["name", "execId", "lastPrepDateBefore", "lastPrepDateAfter", "upd"],
+      "properties": {
+        "name": { "type": "string" },
+        "execId": { "type": "integer" },
+        "lastPrepDateBefore": { "type": ["string", "number", "null"] },
+        "lastPrepDateAfter": { "type": ["string", "number", "null"] },
+        "upd": { "type": "string", "enum": ["N"] },
+        "computer": { "type": "string" },
+        "pid": { "type": "integer" }
+      }
+    },
+    "unpreparedRow": {
+      "type": "object",
+      "required": ["name", "execId", "upd"],
+      "properties": {
+        "name": { "type": "string" },
+        "execId": { "type": "integer" },
+        "lastPrepDateBefore": { "type": ["string", "number", "null"] },
+        "lastPrepDateAfter": { "type": ["string", "number", "null"] },
+        "upd": { "type": "string", "enum": ["Y"] },
+        "computer": { "type": "string" },
+        "pid": { "type": "integer" }
+      }
+    }
+  }
+}

@@ -41,7 +41,9 @@ function Invoke-CliFormPrep {
     $user = $cred.UserName
     if ([string]::IsNullOrWhiteSpace($user)) { $user = $Config.PriorityUser }
 
-    $argLine = @($user, '***', $prep, $company, 'WINACTIV', '-P', 'FORMPREP') -join ' '
+    # CE DEV1 proven shape: WINRUN "" user pass prepPath company WINACTIV -P FORMPREP
+    # (leading empty token). Do not append a form name after park.
+    $argLine = @('""', $user, '***', $prep, $company, 'WINACTIV', '-P', 'FORMPREP') -join ' '
     [System.IO.File]::AppendAllText($log, "launch (redacted): $winrun $argLine`r`n")
 
     $psi = New-Object System.Diagnostics.ProcessStartInfo
@@ -50,9 +52,8 @@ function Invoke-CliFormPrep {
     $psi.RedirectStandardOutput = $true
     $psi.RedirectStandardError = $true
     $psi.CreateNoWindow = $true
-    # ArgumentList is PS7+. Build Arguments string with quoted paths, never log it with the secret.
     $quotedPrep = '"' + $prep + '"'
-    $psi.Arguments = "$user $($cred.Password) $quotedPrep $company WINACTIV -P FORMPREP"
+    $psi.Arguments = '"" ' + $user + ' ' + $cred.Password + ' ' + $quotedPrep + ' ' + $company + ' WINACTIV -P FORMPREP'
 
     $proc = New-Object System.Diagnostics.Process
     $proc.StartInfo = $psi

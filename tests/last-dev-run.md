@@ -40,6 +40,22 @@ AT1 Y-count before=3 after=3 openParks=0 moved=0
 
 CLI skipped: Credential Manager target `CE/Priority/Si` is empty. **Did not SQL-flip UPD=N.**
 
+## WP3 CLI one-form (after CredMan)
+
+First probe with cred used a shifted WINRUN argv (`WINACTIV` taken as a SQL database). Restore short 2/3: park row `ZGCW_DEL_IPP_STATS` / 101886 had no `T$EXEC` or `EXECPREPLOCK` row (orphaned). Y-count left at 3 (ZCLA trio). Did not INSERT a lock row.
+
+After argv fix (`WINRUN "" Si *** prep base WINACTIV -P FORMPREP`):
+
+```
+WP3 before ZCLA_PARTLONGDESC exec=101883 upd=Y lastPrep=0 Y=3
+WP3 exit=3 reason=cli_noop ok=False parked=2 restored=2 restoreOk=True executor=none
+WP3 after  ZCLA_PARTLONGDESC upd=Y lastPrep=0 Y=3 open=0
+cli-stdout: launch (redacted): ...\winrun.exe "" Si *** ...\prep base WINACTIV -P FORMPREP
+exit=0
+```
+
+CLI exit 0 did not advance LASTPREPDATE. No SQL-flip.
+
 ## P0-W1
 
 `C:\Priority\tmp\agent-formprep\si-web-state.json` is absent. Headed pin of Unprepared Forms was not run. `selectors.json` `pinnedAt` remains unverified. `formprep.mjs` no longer sets `progressSeen` on the menu-title click; OK prefers the prep dialog; progress waits on `progressbar`/`status` or a progress string that is not `Form Preparation`.

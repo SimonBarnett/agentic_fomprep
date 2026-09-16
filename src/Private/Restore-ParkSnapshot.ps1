@@ -54,7 +54,21 @@ WHERE $lId = @id
             } -NonQuery
 
             $ok = 'N'
-            if ($n -eq 1) { $ok = 'Y'; $restored++ } else { $failed++ }
+            if ($n -eq 1) {
+                $ok = 'Y'
+                $restored++
+            } else {
+                $still = [int](Invoke-FormPrepSql -Connection $Connection -Query "SELECT COUNT(*) FROM $lockTable WHERE $lId = @id" -Parameters @{ '@id' = $execId } -Scalar)
+                $execTable = ConvertTo-SqlIdent $Config.ExecTable
+                $eId = ConvertTo-SqlIdent $Config.ExecIdCol
+                $execN = [int](Invoke-FormPrepSql -Connection $Connection -Query "SELECT COUNT(*) FROM $execTable WHERE $eId = @id" -Parameters @{ '@id' = $execId } -Scalar)
+                if ($still -eq 0 -and $execN -eq 0) {
+                    $ok = 'Y'
+                    $restored++
+                } else {
+                    $failed++
+                }
+            }
 
             $sqlMark = @"
 UPDATE $parkTable

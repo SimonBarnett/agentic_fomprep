@@ -262,10 +262,18 @@ async function main() {
       const errTab = await firstVisible(ui, (f) => f.getByText(selectors.errorsReport, { exact: false }));
       if (errTab) {
         await errTab.click();
-        const html = await ui.content();
-        const reportPath = path.join(captureDir, 'errors-report.html');
-        fs.writeFileSync(reportPath, html);
-        result.errorsReportPath = reportPath;
+        const jsonlPath = path.join(captureDir, 'errors-report.jsonl');
+        const rows = [];
+        for (const f of ui.frames()) {
+          const trs = f.locator('table tr');
+          const n = await trs.count().catch(() => 0);
+          for (let i = 0; i < Math.min(n, 200); i++) {
+            const t = String(await trs.nth(i).innerText().catch(() => '')).replace(/\s+/g, ' ').trim();
+            if (t) rows.push(JSON.stringify({ source: 'errors-report', text: t, seq: rows.length }));
+          }
+        }
+        fs.writeFileSync(jsonlPath, rows.join('\n'));
+        result.errorsReportJsonl = jsonlPath;
         result.exitReason = 'completed';
         break;
       }

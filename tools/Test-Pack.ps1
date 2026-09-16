@@ -76,6 +76,13 @@ if ($LASTEXITCODE -ne 0) {
     $failed++
 }
 
+Write-Host '--- unit-error-parse ---'
+& powershell.exe -NoProfile -ExecutionPolicy Bypass -File (Join-Path $repo 'tests\unit-error-parse.ps1')
+if ($LASTEXITCODE -ne 0) {
+    Write-Host "unit-error-parse FAIL exit $LASTEXITCODE"
+    $failed++
+}
+
 Write-Host '--- AT3 fixture ---'
 & powershell.exe -NoProfile -ExecutionPolicy Bypass -File (Join-Path $repo 'tests\AT3-index-dialog.ps1')
 if ($LASTEXITCODE -ne 0) {

@@ -9,6 +9,7 @@ Peer reviews (build-agent handoff):
 - `reviews/agentic_fomprep_Build_Agent_Peer_Review.pdf` (v1, vs `e9516f4`)
 - `reviews/agentic_fomprep_Build_Agent_Peer_Review_v2.pdf` (v2 audit, vs `c1b2ebe`)
 - `reviews/agentic_fomprep_Build_Agent_Peer_Review_v3.pdf` (v3 post P0-W1, vs `1d10a6b`)
+- `reviews/agentic_fomprep_Agent_Capability_Gap_Analysis.pdf` (prepare-a-form + get-errors)
 
 **Hard rule:** never report a form prepared unless `EXECPREPLOCK.UPD='N'` **and** `LASTPREPDATE` moved. Never leave the unprepared estate marked prepared. Never embed passwords in this repo.
 
@@ -51,6 +52,8 @@ powershell -File src\Prepare-Forms.ps1 -Names ZCLA_PARTLONGDESC,ZCLA_PARTLONGDHI
 powershell -File src\Prepare-Forms.ps1 -Names ZCLA_PARTLONGDESC -Environment DEV -SkipWeb -CliTimeoutSeconds 60
 # Web is the success path. CLI is a documented no-op on CE DEV (SkipCli is the CLI-wrapper default).
 powershell -NoProfile -ExecutionPolicy Bypass -File src\Prepare-Forms.ps1 -Names ZCLA_PARTLONGDESC -Environment DEV -SkipCli -TimeoutMinutes 15
+# Then: note resultJson= printed on stdout, or:
+powershell -NoProfile -ExecutionPolicy Bypass -File tools\Get-LastFormPrepResult.ps1
 ```
 
 After a crash:

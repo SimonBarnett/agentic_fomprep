@@ -56,8 +56,14 @@ WHERE $lPid <> 0
         Start-Sleep -Seconds ([int]$Config.SqlPollSeconds)
     } while ((Get-Date) -lt $deadline)
 
-    if ($live.Count -gt 0 -and $Result) {
-        Add-FormPrepError -Result $Result -Source 'execpreplock' -Text 'P0-BG timeout still seeing live PID/LOCKEXPIRY; restoring anyway' -Severity 'Warning'
+    $procLeft = @(Get-Process -ErrorAction SilentlyContinue | Where-Object {
+            $_.ProcessName -match '^(winrun|winactiv|formprep)$'
+        })
+    if ($live.Count -gt 0 -or $procLeft.Count -gt 0) {
+        if ($Result) {
+            Add-FormPrepError -Result $Result -Source 'execpreplock' -Text 'P0-BG timeout still seeing live PID or Form Prep process; not restoring' -Severity 'Warning'
+        }
+        return [pscustomobject]@{ Idle = $false }
     }
 
     $ySql = "SELECT COUNT(*) FROM $lockTable WHERE $lUpd = N'Y'"
@@ -77,4 +83,5 @@ WHERE $lPid <> 0
     if ($Result) {
         Add-FormPrepError -Result $Result -Source 'execpreplock' -Text ("P0-BG idle Y={0}" -f $y0) -Severity 'Info'
     }
+    return [pscustomobject]@{ Idle = $true }
 }

@@ -210,7 +210,7 @@ function Prepare-Forms {
         $session = Test-WebSession -Config $cfg
         $result.auth = $session.Auth
         if ($needWeb -and $session.Auth -eq 'expired') {
-            Add-FormPrepError -Result $result -Source 'execpreplock' -Text ("auth_expired: {0}" -f $session.Reason) -Severity 'Blocker'
+            Add-FormPrepError -Result $result -Source 'execpreplock' -Text ("auth_expired: recapture cookies with tools\Save-WebStorageState.ps1 ({0})" -f $session.Reason) -Severity 'Blocker'
             $result.reason = 'auth_expired'
             $result.exitCode = 2
             return $result
@@ -226,13 +226,14 @@ function Prepare-Forms {
             $result.auth = $probe.Auth
             if ($probe.Auth -ne 'ok') {
                 $why = if ($probe.Reason -eq 'node_missing') { 'node_missing' } else { 'auth_expired' }
-                Add-FormPrepError -Result $result -Source 'execpreplock' -Text ("${why}: {0}" -f $probe.Reason) -Severity 'Blocker'
+                $msg = if ($why -eq 'auth_expired') { "auth_expired: recapture cookies with tools\Save-WebStorageState.ps1 ({0})" -f $probe.Reason } else { "${why}: {0}" -f $probe.Reason }
+                Add-FormPrepError -Result $result -Source 'execpreplock' -Text $msg -Severity 'Blocker'
                 $result.reason = $why
                 $result.exitCode = 2
                 return $result
             }
         } elseif ($session.Auth -eq 'expired' -and -not $WhatIf -and -not $SkipWeb) {
-            Add-FormPrepError -Result $result -Source 'execpreplock' -Text ("auth_expired: {0}" -f $session.Reason) -Severity 'Blocker'
+            Add-FormPrepError -Result $result -Source 'execpreplock' -Text ("auth_expired: recapture cookies with tools\Save-WebStorageState.ps1 ({0})" -f $session.Reason) -Severity 'Blocker'
             $result.reason = 'auth_expired'
             $result.exitCode = 2
             return $result
@@ -390,7 +391,7 @@ WHERE $lUpdCol = 'Y' OR $lIdCol IN ($(($targets | ForEach-Object { $_.ExecId }) 
             }
         }
 
-        Get-PrepErrors -Config $cfg -Result $result -Targets $targets -CaptureDir $dirs.Capture
+        Get-PrepErrors -Config $cfg -Result $result -Targets $targets -CaptureDir $dirs.Capture -StartedAt $started
 
         $verified = Get-VerifyRows -Connection $conn -Config $cfg -Targets $targets
         Convert-VerifyToResult -Result $result -Targets $targets -Resolved $verified -AllowSameDayPrep:$AllowSameDayPrep
@@ -424,15 +425,23 @@ WHERE $lUpdCol = 'Y' OR $lIdCol IN ($(($targets | ForEach-Object { $_.ExecId }) 
     } finally {
         if ($parked -and $conn) {
             try {
-                Wait-FormPrepIdle -Connection $conn -Config $cfg -TimeoutSeconds 180 -QuietSeconds 30 -Result $result
-                $restore = Restore-ParkSnapshot -Connection $conn -Config $cfg -RunId $result.runId
-                $result.restoredCount = [int]$restore.RestoredCount
-                $result.restoreOk = [bool]$restore.RestoreOk
-                if (-not $restore.RestoreOk) {
-                    Add-FormPrepError -Result $result -Source 'execpreplock' -Text ("restore short: {0}/{1}" -f $restore.RestoredCount, $result.parkedCount) -Severity 'Blocker'
+                $idle = Wait-FormPrepIdle -Connection $conn -Config $cfg -TimeoutSeconds 180 -QuietSeconds 30 -Result $result
+                if (-not $idle.Idle) {
+                    Add-FormPrepError -Result $result -Source 'execpreplock' -Text 'P0-BG timeout; park left OPEN for RepairOpenParks' -Severity 'Blocker'
                     $result.ok = $false
                     $result.exitCode = 3
-                    $result.reason = 'restore_short'
+                    $result.reason = 'prep_still_running'
+                    $result.restoreOk = $false
+                } else {
+                    $restore = Restore-ParkSnapshot -Connection $conn -Config $cfg -RunId $result.runId
+                    $result.restoredCount = [int]$restore.RestoredCount
+                    $result.restoreOk = [bool]$restore.RestoreOk
+                    if (-not $restore.RestoreOk) {
+                        Add-FormPrepError -Result $result -Source 'execpreplock' -Text ("restore short: {0}/{1}" -f $restore.RestoredCount, $result.parkedCount) -Severity 'Blocker'
+                        $result.ok = $false
+                        $result.exitCode = 3
+                        $result.reason = 'restore_short'
+                    }
                 }
             } catch {
                 Add-FormPrepError -Result $result -Source 'execpreplock' -Text ("restore failed: {0}" -f $_.Exception.Message) -Severity 'Blocker'
@@ -464,8 +473,10 @@ WHERE $lUpdCol = 'Y' OR $lIdCol IN ($(($targets | ForEach-Object { $_.ExecId }) 
             $jsonPath = $ResultJson
             if (-not $jsonPath) { $jsonPath = Join-Path $dirs.RunDir 'result.json' }
             [void](Write-ResultJson -Result $result -Path $jsonPath -RunDir $dirs.RunDir -AgentWork $cfg.AgentWork)
+            Write-Host ("resultJson={0}" -f $jsonPath)
         } elseif ($ResultJson) {
             [void](Write-ResultJson -Result $result -Path $ResultJson)
+            Write-Host ("resultJson={0}" -f $ResultJson)
         }
     }
 

@@ -3,6 +3,9 @@
 .SYNOPSIS
     Store the Si WINRUN password in Windows Credential Manager (target CE/Priority/Si).
     Password is prompted; it is never written to git, JSON, or this repo.
+
+    This file is unsigned. Run:
+      powershell -NoProfile -ExecutionPolicy Bypass -File tools\Set-WinrunCredential.ps1
 #>
 [CmdletBinding()]
 param(

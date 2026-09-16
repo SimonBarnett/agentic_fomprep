@@ -4,6 +4,11 @@ Unattended Priority **Form Prep** for Clarkson Evans **DEV only**.
 
 Build plan (v1.0): `CE_Priority_Autonomous_Form_Prep_Build_Plan.pdf`.
 
+Peer reviews (build-agent handoff):
+
+- `reviews/agentic_fomprep_Build_Agent_Peer_Review.pdf` (v1, vs `e9516f4`)
+- `reviews/agentic_fomprep_Build_Agent_Peer_Review_v2.pdf` (v2 audit, vs `c1b2ebe`)
+
 **Hard rule:** never report a form prepared unless `EXECPREPLOCK.UPD='N'` **and** `LASTPREPDATE` moved. Never leave the unprepared estate marked prepared. Never embed passwords in this repo.
 
 This checkout is the install pack. Do not run it against live/PRI. The runner fail-closes unless:
@@ -18,15 +23,17 @@ WINRUN still puts the Si password on the child process command line for the CLI 
 
 ## Install on CE-PRIORITY-DEV1
 
+Scripts in this pack are unsigned. On DEV1 use Bypass (or the current process will hit `UnauthorizedAccess`):
+
 ```powershell
 cd <this-repo>
-powershell -File tools\Install-OnDev.ps1
-powershell -File tools\Invoke-Recon.ps1
+powershell -NoProfile -ExecutionPolicy Bypass -File tools\Install-OnDev.ps1
+powershell -NoProfile -ExecutionPolicy Bypass -File tools\Invoke-Recon.ps1
 # config\dev.psd1 is already pinned (WP0); re-run recon if dictionary objects move
-powershell -File tools\Install-OnDev.ps1 -ApplyParkTable
-powershell -File src\Prepare-Forms.ps1 -Names ZCLA_PARTLONGDESC,ZCLA_PARTLONGDHIST,ZCLA_PARTLONGDREV -Environment DEV -WhatIf
-powershell -File tests\AT4-abort-restores.ps1
-powershell -File tools\Set-WinrunCredential.ps1
+powershell -NoProfile -ExecutionPolicy Bypass -File tools\Install-OnDev.ps1 -ApplyParkTable
+powershell -NoProfile -ExecutionPolicy Bypass -File src\Prepare-Forms.ps1 -Names ZCLA_PARTLONGDESC,ZCLA_PARTLONGDHIST,ZCLA_PARTLONGDREV -Environment DEV -WhatIf
+powershell -NoProfile -ExecutionPolicy Bypass -File tests\AT4-abort-restores.ps1
+powershell -NoProfile -ExecutionPolicy Bypass -File tools\Set-WinrunCredential.ps1
 ```
 
 Log into https://prioritydev.clarksonevans.co.uk once as Si and save Playwright `storageState` to `C:\Priority\tmp\agent-formprep\si-web-state.json` (ACL: the agent account only).

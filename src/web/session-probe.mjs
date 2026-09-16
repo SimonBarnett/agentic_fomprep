@@ -44,6 +44,7 @@ async function main() {
     const page = await context.newPage();
     page.setDefaultTimeout(timeoutMs);
     await page.goto(baseUrl, { waitUntil: 'domcontentloaded', timeout: timeoutMs });
+    await page.waitForTimeout(8000);
     const deadline = Date.now() + Math.max(timeoutMs, 40000);
     let found = false;
     let url = page.url();
@@ -51,11 +52,6 @@ async function main() {
     while (Date.now() < deadline) {
       url = page.url();
       title = await page.title();
-      const body = await page.locator('body').innerText().catch(() => '');
-      if (isLogin(url, title, body)) {
-        console.log(JSON.stringify({ auth: 'expired', reason: 'login_page', url, title }));
-        process.exit(2);
-      }
       if (/Clarkson Evans Live/i.test(title) && /\bSi\b/.test(title)) {
         found = true;
         break;
@@ -74,7 +70,9 @@ async function main() {
       await page.waitForTimeout(250);
     }
     if (!found) {
-      console.log(JSON.stringify({ auth: 'expired', reason: 'no_shortcuts_tile', url, title }));
+      const body = await page.locator('body').innerText().catch(() => '');
+      const why = isLogin(url, title, body) ? 'login_page' : 'no_shortcuts_tile';
+      console.log(JSON.stringify({ auth: 'expired', reason: why, url, title }));
       process.exit(2);
     }
     console.log(JSON.stringify({ auth: 'ok', reason: 'live_probe_shortcuts', url, title }));

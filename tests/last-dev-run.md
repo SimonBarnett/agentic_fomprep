@@ -56,6 +56,14 @@ exit=0
 
 CLI exit 0 did not advance LASTPREPDATE. No SQL-flip.
 
+CredMan `UserName` must not be passed to WINRUN (it can marshal as the password, filling the username field and launching `C:\priority\bin.95\-P`). Username is pinned to config `Si`. After that:
+
+```
+launch (redacted): ...\winrun.exe "" "Si" *** "C:\Priority\system\prep" "base" WINACTIV -P FORMPREP
+exit=0
+WP3 after ZCLA_PARTLONGDESC upd=Y lastPrep=0 parked=2 restored=2
+```
+
 ## P0-W1
 
 `C:\Priority\tmp\agent-formprep\si-web-state.json` is absent. Headed pin of Unprepared Forms was not run. `selectors.json` `pinnedAt` remains unverified. `formprep.mjs` no longer sets `progressSeen` on the menu-title click; OK prefers the prep dialog; progress waits on `progressbar`/`status` or a progress string that is not `Form Preparation`.

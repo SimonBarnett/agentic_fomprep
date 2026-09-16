@@ -1,3 +1,10 @@
+function ConvertTo-WinrunProcessArg {
+    param([string]$Value)
+    if ($null -eq $Value) { $Value = '' }
+    # Quote only. Do not double backslashes (CommandLineToArgvW is not C-string).
+    '"' + ($Value.Replace('"', '\"')) + '"'
+}
+
 function Stop-ProcessTree {
     param([int]$Id)
     if ($Id -le 0) { return }
@@ -38,12 +45,16 @@ function Invoke-CliFormPrep {
         return [pscustomobject]@{ Status = 'skipped'; Reason = 'no_cred'; Pid = $null }
     }
 
-    $user = $cred.UserName
-    if ([string]::IsNullOrWhiteSpace($user)) { $user = $Config.PriorityUser }
+    # Username is always config PriorityUser (Si). CredMan UserName can marshal as the
+    # password blob; that puts the secret in WINRUN's username field and shifts -P
+    # into C:\Priority\bin.95\-P.
+    $user = [string]$Config.PriorityUser
+    if ($user -cne 'Si') {
+        throw "Refusing WINRUN user '$user' (must be exact Si)"
+    }
 
-    # CE DEV1 proven shape: WINRUN "" user pass prepPath company WINACTIV -P FORMPREP
-    # (leading empty token). Do not append a form name after park.
-    $argLine = @('""', $user, '***', $prep, $company, 'WINACTIV', '-P', 'FORMPREP') -join ' '
+    # CE bats: WINRUN "" Si pass prepPath company WINACTIV -P FORMPREP
+    $argLine = @('""', (ConvertTo-WinrunProcessArg $user), '***', (ConvertTo-WinrunProcessArg $prep), (ConvertTo-WinrunProcessArg $company), 'WINACTIV', '-P', 'FORMPREP') -join ' '
     [System.IO.File]::AppendAllText($log, "launch (redacted): $winrun $argLine`r`n")
 
     $psi = New-Object System.Diagnostics.ProcessStartInfo
@@ -52,8 +63,17 @@ function Invoke-CliFormPrep {
     $psi.RedirectStandardOutput = $true
     $psi.RedirectStandardError = $true
     $psi.CreateNoWindow = $true
-    $quotedPrep = '"' + $prep + '"'
-    $psi.Arguments = '"" ' + $user + ' ' + $cred.Password + ' ' + $quotedPrep + ' ' + $company + ' WINACTIV -P FORMPREP'
+    $psi.WorkingDirectory = Split-Path -Parent $winrun
+    $psi.Arguments = @(
+        '""'
+        (ConvertTo-WinrunProcessArg $user)
+        (ConvertTo-WinrunProcessArg $cred.Password)
+        (ConvertTo-WinrunProcessArg $prep)
+        (ConvertTo-WinrunProcessArg $company)
+        'WINACTIV'
+        '-P'
+        'FORMPREP'
+    ) -join ' '
 
     $proc = New-Object System.Diagnostics.Process
     $proc.StartInfo = $psi

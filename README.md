@@ -34,6 +34,9 @@ Log into https://prioritydev.clarksonevans.co.uk once as Si and save Playwright 
 ```powershell
 powershell -File src\Prepare-Forms.ps1 -Names ZCLA_PARTLONGDESC -Environment DEV -WhatIf
 powershell -File src\Prepare-Forms.ps1 -Names ZCLA_PARTLONGDESC,ZCLA_PARTLONGDHIST,ZCLA_PARTLONGDREV -Environment DEV -SkipPark -SkipCli -SkipWeb
+# WP3 CLI probe (1-form set, no web). Needs CredMan CE/Priority/Si for LASTPREPDATE to move;
+# no_cred / timeout in cli-stdout.txt is a valid WP3 no-op close.
+powershell -File src\Prepare-Forms.ps1 -Names ZCLA_PARTLONGDESC -Environment DEV -SkipWeb -CliTimeoutSeconds 60
 powershell -File src\Prepare-Forms.ps1 -Names ZCLA_PARTLONGDESC -Environment DEV -TimeoutMinutes 15
 ```
 

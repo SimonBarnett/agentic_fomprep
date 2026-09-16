@@ -335,21 +335,28 @@ WHERE $lUpdCol = 'Y' OR $lIdCol IN ($(($targets | ForEach-Object { $_.ExecId }) 
 
         $cliStatus = 'skipped'
         $webStatus = 'skipped'
+        $allCli = $false
         if (-not $SkipCli) {
             $cli = Invoke-CliFormPrep -Config $cfg -RunDir $dirs.RunDir -TimeoutSeconds $CliTimeoutSeconds
             $cliStatus = $cli.Status
+            $cliReason = [string]$cli.Reason
+            Add-FormPrepError -Result $result -Source 'execpreplock' -Text ("cli {0} {1}" -f $cliStatus, $cliReason) -Severity 'Info'
+            # Success is SQL, not process exit. Do not stack a second CliTimeoutSeconds wait after skip/timeout.
             if ($cliStatus -eq 'exited' -or $cliStatus -eq 'timeout') {
-                $result.executor = 'cli'
-            }
-            $poll = Wait-TargetsPrepared -Connection $conn -Config $cfg -Targets $targets -TimeoutSeconds $CliTimeoutSeconds -PollSeconds $cfg.SqlPollSeconds
-            $allCli = $true
-            foreach ($t in $targets) {
-                $row = $poll.Rows | Where-Object { $_.Name -eq $t.Name } | Select-Object -First 1
-                if (-not $row -or $row.Upd -ne 'N' -or -not (Test-LastPrepAdvanced -Before $t.LastPrep -After $row.LastPrep)) {
-                    $allCli = $false
+                $poll = Get-FormExec -Connection $conn -Config $cfg -Names @($targets | ForEach-Object { $_.Name })
+                $allCli = $true
+                foreach ($t in $targets) {
+                    $row = $poll.Rows | Where-Object { $_.Name -eq $t.Name } | Select-Object -First 1
+                    $upd = if ($row -and $row.Upd) { [string]$row.Upd.Trim() } else { '' }
+                    if (-not $row -or $upd -ne 'N' -or -not (Test-LastPrepAdvanced -Before $t.LastPrep -After $row.LastPrep)) {
+                        $allCli = $false
+                    }
+                }
+                if ($allCli) {
+                    $result.executor = 'cli'
+                    $SkipWeb = $true
                 }
             }
-            if ($allCli) { $SkipWeb = $true }
         }
 
         if (-not $SkipWeb) {
@@ -398,6 +405,9 @@ WHERE $lUpdCol = 'Y' OR $lIdCol IN ($(($targets | ForEach-Object { $_.ExecId }) 
             $result.parkedCount = 0
             $result.restoreOk = $true
             $result.executor = 'none'
+        } elseif ($SkipWeb -and -not $allCli -and $parked) {
+            $result.reason = 'cli_noop'
+            $result.exitCode = 3
         }
 
         if ($PostHooks -and $result.prepared.Count -eq $targets.Count) {

@@ -1,0 +1,8 @@
+{
+  "name": "ce-formprep-sdk",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "priority-web-sdk": "^3.0.0"
+  }
+}

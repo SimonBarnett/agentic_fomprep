@@ -5,6 +5,7 @@ last.json
 recon.json
 node_modules/
 src/web/node_modules/
+src/sdk/node_modules/
 *.ndjson
 tests/.tmp/
 capture/

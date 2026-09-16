@@ -14,7 +14,15 @@ Peer reviews (build-agent handoff):
 
 **Hard rule:** never report a form prepared unless `EXECPREPLOCK.UPD='N'` **and** `LASTPREPDATE` moved. Never leave the unprepared estate marked prepared. Never embed passwords in this repo.
 
-### Agent loop (from the working method)
+### Autonomous named-form prep (Web SDK, no headed UI)
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File src\Prepare-NamedForm.ps1 -Name ZCLA_PARTLONGDESC
+```
+
+Uses Form Generator (`EFORM`) + **FORMPREPDRCT2** (Reprepare Form) over WCF. Success = `UPD=N` and bigint `LASTPREPDATE` increased. Password from CredMan `CE/Priority/Si`. No Playwright. OPEN parks unchanged.
+
+### Agent loop (headed Playwright fallback, from the working method)
 
 On an unlocked DEV1 desktop, one name first. `SkipCli` is the CLI-wrapper default. If the probe says recapture cookies, **stop** and ask a human. Do not SQL-flip `UPD`. Do not click Ignore Duplicate. Do not `AllUnprepared`.
 

@@ -1,22 +1,19 @@
+function ConvertTo-Int64Id {
+    param($Value)
+    if ($null -eq $Value -or $Value -is [DBNull]) { return [int64]0 }
+    return [int64]$Value
+}
+
 function Test-LockIsLive {
     param($Row)
 
-    $pid = 0
-    if ($Row.Pid) { $pid = [int]$Row.Pid }
-    $expiry = $Row.LockExpiry
-    $computer = [string]$Row.Computer
-
-    $expiryLive = $false
-    if ($pid -ne 0 -and $null -ne $expiry) {
-        try {
-            $expDt = [datetime]$expiry
-            if ($expDt -gt (Get-Date)) { $expiryLive = $true }
-        } catch {
-            if ([string]$expiry -ne '0' -and [string]$expiry -ne '') { $expiryLive = $true }
-        }
-    }
+    # LOCKEXPIRY is bigint (WP0). 0 / null / PID=0 is stale. No Priority epoch decoder.
+    $pid = ConvertTo-Int64Id $Row.Pid
+    $expVal = ConvertTo-Int64Id $Row.LockExpiry
+    $expiryLive = ($pid -ne 0 -and $expVal -gt 0)
 
     $hostLive = $false
+    $computer = [string]$Row.Computer
     if (-not [string]::IsNullOrWhiteSpace($computer)) {
         try {
             $hostLive = Test-Connection -ComputerName $computer -Count 1 -Quiet -ErrorAction SilentlyContinue
@@ -40,12 +37,12 @@ function Get-OpenParkRows {
         if ($ExceptRunId -and $rid -eq $ExceptRunId) { continue }
         $rows += [pscustomobject]@{
             RunId    = $rid
-            ExecId   = [int]$r.exec_id
+            ExecId   = [int64]$r.exec_id
             Name     = $(if ($r.ename -is [DBNull]) { $null } else { [string]$r.ename })
             ParkedAt = $r.parked_at
         }
     }
-    return $rows
+    return , @($rows)
 }
 
 function New-ParkSnapshot {
@@ -76,18 +73,19 @@ function New-ParkSnapshot {
     $eId = ConvertTo-SqlIdent $Config.ExecIdCol
     $eName = ConvertTo-SqlIdent $Config.ExecNameCol
 
-    $ids = @($Targets | ForEach-Object { [int]$_.ExecId })
+    $ids = @($Targets | ForEach-Object { [int64]$_.ExecId })
     if ($ids.Count -eq 0) { throw 'No target exec ids' }
 
     $tx = $Connection.BeginTransaction()
     $script:FormPrepTransaction = $tx
     $parkedCount = 0
     try {
-        # 1. Set targets UPD='Y', clear stale locks. Do not zero LASTPREPDATE unless requested.
+        # 1. Set targets UPD='Y', clear stale locks. LASTPREPDATE is bigint; reset to 0 not NULL.
+        # EXECPREPLOCK columns are all NOT NULL - do not INSERT a skeleton row.
         foreach ($id in $ids) {
             $resetPrep = ''
             if ($ResetLastPrepDate) {
-                $resetPrep = ", $lPrep = NULL"
+                $resetPrep = ", $lPrep = 0"
             }
             $sqlT = @"
 UPDATE $lockTable
@@ -100,13 +98,7 @@ WHERE $lId = @id
 "@
             $n = Invoke-FormPrepSql -Connection $Connection -Query $sqlT -Parameters @{ '@id' = $id } -NonQuery
             if ($n -lt 1) {
-                # lock row may be missing; insert a Y row so prep can see it
-                $sqlI = "INSERT INTO $lockTable ($lId, $lUpd, $lComp, $lPid, $lExp) VALUES (@id, 'Y', '', 0, 0)"
-                try {
-                    [void](Invoke-FormPrepSql -Connection $Connection -Query $sqlI -Parameters @{ '@id' = $id } -NonQuery)
-                } catch {
-                    throw "Target exec_id $id has no $lockTable row and insert failed: $($_.Exception.Message)"
-                }
+                throw "Target exec_id $id has no $lockTable row. Refusing INSERT (EXECPREPLOCK columns are NOT NULL)."
             }
         }
 

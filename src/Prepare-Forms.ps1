@@ -31,7 +31,8 @@ param(
 
     [guid]$RunId,
     [switch]$ResetLastPrepDate,
-    [string]$ConfigPath
+    [string]$ConfigPath,
+    [int]$HoldParkSeconds = 0
 )
 
 $ErrorActionPreference = 'Stop'
@@ -49,6 +50,7 @@ $invoke = @{
     Force             = $Force
     Scope             = $Scope
     ResetLastPrepDate = $ResetLastPrepDate
+    HoldParkSeconds   = $HoldParkSeconds
 }
 if ($Names) { $invoke.Names = $Names }
 if ($PostHooks) { $invoke.PostHooks = $PostHooks }

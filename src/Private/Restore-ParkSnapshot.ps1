@@ -24,11 +24,11 @@ WHERE run_id = @run AND restored_at IS NULL
     $failed = 0
 
     foreach ($r in $open.Rows) {
-        $execId = [int]$r.exec_id
+        $execId = [int64]$r.exec_id
         $prevUpd = [string]$r.prev_upd
-        $prevPrep = $(if ($r.prev_lastprep -is [DBNull]) { $null } else { $r.prev_lastprep })
-        $prevComp = $(if ($r.prev_computer -is [DBNull]) { $null } else { [string]$r.prev_computer })
-        $prevPid = $(if ($r.prev_pid -is [DBNull]) { $null } else { [int]$r.prev_pid })
+        $prevPrep = $(if ($r.prev_lastprep -is [DBNull]) { [int64]0 } else { [int64]$r.prev_lastprep })
+        $prevComp = $(if ($r.prev_computer -is [DBNull]) { '' } else { [string]$r.prev_computer })
+        $prevPid = $(if ($r.prev_pid -is [DBNull]) { [int64]0 } else { [int64]$r.prev_pid })
 
         $tx = $Connection.BeginTransaction()
         $script:FormPrepTransaction = $tx

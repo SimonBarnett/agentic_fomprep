@@ -22,6 +22,8 @@ powershell -File tools\Install-OnDev.ps1
 powershell -File tools\Invoke-Recon.ps1
 # config\dev.psd1 is already pinned (WP0); re-run recon if dictionary objects move
 powershell -File tools\Install-OnDev.ps1 -ApplyParkTable
+powershell -File src\Prepare-Forms.ps1 -Names ZCLA_PARTLONGDESC,ZCLA_PARTLONGDHIST,ZCLA_PARTLONGDREV -Environment DEV -WhatIf
+powershell -File tests\AT4-abort-restores.ps1
 powershell -File tools\Set-WinrunCredential.ps1
 ```
 
@@ -94,14 +96,14 @@ powershell -File tools\Test-Pack.ps1
 
 That parses every script, checks the JSON schema file, runs `tests/AT6-refuse-non-dev.ps1` and `tests/unit-mutex.ps1`.
 
-On DEV1 after pin: AT1, AT4, AT6, AT7, AT8 must be green for MVP. AT2/AT3 green or waived in this README with a reason.
+On DEV1 after pin: AT4 (WP1 dry 5/5 restore), AT1, AT6, AT7, AT8 must be green for MVP. AT2/AT3 green or waived in this README with a reason. Park table `dbo.AGENT_FORMPREP_PARK` uses bigint `exec_id` / `prev_lastprep` / `prev_pid` to match `EXECPREPLOCK`.
 
 | ID | Script | Off-DEV |
 |----|--------|---------|
 | AT1 | `tests/AT1-already-prepared.ps1` | skip |
 | AT2 | `tests/AT2-broken-trigger.ps1` | skip (needs ZCLA_AGENT_PREP_AT2) |
 | AT3 | `tests/AT3-index-dialog.ps1` | skip (waive until a live/fixture dialog exists) |
-| AT4 | `tests/AT4-abort-restores.ps1` | skip |
+| AT4 | `tests/AT4-abort-restores.ps1` | skip (DEV1: 5 dummy park, kill, RepairOpenParks 5/5) |
 | AT6 | `tests/AT6-refuse-non-dev.ps1` | **runs** |
 | AT7 | `tests/AT7-auth-expired-no-park.ps1` | skip |
 | AT8 | `tests/AT8-mutex.ps1` | skip (helper covered by `unit-mutex.ps1`) |

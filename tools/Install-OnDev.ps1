@@ -31,7 +31,9 @@ if (-not (Test-Path -LiteralPath $cfg.AgentWork)) {
 }
 
 $web = Join-Path $repo 'src\web'
-if (Get-Command npm -ErrorAction SilentlyContinue) {
+if ($ApplyParkTable) {
+    Write-Host 'Skipping npm (ApplyParkTable only).'
+} elseif (Get-Command npm -ErrorAction SilentlyContinue) {
     Push-Location $web
     try {
         npm install
@@ -47,9 +49,32 @@ if ($ApplyParkTable) {
     if (-not $cfg.PinComplete -or $cfg.SqlDatabase -eq '<PIN>') {
         throw 'Refusing to create AGENT_FORMPREP_PARK until PinComplete and SqlDatabase are set.'
     }
-    $sql = Get-Content -LiteralPath (Join-Path $repo 'sql\001_agent_formprep_park.sql') -Raw
     $conn = New-FormPrepSqlConnection -Config $cfg
     try {
+        $exists = Invoke-FormPrepSql -Connection $conn -Query "SELECT OBJECT_ID(N'dbo.AGENT_FORMPREP_PARK')" -Scalar
+        if ($exists) {
+            $openN = [int](Invoke-FormPrepSql -Connection $conn -Query "SELECT COUNT(*) FROM dbo.AGENT_FORMPREP_PARK WHERE restored_at IS NULL" -Scalar)
+            if ($openN -gt 0) {
+                throw "Refusing park DDL: $openN OPEN park row(s) (restored_at IS NULL). RepairOpenParks first."
+            }
+            $prepType = Invoke-FormPrepSql -Connection $conn -Query @"
+SELECT ty.name AS type_name
+FROM sys.columns c
+JOIN sys.types ty ON ty.user_type_id = c.user_type_id AND ty.system_type_id = c.system_type_id
+WHERE c.object_id = OBJECT_ID(N'dbo.AGENT_FORMPREP_PARK') AND c.name = N'prev_lastprep'
+"@ -Scalar
+            $idType = Invoke-FormPrepSql -Connection $conn -Query @"
+SELECT ty.name AS type_name
+FROM sys.columns c
+JOIN sys.types ty ON ty.user_type_id = c.user_type_id AND ty.system_type_id = c.system_type_id
+WHERE c.object_id = OBJECT_ID(N'dbo.AGENT_FORMPREP_PARK') AND c.name = N'exec_id'
+"@ -Scalar
+            if ($prepType -ne 'bigint' -or $idType -ne 'bigint') {
+                Write-Host "Park table types are '$idType'/'$prepType'; dropping empty wrong-type table on DEV."
+                [void](Invoke-FormPrepSql -Connection $conn -Query "DROP TABLE dbo.AGENT_FORMPREP_PARK" -NonQuery)
+            }
+        }
+        $sql = Get-Content -LiteralPath (Join-Path $repo 'sql\001_agent_formprep_park.sql') -Raw
         foreach ($batch in ($sql -split '(?m)^\s*GO\s*$')) {
             if ([string]::IsNullOrWhiteSpace($batch)) { continue }
             [void](Invoke-FormPrepSql -Connection $conn -Query $batch -NonQuery)
@@ -62,13 +87,10 @@ if ($ApplyParkTable) {
 
 Write-Host @'
 Next:
-  1. powershell -File tools\Invoke-Recon.ps1
-  2. Edit config/dev.psd1 - pin table names, set PinComplete = $true
-  3. powershell -File tools\Install-OnDev.ps1 -ApplyParkTable
-  4. Log into https://prioritydev.clarksonevans.co.uk once; save Playwright storageState
+  1. powershell -File src\Prepare-Forms.ps1 -Names ZCLA_PARTLONGDESC,ZCLA_PARTLONGDHIST,ZCLA_PARTLONGDREV -Environment DEV -WhatIf
+  2. powershell -File tests\AT4-abort-restores.ps1
+  3. Log into https://prioritydev.clarksonevans.co.uk once; save Playwright storageState
      to C:\Priority\tmp\agent-formprep\si-web-state.json (ACL: agent account only)
-  5. powershell -File tools\Set-WinrunCredential.ps1
-  6. powershell -File src\Prepare-Forms.ps1 -Names ZCLA_PARTLONGDESC -Environment DEV -WhatIf
-  7. powershell -File tests\AT6-refuse-non-dev.ps1
-     powershell -File tests\AT4-abort-restores.ps1
+  4. powershell -File tools\Set-WinrunCredential.ps1
+  5. powershell -File tests\AT6-refuse-non-dev.ps1
 '@

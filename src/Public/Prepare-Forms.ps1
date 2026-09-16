@@ -111,7 +111,8 @@ function Prepare-Forms {
         [guid]$RunId,
         [switch]$ResetLastPrepDate,
         [string]$ConfigPath,
-        [switch]$SkipPark
+        [switch]$SkipPark,
+        [int]$HoldParkSeconds = 0
     )
 
     $started = (Get-Date).ToUniversalTime()
@@ -278,6 +279,14 @@ WHERE $lUpdCol = 'Y' OR $lIdCol IN ($(($targets | ForEach-Object { $_.ExecId }) 
             $parkedCount = New-ParkSnapshot -Connection $conn -Config $cfg -Targets $targets -RunId $result.runId -DumpPath $dump -ResetLastPrepDate:$ResetLastPrepDate
             $result.parkedCount = [int]$parkedCount
             $parked = $true
+        }
+
+        if ($HoldParkSeconds -gt 0) {
+            if (-not $parked) {
+                throw 'HoldParkSeconds requires a park (do not combine with -SkipPark / -WhatIf).'
+            }
+            Write-Host ("HoldParkSeconds={0} runId={1} parkedCount={2}" -f $HoldParkSeconds, $result.runId, $result.parkedCount)
+            Start-Sleep -Seconds $HoldParkSeconds
         }
 
         $cliStatus = 'skipped'

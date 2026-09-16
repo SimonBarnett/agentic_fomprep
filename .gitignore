@@ -1,1 +1,5 @@
-CE_Priority_Autonomous_Form_Prep_Build_Plan.pdf
+# Runtime artefacts — never commit secrets or prep run output
+logs/
+si-web-state.json
+last.json
+

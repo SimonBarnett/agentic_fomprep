@@ -5,7 +5,7 @@ applications:
       phases:
         preBuild:
           commands:
-            - npm ci --prefer-offline --no-audit --fund=false || npm install --no-audit --fund=false
+            - npm ci --include=dev --prefer-offline --no-audit --fund=false || npm install --include=dev --no-audit --fund=false
         build:
           commands:
             - npm run build

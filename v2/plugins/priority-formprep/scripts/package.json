@@ -1,0 +1,8 @@
+{
+  "name": "priority-formprep-runner",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "priority-web-sdk": "^3.0.0"
+  }
+}

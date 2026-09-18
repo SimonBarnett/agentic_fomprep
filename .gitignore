@@ -6,6 +6,9 @@ recon.json
 node_modules/
 src/web/node_modules/
 src/sdk/node_modules/
+v2/apps/mcp-catalog/node_modules/
+v2/apps/mcp-catalog/.next/
+v2/plugins/priority-formprep/scripts/node_modules/
 *.ndjson
 tests/.tmp/
 capture/

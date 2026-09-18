@@ -1,0 +1,25 @@
+:root {
+  color: #e8eef6;
+  background: #0f1419;
+  font-family: ui-sans-serif, system-ui, sans-serif;
+  line-height: 1.5;
+}
+body {
+  max-width: 44rem;
+  margin: 2rem auto;
+  padding: 0 1.25rem;
+}
+a { color: #8ec8ff; }
+code, pre {
+  font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+  font-size: 0.9rem;
+}
+pre {
+  background: #1a222c;
+  padding: 0.9rem 1rem;
+  overflow-x: auto;
+  border-radius: 6px;
+}
+h1 { font-size: 1.6rem; }
+h2 { font-size: 1.15rem; margin-top: 1.8rem; }
+li { margin: 0.35rem 0; }

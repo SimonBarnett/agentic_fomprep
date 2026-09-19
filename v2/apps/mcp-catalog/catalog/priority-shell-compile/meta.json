@@ -1,0 +1,6 @@
+{
+  "name": "priority-shell-compile",
+  "title": "Priority shell compile",
+  "description": "Compile one Version Revision on a user-allowlisted instance into NN.sh. SQL/file-gated. Catalog does not compile.",
+  "version": "0.1.0"
+}

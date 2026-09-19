@@ -1,0 +1,58 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://mcp-priority.ntsa.uk/schema/shell-instances.json",
+  "title": "Priority shell compile/install instance allowlist",
+  "description": "Same user-owned file as formprep: %USERPROFILE%\\.priority-formprep\\instances.json (override PRIORITY_FORMPREP_INSTANCES). Passwords stay in Windows Credential Manager. Extra field buildSetRoot is optional for install_shell path allowlist.",
+  "type": "object",
+  "required": ["instances"],
+  "additionalProperties": false,
+  "properties": {
+    "instances": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/instance" }
+    }
+  },
+  "$defs": {
+    "instance": {
+      "type": "object",
+      "required": [
+        "id",
+        "webBaseUrl",
+        "sqlInstance",
+        "sqlDatabase",
+        "company",
+        "priorityUser",
+        "credentialTarget"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9_-]{0,63}$" },
+        "title": { "type": "string" },
+        "webBaseUrl": { "type": "string", "format": "uri" },
+        "sqlInstance": { "type": "string" },
+        "sqlDatabase": { "type": "string", "default": "system" },
+        "sqlEncrypt": { "type": "boolean", "default": false },
+        "sqlCredentialTarget": {
+          "type": "string",
+          "description": "Optional CredMan target for SQL username/password. Omit for Windows integrated."
+        },
+        "company": { "type": "string", "description": "Priority internal company (dname)." },
+        "priorityUser": { "type": "string" },
+        "credentialTarget": { "type": "string", "description": "CredMan generic credential for the Priority web user." },
+        "formPrepProc": { "type": "string", "default": "FORMPREPDRCT2" },
+        "tabulaini": { "type": "string", "default": "tabula.ini" },
+        "language": { "type": "integer", "default": 2 },
+        "agentWork": { "type": "string" },
+        "buildSetRoot": {
+          "type": "string",
+          "description": "Allowlisted build-set directory. install_shell.shell must resolve under this, agentWork, PRIORITY_SHELL_BUILDSET, or pin AllowedBuildSetRoots."
+        },
+        "allowLive": {
+          "type": "boolean",
+          "default": false,
+          "description": "If false, refuse ids/titles/companies that look like live/PRI."
+        }
+      }
+    }
+  }
+}

@@ -21,4 +21,4 @@ catalog/<skill-name>/
 }
 ```
 
-Do not put passwords, CredMan secrets, or `prepare_form` execution in this Amplify app.
+Do not put passwords, CredMan secrets, or `prepare_form` / `compile_shell` / `install_shell` execution in this Amplify app.

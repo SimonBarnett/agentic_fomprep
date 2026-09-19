@@ -1,0 +1,6 @@
+{
+  "name": "priority-shell-compile",
+  "version": "0.1.0",
+  "description": "Compile one Priority Version Revision on user-allowlisted instances. Catalog: https://mcp-priority.ntsa.uk",
+  "homepage": "https://mcp-priority.ntsa.uk"
+}

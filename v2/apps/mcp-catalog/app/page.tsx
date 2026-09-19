@@ -28,12 +28,14 @@ export default function Home() {
           </li>
         ))}
       </ul>
-      <h2>Form prep execute plane</h2>
+      <h2>Execute plane (local plugins)</h2>
       <p>
         User file <code>%USERPROFILE%\.priority-formprep\instances.json</code> (schema from{' '}
-        <code>get_instance_schema</code>). CredMan for passwords. Grok plugin{' '}
-        <code>priority-formprep</code> tools <code>list_instances</code> / <code>prepare_form</code>{' '}
-        run locally.
+        <code>get_instance_schema</code>). CredMan for passwords. Local Grok plugins:{' '}
+        <code>priority-formprep</code> (<code>prepare_form</code>),{' '}
+        <code>priority-shell-compile</code> (<code>compile_shell</code>),{' '}
+        <code>priority-shell-install</code> (<code>install_shell</code>). Compile and install are
+        separate tools. This host does not run them.
       </p>
       <h2>Hard rules</h2>
       <ul>

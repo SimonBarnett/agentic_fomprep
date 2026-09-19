@@ -1,0 +1,65 @@
+{
+    "when":  "2026-09-19T20:45:19.9849910Z",
+    "failed":  0,
+    "pinComplete":  false,
+    "gates":  [
+                  {
+                      "id":  "WP0-T1",
+                      "pass":  true,
+                      "detail":  "catalog meta.json + SKILL.md present"
+                  },
+                  {
+                      "id":  "WP0-T2",
+                      "pass":  true,
+                      "detail":  "compile/install result schemas ok"
+                  },
+                  {
+                      "id":  "WP0-T3",
+                      "pass":  true,
+                      "detail":  "v2/config/pin.json and pin.psd1 present"
+                  },
+                  {
+                      "id":  "WP0-T4",
+                      "pass":  true,
+                      "detail":  "PinComplete=false (skeleton); empty pins ok"
+                  },
+                  {
+                      "id":  "WP0-T6",
+                      "pass":  true,
+                      "detail":  "no guessed procedure ENAME in product scripts"
+                  },
+                  {
+                      "id":  "WP0-T7",
+                      "pass":  true,
+                      "detail":  "revision=1042 codes=TAKESINGLEENT,TAKEENTHEADER,TAKEPROCSTEP"
+                  },
+                  {
+                      "id":  "WP0-T9",
+                      "pass":  true,
+                      "detail":  "src\\Prepare-NamedForm.ps1 present and unpatched"
+                  },
+                  {
+                      "id":  "WP0-PARSE",
+                      "pass":  true,
+                      "detail":  "parsed 47 v2 *.ps1"
+                  },
+                  {
+                      "id":  "WP0-T5",
+                      "pass":  true,
+                      "detail":  "PinComplete=false =\u003e pin_incomplete, no WCF"
+                  },
+                  {
+                      "id":  "WP0-T8",
+                      "pass":  true,
+                      "detail":  "unknown/live/missing/dbi/dotdot/fixture refuse exit 2; WhatIf exit 0; no WCF"
+                  },
+                  {
+                      "id":  "WP0-R-SKIP",
+                      "pass":  true,
+                      "detail":  "PRIORITY_WP0_INSTANCE unset; R* skipped (no proof instance)"
+                  }
+              ],
+    "candidates":  [
+
+                   ]
+}

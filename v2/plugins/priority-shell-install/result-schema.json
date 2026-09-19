@@ -1,0 +1,72 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://mcp-priority.ntsa.uk/schema/shell-install-result.json",
+  "title": "InstallShellResult",
+  "description": "Stdout result of install_shell / Install-Shell.ps1. Aligned with FormPrep v2 common fields.",
+  "type": "object",
+  "required": [
+    "ok",
+    "runId",
+    "instanceId",
+    "skill",
+    "executor",
+    "startedAt",
+    "endedAt",
+    "durationSec",
+    "reason",
+    "exitCode",
+    "errors",
+    "path"
+  ],
+  "additionalProperties": true,
+  "properties": {
+    "ok": { "type": "boolean" },
+    "runId": { "type": "string" },
+    "instanceId": { "type": ["string", "null"] },
+    "skill": { "const": "priority-shell-install" },
+    "executor": { "type": "string", "enum": ["none", "wcf", "winrun"] },
+    "startedAt": { "type": "string" },
+    "endedAt": { "type": "string" },
+    "durationSec": { "type": "integer", "minimum": 0 },
+    "reason": { "type": "string" },
+    "exitCode": { "type": "integer", "enum": [0, 2, 3] },
+    "errors": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/errorItem" }
+    },
+    "whatIf": { "type": "boolean" },
+    "path": { "type": ["string", "null"] },
+    "stagedPath": { "type": ["string", "null"] },
+    "revision": { "type": ["string", "null"] },
+    "codes": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "dbi": { "type": "boolean" },
+    "installed": { "type": "boolean" },
+    "gate": { "type": ["object", "null"] },
+    "postInstall": {
+      "type": "object",
+      "properties": {
+        "formsUnprepared": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    },
+    "wcfAttempted": { "type": "boolean" }
+  },
+  "$defs": {
+    "errorItem": {
+      "type": "object",
+      "required": ["source", "severity", "text"],
+      "additionalProperties": true,
+      "properties": {
+        "source": { "type": "string", "enum": ["parse", "policy", "gate", "sdk"] },
+        "severity": { "type": "string", "enum": ["Info", "Warning", "Blocker"] },
+        "text": { "type": "string" },
+        "entityHint": { "type": "string" }
+      }
+    }
+  }
+}

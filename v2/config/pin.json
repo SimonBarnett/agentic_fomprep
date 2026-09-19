@@ -1,0 +1,20 @@
+{
+  "PinComplete": false,
+  "PrepareUpgradeEname": "",
+  "PrepareUpgradeType": "",
+  "InstallUpgradeEname": "",
+  "InstallUpgradeType": "",
+  "VersionRevisionsEname": "",
+  "RevisionInputStep": "",
+  "FilePathInputStep": "",
+  "WcfFileStepWorks": null,
+  "InstallLogTable": "",
+  "InstallLogRevisionCol": "",
+  "InstallLogDateCol": "",
+  "DbiMarker": "",
+  "InstallErrorForm": "",
+  "ExecTitleColumn": "",
+  "UpgradesDir": "",
+  "ProofInstanceId": "",
+  "AllowedBuildSetRoots": []
+}

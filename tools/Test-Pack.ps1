@@ -11,6 +11,19 @@ $ErrorActionPreference = 'Stop'
 $repo = Split-Path -Parent $PSScriptRoot
 $failed = 0
 
+Write-Host '--- WP0 (v2 shell compile/install fail-fast) ---'
+$wp0 = Join-Path $repo 'v2\tools\Test-WP0.ps1'
+if (-not (Test-Path -LiteralPath $wp0)) {
+    Write-Host 'WP0 FAIL missing v2\tools\Test-WP0.ps1'
+    $failed++
+} else {
+    & powershell.exe -NoProfile -ExecutionPolicy Bypass -File $wp0
+    if ($LASTEXITCODE -ne 0) {
+        Write-Host "WP0 FAIL exit $LASTEXITCODE"
+        $failed++
+    }
+}
+
 function Test-Parse([string]$Path) {
     $tok = $null
     $err = $null

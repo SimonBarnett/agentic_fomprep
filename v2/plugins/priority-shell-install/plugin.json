@@ -1,0 +1,6 @@
+{
+  "name": "priority-shell-install",
+  "version": "0.1.0",
+  "description": "Install one caller-supplied Priority upgrade shell on user-allowlisted instances. Catalog: https://mcp-priority.ntsa.uk",
+  "homepage": "https://mcp-priority.ntsa.uk"
+}

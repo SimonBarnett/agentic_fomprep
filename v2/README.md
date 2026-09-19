@@ -8,6 +8,10 @@ This folder is the next version:
 |------|------|
 | `v2/apps/mcp-catalog/` | Amplify app for **https://mcp-priority.ntsa.uk** (skill catalog MCP). Add a skill by adding `catalog/<name>/`. |
 | `v2/plugins/priority-formprep/` | Grok plugin: local execute (`list_instances`, `prepare_form`) against the **user** instance allowlist. |
+| `v2/plugins/priority-shell-compile/` | Grok plugin: local `compile_shell`. Separate from install. Until `v2/config/pin.json` PinComplete, refuses WCF. |
+| `v2/plugins/priority-shell-install/` | Grok plugin: local `install_shell`. Parse, path allowlist, DBI refuse before WCF. |
+| `v2/lib/` | Shared kernel (allowlist, sql, cred, parse-sh). Do not extract v1. |
+| `v2/tools/Test-WP0.ps1` | Shell compile/install WP0 fail-fast. Red before WCF. |
 
 Catalog MCP never compiles a form and never sees on-prem SQL. Prepare runs on a host that can reach that instance’s WCF and dictionary SQL.
 
@@ -35,4 +39,10 @@ npm install
 powershell -NoProfile -ExecutionPolicy Bypass -File .\Prepare-NamedForm.ps1 -InstanceId <id> -Name <ENAME>
 ```
 
-Grok: `grok plugin marketplace add SimonBarnett/agentic_fomprep` then `grok plugin install priority-formprep --trust`.
+Grok: `grok plugin marketplace add SimonBarnett/agentic_fomprep` then `grok plugin install priority-formprep --trust` (and `priority-shell-compile` / `priority-shell-install` for the v2 shell skills).
+
+WP0 skeleton (`PinComplete=false`): `compile_shell` / `install_shell` implement parser, allowlist, WhatIf, schemas, and refuse paths only. They do **not** guess Prepare Upgrade / Install Upgrade ENAMEs. Run:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File v2\tools\Test-WP0.ps1
+```

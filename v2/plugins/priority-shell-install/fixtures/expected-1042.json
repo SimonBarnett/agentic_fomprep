@@ -1,0 +1,6 @@
+{
+  "revision": "1042",
+  "dbi": false,
+  "codes": ["TAKESINGLEENT", "TAKEENTHEADER", "TAKEPROCSTEP"],
+  "takesingleent": ["ZCLA_FIXTURE_FORM"]
+}

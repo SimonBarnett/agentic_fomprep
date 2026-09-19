@@ -1,0 +1,6 @@
+{
+  "name": "priority-odata-dev",
+  "version": "1.0.0",
+  "description": "OData get/query/dump and FORMLIMITED RESTFLAG audit on user-allowlisted instances. Catalog: https://mcp-priority.ntsa.uk",
+  "homepage": "https://mcp-priority.ntsa.uk"
+}

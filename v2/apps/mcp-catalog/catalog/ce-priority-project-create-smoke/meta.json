@@ -1,0 +1,6 @@
+{
+  "name": "ce-priority-project-create-smoke",
+  "title": "CE Priority project create smoke",
+  "description": "TC-01-05: new project, team, contract, copy HT, paste plots. Follows UAT orchestrator standing rules.",
+  "version": "1.0.0"
+}

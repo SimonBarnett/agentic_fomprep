@@ -1,0 +1,6 @@
+{
+  "name": "priority-uat-orchestrator",
+  "title": "CE Priority UAT orchestrator",
+  "description": "Standing rules for CE Priority user tests on DEV/TEST web: login Si, banned sites, video/CASE, UNPARK. Browser/desktop only.",
+  "version": "1.0.0"
+}

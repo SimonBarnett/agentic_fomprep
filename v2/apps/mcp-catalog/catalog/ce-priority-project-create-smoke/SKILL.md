@@ -1,0 +1,39 @@
+---
+name: ce-priority-project-create-smoke
+description: >
+  CE Priority project create smoke TC-01-05: new project, team, contract, copy HT,
+  paste plots. Use when the user says project create smoke, TC-01, copy house type,
+  paste plots, or /ce-priority-project-create-smoke.
+---
+
+# CE Priority project create smoke (TC-01-05)
+
+Grab from catalog MCP `https://mcp-priority.ntsa.uk/mcp` (`get_skill` with `name=ce-priority-project-create-smoke`). Browser/desktop only.
+
+Follow **priority-uat-orchestrator** standing rules (login Si, banned sites, video/CASE, pickers, one retry then CASE). Host: `prioritydev.clarksonevans.co.uk`.
+
+Source leaflet was not on this box; procedure is the Jester harvest 2026-09-19.
+
+## When
+
+Smoke a new CE project through team -> contract -> copy HT -> paste plots.
+
+## Sequence
+
+New DOCNO each run. Branch and Contract Type via picker. Prefer Electrical/PV (`EL=5`). Skip Contract Elements on the happy path. Prefer `.2` / `.3` SNG-ROW. Paste element **PV system**, not DAY WORK.
+
+1. New project.
+2. Internal Project Team: add `Si` (TC-01b). Required or `ZGEM_ERR_NOTINTEAM`.
+3. Contract: picker for Branch / Contract Type; prefer Electrical/PV.
+4. Copy house type.
+5. Paste plots (PV system).
+
+## Gotchas
+
+- Insertion-failed toast may still commit -- refresh before assuming rollback.
+- Blank HT after logout -- refresh.
+- EL mismatch hangs paste. Stop, CASE; do not retry past the one-retry rule.
+
+## Pass / fail
+
+PASS: screen-record of the new DOCNO with team, contract, copied HT, pasted plots. FAIL: CASE/DOCNO/STEP/ACTION/FIELD/TRIED/ERROR/SCREEN.

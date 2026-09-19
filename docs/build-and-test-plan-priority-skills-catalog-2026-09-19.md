@@ -23,13 +23,16 @@
 - SKILL.md covering Named Form Prep success gate, generator nav, HT PRE-DELETE, shell install verification
 - Point at existing `Prepare-NamedForm.ps1` — do not fork v1
 
-### P3 — priority-uat-orchestrator stub (D)
-- Stub SKILL.md with UNPARK/CASE protocol; note Jester harvest pending
+### P3 — priority-uat-orchestrator + Jester harvest (D)
+- Expand `priority-uat-orchestrator` with cross-cutting standing rules (not a stub)
+- Flesh `ce-priority-project-create-smoke` and `ce-priority-day-works-uat`
+- Add `ce-priority-ht-delete-smoke`
+- Gates C-G stay parked until UNPARK
 
 ### P4 — Tests + docs
-- Extend Test-Pack / parse-check as appropriate
+- Extend Test-Pack (`v2/tools/Test-PriorityCatalog.ps1`)
 - Commit/push; Eshbel hostile MRB + UAT (OData dump + named Form Prep smoke when DEV1 up)
 
 ## Success
 
-Catalog A–C shipped; D stub; v1 untouched; no guessed ENAMEs; Eshbel MRB filed to Bob.
+Catalog A-D shipped (Jester harvest folded); v1 untouched; no guessed ENAMEs; Eshbel owns UAT + hostile MRB.

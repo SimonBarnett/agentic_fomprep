@@ -1,0 +1,28 @@
+{
+  "value": [
+    {
+      "ENAME": "SAMPLEPROG",
+      "PROCTABLETEXT": "",
+      "PROG_SUBFORM": [
+        {
+          "POS": 10,
+          "TYPE": "SQL",
+          "PROGTEXT_SUBFORM": [
+            {
+              "TEXT": "SELECT :ELEMENT FROM PROJACT WHERE PROJACT < 0"
+            }
+          ]
+        },
+        {
+          "POS": 20,
+          "TYPE": "SQL",
+          "PROGTEXT_SUBFORM": [
+            {
+              "TEXT": ":ELEMENT = - :ELEMENT"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

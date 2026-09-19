@@ -10,8 +10,10 @@ This folder is the next version:
 | `v2/plugins/priority-formprep/` | Grok plugin: local execute (`list_instances`, `prepare_form`) against the **user** instance allowlist. |
 | `v2/plugins/priority-shell-compile/` | Grok plugin: local `compile_shell`. Separate from install. Until `v2/config/pin.json` PinComplete, refuses WCF. |
 | `v2/plugins/priority-shell-install/` | Grok plugin: local `install_shell`. Parse, path allowlist, DBI refuse before WCF. |
+| `v2/plugins/priority-odata-dev/` | Grok plugin: local `odata_get` / `odata_query` / `odata_dump_procedure` / `formlimited_audit`. CredMan Basic auth. |
 | `v2/lib/` | Shared kernel (allowlist, sql, cred, parse-sh). Do not extract v1. |
 | `v2/tools/Test-WP0.ps1` | Shell compile/install WP0 fail-fast. Red before WCF. |
+| `v2/tools/Test-PriorityCatalog.ps1` | Catalog A-D presence + OData fixture tests. No live ERP. |
 
 Catalog MCP never compiles a form and never sees on-prem SQL. Prepare runs on a host that can reach that instance’s WCF and dictionary SQL.
 
@@ -39,10 +41,11 @@ npm install
 powershell -NoProfile -ExecutionPolicy Bypass -File .\Prepare-NamedForm.ps1 -InstanceId <id> -Name <ENAME>
 ```
 
-Grok: `grok plugin marketplace add SimonBarnett/agentic_fomprep` then `grok plugin install priority-formprep --trust` (and `priority-shell-compile` / `priority-shell-install` for the v2 shell skills).
+Grok: `grok plugin marketplace add SimonBarnett/agentic_fomprep` then `grok plugin install priority-formprep --trust` (and `priority-shell-compile` / `priority-shell-install` / `priority-odata-dev` for the other execute plugins).
 
-WP0 skeleton (`PinComplete=false`): `compile_shell` / `install_shell` implement parser, allowlist, WhatIf, schemas, and refuse paths only. They do **not** guess Prepare Upgrade / Install Upgrade ENAMEs. Run:
+Shell compile/install pins live in `v2/config/pin.json`. Do **not** invent Prepare Upgrade / Install Upgrade ENAMEs. Offline catalog + OData fixture gates (no live ERP):
 
 ```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File v2\tools\Test-PriorityCatalog.ps1
 powershell -NoProfile -ExecutionPolicy Bypass -File v2\tools\Test-WP0.ps1
 ```

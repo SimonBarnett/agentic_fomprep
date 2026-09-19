@@ -34,14 +34,20 @@ export default function Home() {
         <code>get_instance_schema</code>). CredMan for passwords. Local Grok plugins:{' '}
         <code>priority-formprep</code> (<code>prepare_form</code>),{' '}
         <code>priority-shell-compile</code> (<code>compile_shell</code>),{' '}
-        <code>priority-shell-install</code> (<code>install_shell</code>). Compile and install are
-        separate tools. This host does not run them.
+        <code>priority-shell-install</code> (<code>install_shell</code>),{' '}
+        <code>priority-odata-dev</code> (<code>odata_get</code> / <code>odata_query</code> /{' '}
+        <code>odata_dump_procedure</code> / <code>formlimited_audit</code>). Compile, install, and
+        OData are separate tools. This host does not run them.
       </p>
       <h2>Hard rules</h2>
       <ul>
         <li>Never SQL-flip UPD=N.</li>
         <li>Success = UPD=N and LASTPREPDATE advanced.</li>
         <li>Never invent a WCF URL; only user-listed instance ids.</li>
+        <li>
+          RESTFLAG-only FORMLIMITED can hide UI sibling tabs. See{' '}
+          <code>priority-odata-dev</code>.
+        </li>
       </ul>
     </main>
   );

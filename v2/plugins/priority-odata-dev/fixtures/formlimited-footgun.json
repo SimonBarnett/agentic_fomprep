@@ -1,0 +1,16 @@
+{
+  "rows": [
+    {
+      "FORM": "PARTLONGDESC",
+      "USERS": "Si",
+      "LIMITFLAG": "",
+      "RESTFLAG": "Y"
+    },
+    {
+      "FORM": "PART",
+      "USERS": "Si",
+      "LIMITFLAG": "Y",
+      "RESTFLAG": "Y"
+    }
+  ]
+}

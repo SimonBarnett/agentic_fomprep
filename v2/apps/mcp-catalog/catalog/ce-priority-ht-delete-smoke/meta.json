@@ -1,0 +1,6 @@
+{
+  "name": "ce-priority-ht-delete-smoke",
+  "title": "CE Priority house-type DELETE smoke",
+  "description": "HT-DL on TEST under concurrent recalc. Confirm company title. Open ZCLA_HTEDIT blocks delete.",
+  "version": "1.0.0"
+}

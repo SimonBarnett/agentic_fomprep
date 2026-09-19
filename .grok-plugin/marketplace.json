@@ -17,6 +17,11 @@
       "name": "priority-shell-install",
       "description": "Install one caller-supplied Priority upgrade shell. Parse/path/DBI refuse before WCF.",
       "source": { "type": "local", "path": "./v2/plugins/priority-shell-install" }
+    },
+    {
+      "name": "priority-odata-dev",
+      "description": "OData get/query, EPROG dump, FORMLIMITED/RESTFLAG audit on user-allowlisted instances.",
+      "source": { "type": "local", "path": "./v2/plugins/priority-odata-dev" }
     }
   ]
 }

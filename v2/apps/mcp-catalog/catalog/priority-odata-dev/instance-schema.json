@@ -1,0 +1,60 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://mcp-priority.ntsa.uk/schema/odata-instances.json",
+  "title": "Priority OData instance allowlist",
+  "description": "Same user-owned file as formprep: %USERPROFILE%\\.priority-formprep\\instances.json (override PRIORITY_FORMPREP_INSTANCES). Passwords stay in Windows Credential Manager. OData base is derived as {webBaseUrl}/odata/Priority/{tabulaini}/{company}. Optional odataBaseUrl overrides that.",
+  "type": "object",
+  "required": ["instances"],
+  "additionalProperties": false,
+  "properties": {
+    "instances": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/instance" }
+    }
+  },
+  "$defs": {
+    "instance": {
+      "type": "object",
+      "required": [
+        "id",
+        "webBaseUrl",
+        "sqlInstance",
+        "sqlDatabase",
+        "company",
+        "priorityUser",
+        "credentialTarget"
+      ],
+      "additionalProperties": true,
+      "properties": {
+        "id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9_-]{0,63}$" },
+        "title": { "type": "string" },
+        "webBaseUrl": { "type": "string", "format": "uri" },
+        "odataBaseUrl": {
+          "type": "string",
+          "format": "uri",
+          "description": "Optional. Default is {webBaseUrl}/odata/Priority/{tabulaini}/{company}."
+        },
+        "sqlInstance": { "type": "string" },
+        "sqlDatabase": { "type": "string", "default": "system" },
+        "sqlEncrypt": { "type": "boolean", "default": false },
+        "sqlCredentialTarget": {
+          "type": "string",
+          "description": "Optional CredMan target for SQL username/password. Omit for Windows integrated."
+        },
+        "company": { "type": "string", "description": "Priority internal company (dname). Used in the OData path." },
+        "priorityUser": { "type": "string" },
+        "credentialTarget": { "type": "string", "description": "CredMan generic credential for HTTP Basic (OData and web)." },
+        "formPrepProc": { "type": "string", "default": "FORMPREPDRCT2" },
+        "tabulaini": { "type": "string", "default": "tabula.ini" },
+        "language": { "type": "integer", "default": 2 },
+        "agentWork": { "type": "string" },
+        "buildSetRoot": { "type": "string" },
+        "allowLive": {
+          "type": "boolean",
+          "default": false,
+          "description": "If false, refuse ids/titles/companies that look like live/PRI."
+        }
+      }
+    }
+  }
+}

@@ -11,6 +11,19 @@ $ErrorActionPreference = 'Stop'
 $repo = Split-Path -Parent $PSScriptRoot
 $failed = 0
 
+Write-Host '--- v2 Priority catalog A-D (odata + UAT skills) ---'
+$cat = Join-Path $repo 'v2\tools\Test-PriorityCatalog.ps1'
+if (-not (Test-Path -LiteralPath $cat)) {
+    Write-Host 'CATALOG FAIL missing v2\tools\Test-PriorityCatalog.ps1'
+    $failed++
+} else {
+    & powershell.exe -NoProfile -ExecutionPolicy Bypass -File $cat
+    if ($LASTEXITCODE -ne 0) {
+        Write-Host "CATALOG FAIL exit $LASTEXITCODE"
+        $failed++
+    }
+}
+
 Write-Host '--- WP0 (v2 shell compile/install fail-fast) ---'
 $wp0 = Join-Path $repo 'v2\tools\Test-WP0.ps1'
 if (-not (Test-Path -LiteralPath $wp0)) {

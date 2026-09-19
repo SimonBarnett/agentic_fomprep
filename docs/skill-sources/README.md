@@ -19,3 +19,7 @@ Source dump for FR `docs/feature-request-ce-priority-dba-skills-2026-09-19.md`.
 Canonical copies live under `docs/skill-sources/dba/` (from CE-PRIORITY-DEV1 `C:\Users\medatech.si\dba-reports\harvest-for-bob\`).
 
 See `MANIFEST.md` in that folder. Tedious owns UAT + hostile MRB after implement.
+
+### Naming rule (Simon)
+Skills must be **Priority-generic** (config-driven instance). CE is an example deployment, not the skill identity.
+

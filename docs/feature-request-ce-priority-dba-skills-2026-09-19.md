@@ -65,3 +65,12 @@ If artifacts are missing on the build host, implement skill shells + README poin
 ## Standing order
 
 Tedious performs UAT + hostile MRB back to Bob. Bob parks this FR and dispatches builds.
+
+## Constraint (Simon 2026-09-19)
+
+Skills harvested from Tedious / Eshbel / Jester work must be **Priority-generic**, not Clarkson Evans–instance-specific.
+
+- Name skills for Priority DBA / Form Prep / UAT patterns (e.g. `priority-backup-standard`), not `ce-priority-*` unless the skill is truly CE-only process.
+- Hosts, instance ids (DEV/TST/PRI), paths (`F:\`/`G:\`), jump box, and company names come from **config / env / instances.json** — never hard-coded as the only target.
+- CE paths and `10.220.0.5` may appear as **examples** in docs and example config, not as required constants in skill logic.
+- Same rule applies to form-prep / UAT catalog skills already landed: prefer generic Priority wording in when-to-use text; CE is one deployment.

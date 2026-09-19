@@ -17,14 +17,21 @@ $script:ShellPinGuessTokens = @(
     'INSTUPGRADE'
 )
 
+# Required when PinComplete=true. WcfFileStepWorks=null and DbiMarker="" are
+# recon-valid unknowns (docs/wp0-recon.md) — not gaps.
 $script:ShellPinRequiredKeys = @(
     'PrepareUpgradeEname',
     'PrepareUpgradeType',
     'InstallUpgradeEname',
     'InstallUpgradeType',
+    'VersionRevisionsEname',
     'RevisionInputStep',
     'FilePathInputStep',
     'InstallLogTable',
+    'InstallLogRevisionCol'
+)
+
+$script:ShellPinUnknownOkKeys = @(
     'WcfFileStepWorks',
     'DbiMarker'
 )
@@ -127,11 +134,14 @@ function Test-ShellPinReady {
     if ($null -eq $Pin -or -not $Pin.PinComplete) { return $false }
     if ($Role -eq 'compile') {
         if (Test-ShellPinTokenEmpty $Pin.PrepareUpgradeEname) { return $false }
+        if (Test-ShellPinTokenEmpty $Pin.PrepareUpgradeType) { return $false }
         if (Test-ShellPinTokenEmpty $Pin.RevisionInputStep) { return $false }
+        if (Test-ShellPinTokenEmpty $Pin.VersionRevisionsEname) { return $false }
     } else {
         if (Test-ShellPinTokenEmpty $Pin.InstallUpgradeEname) { return $false }
-        if (Test-ShellPinTokenEmpty $Pin.FilePathInputStep) { return $false }
+        if (Test-ShellPinTokenEmpty $Pin.InstallUpgradeType) { return $false }
         if (Test-ShellPinTokenEmpty $Pin.InstallLogTable) { return $false }
+        if (Test-ShellPinTokenEmpty $Pin.InstallLogRevisionCol) { return $false }
     }
     return $true
 }
@@ -144,11 +154,45 @@ function Get-ShellPinGaps {
     }
     foreach ($k in $script:ShellPinRequiredKeys) {
         $v = $Pin.$k
-        if ($k -eq 'WcfFileStepWorks') {
-            if ($null -eq $v -or (Test-ShellPinTokenEmpty $v)) { $gaps += $k }
-            continue
-        }
         if (Test-ShellPinTokenEmpty $v) { $gaps += $k }
     }
     return @($gaps)
+}
+
+function Get-PinnedProcEname {
+    param($Pin, [ValidateSet('compile', 'install')][string]$Role)
+    if ($null -eq $Pin) { return '' }
+    if ($Role -eq 'compile') { return [string]$Pin.PrepareUpgradeEname }
+    return [string]$Pin.InstallUpgradeEname
+}
+
+function Get-PinnedProcType {
+    param($Pin, [ValidateSet('compile', 'install')][string]$Role)
+    if ($null -eq $Pin) { return '' }
+    if ($Role -eq 'compile') { return [string]$Pin.PrepareUpgradeType }
+    return [string]$Pin.InstallUpgradeType
+}
+
+function Get-InstallFileNameStep {
+    # Recon: install walks NAM (File Name) on the pinned install procedure.
+    # FilePathInputStep is the prepare full-path step. Do not invent a second pin key.
+    return 'NAM'
+}
+
+function Test-WcfFileStepPinFalse {
+    param($Pin)
+    if ($null -eq $Pin) { return $false }
+    $v = $Pin.WcfFileStepWorks
+    if ($v -eq $false) { return $true }
+    if ($v -is [string] -and $v.Trim().Equals('false', [StringComparison]::OrdinalIgnoreCase)) { return $true }
+    return $false
+}
+
+function Test-WcfFileStepPinTrue {
+    param($Pin)
+    if ($null -eq $Pin) { return $false }
+    $v = $Pin.WcfFileStepWorks
+    if ($v -eq $true) { return $true }
+    if ($v -is [string] -and $v.Trim().Equals('true', [StringComparison]::OrdinalIgnoreCase)) { return $true }
+    return $false
 }

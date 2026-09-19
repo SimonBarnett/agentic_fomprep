@@ -95,3 +95,82 @@ function Test-ShellPathAllowed {
     }
     return @{ ok = $true; path = $full }
 }
+
+function Get-CompileShellOutputPath {
+    param(
+        $Instance,
+        $Pin,
+        [string]$Revision
+    )
+    $rev = $null
+    if (-not [string]::IsNullOrWhiteSpace($Revision)) {
+        $t = $Revision.Trim()
+        if ($t -match '^[0-9]+$' -or $t -match '^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$') { $rev = $t }
+    }
+    if (-not $rev) {
+        return @{ ok = $false; reason = 'revision_missing'; text = 'revision is not a usable token'; path = $null }
+    }
+    $leaf = "$rev.sh"
+    $dir = $null
+    if ($Instance -and $Instance.buildSetRoot) {
+        $dir = ConvertTo-ShellFullPath ([string]$Instance.buildSetRoot)
+    }
+    if (-not $dir -and $Pin -and -not [string]::IsNullOrWhiteSpace([string]$Pin.UpgradesDir)) {
+        $up = ConvertTo-ShellFullPath ([string]$Pin.UpgradesDir)
+        if ($up -and (Test-Path -LiteralPath $up)) { $dir = $up }
+    }
+    if (-not $dir -and $Instance -and $Instance.agentWork) {
+        $dir = Join-Path (ConvertTo-ShellFullPath ([string]$Instance.agentWork)) 'upgrades'
+    }
+    if (-not $dir) {
+        return @{ ok = $false; reason = 'path_refused'; text = 'no buildSetRoot, reachable UpgradesDir, or agentWork for compile output'; path = $null }
+    }
+    try {
+        New-Item -ItemType Directory -Path $dir -Force | Out-Null
+    } catch {
+        return @{ ok = $false; reason = 'path_refused'; text = "cannot create compile output dir $dir"; path = $null }
+    }
+    return @{ ok = $true; path = (Join-Path $dir $leaf); dir = $dir }
+}
+
+function Copy-ShellToInstallRoot {
+    param(
+        [string]$Path,
+        $Instance,
+        $Pin
+    )
+    $full = ConvertTo-ShellFullPath $Path
+    if (-not $full -or -not (Test-Path -LiteralPath $full)) {
+        return @{ ok = $false; reason = 'path_refused'; text = 'shell file not found for staging'; path = $null }
+    }
+    $destRoots = @()
+    if ($Pin -and -not [string]::IsNullOrWhiteSpace([string]$Pin.UpgradesDir)) {
+        $up = ConvertTo-ShellFullPath ([string]$Pin.UpgradesDir)
+        if ($up -and (Test-Path -LiteralPath $up)) { $destRoots += $up }
+    }
+    if ($Instance -and $Instance.buildSetRoot) {
+        $b = ConvertTo-ShellFullPath ([string]$Instance.buildSetRoot)
+        if ($b) { $destRoots += $b }
+    }
+    foreach ($r in $destRoots) {
+        if (Test-PathUnderRoot -FullPath $full -Root $r) {
+            return @{ ok = $true; path = $full; staged = $false }
+        }
+    }
+    $destDir = $null
+    if ($destRoots.Count -gt 0) { $destDir = $destRoots[0] }
+    elseif ($Instance -and $Instance.agentWork) {
+        $destDir = Join-Path (ConvertTo-ShellFullPath ([string]$Instance.agentWork)) 'upgrades'
+    }
+    if (-not $destDir) {
+        return @{ ok = $false; reason = 'path_refused'; text = 'no allowlisted dir to stage the shell onto'; path = $null }
+    }
+    try {
+        New-Item -ItemType Directory -Path $destDir -Force | Out-Null
+        $dest = Join-Path $destDir ([IO.Path]::GetFileName($full))
+        Copy-Item -LiteralPath $full -Destination $dest -Force
+        return @{ ok = $true; path = $dest; staged = $true }
+    } catch {
+        return @{ ok = $false; reason = 'path_refused'; text = "failed to stage shell onto $destDir"; path = $null }
+    }
+}

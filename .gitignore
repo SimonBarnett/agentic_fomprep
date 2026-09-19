@@ -9,6 +9,11 @@ src/sdk/node_modules/
 v2/apps/mcp-catalog/node_modules/
 v2/apps/mcp-catalog/.next/
 v2/plugins/priority-formprep/scripts/node_modules/
+v2/lib/node_modules/
+v2/plugins/priority-shell-compile/scripts/node_modules/
+v2/plugins/priority-shell-install/scripts/node_modules/
+v2/apps/mcp-catalog/catalog/priority-shell-compile/runner/node_modules/
+v2/apps/mcp-catalog/catalog/priority-shell-install/runner/node_modules/
 *.ndjson
 tests/.tmp/
 capture/

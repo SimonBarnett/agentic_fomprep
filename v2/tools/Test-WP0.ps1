@@ -3,7 +3,8 @@
 .SYNOPSIS
     WP0 fail-fast for v2 shell compile/install. Exit 0 only if every T* gate passes.
     Exit 2 = pack not ready. Exit 3 = recon ran and found a contradiction.
-    Red before WCF. No live compile/install.
+    Red before WCF on refuse paths. Live compile/install only when pins are complete
+    and PRIORITY_WP0_INSTANCE is reachable.
 #>
 [CmdletBinding()]
 param()
@@ -158,7 +159,10 @@ $scanFiles = @(
     (Join-Path $compilePluginScripts 'Compile-Shell.ps1'),
     (Join-Path $installPluginScripts 'Install-Shell.ps1'),
     (Join-Path $v2 'plugins\priority-shell-compile\mcp\server.mjs'),
-    (Join-Path $v2 'plugins\priority-shell-install\mcp\server.mjs')
+    (Join-Path $v2 'plugins\priority-shell-install\mcp\server.mjs'),
+    (Join-Path $v2 'lib\wcf.ps1'),
+    (Join-Path $v2 'lib\gate.ps1'),
+    (Join-Path $v2 'lib\run-upgrade-proc.mjs')
 )
 foreach ($sf in $scanFiles) {
     if (-not (Test-Path -LiteralPath $sf)) { $t6ok = $false; $t6d += "missing $sf"; continue }
@@ -304,21 +308,76 @@ function Assert-Refuse {
     return @{ ok = $ok; detail = ($bits -join '; ') }
 }
 
-# --- WP0-T5 pin incomplete refuses WCF ---
+# --- WP0-T5 incomplete pin still refuses WCF (scratch pin, not v2/config) ---
 $t5ok = $true
 $t5d = @()
+$incPin = Join-Path $scratch 'pin-incomplete.json'
+$incObj = [ordered]@{
+    PinComplete           = $false
+    PrepareUpgradeEname   = ''
+    PrepareUpgradeType    = ''
+    InstallUpgradeEname   = ''
+    InstallUpgradeType    = ''
+    VersionRevisionsEname = ''
+    RevisionInputStep     = ''
+    FilePathInputStep     = ''
+    WcfFileStepWorks      = $null
+    InstallLogTable       = ''
+    InstallLogRevisionCol = ''
+    InstallLogDateCol     = ''
+    DbiMarker             = ''
+}
+[System.IO.File]::WriteAllText($incPin, ($incObj | ConvertTo-Json -Depth 4))
 if (-not (Test-Path $compilePs1) -or -not (Test-Path $installPs1)) {
     $t5ok = $false
     $t5d += 'Compile-Shell.ps1 / Install-Shell.ps1 missing'
 } else {
-    $c5 = Invoke-ShellRunner -File $compilePs1 -ArgList @('-InstanceId', 'wp0-dev', '-Revision', '1042', '-InstancesPath', $allowPath, '-PinPath', $pinJson)
+    $c5 = Invoke-ShellRunner -File $compilePs1 -ArgList @('-InstanceId', 'wp0-dev', '-Revision', '1042', '-InstancesPath', $allowPath, '-PinPath', $incPin)
     $a5 = Assert-Refuse -Run $c5 -ExpectReason 'pin_incomplete'
     if (-not $a5.ok) { $t5ok = $false; $t5d += "compile $($a5.detail)" }
-    $i5 = Invoke-ShellRunner -File $installPs1 -ArgList @('-InstanceId', 'wp0-dev', '-Shell', $okSh, '-InstancesPath', $allowPath, '-PinPath', $pinJson)
+    $i5 = Invoke-ShellRunner -File $installPs1 -ArgList @('-InstanceId', 'wp0-dev', '-Shell', $okSh, '-InstancesPath', $allowPath, '-PinPath', $incPin)
     $b5 = Assert-Refuse -Run $i5 -ExpectReason 'pin_incomplete'
     if (-not $b5.ok) { $t5ok = $false; $t5d += "install $($b5.detail)" }
 }
-Add-Gate 'WP0-T5' $t5ok $(if ($t5ok) { 'PinComplete=false => pin_incomplete, no WCF' } else { $t5d -join '; ' })
+Add-Gate 'WP0-T5' $t5ok $(if ($t5ok) { 'scratch PinComplete=false => pin_incomplete, no WCF' } else { $t5d -join '; ' })
+
+# --- WP0-T5b complete pin is not skeleton-refused (no_cred before WCF on sandbox) ---
+$t5b = $true
+$t5bd = @()
+if (Test-Path $compilePs1) {
+    $cReady = Invoke-ShellRunner -File $compilePs1 -ArgList @('-InstanceId', 'wp0-dev', '-Revision', '1042', '-InstancesPath', $allowPath, '-PinPath', $pinJson)
+    if ($cReady.ExitCode -ne 2 -or -not $cReady.Json) {
+        $t5b = $false
+        $t5bd += "compile exit=$($cReady.ExitCode) no JSON"
+    } elseif ($cReady.Json.reason -eq 'pin_incomplete') {
+        $t5b = $false
+        $t5bd += 'compile still pin_incomplete with PinComplete=true'
+    } elseif ($cReady.Json.reason -ne 'no_cred') {
+        $t5b = $false
+        $t5bd += "compile reason=$($cReady.Json.reason) want no_cred"
+    } elseif ($cReady.Json.wcfAttempted -eq $true) {
+        $t5b = $false
+        $t5bd += 'compile wcfAttempted=true on missing cred'
+    }
+    $iReady = Invoke-ShellRunner -File $installPs1 -ArgList @('-InstanceId', 'wp0-dev', '-Shell', $okSh, '-InstancesPath', $allowPath, '-PinPath', $pinJson)
+    if ($iReady.ExitCode -ne 2 -or -not $iReady.Json) {
+        $t5b = $false
+        $t5bd += "install exit=$($iReady.ExitCode) no JSON"
+    } elseif ($iReady.Json.reason -eq 'pin_incomplete') {
+        $t5b = $false
+        $t5bd += 'install still pin_incomplete with PinComplete=true'
+    } elseif ($iReady.Json.reason -ne 'no_cred') {
+        $t5b = $false
+        $t5bd += "install reason=$($iReady.Json.reason) want no_cred"
+    } elseif ($iReady.Json.wcfAttempted -eq $true) {
+        $t5b = $false
+        $t5bd += 'install wcfAttempted=true on missing cred'
+    }
+} else {
+    $t5b = $false
+    $t5bd += 'runner missing'
+}
+Add-Gate 'WP0-T5b' $t5b $(if ($t5b) { 'PinComplete=true => no_cred (not pin_incomplete); no WCF without cred' } else { $t5bd -join '; ' })
 
 # --- WP0-T8 refuse paths ---
 $t8ok = $true
@@ -360,6 +419,81 @@ if ($wi.ExitCode -ne 0 -or -not $wi.Json -or $wi.Json.reason -ne 'whatIf' -or $w
     $t8d += "whatIf install exit=$($wi.ExitCode) reason=$($wi.Json.reason)"
 }
 Add-Gate 'WP0-T8' $t8ok $(if ($t8ok) { 'unknown/live/missing/dbi/dotdot/fixture refuse exit 2; WhatIf exit 0; no WCF' } else { $t8d -join '; ' })
+
+# --- WP0-T10 install must not auto-prep ---
+$t10ok = $true
+$t10d = @()
+$autoTok = @('Prepare-NamedForm.ps1', 'FORMPREPDRCT', 'Invoke-WebFormPrep', 'Invoke-CliFormPrep')
+$installScan = @(
+    (Join-Path $installRunner 'Install-Shell.ps1'),
+    (Join-Path $installPluginScripts 'Install-Shell.ps1'),
+    (Join-Path $v2 'lib\wcf.ps1'),
+    (Join-Path $v2 'lib\gate.ps1')
+)
+foreach ($sf in $installScan) {
+    if (-not (Test-Path -LiteralPath $sf)) { $t10ok = $false; $t10d += "missing $sf"; continue }
+    $text = Get-Content -LiteralPath $sf -Raw
+    foreach ($tok in $autoTok) {
+        if ($text -match [regex]::Escape($tok)) {
+            $t10ok = $false
+            $t10d += "${sf} auto-prep token $tok"
+        }
+    }
+}
+Add-Gate 'WP0-T10' $t10ok $(if ($t10ok) { 'install runner does not call prepare_form / FormPrep' } else { $t10d -join '; ' })
+
+# --- WP0-T11 WhatIf handoff formsUnprepared[] ---
+$t11ok = $true
+$t11d = ''
+if (-not $wi.Json) {
+    $t11ok = $false
+    $t11d = 'WhatIf install JSON missing'
+} else {
+    $fu = @($wi.Json.postInstall.formsUnprepared)
+    if ($fu -notcontains 'ZCLA_FIXTURE_FORM') {
+        $t11ok = $false
+        $t11d = 'WhatIf postInstall.formsUnprepared missing ZCLA_FIXTURE_FORM; got: ' + ($fu -join ',')
+    } else {
+        $t11d = 'WhatIf formsUnprepared=' + ($fu -join ',')
+    }
+}
+Add-Gate 'WP0-T11' $t11ok $t11d
+
+# --- WP0-T12 SQL gate unit (offline) ---
+. (Join-Path $v2 'lib\gate.ps1')
+$t12ok = $true
+$t12d = @()
+$before = [pscustomobject]@{ count = 1; lastDate = [datetime]'2020-01-01' }
+$afterSame = [pscustomobject]@{ count = 1; lastDate = [datetime]'2020-01-01' }
+$afterMore = [pscustomobject]@{ count = 2; lastDate = [datetime]'2026-09-19' }
+if (Test-InstallLogAdvanced -Before $before -After $afterSame) {
+    $t12ok = $false; $t12d += 'unchanged snapshot reported advanced'
+}
+if (-not (Test-InstallLogAdvanced -Before $before -After $afterMore)) {
+    $t12ok = $false; $t12d += 'count increase not advanced'
+}
+$g = New-InstallGateObject -Before $before -After $afterMore -StartedAt ([datetime]::UtcNow) -Takesingleent @('FORM_A') -MissingEnames @('FORM_A')
+if ($g.entitiesPresent) { $t12ok = $false; $t12d += 'missing ENAME marked present' }
+if (-not $g.logAdvanced) { $t12ok = $false; $t12d += 'gate logAdvanced false on count increase' }
+$walkFake = [pscustomobject]@{ fileStepSeen = $false }
+$cx = Test-WcfWalkContradiction -Pin $pinObj -Walk $walkFake
+if ($cx.contradict) { $t12ok = $false; $t12d += 'null WcfFileStepWorks contradicted empty walk' }
+Add-Gate 'WP0-T12' $t12ok $(if ($t12ok) { 'offline SQL gate + WcfFileStepWorks null contradiction skip' } else { $t12d -join '; ' })
+
+# --- WP0-T13 truncated / non-shell ---
+$t13ok = $true
+$t13d = ''
+$trunc = Join-Path $build 'truncated.sh'
+[System.IO.File]::WriteAllText($trunc, "PRIORITY_SHELL 1`r`n")
+$tr = Invoke-ShellRunner -File $installPs1 -ArgList @('-InstanceId', 'wp0-dev', '-Shell', $trunc, '-InstancesPath', $allowPath, '-PinPath', $pinJson)
+$atr = Assert-Refuse -Run $tr -ExpectReason 'parse_failed'
+if (-not $atr.ok) {
+    $t13ok = $false
+    $t13d = $atr.detail
+} else {
+    $t13d = 'truncated shell parse_failed, no WCF'
+}
+Add-Gate 'WP0-T13' $t13ok $t13d
 
 # --- WP0-R* only if PRIORITY_WP0_INSTANCE is set ---
 $proofId = $env:PRIORITY_WP0_INSTANCE
@@ -432,22 +566,14 @@ WHERE $col LIKE N'%Upgrade%' OR $col LIKE N'%Revision%'
             } else {
                 $r3ok = $true
                 $r3d = "candidates=$($candidates.Count)"
-                $recon = Join-Path $repo 'docs\wp0-recon.md'
-                $lines = @(
-                    '# WP0 recon (no secrets)',
-                    '',
-                    "instance_id: $proofId",
-                    "when: $([datetime]::UtcNow.ToString('o'))",
-                    '',
-                    '| ENAME | title |',
-                    '|---|---|'
-                )
-                foreach ($c in $candidates) {
-                    $lines += ('| `{0}` | {1} |' -f $c.ename, ($c.title -replace '\|', '/'))
+                $candPath = Join-Path $repo 'v2\tests\wp0-r3-candidates.json'
+                $candDoc = [pscustomobject]@{
+                    instanceId = $proofId
+                    when       = [datetime]::UtcNow.ToString('o')
+                    candidates = @($candidates)
+                    note       = 'Does not overwrite docs/wp0-recon.md (human pin recon).'
                 }
-                $lines += ''
-                $lines += 'PinComplete stays false until a human copies ENAMEs into v2/config/pin.json after verifying these rows.'
-                [System.IO.File]::WriteAllText($recon, ($lines -join "`r`n"))
+                [System.IO.File]::WriteAllText($candPath, ($candDoc | ConvertTo-Json -Depth 6))
             }
         } catch {
             $r3d = $_.Exception.Message
@@ -460,12 +586,25 @@ WHERE $col LIKE N'%Upgrade%' OR $col LIKE N'%Revision%'
     if ($pinObj -and $pinObj.PinComplete) {
         $r4ok = $false
         $r4d = 'PinComplete=true but pinned ENAME not verified on this instance'
-        if ($conn -and -not (Test-ShellPinTokenEmpty $pinObj.PrepareUpgradeEname)) {
+        if ($conn) {
             try {
                 $enameCol = ConvertTo-SqlIdent 'ENAME'
-                $hit = Invoke-FormPrepSql -Connection $conn -Query "SELECT COUNT(*) FROM $execTable WHERE $enameCol = @n" -Parameters @{ '@n' = [string]$pinObj.PrepareUpgradeEname } -Scalar
-                if ([int]$hit -gt 0) { $r4ok = $true; $r4d = 'pinned ENAMEs present in T$EXEC' }
-                else { $r4d = 'pinned Prepare Upgrade ENAME not in T$EXEC' }
+                $need = @(
+                    [string]$pinObj.PrepareUpgradeEname,
+                    [string]$pinObj.InstallUpgradeEname,
+                    [string]$pinObj.VersionRevisionsEname
+                ) | Where-Object { -not (Test-ShellPinTokenEmpty $_) }
+                $missingE = @()
+                foreach ($n in $need) {
+                    $hit = Invoke-FormPrepSql -Connection $conn -Query "SELECT COUNT(*) FROM $execTable WHERE $enameCol = @n" -Parameters @{ '@n' = $n } -Scalar
+                    if ([int]$hit -lt 1) { $missingE += $n }
+                }
+                if ($missingE.Count -eq 0 -and $need.Count -gt 0) {
+                    $r4ok = $true
+                    $r4d = 'pinned ENAMEs present in T$EXEC: ' + ($need -join ', ')
+                } else {
+                    $r4d = 'pinned ENAME not in T$EXEC: ' + ($missingE -join ', ')
+                }
             } catch { $r4d = $_.Exception.Message }
         }
     }
@@ -504,7 +643,26 @@ WHERE $col LIKE N'%Upgrade%' OR $col LIKE N'%Revision%'
     Add-Gate 'WP0-R6' $r6ok $r6d
 
     $r7ok = $true
-    $r7d = 'no walk transcript in WP0 skeleton; skip contradiction'
+    $r7d = 'WcfFileStepWorks null; no contradiction without a walk transcript'
+    if ($pinObj) {
+        $walkPath = $null
+        if ($proof -and $proof.agentWork) {
+            $candWalk = Join-Path ([string]$proof.agentWork) 'last-wcf-walk.json'
+            if (Test-Path -LiteralPath $candWalk) { $walkPath = $candWalk }
+        }
+        $walkObj = $null
+        if ($walkPath) {
+            try { $walkObj = Get-Content -LiteralPath $walkPath -Raw | ConvertFrom-Json } catch { $walkObj = $null }
+        }
+        . (Join-Path $v2 'lib\gate.ps1')
+        $cx = Test-WcfWalkContradiction -Pin $pinObj -Walk $walkObj
+        if ($cx.contradict) {
+            $r7ok = $false
+            $r7d = $cx.detail
+        } else {
+            $r7d = $cx.detail
+        }
+    }
     Add-Gate 'WP0-R7' $r7ok $r7d
 
     if ($conn) { try { $conn.Close(); $conn.Dispose() } catch { } }

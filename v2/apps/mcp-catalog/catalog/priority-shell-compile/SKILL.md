@@ -4,7 +4,7 @@ description: >
   Compile one Priority Version Revision into NN.sh on a user-allowlisted instance
   (Prepare Upgrade). SQL/file-gated. Use when the user says compile a shell,
   prepare upgrade, version revision shell, or /priority-shell-compile.
-  Never invent a WCF URL. Until PinComplete this skill is skeleton-only (no WCF).
+  Never invent a WCF URL. Walks the pinned Prepare Upgrade procedure (from v2/config/pin.json) over WCF.
 ---
 
 # Priority shell compile
@@ -13,7 +13,7 @@ Grab this skill from catalog MCP `https://mcp-priority.ntsa.uk/mcp` (`get_skill`
 
 This is **not** form prep and **not** install. Do not call `install_shell` from this tool. Do not change repo-root `src\Prepare-NamedForm.ps1`.
 
-Until WP0 pins exist (`v2/config/pin.json` `PinComplete=false`), the runner refuses the WCF path with `reason=pin_incomplete`. Do not guess the Prepare Upgrade ENAME.
+`PinComplete` is true on the CE proof instance. The runner reads Prepare Upgrade ENAME / type / steps from `v2/config/pin.json` only. Do not guess an ENAME. If pins are incomplete, `reason=pin_incomplete` and no WCF.
 
 ## Hard rules
 
@@ -46,7 +46,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts\Compile-Shell.ps1 -I
 Or local MCP tool `compile_shell` `{ instance_id, revision }`.
 
 4. Report `ok`, `reason`, `revision`, `path`, `bytes`, every `errors[]` line.
-5. `pin_incomplete` → stop. Human must pin Prepare Upgrade ENAME after recon. Do not guess.
+5. `pin_incomplete` → stop. Pins must stay dictionary-backed. Do not guess.
 6. `no_cred` → stop; human sets CredMan for that row’s `credentialTarget`.
 7. `ok=false` → return `errors[]` (never empty). Do not install.
 
@@ -61,6 +61,9 @@ Or local MCP tool `compile_shell` `{ instance_id, revision }`.
 | false | revision_missing | Revision not on that instance |
 | false | shell_not_created | Proc ran; no `.sh` |
 | false | pin_incomplete | WP0 pins missing; no WCF |
+| false | sql_failed | Dictionary SQL unreachable before WCF |
+| false | winrun_required | WcfFileStepWorks=false; WINRUN not implemented |
+| false | proc_failed | WCF walk ended with Blocker / did not end |
 | false | no_cred | CredMan missing |
 | false | instance_unknown | id not in allowlist |
 | false | live_refused | Looks live/PRI and allowLive is false |

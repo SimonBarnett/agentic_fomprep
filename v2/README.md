@@ -8,8 +8,8 @@ This folder is the next version:
 |------|------|
 | `v2/apps/mcp-catalog/` | Amplify app for **https://mcp-priority.ntsa.uk** (skill catalog MCP). Add a skill by adding `catalog/<name>/`. |
 | `v2/plugins/priority-formprep/` | Grok plugin: local execute (`list_instances`, `prepare_form`) against the **user** instance allowlist. |
-| `v2/plugins/priority-shell-compile/` | Grok plugin: local `compile_shell`. Separate from install. Until `v2/config/pin.json` PinComplete, refuses WCF. |
-| `v2/plugins/priority-shell-install/` | Grok plugin: local `install_shell`. Parse, path allowlist, DBI refuse before WCF. |
+| `v2/plugins/priority-shell-compile/` | Grok plugin: local `compile_shell`. Separate from install. WCF walker uses pinned Prepare Upgrade ENAME. |
+| `v2/plugins/priority-shell-install/` | Grok plugin: local `install_shell`. Parse, path allowlist, DBI refuse before WCF. SQL gate + `formsUnprepared[]` handoff (no auto-prep). |
 | `v2/plugins/priority-odata-dev/` | Grok plugin: local `odata_get` / `odata_query` / `odata_dump_procedure` / `formlimited_audit`. CredMan Basic auth. |
 | `v2/lib/` | Shared kernel (allowlist, sql, cred, parse-sh). Do not extract v1. |
 | `v2/tools/Test-WP0.ps1` | Shell compile/install WP0 fail-fast. Red before WCF. |
@@ -43,7 +43,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\Prepare-NamedForm.ps1 -Ins
 
 Grok: `grok plugin marketplace add SimonBarnett/agentic_fomprep` then `grok plugin install priority-formprep --trust` (and `priority-shell-compile` / `priority-shell-install` / `priority-odata-dev` for the other execute plugins).
 
-Shell compile/install pins live in `v2/config/pin.json`. Do **not** invent Prepare Upgrade / Install Upgrade ENAMEs. Offline catalog + OData fixture gates (no live ERP):
+Shell compile/install pins live in `v2/config/pin.json` (`PinComplete=true`, Medatech wrappers on CE DEV). WCF walkers read those ENAMEs only. `WcfFileStepWorks` stays null (unproven); WINRUN is not invented. `install_shell` returns `postInstall.formsUnprepared[]` and does not call `prepare_form`. Offline catalog + OData fixture gates (no live ERP):
 
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File v2\tools\Test-PriorityCatalog.ps1

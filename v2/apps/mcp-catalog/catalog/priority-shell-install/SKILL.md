@@ -4,7 +4,7 @@ description: >
   Install one caller-supplied Priority upgrade shell (.sh) onto a user-allowlisted
   instance (Install Upgrade). Parse, path-allowlist, and DBI-refuse before WCF.
   Use when the user says install a shell, install upgrade, or /priority-shell-install.
-  Never invent a WCF URL. Until PinComplete this skill is skeleton-only (no WCF).
+  Never invent a WCF URL. Walks the pinned Install Upgrade procedure (from v2/config/pin.json) over WCF. SQL-gated. Does not auto-prep forms.
 ---
 
 # Priority shell install
@@ -13,7 +13,9 @@ Grab this skill from catalog MCP `https://mcp-priority.ntsa.uk/mcp` (`get_skill`
 
 This is **not** form prep and **not** compile. Do not call `compile_shell` or `prepare_form` from this tool. If the shell names forms, return `postInstall.formsUnprepared[]` for the caller to feed `prepare_form`. Do not change repo-root `src\Prepare-NamedForm.ps1`.
 
-Until WP0 pins exist (`v2/config/pin.json` `PinComplete=false`), the runner refuses the WCF path with `reason=pin_incomplete`. Do not guess the Install Upgrade ENAME.
+`PinComplete` is true on the CE proof instance. The runner reads Install Upgrade ENAME / type / install-log table from `v2/config/pin.json` only. Do not guess an ENAME. If pins are incomplete, `reason=pin_incomplete` and no WCF.
+
+After a successful install, `postInstall.formsUnprepared[]` lists `TAKESINGLEENT` names for the caller to feed `prepare_form`. This tool does **not** call `prepare_form`.
 
 ## Hard rules
 
@@ -50,7 +52,7 @@ Or local MCP tool `install_shell` `{ instance_id, shell, allow_dbi? }`. `allow_d
 4. Parse the file **before** WCF. Not a Priority shell → `reason=parse_failed`, no install.
 5. If parse shows DBI and `allow_dbi` is false → `reason=dbi_refused`, no WCF.
 6. Report `ok`, `reason`, `path`, `revision`, `codes[]`, `dbi`, `gate`, `postInstall.formsUnprepared[]`, every `errors[]` line.
-7. `pin_incomplete` → stop. Human must pin Install Upgrade ENAME and the install-log table after recon. Do not guess.
+7. `pin_incomplete` → stop. Pins must stay dictionary-backed. Do not guess.
 8. `no_cred` → stop.
 
 `-WhatIf` parses and allowlists but does not call WCF (`reason=whatIf`, exit 0).
@@ -65,6 +67,8 @@ Or local MCP tool `install_shell` `{ instance_id, shell, allow_dbi? }`. `allow_d
 | false | path_refused | `..`, fixtures, foreign UNC, missing file, outside roots |
 | false | dbi_refused | DBI in shell and allow_dbi is false |
 | false | pin_incomplete | WP0 pins missing; no WCF |
+| false | sql_failed | Dictionary SQL unreachable before WCF |
+| false | winrun_required | WcfFileStepWorks=false; WINRUN not implemented |
 | false | proc_failed | Procedure ended with Blocker |
 | false | gate_unchanged | Install-log / revision row did not advance |
 | false | partial_entities | TAKESINGLEENT name missing from T$EXEC |

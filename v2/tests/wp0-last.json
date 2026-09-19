@@ -1,7 +1,7 @@
 {
-    "when":  "2026-09-19T20:45:19.9849910Z",
+    "when":  "2026-09-19T22:18:19.2380722Z",
     "failed":  0,
-    "pinComplete":  false,
+    "pinComplete":  true,
     "gates":  [
                   {
                       "id":  "WP0-T1",
@@ -21,7 +21,7 @@
                   {
                       "id":  "WP0-T4",
                       "pass":  true,
-                      "detail":  "PinComplete=false (skeleton); empty pins ok"
+                      "detail":  "PinComplete=true and required pins populated"
                   },
                   {
                       "id":  "WP0-T6",
@@ -41,17 +41,42 @@
                   {
                       "id":  "WP0-PARSE",
                       "pass":  true,
-                      "detail":  "parsed 47 v2 *.ps1"
+                      "detail":  "parsed 69 v2 *.ps1"
                   },
                   {
                       "id":  "WP0-T5",
                       "pass":  true,
-                      "detail":  "PinComplete=false =\u003e pin_incomplete, no WCF"
+                      "detail":  "scratch PinComplete=false =\u003e pin_incomplete, no WCF"
+                  },
+                  {
+                      "id":  "WP0-T5b",
+                      "pass":  true,
+                      "detail":  "PinComplete=true =\u003e no_cred (not pin_incomplete); no WCF without cred"
                   },
                   {
                       "id":  "WP0-T8",
                       "pass":  true,
                       "detail":  "unknown/live/missing/dbi/dotdot/fixture refuse exit 2; WhatIf exit 0; no WCF"
+                  },
+                  {
+                      "id":  "WP0-T10",
+                      "pass":  true,
+                      "detail":  "install runner does not call prepare_form / FormPrep"
+                  },
+                  {
+                      "id":  "WP0-T11",
+                      "pass":  true,
+                      "detail":  "WhatIf formsUnprepared=ZCLA_FIXTURE_FORM"
+                  },
+                  {
+                      "id":  "WP0-T12",
+                      "pass":  true,
+                      "detail":  "offline SQL gate + WcfFileStepWorks null contradiction skip"
+                  },
+                  {
+                      "id":  "WP0-T13",
+                      "pass":  true,
+                      "detail":  "truncated shell parse_failed, no WCF"
                   },
                   {
                       "id":  "WP0-R-SKIP",

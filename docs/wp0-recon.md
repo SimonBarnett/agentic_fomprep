@@ -27,7 +27,7 @@ Align the allowlist row `id` with `ProofInstanceId`. Do not invent a second inst
 
 Preferred pin values below use the **CE / Medatech wrappers** (`ZEMG_TAKEUPGRADE` / `ZEMG_EXECUPGRADES`). Stock `TAKEUPGRADE` / `EXECUPGRADES` remain **valid dictionary alternatives** with the same TYPE=P and related titles; they are **not** the pinned path.
 
-**Simon confirmed Medatech wrappers on 2026-09-19 Europe/London.** `PinComplete` is now `true`. The WP0 walker must use `ZEMG_TAKEUPGRADE` / `ZEMG_EXECUPGRADES`, not stock `TAKEUPGRADE` / `EXECUPGRADES`. A WCF walker is still not implemented; runners refuse live compile/install until that slice lands.
+**Simon confirmed Medatech wrappers on 2026-09-19 Europe/London.** `PinComplete` is now `true`. The WP0 walker must use `ZEMG_TAKEUPGRADE` / `ZEMG_EXECUPGRADES`, not stock `TAKEUPGRADE` / `EXECUPGRADES`. Walker implementation: `docs/wp0-walker-slice-2026-09-19.md`.
 
 ## Prepare (procedure TYPE=P)
 
@@ -156,8 +156,8 @@ Stock alternatives (not pinned): `TAKEUPGRADE` / `EXECUPGRADES`. Simon confirmed
 
 ## Explicit non-claims
 
-- No WCF walk of Prepare Upgrade or Install Upgrade.
-- No live compile or install.
+- No live compile or install on this recon note (walker code is a later slice).
+- This recon does not set `WcfFileStepWorks`.
 - No guessed ENAMEs (`PREPAREUPGRADE`, `INSTALLUPGRADE`, `PREPUPG`, `INSTUPG`, etc. were not used).
 - No DbiMarker invented from the public `DBI` modification code.
 - v1 Form Prep pack unchanged.

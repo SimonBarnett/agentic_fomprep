@@ -49,7 +49,7 @@ const TOOLS = [
   },
   {
     name: 'compile_shell',
-    description: 'Compile one Version Revision into NN.sh on an allowlisted instance. Until PinComplete, refuses WCF (pin_incomplete). Separate from install_shell.',
+    description: 'Compile one Version Revision into NN.sh on an allowlisted instance. WCF walker uses the pinned Prepare Upgrade ENAME. Separate from install_shell.',
     inputSchema: {
       type: 'object',
       required: ['instance_id', 'revision'],

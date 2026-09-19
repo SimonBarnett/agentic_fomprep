@@ -49,7 +49,7 @@ const TOOLS = [
   },
   {
     name: 'install_shell',
-    description: 'Install one caller-supplied .sh on an allowlisted instance. Parses and path-allowlists before WCF. DBI refused unless allow_dbi. Separate from compile_shell.',
+    description: 'Install one caller-supplied .sh on an allowlisted instance. Parses and path-allowlists before WCF. DBI refused unless allow_dbi. SQL-gated. Does not auto-prep forms. Separate from compile_shell.',
     inputSchema: {
       type: 'object',
       required: ['instance_id', 'shell'],

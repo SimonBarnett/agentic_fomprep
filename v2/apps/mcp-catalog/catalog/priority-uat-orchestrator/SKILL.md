@@ -52,7 +52,22 @@ Thick client: CE-PRIORITY-DEV1, SQL `10.220.0.5\DEV`. Browser/desktop only (no M
 
 ## UNPARK / CASE
 
-Do not run a parked gate until an UNPARK note names it. Failures park with CASE/DOCNO/STEP/ACTION/FIELD/TRIED/ERROR/SCREEN. Company confirmation is required on TEST before any mutate.
+Do not run a parked gate until an UNPARK note names it. Company confirmation is required on TEST before any mutate.
+
+FAIL parks with this pack (exact text, every field):
+
+```
+CASE:
+DOCNO:
+STEP:
+ACTION:
+FIELD:
+TRIED:
+ERROR:
+SCREEN:
+```
+
+PASS needs video. Silent pass without video is not formal UAT.
 
 ## Not this catalog
 

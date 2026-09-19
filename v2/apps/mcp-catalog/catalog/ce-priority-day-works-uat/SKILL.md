@@ -10,9 +10,11 @@ description: >
 
 Grab from catalog MCP `https://mcp-priority.ntsa.uk/mcp` (`get_skill` with `name=ce-priority-day-works-uat`). Browser/desktop only.
 
-Follow **priority-uat-orchestrator** standing rules. Host: `prioritydev.clarksonevans.co.uk`. Unparked gates only.
+Follow **priority-uat-orchestrator** standing rules. Host: `prioritydev.clarksonevans.co.uk`. **Unparked gates only.**
 
-Work type **Extras**. Day Works flag on Edit (`ZCLA_DAYWORKS`), not Fix. Quote/COW from History/Neil GUID. Do not touch the old HT Day Work spine.
+## When
+
+Day Works UAT on DEV web. Work type **Extras**. Day Works flag on Edit (`ZCLA_DAYWORKS`), not Fix. Quote/COW from History/Neil GUID when those gates unpark — do not invent GUIDs. Do not touch the old HT Day Work spine.
 
 Source: Jester harvest 2026-09-19.
 

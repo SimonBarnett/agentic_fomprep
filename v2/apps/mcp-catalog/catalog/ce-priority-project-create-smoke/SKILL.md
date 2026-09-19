@@ -16,17 +16,17 @@ Source leaflet was not on this box; procedure is the Jester harvest 2026-09-19.
 
 ## When
 
-Smoke a new CE project through team -> contract -> copy HT -> paste plots.
+Smoke a new CE **site / project** through team -> contract -> copy HT -> paste plots (TC-01-05).
 
 ## Sequence
 
-New DOCNO each run. Branch and Contract Type via picker. Prefer Electrical/PV (`EL=5`). Skip Contract Elements on the happy path. Prefer `.2` / `.3` SNG-ROW. Paste element **PV system**, not DAY WORK.
+Harvest procedure (do not invent extra TC numbers):
 
-1. New project.
+1. New site / project. **New DOCNO each run.**
 2. Internal Project Team: add `Si` (TC-01b). Required or `ZGEM_ERR_NOTINTEAM`.
-3. Contract: picker for Branch / Contract Type; prefer Electrical/PV.
-4. Copy house type.
-5. Paste plots (PV system).
+3. Contract: Branch and Contract Type via **picker** (not free text). Prefer Electrical/PV (`EL=5`). Skip Contract Elements on the happy path.
+4. Copy house type. Prefer `.2` / `.3` SNG-ROW.
+5. Paste plots. Paste element **PV system**, not DAY WORK.
 
 ## Gotchas
 

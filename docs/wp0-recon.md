@@ -6,7 +6,7 @@
 **Scope:** dictionary evidence only — no invented ENAMEs  
 **v1:** `src/Prepare-NamedForm.ps1` untouched  
 
-This note records **observed** dictionary rows from the CE Priority DEV system DB and the pin values written into `v2/config/pin.json` / `v2/config/pin.psd1`. It does **not** authorize a WCF walker and does **not** flip `PinComplete`.
+This note records **observed** dictionary rows from the CE Priority DEV system DB and the pin values written into `v2/config/pin.json` / `v2/config/pin.psd1`. It does **not** authorize a WCF walker (skeleton still has no procedure invocation).
 
 ## Instance
 
@@ -23,11 +23,11 @@ The proof runner **must** set `PRIORITY_WP0_INSTANCE=ce-priority-dev` so WP0-R\*
 
 Align the allowlist row `id` with `ProofInstanceId`. Do not invent a second instance id.
 
-## PinComplete — still false
+## PinComplete — true (Simon, 2026-09-19 Europe/London)
 
-Preferred pin values below use the **CE / Medatech wrappers** (`ZEMG_TAKEUPGRADE` / `ZEMG_EXECUPGRADES`). Stock `TAKEUPGRADE` / `EXECUPGRADES` remain **valid dictionary alternatives** with the same TYPE=P and related titles.
+Preferred pin values below use the **CE / Medatech wrappers** (`ZEMG_TAKEUPGRADE` / `ZEMG_EXECUPGRADES`). Stock `TAKEUPGRADE` / `EXECUPGRADES` remain **valid dictionary alternatives** with the same TYPE=P and related titles; they are **not** the pinned path.
 
-**`PinComplete` stays `false` until Simon confirms Medatech wrappers (vs stock) for the WP0 walker.** Filling pins from titles is recon, not a human procedure-choice sign-off. Runners must keep refusing WCF (`reason=pin_incomplete`) until that confirmation.
+**Simon confirmed Medatech wrappers on 2026-09-19 Europe/London.** `PinComplete` is now `true`. The WP0 walker must use `ZEMG_TAKEUPGRADE` / `ZEMG_EXECUPGRADES`, not stock `TAKEUPGRADE` / `EXECUPGRADES`. A WCF walker is still not implemented; runners refuse live compile/install until that slice lands.
 
 ## Prepare (procedure TYPE=P)
 
@@ -48,7 +48,7 @@ Observed on `T$EXEC` (title column `TITLE`):
 
 ### PROGPARAM — `TAKEUPGRADE`
 
-`PAR`, `FLN`, `MSG`, `GO`. File UI titles are less clear than Medatech. Stock remains a valid alternative; do not treat `FLN` as the pinned file step unless Simon chooses stock prepare.
+`PAR`, `FLN`, `MSG`, `GO`. File UI titles are less clear than Medatech. Stock remains a dictionary sibling only; do not treat `FLN` as the pinned file step. Simon confirmed Medatech prepare (`PAR` / `FN`).
 
 ## Install (procedure TYPE=P)
 
@@ -127,9 +127,9 @@ Pin:
 
 Not observed in the first shell sample pass. **Do not invent** a token. The parser default (`DBI` as a public Version Revision modification code) is not a dictionary pin and must not be copied into this field until a real on-disk `.sh` on this instance shows a marker.
 
-## Pins written (preferred CE / Medatech path)
+## Pins written (CE / Medatech path — confirmed)
 
-Titles are from the dictionary rows above. `PinComplete=false`.
+Titles are from the dictionary rows above. `PinComplete=true` after Simon confirmed Medatech wrappers on 2026-09-19 Europe/London.
 
 | Field | Value |
 |---|---|
@@ -150,9 +150,9 @@ Titles are from the dictionary rows above. `PinComplete=false`.
 | UpgradesDir | `C:\Priority\system\upgrades` |
 | ProofInstanceId | `ce-priority-dev` |
 | AllowedBuildSetRoots | `@('C:\Priority\system\upgrades')` |
-| PinComplete | `false` |
+| PinComplete | `true` |
 
-Stock alternatives (not pinned): `TAKEUPGRADE` / `EXECUPGRADES`. Simon chooses Medatech vs stock before `PinComplete=true`.
+Stock alternatives (not pinned): `TAKEUPGRADE` / `EXECUPGRADES`. Simon confirmed Medatech wrappers; do not switch the pin back to stock.
 
 ## Explicit non-claims
 

@@ -1,10 +1,11 @@
 # WP0 pin for v2 shell compile/install on CE Priority DEV (ce-priority-dev).
 # Values are dictionary-backed — see docs/wp0-recon.md. Do not invent ENAMEs.
-# PinComplete stays false until Simon confirms Medatech wrappers
-# (ZEMG_TAKEUPGRADE / ZEMG_EXECUPGRADES) vs stock TAKEUPGRADE / EXECUPGRADES
-# for the WP0 walker. DbiMarker left empty (not observed; do not invent).
+# Simon confirmed Medatech wrappers (ZEMG_TAKEUPGRADE / ZEMG_EXECUPGRADES)
+# on 2026-09-19 Europe/London. PinComplete is true. Stock TAKEUPGRADE /
+# EXECUPGRADES remain dictionary siblings, not the pinned path.
+# DbiMarker left empty (not observed; do not invent).
 @{
-    PinComplete           = $false
+    PinComplete           = $true
     PrepareUpgradeEname   = 'ZEMG_TAKEUPGRADE'
     PrepareUpgradeType    = 'P'
     InstallUpgradeEname   = 'ZEMG_EXECUPGRADES'

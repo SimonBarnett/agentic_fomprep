@@ -1,5 +1,5 @@
 {
-  "PinComplete": false,
+  "PinComplete": true,
   "PrepareUpgradeEname": "ZEMG_TAKEUPGRADE",
   "PrepareUpgradeType": "P",
   "InstallUpgradeEname": "ZEMG_EXECUPGRADES",

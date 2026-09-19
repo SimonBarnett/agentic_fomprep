@@ -11,3 +11,11 @@ Build agent: port catalog SKILL.md from:
 4. Do not invent ENAMEs. Do not edit v1 Prepare-NamedForm.ps1.
 
 Ionos 2026-09-19: Grok Bot workflow leaflets were not on this box. UAT skills were written from the Jester harvest. `prepare-all-unprepared-priority-forms` documents the repo DEV method (named Form Prep; headed web tile fallback). Medatech hours trio skipped (optional / out of CE scope). Gates C-G stay parked until UNPARK.
+
+## CE Priority DBA harvest (Tedious 2026-09-19)
+
+Source dump for FR `docs/feature-request-ce-priority-dba-skills-2026-09-19.md`.
+
+Canonical copies live under `docs/skill-sources/dba/` (from CE-PRIORITY-DEV1 `C:\Users\medatech.si\dba-reports\harvest-for-bob\`).
+
+See `MANIFEST.md` in that folder. Tedious owns UAT + hostile MRB after implement.

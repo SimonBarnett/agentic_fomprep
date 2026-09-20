@@ -147,7 +147,7 @@ if ($Action -eq 'formlimited_audit') {
 SELECT FL.*
 FROM $flTable FL
 INNER JOIN $execTable E ON FL.$flExec = E.$flExec
-WHERE E.$eName IN (" + ($ph -join ', ') + ")
+WHERE E.$eName IN ($($ph -join ', '))
 "@
             $table = Invoke-FormPrepSql -Connection $conn -Query $sql -Parameters $params
             foreach ($row in $table.Rows) {

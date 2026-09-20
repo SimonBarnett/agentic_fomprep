@@ -238,11 +238,17 @@ Add-Gate 'CAT-T21' (Test-Path -LiteralPath $runnerPs1) 'catalog runner files pre
 
 $odataRunner = Join-Path $v2 'plugins\priority-odata-dev\scripts\Invoke-PriorityOData.ps1'
 $odataSrc = Get-Content -LiteralPath $odataRunner -Raw -Encoding UTF8
-$sqlShapeOk = ($odataSrc -match 'ConvertTo-SqlIdent ''dbo\.FORMLIMITED''') -and
-    ($odataSrc -match 'ConvertTo-SqlIdent ''dbo\.T\$EXEC''') -and
-    ($odataSrc -match 'WHERE E\.\$eName IN') -and
-    ($odataSrc -notmatch 'FORMLIMITED WHERE FORM')
-Add-Gate 'CAT-T25' $sqlShapeOk 'formlimited_audit SQL resolves ENAME via T$EXEC join (no FORM column)'
+$runnerOdataSrc = Get-Content -LiteralPath $runnerPs1 -Raw -Encoding UTF8
+function Test-FormlimitedAuditSqlShape {
+    param([string]$Src)
+    ($Src -match 'ConvertTo-SqlIdent ''dbo\.FORMLIMITED''') -and
+        ($Src -match 'ConvertTo-SqlIdent ''dbo\.T\$EXEC''') -and
+        ($Src -match 'WHERE E\.\$eName IN \(\$\(\$ph -join ') -and
+        ($Src -notmatch '\("\s*\+\s*\(\$ph -join') -and
+        ($Src -notmatch 'FORMLIMITED WHERE FORM')
+}
+$sqlShapeOk = (Test-FormlimitedAuditSqlShape $odataSrc) -and (Test-FormlimitedAuditSqlShape $runnerOdataSrc)
+Add-Gate 'CAT-T25' $sqlShapeOk 'formlimited_audit SQL: T$EXEC join + IN list expanded in here-string (not plus-concat)'
 
 if ($failed -gt 0) {
     Write-Host "Test-PriorityCatalog FAIL ($failed)"

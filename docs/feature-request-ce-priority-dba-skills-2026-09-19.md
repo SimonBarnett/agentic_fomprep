@@ -16,25 +16,25 @@ Real work already done Sep 2026 — backup cutover Phases 1–4, Sunday check ro
 
 ## Proposed skills (priority order)
 
-1. **ce-priority-backup-standard** — Target model: `F:\{instance}=data`, `G:\{instance}=logs+backups`; PRI=`FULL` (weekly full / daily diff / hourly t-log); DEV+TST=`SIMPLE` (weekly full + daily diff, no t-log chain); retention bak 14d / trn 3d; job name pattern `INST_FULL_WEEKLY` / `_DIFF_DAILY` / `_BAK_CLEANUP` / `PRI_TLOG_HOURLY`; CHECKSUM+COMPRESSION; Default BackupDirectory on G:. Reference `BACKUP_STANDARD.md` / `BACKUP_CHANGE_PLAN.md` from backup-audit-20260917.
+1. **priority-backup-standard** — Target model: `F:\{instance}=data`, `G:\{instance}=logs+backups`; PRI=`FULL` (weekly full / daily diff / hourly t-log); DEV+TST=`SIMPLE` (weekly full + daily diff, no t-log chain); retention bak 14d / trn 3d; job name pattern `INST_FULL_WEEKLY` / `_DIFF_DAILY` / `_BAK_CLEANUP` / `PRI_TLOG_HOURLY`; CHECKSUM+COMPRESSION; Default BackupDirectory on G:. Reference `BACKUP_STANDARD.md` / `BACKUP_CHANGE_PLAN.md` from backup-audit-20260917.
 
-2. **ce-priority-backup-audit** — Read-only inventory of Agent jobs, maint plans, destinations, recovery models, file presence on G:, retention/cleanup health. Output gap vs standard. Scripts: `Invoke-BackupAudit.ps1`, `Invoke-LiveAudit.ps1`.
+2. **priority-backup-audit** — Read-only inventory of Agent jobs, maint plans, destinations, recovery models, file presence on G:, retention/cleanup health. Output gap vs standard. Scripts: `Invoke-BackupAudit.ps1`, `Invoke-LiveAudit.ps1`.
 
-3. **ce-priority-backup-cutover** — Phased apply: DEV → TST → PRI; SIMPLE cutover where required; create/fix Agent jobs; **never** prune old F: backup trees without explicit confirm. Include rollback notes.
+3. **priority-backup-cutover** — Phased apply: DEV → TST → PRI; SIMPLE cutover where required; create/fix Agent jobs; **never** prune old F: backup trees without explicit confirm. Include rollback notes.
 
-4. **ce-priority-sunday-backup-check** — Sunday ~09:00 UK post-overnight: job history + msdb + files on `G:\{instance}`; PRI t-log truncation; short pass/fail for Haitch→Simon. (Matches Tedious routine `sunday-ce-priority-backup-check`.)
+4. **priority-sunday-backup-check** — Sunday ~09:00 UK post-overnight: job history + msdb + files on `G:\{instance}`; PRI t-log truncation; short pass/fail for Haitch→Simon. (Matches Tedious routine `sunday-ce-priority-backup-check`.)
 
-5. **ce-priority-instance-health-collect** — Portable `dba_instance_health_collect.sql` across `\DEV` `\TST` `\PRI`: disk/capacity (esp. mount points), memory pressure, early outage signals. Smoke-tested path pattern on DEV1.
+5. **priority-instance-health-collect** — Portable `dba_instance_health_collect.sql` across `\DEV` `\TST` `\PRI`: disk/capacity (esp. mount points), memory pressure, early outage signals. Smoke-tested path pattern on DEV1.
 
-6. **ce-priority-post-move-health** — After backup-path moves: services up, jobs/paths, smoke DIFF/TLOG + VERIFYONLY on G:. Script: `Invoke-PostMoveHealth.ps1`.
+6. **priority-post-move-health** — After backup-path moves: services up, jobs/paths, smoke DIFF/TLOG + VERIFYONLY on G:. Script: `Invoke-PostMoveHealth.ps1`.
 
-7. **ce-priority-disk-mount-layout-report** — PDF/report for IT: MDF/LDF/backup paths, per-instance jobs, free space; **monitor mount points** (`F:\pridev`, `G:\pridata`=H:) not ~1GB F:/G: stubs. Used for Gergo/Andrew.
+7. **priority-disk-mount-layout-report** — PDF/report for IT: MDF/LDF/backup paths, per-instance jobs, free space; **monitor mount points** (`F:\pridev`, `G:\pridata`=H:) not ~1GB F:/G: stubs. Used for Gergo/Andrew.
 
-8. **ce-priority-ht-delete-deadlock-triage** — When HT Ctrl+Delete → SQL 1205: pull deadlock graph; compare `FORMTRIGTEXT` PRE-DELETE bodies DEV vs TST; check `PROJACT` / `ZCLA_SMALLWORKSPLOT` indexes; Form Prep after trigger edits; coordinate Eshbel/Jester. Ops skill + SQL evidence checklist — **not** a blind auto-fix. Relates to existing `ce-priority-ht-delete-smoke`.
+8. **priority-ht-delete-deadlock-triage** — When HT Ctrl+Delete → SQL 1205: pull deadlock graph; compare `FORMTRIGTEXT` PRE-DELETE bodies DEV vs TST; check `PROJACT` / `ZCLA_SMALLWORKSPLOT` indexes; Form Prep after trigger edits; coordinate Eshbel/Jester. Ops skill + SQL evidence checklist — **not** a blind auto-fix. Relates to existing `priority-ht-delete-smoke`.
 
-9. **ce-priority-form-prep-after-sql-change** — Link/document gate after `FORMTRIGTEXT` / trigger SQL changes before UAT retry (extends existing `prepare-all-unprepared-priority-forms`).
+9. **priority-form-prep-after-sql-change** — Link/document gate after `FORMTRIGTEXT` / trigger SQL changes before UAT retry (extends existing `prepare-all-unprepared-priority-forms`).
 
-10. **ce-priority-hours-handoff-haitch** — After material DBA work: human-equivalent hours + WBS (e.g. 2.35) to Haitch; never Teams Gergo directly for backup notices (standing process).
+10. **priority-hours-handoff-haitch** — After material DBA work: human-equivalent hours + WBS (e.g. 2.35) to Haitch; never Teams Gergo directly for backup notices (standing process).
 
 ## Supporting artifacts (pull from Tedious / DEV1)
 

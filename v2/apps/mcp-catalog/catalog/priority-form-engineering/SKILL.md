@@ -10,7 +10,7 @@ description: >
 
 Grab from catalog MCP `https://mcp-priority.ntsa.uk/mcp` (`get_skill` with `name=priority-form-engineering`).
 
-Do **not** edit repo-root `src\Prepare-NamedForm.ps1`. Do **not** guess Prepare Upgrade / Install Upgrade ENAMEs. Use `v2/config/pin.json` (PinComplete names are Simon-confirmed Medatech wrappers). FORMLIMITED/RESTFLAG footgun is owned by **priority-odata-dev**. HT-DL UAT procedure is **ce-priority-ht-delete-smoke**.
+Do **not** edit repo-root `src\Prepare-NamedForm.ps1`. Do **not** guess Prepare Upgrade / Install Upgrade ENAMEs. Use `v2/config/pin.json` (PinComplete names are Simon-confirmed Medatech wrappers). FORMLIMITED/RESTFLAG footgun is owned by **priority-odata-dev**. HT-DL UAT procedure is **priority-ht-delete-smoke**.
 
 ## When
 
@@ -44,7 +44,7 @@ ENAME must match `^[A-Za-z][A-Za-z0-9_]*$`. One name per call. SDK "successfully
 - Optional harden: clear ZCLA_RECALC for that HT only; pre-purge ZCLA_SMALLWORKSPLOT for those checkpoints.
 - Open ZCLA_HTEDIT rows block HT delete ("Value exists in House Type Edits form").
 
-UAT smoke of the delete is **ce-priority-ht-delete-smoke** (TEST, company title first).
+UAT smoke of the delete is **priority-ht-delete-smoke** (TEST, company title first).
 
 ## Shells
 

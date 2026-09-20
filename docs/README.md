@@ -20,8 +20,7 @@
 | [build-and-test-plan-priority-skills-catalog-2026-09-19.md](build-and-test-plan-priority-skills-catalog-2026-09-19.md) | priority-skills-catalog | [#7](https://github.com/SimonBarnett/agentic_fomprep/issues/7) |
 | [build-and-test-plan-ce-priority-dba-skills-2026-09-19.md](build-and-test-plan-ce-priority-dba-skills-2026-09-19.md) | ce-priority-dba-skills | [#5](https://github.com/SimonBarnett/agentic_fomprep/issues/5) |
 | [build-and-test-plan-priority-generic-catalog-rename-2026-09-19.md](build-and-test-plan-priority-generic-catalog-rename-2026-09-19.md) | priority-generic-catalog-rename | [#4](https://github.com/SimonBarnett/agentic_fomprep/issues/4) |
-
-Shell compile/install FR [#6](https://github.com/SimonBarnett/agentic_fomprep/issues/6) has no separate build-and-test plan markdown; the spec PDF is the plan surface.
+| [build-and-test-plan-shell-compile-install-v2-spec-0.1.md](build-and-test-plan-shell-compile-install-v2-spec-0.1.md) | shell-compile-install v2 | [#6](https://github.com/SimonBarnett/agentic_fomprep/issues/6) |
 
 ## MRB reviews (optional `/docs` archive)
 
@@ -37,6 +36,7 @@ Shell compile/install FR [#6](https://github.com/SimonBarnett/agentic_fomprep/is
 |-------|--------------|--------|
 | [#9](https://github.com/SimonBarnett/agentic_fomprep/issues/9) | `80d8ce4` (docs merge) | `mrb`, `mrb-fail` |
 | [#11](https://github.com/SimonBarnett/agentic_fomprep/issues/11) | `7db4bcc` | `mrb`, `mrb-fail` |
+| [#20](https://github.com/SimonBarnett/agentic_fomprep/issues/20) | `1285ce7` (PR #16) | `mrb`, `mrb-pass` |
 
 No `docs/mrb-*.pdf` on `main` (MRB PDFs are out of policy).
 

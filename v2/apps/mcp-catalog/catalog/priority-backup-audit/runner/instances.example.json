@@ -2,6 +2,63 @@
   "sqlHost": "sql.example.com",
   "instanceIds": ["DEV", "TST", "PRI"],
   "reportRoot": "C:\\Users\\YOU\\priority-dba-reports\\backup-audit",
+  "allowLiveDba": false,
+  "dbaInstances": [
+    {
+      "id": "example-dev",
+      "sqlInstanceName": "DEV",
+      "sqlService": "MSSQL$DEV",
+      "agentService": "SQLAgent$DEV",
+      "backupRoot": "G:\\pridev\\MSSQL16.DEV\\MSSQL\\Backup",
+      "oldFBackupRoot": "F:\\pridev\\MSSQL16.DEV\\MSSQL\\Backup",
+      "dataMountPath": "F:\\pridev",
+      "logBackupMountPath": "G:\\pridev",
+      "dataMountPrefix": "F:\\pridev",
+      "expectedRecovery": "SIMPLE",
+      "expectedJobs": ["DEV_FULL_WEEKLY", "DEV_DIFF_DAILY", "DEV_BAK_CLEANUP"],
+      "smokeJob": "DEV_DIFF_DAILY",
+      "smokeExt": "*.bak"
+    },
+    {
+      "id": "example-tst",
+      "sqlInstanceName": "TST",
+      "sqlService": "MSSQL$TST",
+      "agentService": "SQLAgent$TST",
+      "backupRoot": "G:\\pritest\\MSSQL16.TST\\MSSQL\\Backup",
+      "oldFBackupRoot": "F:\\pritest\\MSSQL16.TST\\MSSQL\\Backup",
+      "dataMountPath": "F:\\pritest",
+      "logBackupMountPath": "G:\\pritest",
+      "dataMountPrefix": "F:\\pritest",
+      "expectedRecovery": "SIMPLE",
+      "expectedJobs": ["TST_FULL_WEEKLY", "TST_DIFF_DAILY", "TST_BAK_CLEANUP"],
+      "smokeJob": "TST_DIFF_DAILY",
+      "smokeExt": "*.bak"
+    },
+    {
+      "id": "example-pri",
+      "sqlInstanceName": "PRI",
+      "sqlService": "MSSQL$PRI",
+      "agentService": "SQLAgent$PRI",
+      "backupRoot": "G:\\pridata\\MSSQL16.PRI\\MSSQL\\Backup",
+      "oldFBackupRoot": "F:\\pridata\\MSSQL16.PRI\\MSSQL\\Backup",
+      "dataMountPath": "F:\\pridata",
+      "logBackupMountPath": "G:\\pridata",
+      "dataMountPrefix": "F:\\pridata",
+      "expectedRecovery": "FULL",
+      "expectedJobs": ["PRI_FULL_WEEKLY", "PRI_DIFF_DAILY", "PRI_TLOG_HOURLY", "PRI_BAK_CLEANUP"],
+      "smokeJob": "PRI_TLOG_HOURLY",
+      "smokeExt": "*.trn",
+      "simpleTempDb": "pritempdb"
+    }
+  ],
+  "archive": {
+    "root": "I:\\SQL_Backup_Archive_F_20260918",
+    "folders": [
+      { "name": "DEV", "expectedCountApprox": 38 },
+      { "name": "TST", "expectedCountApprox": 851 },
+      { "name": "PRI", "expectedCountApprox": 384 }
+    ]
+  },
   "instances": [
     {
       "id": "example-dev",

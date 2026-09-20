@@ -127,28 +127,19 @@ if ($Action -eq 'formlimited_audit') {
         if ([string]::IsNullOrWhiteSpace($db)) { $db = [string]$pick.sqlDatabase }
         if ([string]::IsNullOrWhiteSpace($db)) { $db = [string]$pick.company }
         if ([string]::IsNullOrWhiteSpace($db)) { $db = 'system' }
+        $pinAudit = Read-ODataAuditPins -StartDir $here
+        if (-not $pinAudit.ok) {
+            $result.reason = [string]$pinAudit.reason
+            $gapText = if ($pinAudit.gaps) { ($pinAudit.gaps | Select-Object -First 8) -join ', ' } else { 'odata audit pins' }
+            Add-ODataError -Result $result -Source 'policy' -Severity 'Blocker' -Text ("formlimited_audit SQL identifiers unpinned. No query. Gaps: " + $gapText)
+            Emit-OData $result 2 $pick
+        }
+        $built = Build-FormlimitedAuditSql -FormNames $formList -Pins $pinAudit.pins
+        $sql = $built.Sql
+        $params = $built.Parameters
         $conn = $null
         try {
             $conn = New-InstanceSqlConnection -Instance $pick -Database $db
-            $params = @{}
-            $i = 0
-            $ph = @()
-            foreach ($f in $formList) {
-                $k = "@f$i"
-                $params[$k] = $f
-                $ph += $k
-                $i++
-            }
-            $flTable = ConvertTo-SqlIdent 'dbo.FORMLIMITED'
-            $execTable = ConvertTo-SqlIdent 'dbo.T$EXEC'
-            $flExec = ConvertTo-SqlIdent 'T$EXEC'
-            $eName = ConvertTo-SqlIdent 'ENAME'
-            $sql = @"
-SELECT FL.*
-FROM $flTable FL
-INNER JOIN $execTable E ON FL.$flExec = E.$flExec
-WHERE E.$eName IN ($($ph -join ', '))
-"@
             $table = Invoke-FormPrepSql -Connection $conn -Query $sql -Parameters $params
             foreach ($row in $table.Rows) {
                 $ht = @{}

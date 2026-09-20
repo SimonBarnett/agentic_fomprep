@@ -19,6 +19,18 @@ This note records **observed** dictionary rows from the CE Priority DEV system D
 | AllowedComputer | `CE-PRIORITY-DEV1` (NetBIOS also `CE-PRIORITY-DEV`) |
 | ExecTitleColumn | `TITLE` (`T$EXEC.TITLE`) |
 
+## FORMLIMITED audit (OData `formlimited_audit`)
+
+Observed on CE DEV dictionary `system` (2026-09-19):
+
+| Pin key | Value | Evidence |
+|---|---|---|
+| `FormLimitedTable` | `dbo.FORMLIMITED` | Standard dictionary table for RESTFLAG/LIMITFLAG rows |
+| `FormLimitedExecCol` | `T$EXEC` | `FORMLIMITED` has no `FORM` column; live audit failed on `WHERE FORM IN (...)` and succeeded only after joining `FORMLIMITED.[T$EXEC]` to `T$EXEC.[T$EXEC]` filtered by `T$EXEC.ENAME` |
+| `ExecTable` / `ExecNameCol` / `ExecIdCol` | `dbo.T$EXEC` / `ENAME` / `T$EXEC` | Same as v1 `config/dev.psd1` (`ExecTable`, `ExecNameCol`, `ExecIdCol`) |
+
+Pins live in `v2/config/pin.json`. Empty audit pins refuse live SQL (`reason=pin_incomplete`).
+
 The proof runner **must** set `PRIORITY_WP0_INSTANCE=ce-priority-dev` so WP0-R\* walks this instance (allowlist id, CredMan, dictionary SQL, upgrades path). Until that env is set on the runner, `Test-WP0` skips R\* (`WP0-R-SKIP`).
 
 Align the allowlist row `id` with `ProofInstanceId`. Do not invent a second instance id.

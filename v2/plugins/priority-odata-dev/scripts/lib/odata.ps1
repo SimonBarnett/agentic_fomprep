@@ -329,3 +329,127 @@ function Invoke-ODataHttp {
         }
     }
 }
+
+function Find-V2ODataPinFile {
+    param([string]$StartDir)
+    $dirs = @()
+    if ($StartDir) { $dirs += $StartDir }
+    $cursor = $StartDir
+    for ($i = 0; $i -lt 10; $i++) {
+        $parent = Split-Path -Parent $cursor
+        if (-not $parent -or $parent -eq $cursor) { break }
+        $dirs += $parent
+        $cursor = $parent
+    }
+    foreach ($d in $dirs) {
+        $candidate = Join-Path $d 'config\pin.json'
+        if (-not (Test-Path -LiteralPath $candidate)) { continue }
+        $tools = Join-Path $d 'tools'
+        if (Test-Path -LiteralPath $tools) { return $candidate }
+    }
+    return $null
+}
+
+function Test-ODataAuditPinTokenEmpty {
+    param($Value)
+    if ($null -eq $Value) { return $true }
+    return [string]::IsNullOrWhiteSpace([string]$Value)
+}
+
+function ConvertTo-ODataAuditPinObject {
+    param($Raw)
+    return [pscustomobject]@{
+        FormLimitedTable   = [string]$Raw.FormLimitedTable
+        FormLimitedExecCol = [string]$Raw.FormLimitedExecCol
+        ExecTable          = [string]$Raw.ExecTable
+        ExecNameCol        = [string]$Raw.ExecNameCol
+        ExecIdCol          = [string]$Raw.ExecIdCol
+    }
+}
+
+function Get-ODataAuditPinGaps {
+    param($Pins)
+    $gaps = @()
+    foreach ($k in @('FormLimitedTable', 'FormLimitedExecCol', 'ExecTable', 'ExecNameCol', 'ExecIdCol')) {
+        if (Test-ODataAuditPinTokenEmpty $Pins.$k) { $gaps += $k }
+    }
+    return @($gaps)
+}
+
+function Read-ODataAuditPins {
+    param([string]$StartDir)
+    $path = Find-V2ODataPinFile -StartDir $StartDir
+    if (-not $path) {
+        return @{ ok = $false; reason = 'pin_missing'; gaps = @('pin.json'); path = $null; pins = $null }
+    }
+    $raw = Get-Content -LiteralPath $path -Raw -Encoding UTF8 | ConvertFrom-Json
+    $pins = ConvertTo-ODataAuditPinObject -Raw $raw
+    $gaps = Get-ODataAuditPinGaps -Pins $pins
+    if ($gaps.Count -gt 0) {
+        return @{ ok = $false; reason = 'pin_incomplete'; gaps = $gaps; path = $path; pins = $pins }
+    }
+    return @{ ok = $true; path = $path; pins = $pins }
+}
+
+function Build-FormlimitedAuditSql {
+    param(
+        [Parameter(Mandatory = $true)][string[]]$FormNames,
+        [Parameter(Mandatory = $true)]$Pins
+    )
+    $flTable = ConvertTo-SqlIdent $Pins.FormLimitedTable
+    $execTable = ConvertTo-SqlIdent $Pins.ExecTable
+    $flExec = ConvertTo-SqlIdent $Pins.FormLimitedExecCol
+    $eId = ConvertTo-SqlIdent $Pins.ExecIdCol
+    $eName = ConvertTo-SqlIdent $Pins.ExecNameCol
+    $params = @{}
+    $ph = @()
+    $i = 0
+    foreach ($f in $FormNames) {
+        $k = "@f$i"
+        $params[$k] = $f
+        $ph += $k
+        $i++
+    }
+    $sql = @"
+SELECT FL.*
+FROM $flTable FL
+INNER JOIN $execTable E ON FL.$flExec = E.$eId
+WHERE E.$eName IN ($($ph -join ', '))
+"@
+    return @{ Sql = $sql.Trim(); Parameters = $params }
+}
+
+function Test-FormlimitedAuditComposition {
+    param(
+        [Parameter(Mandatory = $true)][string]$Sql,
+        [Parameter(Mandatory = $true)][hashtable]$Parameters,
+        [Parameter(Mandatory = $true)][string[]]$FormNames,
+        [Parameter(Mandatory = $true)]$Pins
+    )
+    if ($FormNames.Count -lt 1) { return $false }
+    $placeholders = @()
+    for ($i = 0; $i -lt $FormNames.Count; $i++) {
+        $placeholders += "@f$i"
+    }
+    foreach ($p in $placeholders) {
+        if ($Sql -notmatch [regex]::Escape($p)) { return $false }
+    }
+    if ($Parameters.Count -ne $FormNames.Count) { return $false }
+    for ($i = 0; $i -lt $FormNames.Count; $i++) {
+        $k = "@f$i"
+        if (-not $Parameters.ContainsKey($k)) { return $false }
+        if ([string]$Parameters[$k] -cne [string]$FormNames[$i]) { return $false }
+    }
+    foreach ($f in $FormNames) {
+        if ($Sql -match ("'"+[regex]::Escape($f)+"'")) { return $false }
+        if ($Sql -match ('"'+[regex]::Escape($f)+'"')) { return $false }
+    }
+    $flExec = ConvertTo-SqlIdent $Pins.FormLimitedExecCol
+    $eId = ConvertTo-SqlIdent $Pins.ExecIdCol
+    $eName = ConvertTo-SqlIdent $Pins.ExecNameCol
+    $joinFrag = "FL.$flExec = E.$eId"
+    if ($Sql.IndexOf($joinFrag, [StringComparison]::Ordinal) -lt 0) { return $false }
+    $inFrag = "E.$eName IN ($($placeholders -join ', '))"
+    if ($Sql.IndexOf($inFrag, [StringComparison]::Ordinal) -lt 0) { return $false }
+    return $true
+}

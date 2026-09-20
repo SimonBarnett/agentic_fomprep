@@ -31,6 +31,7 @@
 
 ### P4 — Tests + docs
 - Extend Test-Pack (`v2/tools/Test-PriorityCatalog.ps1`)
+- **CAT-T25 mutation bar:** composed `formlimited_audit` must go red when parameter binding is removed, the join targets `ENAME` instead of the pinned exec id column, or form names are inlined as literals (see `Build-FormlimitedAuditSql` / `Test-FormlimitedAuditComposition` in `priority-odata-dev` lib).
 - Commit/push; Eshbel hostile MRB + UAT (OData dump + named Form Prep smoke when DEV1 up)
 
 ## Success

@@ -24,7 +24,7 @@ Offline WP0-T* gates in that file are green (`failed=0`). That is not live compi
 
 ## Historical note (FORM column bug)
 
-Earlier draft text claimed live `formlimited_audit` on DEV1 and cited `Invalid column name 'FORM'`. The defect was real: `FORMLIMITED` has no `FORM` column; filter via `FORMLIMITED.[T$EXEC]` joined to `T$EXEC.ENAME`. **Required fix 1** (issue #9) lands the join in both `Invoke-PriorityOData.ps1` copies plus offline gate **CAT-T25** in `Test-PriorityCatalog.ps1`. Fixture mode cannot mask the SQL shape.
+Earlier draft text claimed live `formlimited_audit` on DEV1 and cited `Invalid column name 'FORM'`. The defect was real: `FORMLIMITED` has no `FORM` column; filter via `FORMLIMITED.[T$EXEC]` joined to `T$EXEC.ENAME`. **Required fix 1** (issue #9): first attempt at `c0355d8` composed an invalid `IN` clause inside a here-string; **CAT-T25** (source-text regex) passed on that broken source. Repair at `7db4bcc` expanded the placeholder list correctly; the gate was still regex-only until a later fix composes the statement offline (**CAT-T25** mutation bar). Audit SQL identifiers are pinned in `v2/config/pin.json` (`docs/wp0-recon.md`). Live execution on a proof instance is still red (#7 acceptance 2).
 
 ## Spec MUST / MUST NOT (walker + catalog)
 
@@ -44,7 +44,7 @@ Earlier draft text claimed live `formlimited_audit` on DEV1 and cited `Invalid c
 
 ## Required fixes (issue #9, ordered)
 
-1. **Fix `formlimited_audit` SQL** — `FORMLIMITED.[T$EXEC]` + `T$EXEC.ENAME` join; offline CAT-T25. **Addressed** on the fix branch for this MRB.
+1. **Fix `formlimited_audit` SQL** — `FORMLIMITED.[T$EXEC]` + `T$EXEC.ENAME` join; pins + composed **CAT-T25** (not source regex). Broken at `c0355d8`, repaired at `7db4bcc`; gate/compose follow-up on issue #9 fix branch. Live audit artefact still red.
 2. **Withdraw false R1–R7 PASS claims**; committed WP0 evidence = `wp0-last.json` with WP0-R-SKIP when unset. **Addressed** in this doc.
 3. **De-dupe MRB docs** — keep this file; short duplicate is a pointer; no `docs/mrb-*.pdf`. **Addressed**; see `docs/README.md`.
 4. **Verdict vocabulary** — off-instance slice is **PASS-nits** (not PASS-with-nits). **Addressed** in this doc.

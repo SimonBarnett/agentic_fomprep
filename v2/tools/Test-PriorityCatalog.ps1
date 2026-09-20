@@ -84,7 +84,26 @@ $v1diff = & git diff -- src/Prepare-NamedForm.ps1 2>$null | Out-String
 $pindiff = & git diff -- v2/config/pin.json v2/config/pin.psd1 2>$null | Out-String
 Pop-Location
 Add-Gate 'CAT-T5' ([string]::IsNullOrWhiteSpace($v1diff)) 'src\Prepare-NamedForm.ps1 untouched'
-Add-Gate 'CAT-T6' ([string]::IsNullOrWhiteSpace($pindiff)) 'pin.json / pin.psd1 untouched (no guessed ENAMEs)'
+$pinJsonPath = Join-Path $v2 'config\pin.json'
+$pinObj = Get-Content -LiteralPath $pinJsonPath -Raw -Encoding UTF8 | ConvertFrom-Json
+$auditPinOk = ($pinObj.FormLimitedTable -eq 'dbo.FORMLIMITED') -and
+    ($pinObj.FormLimitedExecCol -eq 'T$EXEC') -and
+    ($pinObj.ExecTable -eq 'dbo.T$EXEC') -and
+    ($pinObj.ExecNameCol -eq 'ENAME') -and
+    ($pinObj.ExecIdCol -eq 'T$EXEC') -and
+    ($pinObj.PrepareUpgradeEname -eq 'ZEMG_TAKEUPGRADE') -and
+    ($pinObj.InstallUpgradeEname -eq 'ZEMG_EXECUPGRADES')
+$shellPinDiff = $false
+if (-not [string]::IsNullOrWhiteSpace($pindiff)) {
+    foreach ($line in ($pindiff -split '\r?\n')) {
+        if ($line -notmatch '^[+-]') { continue }
+        if ($line -match 'PrepareUpgradeEname|PrepareUpgradeType|InstallUpgradeEname|InstallUpgradeType|VersionRevisionsEname|RevisionInputStep|FilePathInputStep|WcfFileStepWorks|DbiMarker') {
+            $shellPinDiff = $true
+            break
+        }
+    }
+}
+Add-Gate 'CAT-T6' ($auditPinOk -and (-not $shellPinDiff)) 'pin.json audit SQL identifiers pinned (shell ENAMEs unchanged)'
 
 $market = Get-Content -LiteralPath (Join-Path $repo '.grok-plugin\marketplace.json') -Raw | ConvertFrom-Json
 $plugNames = @($market.plugins | ForEach-Object { $_.name })
@@ -236,19 +255,31 @@ Add-Gate 'CAT-T24' $htOk 'HT-DL smoke catalog present with TEST company pitfall'
 $runnerPs1 = Join-Path $catalog 'priority-odata-dev\runner\Invoke-PriorityOData.ps1'
 Add-Gate 'CAT-T21' (Test-Path -LiteralPath $runnerPs1) 'catalog runner files present for get_runner_files'
 
-$odataRunner = Join-Path $v2 'plugins\priority-odata-dev\scripts\Invoke-PriorityOData.ps1'
-$odataSrc = Get-Content -LiteralPath $odataRunner -Raw -Encoding UTF8
-$runnerOdataSrc = Get-Content -LiteralPath $runnerPs1 -Raw -Encoding UTF8
-function Test-FormlimitedAuditSqlShape {
-    param([string]$Src)
-    ($Src -match 'ConvertTo-SqlIdent ''dbo\.FORMLIMITED''') -and
-        ($Src -match 'ConvertTo-SqlIdent ''dbo\.T\$EXEC''') -and
-        ($Src -match 'WHERE E\.\$eName IN \(\$\(\$ph -join ') -and
-        ($Src -notmatch '\("\s*\+\s*\(\$ph -join') -and
-        ($Src -notmatch 'FORMLIMITED WHERE FORM')
+$odataLib = Join-Path $v2 'plugins\priority-odata-dev\scripts\lib'
+. (Join-Path $odataLib 'sql.ps1')
+. (Join-Path $odataLib 'odata.ps1')
+
+$pinAudit = Read-ODataAuditPins -StartDir $odataLib
+$auditForms = @('PART', 'PARTLONGDESC')
+$composeOk = $false
+$mutationsOk = $false
+if ($pinAudit.ok) {
+    $built = Build-FormlimitedAuditSql -FormNames $auditForms -Pins $pinAudit.pins
+    $composeOk = Test-FormlimitedAuditComposition -Sql $built.Sql -Parameters $built.Parameters -FormNames $auditForms -Pins $pinAudit.pins
+    $mut1 = Test-FormlimitedAuditComposition -Sql $built.Sql -Parameters @{} -FormNames $auditForms -Pins $pinAudit.pins
+    $badJoin = $built.Sql.Replace('FL.[T$EXEC] = E.[T$EXEC]', 'FL.[T$EXEC] = E.[ENAME]')
+    $mut2 = Test-FormlimitedAuditComposition -Sql $badJoin -Parameters $built.Parameters -FormNames $auditForms -Pins $pinAudit.pins
+    $badLit = $built.Sql -replace '@f0', "'PART'"
+    $mut3 = Test-FormlimitedAuditComposition -Sql $badLit -Parameters $built.Parameters -FormNames $auditForms -Pins $pinAudit.pins
+    $mutationsOk = (-not $mut1) -and (-not $mut2) -and (-not $mut3)
 }
-$sqlShapeOk = (Test-FormlimitedAuditSqlShape $odataSrc) -and (Test-FormlimitedAuditSqlShape $runnerOdataSrc)
-Add-Gate 'CAT-T25' $sqlShapeOk 'formlimited_audit SQL: T$EXEC join + IN list expanded in here-string (not plus-concat)'
+Add-Gate 'CAT-T25' ($composeOk -and $mutationsOk) 'formlimited_audit: composed SQL + parameter binding; mutations (missing bind, bad join, literal) go red'
+
+$pluginOdata = Join-Path $v2 'plugins\priority-odata-dev\scripts\Invoke-PriorityOData.ps1'
+$runnerOdata = Join-Path $catalog 'priority-odata-dev\runner\Invoke-PriorityOData.ps1'
+$hashPlugin = (Get-FileHash -LiteralPath $pluginOdata -Algorithm SHA256).Hash
+$hashRunner = (Get-FileHash -LiteralPath $runnerOdata -Algorithm SHA256).Hash
+Add-Gate 'CAT-T26' ($hashPlugin -eq $hashRunner) 'priority-odata-dev plugin and catalog Invoke-PriorityOData.ps1 byte-identical'
 
 if ($failed -gt 0) {
     Write-Host "Test-PriorityCatalog FAIL ($failed)"

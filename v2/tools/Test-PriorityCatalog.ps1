@@ -311,6 +311,76 @@ Add-Gate 'CAT-T30' ($secretHits.Count -eq 0) $(if ($secretHits.Count -eq 0) { 'n
 $auditRunner = Join-Path $catalog 'priority-backup-audit\runner\Invoke-PriorityBackupAudit.ps1'
 Add-Gate 'CAT-T31' (Test-Path -LiteralPath $auditRunner) 'priority-backup-audit runner present'
 
+function Invoke-DbaRunner {
+    param([string]$ScriptPath, [string[]]$ArgList)
+    $all = @('-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', $ScriptPath) + $ArgList
+    $sw = [System.Diagnostics.Stopwatch]::StartNew()
+    $out = & powershell.exe @all 2>&1 | Out-String
+    $sw.Stop()
+    $code = $LASTEXITCODE
+    $jsonText = Get-JsonLastLine $out
+    $obj = $null
+    if ($jsonText) {
+        try { $obj = $jsonText | ConvertFrom-Json } catch { $obj = $null }
+    }
+    return [pscustomobject]@{
+        ExitCode   = $code
+        StdOut     = $out
+        Json       = $obj
+        ElapsedSec = $sw.Elapsed.TotalSeconds
+    }
+}
+
+$sundayRunner = Join-Path $catalog 'priority-sunday-backup-check\runner\Invoke-SundayBackupCheck.ps1'
+$sundayDry = Invoke-DbaRunner -ScriptPath $sundayRunner -ArgList @('-DryRun')
+$sundayDryOk = $sundayDry.ExitCode -eq 0 -and $sundayDry.Json.ok -eq $true -and $sundayDry.Json.dryRun -eq $true
+Add-Gate 'CAT-T32' $sundayDryOk 'Sunday -DryRun checklist without instances.json'
+
+$missingCfg = Join-Path $env:TEMP ('dba-missing-' + [guid]::NewGuid().ToString('n') + '.json')
+$auditNoCfg = Invoke-DbaRunner -ScriptPath $auditRunner -ArgList @('-InstancesPath', $missingCfg)
+Add-Gate 'CAT-T33' ($auditNoCfg.ExitCode -eq 2 -and $auditNoCfg.Json.reason -eq 'config_error') 'backup-audit missing config exit 2'
+
+$postRunner = Join-Path $catalog 'priority-post-move-health\runner\Invoke-PriorityPostMoveHealth.ps1'
+$postNoCfg = Invoke-DbaRunner -ScriptPath $postRunner -ArgList @('-InstancesPath', $missingCfg)
+Add-Gate 'CAT-T34' ($postNoCfg.ExitCode -eq 2 -and $postNoCfg.Json.reason -eq 'config_error') 'post-move missing config exit 2'
+
+$healthRunner = Join-Path $catalog 'priority-instance-health-collect\runner\Invoke-InstanceHealthCollect.ps1'
+$healthNoCfg = Invoke-DbaRunner -ScriptPath $healthRunner -ArgList @('-InstancesPath', $missingCfg)
+Add-Gate 'CAT-T35' ($healthNoCfg.ExitCode -eq 2 -and $healthNoCfg.Json.reason -eq 'config_error') 'health-collect missing config exit 2'
+
+$dbaTmp = Join-Path $env:TEMP ('dba-cat-' + [guid]::NewGuid().ToString('n'))
+New-Item -ItemType Directory -Path $dbaTmp -Force | Out-Null
+$exampleCfg = Join-Path $catalog 'priority-backup-audit\runner\instances.example.json'
+$fixtureCfg = Join-Path $dbaTmp 'instances.json'
+$exRaw = Get-Content -LiteralPath $exampleCfg -Raw -Encoding UTF8 | ConvertFrom-Json
+$exRaw.instanceIds = @('DEV')
+$exRaw | ConvertTo-Json -Depth 12 | Set-Content -LiteralPath $fixtureCfg -Encoding UTF8
+$postSkip = Invoke-DbaRunner -ScriptPath $postRunner -ArgList @('-InstancesPath', $fixtureCfg)
+$postSkipOk = $postSkip.ExitCode -eq 2 -and $postSkip.Json.reason -eq 'live_skip' -and $postSkip.ElapsedSec -lt 30
+Add-Gate 'CAT-T36' $postSkipOk $(if ($postSkipOk) { 'post-move example config live_skip without SQL/UNC' } else { "exit=$($postSkip.ExitCode) reason=$($postSkip.Json.reason) sec=$([math]::Round($postSkip.ElapsedSec,2))" })
+
+$ceLiteralHits = @()
+$cePatterns = @('10\.220\.0\.5', 'SQL_Backup_Archive_F_20260918', '\bpridev\b', '\bpritest\b', '\bpridata\b')
+$dbaPs1Roots = @(
+    (Join-Path $repo 'docs\skill-sources\dba')
+)
+foreach ($dbaId in $dbaIds) {
+    $dbaPs1Roots += Join-Path $catalog "$dbaId\runner"
+}
+foreach ($root in $dbaPs1Roots) {
+    if (-not (Test-Path -LiteralPath $root)) { continue }
+    Get-ChildItem -Path $root -Recurse -File -Filter '*.ps1' -ErrorAction SilentlyContinue | ForEach-Object {
+        $text = Get-Content -LiteralPath $_.FullName -Raw -Encoding UTF8 -ErrorAction SilentlyContinue
+        if (-not $text) { return }
+        foreach ($pat in $cePatterns) {
+            if ($text -match $pat) { $ceLiteralHits += ($_.FullName + ':' + $pat) }
+        }
+    }
+}
+Add-Gate 'CAT-T37' ($ceLiteralHits.Count -eq 0) $(if ($ceLiteralHits.Count -eq 0) { 'DBA .ps1 logic has no CE host/mount/archive constants' } else { $ceLiteralHits -join '; ' })
+
+Remove-Item -LiteralPath $dbaTmp -Recurse -Force -ErrorAction SilentlyContinue
+
 if ($failed -gt 0) {
     Write-Host "Test-PriorityCatalog FAIL ($failed)"
     exit 1

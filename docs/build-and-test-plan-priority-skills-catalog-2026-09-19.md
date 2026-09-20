@@ -2,6 +2,7 @@
 
 **FR:** docs/feature-request-priority-skills-catalog-2026-09-19.md  
 **Repo:** SimonBarnett/agentic_fomprep  
+**GitHub (MRB home):** https://github.com/SimonBarnett/agentic_fomprep/issues/7  
 
 ## Phases
 
@@ -30,8 +31,10 @@
 - Gates C-G stay parked until UNPARK
 
 ### P4 — Tests + docs
-- Extend Test-Pack (`v2/tools/Test-PriorityCatalog.ps1`)
-- Commit/push; Eshbel hostile MRB + UAT (OData dump + named Form Prep smoke when DEV1 up)
+- Extend Test-Pack (`v2/tools/Test-PriorityCatalog.ps1`) — offline gates **CAT-T1…CAT-T25** (catalog A–D, OData plugin, grab-only MCP, v1/pin untouched, `formlimited_audit` fixture + SQL shape).
+- Run: `powershell -NoProfile -ExecutionPolicy Bypass -File v2\tools\Test-PriorityCatalog.ps1`
+- Live acceptance (issue #7): `formlimited_audit` on proof SQL joins `dbo.FORMLIMITED` to `dbo.T$EXEC` on `T$EXEC` and filters `ENAME` (not `FORMLIMITED.FORM`, which is not in the CE dictionary).
+- Commit/push; open PR for hostile MRB on issue #7 (Bob chairs UAT; no merge from this job).
 
 ## Success
 

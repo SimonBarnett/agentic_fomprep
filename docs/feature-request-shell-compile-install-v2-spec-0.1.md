@@ -1,5 +1,6 @@
 # Feature request — Priority v2 shell compile + install (spec 0.1)
 
+**Intake issue / MRB home:** [GitHub issue #6](https://github.com/SimonBarnett/agentic_fomprep/issues/6)  
 **Source PDF:** [feature-request-shell-compile-install-v2-spec-0.1.pdf](./feature-request-shell-compile-install-v2-spec-0.1.pdf)  
 **Date:** 2026-09-18 · **Scope:** v2 only · **Do not change** repo-root v1 (`src\Prepare-NamedForm.ps1`)  
 **Status in repo:** parked in `/docs` for later — build agent not started.

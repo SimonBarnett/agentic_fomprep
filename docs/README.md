@@ -1,32 +1,44 @@
 # Docs index
 
-Source-of-truth tracking for MRB and feature requests is moving to [GitHub issues](feature-request-git-mrb-intake-source-of-truth-2026-09-20.md) (see issue #8 when filed). This index lists parked markdown on `main`.
+**GitHub issues** are the source of truth for feature requests and hostile MRB verdicts ([FR #8](https://github.com/SimonBarnett/agentic_fomprep/issues/8)). Each parked FR has a `feature-request` issue linking its markdown path. New MRB verdicts are filed as issues with labels `mrb` + `mrb-fail` or `mrb-pass` against the FR (or follow-up push); optional `/docs` copies must link back to that issue. Bob chairs MRB on the FR issue unless a child MRB issue is opened for a specific SHA.
 
 ## Feature requests
 
-| Document | Notes |
-|----------|--------|
-| [feature-request-shell-compile-install-v2-spec-0.1.md](feature-request-shell-compile-install-v2-spec-0.1.md) | v2 shell compile/install FR |
-| [feature-request-priority-skills-catalog-2026-09-19.md](feature-request-priority-skills-catalog-2026-09-19.md) | Priority skills catalog |
-| [feature-request-ce-priority-dba-skills-2026-09-19.md](feature-request-ce-priority-dba-skills-2026-09-19.md) | CE Priority DBA skills |
-| [feature-request-priority-generic-catalog-rename-2026-09-19.md](feature-request-priority-generic-catalog-rename-2026-09-19.md) | `ce-priority-*` → `priority-*` rename |
-| [feature-request-git-mrb-intake-source-of-truth-2026-09-20.md](feature-request-git-mrb-intake-source-of-truth-2026-09-20.md) | Issues as MRB/FR home |
+| Document | GitHub issue | Notes |
+|----------|--------------|--------|
+| [feature-request-shell-compile-install-v2-spec-0.1.md](feature-request-shell-compile-install-v2-spec-0.1.md) | [#6](https://github.com/SimonBarnett/agentic_fomprep/issues/6) | v2 shell compile/install FR (+ source PDF) |
+| [feature-request-priority-skills-catalog-2026-09-19.md](feature-request-priority-skills-catalog-2026-09-19.md) | [#7](https://github.com/SimonBarnett/agentic_fomprep/issues/7) | Priority skills catalog |
+| [feature-request-ce-priority-dba-skills-2026-09-19.md](feature-request-ce-priority-dba-skills-2026-09-19.md) | [#5](https://github.com/SimonBarnett/agentic_fomprep/issues/5) | CE Priority DBA skills |
+| [feature-request-priority-generic-catalog-rename-2026-09-19.md](feature-request-priority-generic-catalog-rename-2026-09-19.md) | [#4](https://github.com/SimonBarnett/agentic_fomprep/issues/4) | `ce-priority-*` → `priority-*` rename |
+| [feature-request-sql-pins-and-composed-sql-gates-2026-09-20.md](feature-request-sql-pins-and-composed-sql-gates-2026-09-20.md) | [#10](https://github.com/SimonBarnett/agentic_fomprep/issues/10) | Pin SQL identifiers; gate composed SQL |
+| [feature-request-git-mrb-intake-source-of-truth-2026-09-20.md](feature-request-git-mrb-intake-source-of-truth-2026-09-20.md) | [#8](https://github.com/SimonBarnett/agentic_fomprep/issues/8) | Issues as MRB/FR home (this intake) |
 
 ## Build and test plans
 
-| Document | Related FR |
-|----------|------------|
-| [build-and-test-plan-priority-skills-catalog-2026-09-19.md](build-and-test-plan-priority-skills-catalog-2026-09-19.md) | priority-skills-catalog |
-| [build-and-test-plan-ce-priority-dba-skills-2026-09-19.md](build-and-test-plan-ce-priority-dba-skills-2026-09-19.md) | ce-priority-dba-skills |
-| [build-and-test-plan-priority-generic-catalog-rename-2026-09-19.md](build-and-test-plan-priority-generic-catalog-rename-2026-09-19.md) | priority-generic-catalog-rename |
+| Document | Related FR | GitHub issue |
+|----------|------------|--------------|
+| [build-and-test-plan-priority-skills-catalog-2026-09-19.md](build-and-test-plan-priority-skills-catalog-2026-09-19.md) | priority-skills-catalog | [#7](https://github.com/SimonBarnett/agentic_fomprep/issues/7) |
+| [build-and-test-plan-ce-priority-dba-skills-2026-09-19.md](build-and-test-plan-ce-priority-dba-skills-2026-09-19.md) | ce-priority-dba-skills | [#5](https://github.com/SimonBarnett/agentic_fomprep/issues/5) |
+| [build-and-test-plan-priority-generic-catalog-rename-2026-09-19.md](build-and-test-plan-priority-generic-catalog-rename-2026-09-19.md) | priority-generic-catalog-rename | [#4](https://github.com/SimonBarnett/agentic_fomprep/issues/4) |
 
-## MRB reviews
+Shell compile/install FR [#6](https://github.com/SimonBarnett/agentic_fomprep/issues/6) has no separate build-and-test plan markdown; the spec PDF is the plan surface.
 
-| Document | Reviewed SHA / tip | Verdict | Issue |
-|----------|-------------------|---------|-------|
-| [mrb-2026-09-19-v1.md](mrb-2026-09-19-v1.md) | WP0 skeleton (pre-`23e7e64`) | PASS-with-nits (historical) | — |
-| [mrb-2026-09-19-wcf-walker-eshbel.md](mrb-2026-09-19-wcf-walker-eshbel.md) | `23e7e64` (+ catalog on same line) | PASS-nits (off-instance) | [#9](https://github.com/SimonBarnett/agentic_fomprep/issues/9) |
+## MRB reviews (optional `/docs` archive)
+
+| Document | Reviewed SHA / tip | Verdict (doc) | MRB issue |
+|----------|-------------------|---------------|-----------|
+| [mrb-2026-09-19-v1.md](mrb-2026-09-19-v1.md) | WP0 skeleton (pre-`23e7e64`) | PASS-with-nits (historical token) | Pre-intake archive; FR [#6](https://github.com/SimonBarnett/agentic_fomprep/issues/6) |
+| [mrb-2026-09-19-wcf-walker-eshbel.md](mrb-2026-09-19-wcf-walker-eshbel.md) | `23e7e64` | PASS-nits (off-instance slice) | [#9](https://github.com/SimonBarnett/agentic_fomprep/issues/9) (FAIL on merge `80d8ce4`; narrative doc canonical) |
 | [mrb-wcf-walker-23e7e64-eshbel-2026-09-19.md](mrb-wcf-walker-23e7e64-eshbel-2026-09-19.md) | — | Pointer only | [#9](https://github.com/SimonBarnett/agentic_fomprep/issues/9) |
+
+## MRB issues without a `/docs` copy (GitHub only)
+
+| Issue | SHA reviewed | Labels |
+|-------|--------------|--------|
+| [#9](https://github.com/SimonBarnett/agentic_fomprep/issues/9) | `80d8ce4` (docs merge) | `mrb`, `mrb-fail` |
+| [#11](https://github.com/SimonBarnett/agentic_fomprep/issues/11) | `7db4bcc` | `mrb`, `mrb-fail` |
+
+No `docs/mrb-*.pdf` on `main` (MRB PDFs are out of policy).
 
 ## WP0 / operator
 

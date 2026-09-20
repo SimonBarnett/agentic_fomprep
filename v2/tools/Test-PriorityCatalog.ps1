@@ -31,7 +31,10 @@ function Invoke-ODataRunner {
     param([string[]]$ArgList)
     $file = Join-Path $v2 'plugins\priority-odata-dev\scripts\Invoke-PriorityOData.ps1'
     $all = @('-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', $file) + $ArgList
-    $out = & powershell.exe @all 2>&1 | Out-String
+    $prevEap = $ErrorActionPreference
+    $ErrorActionPreference = 'Continue'
+    $out = & powershell.exe @all 2>&1 | ForEach-Object { "$_" } | Out-String
+    $ErrorActionPreference = $prevEap
     $code = $LASTEXITCODE
     $jsonText = Get-JsonLastLine $out
     $obj = $null
@@ -81,10 +84,20 @@ Add-Gate 'CAT-T4' $grabOnly 'catalog MCP handlers stay grab-only (no odata_get)'
 
 Push-Location $repo
 $v1diff = & git diff -- src/Prepare-NamedForm.ps1 2>$null | Out-String
-$pindiff = & git diff -- v2/config/pin.json v2/config/pin.psd1 2>$null | Out-String
 Pop-Location
 Add-Gate 'CAT-T5' ([string]::IsNullOrWhiteSpace($v1diff)) 'src\Prepare-NamedForm.ps1 untouched'
-Add-Gate 'CAT-T6' ([string]::IsNullOrWhiteSpace($pindiff)) 'pin.json / pin.psd1 untouched (no guessed ENAMEs)'
+. (Join-Path $v2 'lib\pin.ps1')
+. (Join-Path $v2 'lib\sql.ps1')
+. (Join-Path $v2 'plugins\priority-odata-dev\scripts\lib\formlimited-audit-sql.ps1')
+$pinJsonPath = Join-Path $v2 'config\pin.json'
+$pinPsd1Path = Join-Path $v2 'config\pin.psd1'
+$pinFromJson = Convert-ShellPinObject -Raw (Get-Content -LiteralPath $pinJsonPath -Raw | ConvertFrom-Json)
+$pinFromPsd1 = Convert-ShellPinObject -Raw (Import-PowerShellDataFile -Path $pinPsd1Path)
+$sqlGapsJson = @(Get-SqlPinGaps -Pin $pinFromJson)
+$sqlGapsPsd1 = @(Get-SqlPinGaps -Pin $pinFromPsd1)
+$formGapsJson = @(Get-FormPrepSqlPinGaps -Pin $pinFromJson)
+$t6ok = ($sqlGapsJson.Count -eq 0) -and ($sqlGapsPsd1.Count -eq 0) -and ($formGapsJson.Count -eq 0) -and ([bool]$pinFromJson.PinComplete -eq [bool]$pinFromPsd1.PinComplete)
+Add-Gate 'CAT-T6' $t6ok $(if ($t6ok) { 'pin.json + pin.psd1 SQL identifier pins populated' } else { 'SQL pin gaps json=' + ($sqlGapsJson -join ',') + ' psd1=' + ($sqlGapsPsd1 -join ',') })
 
 $market = Get-Content -LiteralPath (Join-Path $repo '.grok-plugin\marketplace.json') -Raw | ConvertFrom-Json
 $plugNames = @($market.plugins | ForEach-Object { $_.name })
@@ -236,19 +249,66 @@ Add-Gate 'CAT-T24' $htOk 'HT-DL smoke catalog present with TEST company pitfall'
 $runnerPs1 = Join-Path $catalog 'priority-odata-dev\runner\Invoke-PriorityOData.ps1'
 Add-Gate 'CAT-T21' (Test-Path -LiteralPath $runnerPs1) 'catalog runner files present for get_runner_files'
 
-$odataRunner = Join-Path $v2 'plugins\priority-odata-dev\scripts\Invoke-PriorityOData.ps1'
-$odataSrc = Get-Content -LiteralPath $odataRunner -Raw -Encoding UTF8
-$runnerOdataSrc = Get-Content -LiteralPath $runnerPs1 -Raw -Encoding UTF8
-function Test-FormlimitedAuditSqlShape {
-    param([string]$Src)
-    ($Src -match 'ConvertTo-SqlIdent ''dbo\.FORMLIMITED''') -and
-        ($Src -match 'ConvertTo-SqlIdent ''dbo\.T\$EXEC''') -and
-        ($Src -match 'WHERE E\.\$eName IN \(\$\(\$ph -join ') -and
-        ($Src -notmatch '\("\s*\+\s*\(\$ph -join') -and
-        ($Src -notmatch 'FORMLIMITED WHERE FORM')
+$fixtureInst = Join-Path $env:TEMP ('cat-compose-inst-' + [guid]::NewGuid().ToString('n') + '.json')
+@{
+    instances = @(
+        @{
+            id          = 'fixture-dev'
+            title       = 'Fixture DEV'
+            webBaseUrl  = 'https://priority.example.com'
+            sqlInstance = 'sql.example.com\DEV'
+            sqlDatabase = 'system'
+            company     = 'base'
+            allowLive   = $false
+        }
+    )
+} | ConvertTo-Json -Depth 5 | Set-Content -LiteralPath $fixtureInst -Encoding UTF8
+$compose = Invoke-ODataRunner @(
+    '-Action', 'formlimited_audit', '-InstanceId', 'fixture-dev', '-Forms', 'PARTLONGDESC,PART',
+    '-InstancesPath', $fixtureInst, '-ComposeSql', '-PinPath', $pinJsonPath
+)
+Remove-Item -LiteralPath $fixtureInst -Force -ErrorAction SilentlyContinue
+$formsUnderTest = @('PARTLONGDESC', 'PART')
+$composedOk = $false
+$composedDetail = 'compose runner failed'
+if ($compose.ExitCode -eq 0 -and $compose.Json -and $compose.Json.sql) {
+    $paramHt = @{}
+    foreach ($ph in @($compose.Json.sqlParameters)) {
+        $idx = [int]($ph -replace '^@f', '')
+        $paramHt[$ph] = $formsUnderTest[$idx]
+    }
+    $composedOk = Test-FormLimitedAuditComposed -Sql ([string]$compose.Json.sql) -Parameters $paramHt -FormNames $formsUnderTest -Pin $pinFromJson
+    $composedDetail = if ($composedOk) { 'formlimited_audit composed SQL + bound @fN placeholders' } else { 'composed SQL failed structural assert' }
 }
-$sqlShapeOk = (Test-FormlimitedAuditSqlShape $odataSrc) -and (Test-FormlimitedAuditSqlShape $runnerOdataSrc)
-Add-Gate 'CAT-T25' $sqlShapeOk 'formlimited_audit SQL: T$EXEC join + IN list expanded in here-string (not plus-concat)'
+Add-Gate 'CAT-T25' $composedOk $composedDetail
+
+$builtBase = New-FormLimitedAuditSql -Pin $pinFromJson -FormNames $formsUnderTest
+$mutNoBind = Test-FormLimitedAuditComposed -Sql $builtBase.Sql -Parameters @{} -FormNames $formsUnderTest -Pin $pinFromJson
+$mutBadJoin = $builtBase.Sql -replace 'FL\.\[T\$EXEC\] = E\.\[T\$EXEC\]', 'FL.[T$EXEC] = E.[ENAME]'
+$mutBadJoinFail = -not (Test-FormLimitedAuditComposed -Sql $mutBadJoin -Parameters $builtBase.Parameters -FormNames $formsUnderTest -Pin $pinFromJson)
+$mutInline = $builtBase.Sql -replace '@f0', "'PARTLONGDESC'"
+$mutInlineFail = -not (Test-FormLimitedAuditComposed -Sql $mutInline -Parameters $builtBase.Parameters -FormNames $formsUnderTest -Pin $pinFromJson)
+Add-Gate 'CAT-T26' ((-not $mutNoBind) -and $mutBadJoinFail -and $mutInlineFail) 'formlimited_audit mutation bar: no-bind, bad-join, inline literal turn gate red'
+
+$hardcodedHits = @()
+$sqlScriptGlobs = @(
+    (Join-Path $v2 'plugins\priority-odata-dev\scripts\*.ps1'),
+    (Join-Path $v2 'plugins\priority-formprep\scripts\*.ps1'),
+    (Join-Path $v2 'plugins\priority-shell-compile\scripts\*.ps1'),
+    (Join-Path $v2 'plugins\priority-shell-install\scripts\*.ps1')
+)
+foreach ($g in $sqlScriptGlobs) {
+    foreach ($f in (Get-ChildItem -LiteralPath (Split-Path $g) -Filter (Split-Path $g -Leaf) -ErrorAction SilentlyContinue)) {
+        $raw = Get-Content -LiteralPath $f.FullName -Raw -Encoding UTF8
+        if ($raw -match "ConvertTo-SqlIdent\s+'dbo\.") { $hardcodedHits += $f.FullName }
+    }
+}
+Add-Gate 'CAT-T27' ($hardcodedHits.Count -eq 0) $(if ($hardcodedHits.Count -eq 0) { 'no hardcoded dbo.* ConvertTo-SqlIdent in v2 product runners' } else { ($hardcodedHits -join '; ') })
+
+$odataRunner = Join-Path $v2 'plugins\priority-odata-dev\scripts\Invoke-PriorityOData.ps1'
+$runnerHash = (Get-FileHash -LiteralPath $odataRunner -Algorithm SHA256).Hash
+$catalogRunnerHash = (Get-FileHash -LiteralPath $runnerPs1 -Algorithm SHA256).Hash
+Add-Gate 'CAT-T28' ($runnerHash -eq $catalogRunnerHash) 'priority-odata-dev plugin runner byte-identical to catalog runner copy'
 
 if ($failed -gt 0) {
     Write-Host "Test-PriorityCatalog FAIL ($failed)"

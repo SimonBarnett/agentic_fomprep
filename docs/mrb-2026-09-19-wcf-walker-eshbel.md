@@ -24,7 +24,7 @@ Offline WP0-T* gates in that file are green (`failed=0`). That is not live compi
 
 ## Historical note (FORM column bug)
 
-Earlier draft text claimed live `formlimited_audit` on DEV1 and cited `Invalid column name 'FORM'`. The defect was real: `FORMLIMITED` has no `FORM` column; filter via `FORMLIMITED.[T$EXEC]` joined to `T$EXEC.ENAME`. **Required fix 1** (issue #9) lands the join in both `Invoke-PriorityOData.ps1` copies plus offline gate **CAT-T25** in `Test-PriorityCatalog.ps1`. Fixture mode cannot mask the SQL shape.
+Earlier draft text claimed live `formlimited_audit` on DEV1 and cited `Invalid column name 'FORM'`. The defect was real: `FORMLIMITED` has no `FORM` column; filter via `FORMLIMITED.[T$EXEC]` joined to `T$EXEC.ENAME`. **Required fix 1** (issue #9) lands the join in both `Invoke-PriorityOData.ps1` copies. Issue #10 replaces source-regex **CAT-T25** with offline **composed SQL** (`-ComposeSql`) plus mutation gate **CAT-T26**; fixture mode cannot mask composition.
 
 ## Spec MUST / MUST NOT (walker + catalog)
 

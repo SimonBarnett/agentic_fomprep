@@ -18,6 +18,9 @@ This note records **observed** dictionary rows from the CE Priority DEV system D
 | Company | `base` (formprep `config/dev.psd1`; ENVIRONMENT / company DBs on this instance use company `base`) |
 | AllowedComputer | `CE-PRIORITY-DEV1` (NetBIOS also `CE-PRIORITY-DEV`) |
 | ExecTitleColumn | `TITLE` (`T$EXEC.TITLE`) |
+| ExecTable / ExecNameCol / ExecIdCol | `dbo.T$EXEC` / `ENAME` / `T$EXEC` (matches v1 `config/dev.psd1`; not `dbo.EXEC`) |
+| LockTable + LockCols | `dbo.EXECPREPLOCK` with `T$EXEC`, `UPD`, `LASTPREPDATE` |
+| FormLimitedTable / FormLimitedExecCol | `dbo.FORMLIMITED` / `T$EXEC` — audit filter joins `FORMLIMITED.[T$EXEC]` to `T$EXEC.T$EXEC`, then `T$EXEC.ENAME` for form names (no `FORM` column on `FORMLIMITED`; see MRB note issue #9) |
 
 The proof runner **must** set `PRIORITY_WP0_INSTANCE=ce-priority-dev` so WP0-R\* walks this instance (allowlist id, CredMan, dictionary SQL, upgrades path). Until that env is set on the runner, `Test-WP0` skips R\* (`WP0-R-SKIP`).
 

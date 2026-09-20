@@ -185,7 +185,7 @@ try {
 }
 
 try {
-    if (-not (Test-PinnedEnameInExec -Connection $conn -Ename (Get-PinnedProcEname -Pin $pin -Role install))) {
+    if (-not (Test-PinnedEnameInExec -Connection $conn -Pin $pin -Ename (Get-PinnedProcEname -Pin $pin -Role install))) {
         $result.reason = 'pin_incomplete'
         Add-ShellError -Result $result -Source 'gate' -Severity 'Blocker' -Text ('pinned install procedure ENAME not in T$EXEC: ' + (Get-PinnedProcEname -Pin $pin -Role install))
         Emit-Install $result 2 $pick
@@ -231,7 +231,7 @@ $after = $null
 $missing = @()
 try {
     $after = Get-InstallLogSnapshot -Connection $conn -Pin $pin -Revision $result.revision
-    $missing = @(Get-MissingExecEnames -Connection $conn -Names $forms)
+    $missing = @(Get-MissingExecEnames -Connection $conn -Pin $pin -Names $forms)
 } catch {
     Add-ShellError -Result $result -Source 'gate' -Severity 'Blocker' -Text ('post-install gate query failed: ' + $_.Exception.Message)
     $missing = @($forms)

@@ -20,6 +20,18 @@
     DbiMarker             = ''
     InstallErrorForm      = 'EXECUPGRERR'
     ExecTitleColumn       = 'TITLE'
+    # SQL dictionary pins (CE DEV system DB; see docs/wp0-recon.md). v1 config/dev.psd1 matches Exec/Lock.
+    ExecTable             = 'dbo.T$EXEC'
+    ExecNameCol           = 'ENAME'
+    ExecIdCol             = 'T$EXEC'
+    LockTable             = 'dbo.EXECPREPLOCK'
+    LockCols              = @{
+        ExecId   = 'T$EXEC'
+        Upd      = 'UPD'
+        LastPrep = 'LASTPREPDATE'
+    }
+    FormLimitedTable      = 'dbo.FORMLIMITED'
+    FormLimitedExecCol    = 'T$EXEC'
     UpgradesDir           = 'C:\Priority\system\upgrades'
     ProofInstanceId       = 'ce-priority-dev'
     AllowedBuildSetRoots  = @('C:\Priority\system\upgrades')

@@ -62,6 +62,17 @@ function Convert-ShellPinObject {
     if ($ht.Contains('AllowedBuildSetRoots') -and $null -ne $ht['AllowedBuildSetRoots']) {
         $roots = @($ht['AllowedBuildSetRoots'] | ForEach-Object { [string]$_ } | Where-Object { $_ })
     }
+    $lockCols = $null
+    if ($ht.Contains('LockCols') -and $null -ne $ht['LockCols']) {
+        $lcRaw = $ht['LockCols']
+        $lcHt = [ordered]@{}
+        if ($lcRaw -is [hashtable] -or $lcRaw -is [System.Collections.Specialized.OrderedDictionary]) {
+            foreach ($lk in $lcRaw.Keys) { $lcHt[[string]$lk] = [string]$lcRaw[$lk] }
+        } else {
+            foreach ($lp in $lcRaw.PSObject.Properties) { $lcHt[$lp.Name] = [string]$lp.Value }
+        }
+        $lockCols = [pscustomobject]$lcHt
+    }
     return [pscustomobject]@{
         PinComplete            = $complete
         PrepareUpgradeEname    = [string]$ht['PrepareUpgradeEname']
@@ -81,6 +92,13 @@ function Convert-ShellPinObject {
         UpgradesDir            = [string]$ht['UpgradesDir']
         ProofInstanceId        = [string]$ht['ProofInstanceId']
         AllowedBuildSetRoots   = $roots
+        ExecTable              = [string]$ht['ExecTable']
+        ExecNameCol            = [string]$ht['ExecNameCol']
+        ExecIdCol              = [string]$ht['ExecIdCol']
+        LockTable              = [string]$ht['LockTable']
+        LockCols               = $lockCols
+        FormLimitedTable       = [string]$ht['FormLimitedTable']
+        FormLimitedExecCol     = [string]$ht['FormLimitedExecCol']
         Path                   = $null
     }
 }

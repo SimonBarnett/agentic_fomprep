@@ -32,11 +32,15 @@ function Test-VersionRevisionExists {
 function Test-PinnedEnameInExec {
     param(
         $Connection,
+        $Pin,
         [string]$Ename
     )
     if ([string]::IsNullOrWhiteSpace($Ename)) { return $false }
-    $execTable = ConvertTo-SqlIdent 'dbo.T$EXEC'
-    $enameCol = ConvertTo-SqlIdent 'ENAME'
+    if ($null -eq $Pin -or (Test-ShellPinTokenEmpty $Pin.ExecTable) -or (Test-ShellPinTokenEmpty $Pin.ExecNameCol)) {
+        throw 'ExecTable / ExecNameCol unpinned'
+    }
+    $execTable = ConvertTo-SqlIdent ([string]$Pin.ExecTable)
+    $enameCol = ConvertTo-SqlIdent ([string]$Pin.ExecNameCol)
     $n = Invoke-FormPrepSql -Connection $Connection -Query "SELECT COUNT(*) FROM $execTable WHERE $enameCol = @n" -Parameters @{ '@n' = $Ename } -Scalar
     return [int]$n -gt 0
 }
@@ -97,6 +101,7 @@ function Test-InstallLogAdvanced {
 function Get-MissingExecEnames {
     param(
         $Connection,
+        $Pin,
         [string[]]$Names
     )
     $missing = @()
@@ -106,7 +111,7 @@ function Get-MissingExecEnames {
         return @($wanted)
     }
     foreach ($n in $wanted) {
-        if (-not (Test-PinnedEnameInExec -Connection $Connection -Ename $n)) {
+        if (-not (Test-PinnedEnameInExec -Connection $Connection -Pin $Pin -Ename $n)) {
             $missing += , $n
         }
     }

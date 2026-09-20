@@ -7,8 +7,8 @@
 
 ### P0 — Catalog ports (A)
 - Add `catalog/` entries (or v2 plugin catalog folders per existing v2 pattern) for:
-  - ce-priority-project-create-smoke
-  - ce-priority-day-works-uat
+  - priority-project-create-smoke
+  - priority-day-works-uat
   - prepare-all-unprepared-priority-forms
   - (optional) Medatech hours skills if in-scope
 - Each: `meta.json` + `SKILL.md` ported from workflow leaflets; no handler edits on Amplify catalog host beyond dropping folders.
@@ -25,8 +25,8 @@
 
 ### P3 — priority-uat-orchestrator + Jester harvest (D)
 - Expand `priority-uat-orchestrator` with cross-cutting standing rules (not a stub)
-- Flesh `ce-priority-project-create-smoke` and `ce-priority-day-works-uat`
-- Add `ce-priority-ht-delete-smoke`
+- Flesh `priority-project-create-smoke` and `priority-day-works-uat`
+- Add `priority-ht-delete-smoke`
 - Gates C-G stay parked until UNPARK
 
 ### P4 — Tests + docs

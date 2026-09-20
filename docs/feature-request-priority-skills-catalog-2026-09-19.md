@@ -21,8 +21,8 @@ Catalog folders under `v2/` (same pattern as `priority-formprep` / shell-compile
 
 Copy into `v2/.../catalog/<name>/` (`SKILL.md` + `meta.json`) from existing workflows:
 
-1. `ce-priority-project-create-smoke` â€” TC-01â€“05 siteâ†’contractâ†’copy HTâ†’paste plots
-2. `ce-priority-day-works-uat` â€” Gates A/B/C Day Works UAT + video/CASE rules
+1. `priority-project-create-smoke` â€” TC-01â€“05 siteâ†’contractâ†’copy HTâ†’paste plots
+2. `priority-day-works-uat` â€” Gates A/B/C Day Works UAT + video/CASE rules
 3. `prepare-all-unprepared-priority-forms` â€” web Form Preparation batch
 4. Medatech hours trio (optional separate catalog if out of CE scope): enter / search / export project hours
 
@@ -91,7 +91,7 @@ Use when changing CE custom forms/triggers/shells on DEV.
 
 **Authoritative detail:** docs/jester-priority-uat-skill-harvest-2026-09-19.md
 
-Expand beyond stub: cross-cutting UAT rules, project-create TC-01–05, Day Works gates A–B (C–G parked until UNPARK), HT-DL smoke. Also add catalog `ce-priority-ht-delete-smoke` (or fold HT-DL into day-works/form-engineering with clear When).
+Expand beyond stub: cross-cutting UAT rules, project-create TC-01–05, Day Works gates A–B (C–G parked until UNPARK), HT-DL smoke. Also add catalog `priority-ht-delete-smoke` (or fold HT-DL into day-works/form-engineering with clear When).
 
 ### Prior stub notes (still apply)
 

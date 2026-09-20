@@ -6,7 +6,7 @@ Source-of-truth tracking for MRB and feature requests is moving to [GitHub issue
 
 | Document | Notes |
 |----------|--------|
-| [feature-request-shell-compile-install-v2-spec-0.1.md](feature-request-shell-compile-install-v2-spec-0.1.md) | v2 shell compile/install FR |
+| [feature-request-shell-compile-install-v2-spec-0.1.md](feature-request-shell-compile-install-v2-spec-0.1.md) | v2 shell compile/install FR ([#6](https://github.com/SimonBarnett/agentic_fomprep/issues/6)) |
 | [feature-request-priority-skills-catalog-2026-09-19.md](feature-request-priority-skills-catalog-2026-09-19.md) | Priority skills catalog |
 | [feature-request-ce-priority-dba-skills-2026-09-19.md](feature-request-ce-priority-dba-skills-2026-09-19.md) | CE Priority DBA skills |
 | [feature-request-priority-generic-catalog-rename-2026-09-19.md](feature-request-priority-generic-catalog-rename-2026-09-19.md) | `ce-priority-*` → `priority-*` rename |
@@ -19,6 +19,7 @@ Source-of-truth tracking for MRB and feature requests is moving to [GitHub issue
 | [build-and-test-plan-priority-skills-catalog-2026-09-19.md](build-and-test-plan-priority-skills-catalog-2026-09-19.md) | priority-skills-catalog |
 | [build-and-test-plan-ce-priority-dba-skills-2026-09-19.md](build-and-test-plan-ce-priority-dba-skills-2026-09-19.md) | ce-priority-dba-skills |
 | [build-and-test-plan-priority-generic-catalog-rename-2026-09-19.md](build-and-test-plan-priority-generic-catalog-rename-2026-09-19.md) | priority-generic-catalog-rename |
+| [build-and-test-plan-shell-compile-install-v2-spec-0.1.md](build-and-test-plan-shell-compile-install-v2-spec-0.1.md) | shell-compile-install v2 ([#6](https://github.com/SimonBarnett/agentic_fomprep/issues/6)) |
 
 ## MRB reviews
 

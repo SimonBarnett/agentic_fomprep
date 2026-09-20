@@ -25,10 +25,13 @@ $script:ShellPinRequiredKeys = @(
     'InstallUpgradeEname',
     'InstallUpgradeType',
     'VersionRevisionsEname',
+    'VersionRevisionsTable',
+    'VersionRevisionCol',
     'RevisionInputStep',
     'FilePathInputStep',
     'InstallLogTable',
-    'InstallLogRevisionCol'
+    'InstallLogRevisionCol',
+    'InstallLogDateCol'
 )
 
 $script:ShellPinUnknownOkKeys = @(
@@ -80,6 +83,8 @@ function Convert-ShellPinObject {
         InstallUpgradeEname    = [string]$ht['InstallUpgradeEname']
         InstallUpgradeType     = [string]$ht['InstallUpgradeType']
         VersionRevisionsEname  = [string]$ht['VersionRevisionsEname']
+        VersionRevisionsTable  = [string]$ht['VersionRevisionsTable']
+        VersionRevisionCol     = [string]$ht['VersionRevisionCol']
         RevisionInputStep      = [string]$ht['RevisionInputStep']
         FilePathInputStep      = [string]$ht['FilePathInputStep']
         WcfFileStepWorks       = $ht['WcfFileStepWorks']
@@ -155,11 +160,14 @@ function Test-ShellPinReady {
         if (Test-ShellPinTokenEmpty $Pin.PrepareUpgradeType) { return $false }
         if (Test-ShellPinTokenEmpty $Pin.RevisionInputStep) { return $false }
         if (Test-ShellPinTokenEmpty $Pin.VersionRevisionsEname) { return $false }
+        if (Test-ShellPinTokenEmpty $Pin.VersionRevisionsTable) { return $false }
+        if (Test-ShellPinTokenEmpty $Pin.VersionRevisionCol) { return $false }
     } else {
         if (Test-ShellPinTokenEmpty $Pin.InstallUpgradeEname) { return $false }
         if (Test-ShellPinTokenEmpty $Pin.InstallUpgradeType) { return $false }
         if (Test-ShellPinTokenEmpty $Pin.InstallLogTable) { return $false }
         if (Test-ShellPinTokenEmpty $Pin.InstallLogRevisionCol) { return $false }
+        if (Test-ShellPinTokenEmpty $Pin.InstallLogDateCol) { return $false }
     }
     return $true
 }

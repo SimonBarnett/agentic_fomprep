@@ -154,7 +154,7 @@ try {
     $revExists = Test-VersionRevisionExists -Connection $conn -Pin $pin -Revision $Revision
     if (-not $revExists) {
         $result.reason = 'revision_missing'
-        Add-ShellError -Result $result -Source 'gate' -Severity 'Blocker' -Text ("revision $Revision not on $($pin.VersionRevisionsEname).UPGNUM")
+        Add-ShellError -Result $result -Source 'gate' -Severity 'Blocker' -Text ("revision $Revision not on $($pin.VersionRevisionsTable).$($pin.VersionRevisionCol)")
         Emit-Compile $result 2 $pick
     }
 } catch {

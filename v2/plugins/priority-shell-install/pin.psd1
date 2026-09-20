@@ -11,10 +11,12 @@
     InstallUpgradeEname   = 'ZEMG_EXECUPGRADES'
     InstallUpgradeType    = 'P'
     VersionRevisionsEname = 'UPGRADES'
+    VersionRevisionsTable = 'dbo.UPGRADES'
+    VersionRevisionCol    = 'UPGNUM'
     RevisionInputStep     = 'PAR'
     FilePathInputStep     = 'FN'
     WcfFileStepWorks      = $null
-    InstallLogTable       = 'INSTALLEDUPGRADES'
+    InstallLogTable       = 'dbo.INSTALLEDUPGRADES'
     InstallLogRevisionCol = 'UPG'
     InstallLogDateCol     = 'STARTDATE'
     DbiMarker             = ''

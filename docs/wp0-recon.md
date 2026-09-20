@@ -20,7 +20,6 @@ This note records **observed** dictionary rows from the CE Priority DEV system D
 | ExecTitleColumn | `TITLE` (`T$EXEC.TITLE`) |
 | ExecTable / ExecNameCol / ExecIdCol | `dbo.T$EXEC` / `ENAME` / `T$EXEC` (matches v1 `config/dev.psd1`; not `dbo.EXEC`) |
 | LockTable + LockCols | `dbo.EXECPREPLOCK` with `T$EXEC`, `UPD`, `LASTPREPDATE` |
-| FormLimitedTable / FormLimitedExecCol | `dbo.FORMLIMITED` / `T$EXEC` — audit filter joins `FORMLIMITED.[T$EXEC]` to `T$EXEC.T$EXEC`, then `T$EXEC.ENAME` for form names (no `FORM` column on `FORMLIMITED`; see MRB note issue #9) |
 
 The proof runner **must** set `PRIORITY_WP0_INSTANCE=ce-priority-dev` so WP0-R\* walks this instance (allowlist id, CredMan, dictionary SQL, upgrades path). Until that env is set on the runner, `Test-WP0` skips R\* (`WP0-R-SKIP`).
 
@@ -93,6 +92,35 @@ Pin: `InstallErrorForm=EXECUPGRERR`.
 
 Recent CE shells live on **`UPGRADES`** (e.g. UPGNUM 8341–8350). Pin `VersionRevisionsEname=UPGRADES`. `VERUPGRADES` is a same-title dictionary sibling — not invented, not pinned.
 
+### Version Revisions backing table
+
+Table `UPGRADES` columns observed (dictionary `system` DB, same recon pass as `INSTALLEDUPGRADES`):
+
+| Column | Role |
+|---|---|
+| `UPGNUM` | revision id (compile gate lookup) |
+
+Pin:
+
+- `VersionRevisionsTable=dbo.UPGRADES`
+- `VersionRevisionCol=UPGNUM`
+
+## FORMLIMITED table (dictionary `system` DB)
+
+Table `FORMLIMITED` columns observed (same CE DEV dictionary pass as `INSTALLEDUPGRADES`):
+
+| Column | Role |
+|---|---|
+| `T$EXEC` | link to executable row in `T$EXEC` (audit SQL join key; no `FORM` column on this table) |
+| `RESTFLAG` | OData REST exposure flag |
+| `LIMITFLAG` | limit flag paired with `RESTFLAG` (footgun audit) |
+| `USERS` | user login on the limit row |
+
+Pin:
+
+- `FormLimitedTable=dbo.FORMLIMITED`
+- `FormLimitedExecCol=T$EXEC`
+
 ## Install log table
 
 Table `INSTALLEDUPGRADES` columns observed:
@@ -109,7 +137,7 @@ Table `INSTALLEDUPGRADES` columns observed:
 
 Pin:
 
-- `InstallLogTable=INSTALLEDUPGRADES`
+- `InstallLogTable=dbo.INSTALLEDUPGRADES`
 - `InstallLogRevisionCol=UPG`
 - `InstallLogDateCol=STARTDATE` (`ENDDATE` is also present; STARTDATE is the pinned date column)
 
@@ -141,15 +169,19 @@ Titles are from the dictionary rows above. `PinComplete=true` after Simon confir
 | InstallUpgradeEname | `ZEMG_EXECUPGRADES` |
 | InstallUpgradeType | `P` |
 | VersionRevisionsEname | `UPGRADES` |
+| VersionRevisionsTable | `dbo.UPGRADES` |
+| VersionRevisionCol | `UPGNUM` |
 | RevisionInputStep | `PAR` |
 | FilePathInputStep | `FN` |
 | WcfFileStepWorks | `null` |
-| InstallLogTable | `INSTALLEDUPGRADES` |
+| InstallLogTable | `dbo.INSTALLEDUPGRADES` |
 | InstallLogRevisionCol | `UPG` |
 | InstallLogDateCol | `STARTDATE` |
 | DbiMarker | `""` (unknown) |
 | InstallErrorForm | `EXECUPGRERR` |
 | ExecTitleColumn | `TITLE` |
+| FormLimitedTable | `dbo.FORMLIMITED` |
+| FormLimitedExecCol | `T$EXEC` |
 | UpgradesDir | `C:\Priority\system\upgrades` |
 | ProofInstanceId | `ce-priority-dev` |
 | AllowedBuildSetRoots | `@('C:\Priority\system\upgrades')` |

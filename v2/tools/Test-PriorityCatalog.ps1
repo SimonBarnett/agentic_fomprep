@@ -284,26 +284,37 @@ Add-Gate 'CAT-T25' $composedOk $composedDetail
 
 $builtBase = New-FormLimitedAuditSql -Pin $pinFromJson -FormNames $formsUnderTest
 $mutNoBind = Test-FormLimitedAuditComposed -Sql $builtBase.Sql -Parameters @{} -FormNames $formsUnderTest -Pin $pinFromJson
-$mutBadJoin = $builtBase.Sql -replace 'FL\.\[T\$EXEC\] = E\.\[T\$EXEC\]', 'FL.[T$EXEC] = E.[ENAME]'
+$flExecIdent = ConvertTo-SqlIdent ([string]$pinFromJson.FormLimitedExecCol)
+$execIdIdent = ConvertTo-SqlIdent ([string]$pinFromJson.ExecIdCol)
+$execNameIdent = ConvertTo-SqlIdent ([string]$pinFromJson.ExecNameCol)
+$goodJoin = 'FL.' + $flExecIdent + ' = E.' + $execIdIdent
+$badJoinNeedle = 'FL.' + $flExecIdent + ' = E.' + $execNameIdent
+$mutBadJoin = $builtBase.Sql -replace [regex]::Escape($goodJoin), $badJoinNeedle
 $mutBadJoinFail = -not (Test-FormLimitedAuditComposed -Sql $mutBadJoin -Parameters $builtBase.Parameters -FormNames $formsUnderTest -Pin $pinFromJson)
 $mutInline = $builtBase.Sql -replace '@f0', "'PARTLONGDESC'"
 $mutInlineFail = -not (Test-FormLimitedAuditComposed -Sql $mutInline -Parameters $builtBase.Parameters -FormNames $formsUnderTest -Pin $pinFromJson)
 Add-Gate 'CAT-T26' ((-not $mutNoBind) -and $mutBadJoinFail -and $mutInlineFail) 'formlimited_audit mutation bar: no-bind, bad-join, inline literal turn gate red'
 
 $hardcodedHits = @()
-$sqlScriptGlobs = @(
-    (Join-Path $v2 'plugins\priority-odata-dev\scripts\*.ps1'),
-    (Join-Path $v2 'plugins\priority-formprep\scripts\*.ps1'),
-    (Join-Path $v2 'plugins\priority-shell-compile\scripts\*.ps1'),
-    (Join-Path $v2 'plugins\priority-shell-install\scripts\*.ps1')
+$productScanRoots = @(
+    (Join-Path $v2 'lib'),
+    (Join-Path $v2 'plugins'),
+    (Join-Path $v2 'apps\mcp-catalog\catalog')
 )
-foreach ($g in $sqlScriptGlobs) {
-    foreach ($f in (Get-ChildItem -LiteralPath (Split-Path $g) -Filter (Split-Path $g -Leaf) -ErrorAction SilentlyContinue)) {
-        $raw = Get-Content -LiteralPath $f.FullName -Raw -Encoding UTF8
-        if ($raw -match "ConvertTo-SqlIdent\s+'dbo\.") { $hardcodedHits += $f.FullName }
-    }
+$productPs1 = @()
+foreach ($root in $productScanRoots) {
+    if (-not (Test-Path -LiteralPath $root)) { continue }
+    $productPs1 += @(Get-ChildItem -LiteralPath $root -Recurse -Filter '*.ps1' -File -ErrorAction SilentlyContinue)
 }
-Add-Gate 'CAT-T27' ($hardcodedHits.Count -eq 0) $(if ($hardcodedHits.Count -eq 0) { 'no hardcoded dbo.* ConvertTo-SqlIdent in v2 product runners' } else { ($hardcodedHits -join '; ') })
+foreach ($f in ($productPs1 | Sort-Object -Property FullName -Unique)) {
+    if ($f.FullName -match '\\tools\\' -or $f.FullName -match '\\tests\\') { continue }
+    $raw = Get-Content -LiteralPath $f.FullName -Raw -Encoding UTF8
+    $rel = $f.FullName.Substring($v2.Length).TrimStart('\')
+    if ($raw -match "ConvertTo-SqlIdent\s+'dbo\.") { $hardcodedHits += ($rel + ": ConvertTo-SqlIdent 'dbo.*'") }
+    if ($raw -match "ConvertTo-SqlIdent\s+'UPGNUM'") { $hardcodedHits += ($rel + ": ConvertTo-SqlIdent 'UPGNUM'") }
+    if ($raw -match "'dbo\.'\s*\+") { $hardcodedHits += ($rel + ": 'dbo.' + prefix") }
+}
+Add-Gate 'CAT-T27' ($hardcodedHits.Count -eq 0) $(if ($hardcodedHits.Count -eq 0) { 'no hardcoded dbo.* / UPGNUM / dbo.+ SQL idents in v2 product scripts' } else { ($hardcodedHits -join '; ') })
 
 $runnerPairs = @(
     @{ Plugin = 'priority-odata-dev'; Script = 'Invoke-PriorityOData.ps1' },

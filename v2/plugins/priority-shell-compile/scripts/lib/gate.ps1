@@ -17,13 +17,17 @@ function Test-VersionRevisionExists {
         [string]$Revision
     )
     if ($null -eq $Connection) { throw 'SQL connection is required' }
-    if ($null -eq $Pin -or (Test-ShellPinTokenEmpty $Pin.VersionRevisionsEname)) {
-        throw 'VersionRevisionsEname is unpinned'
+    if ($null -eq $Pin) { throw 'pin missing' }
+    if (Test-ShellPinTokenEmpty $Pin.VersionRevisionsTable) {
+        throw 'VersionRevisionsTable is unpinned'
+    }
+    if (Test-ShellPinTokenEmpty $Pin.VersionRevisionCol) {
+        throw 'VersionRevisionCol is unpinned'
     }
     $rev = ConvertTo-RevisionSqlValue $Revision
     if ($null -eq $rev) { return $false }
-    $table = ConvertTo-SqlIdent ('dbo.' + [string]$Pin.VersionRevisionsEname)
-    $col = ConvertTo-SqlIdent 'UPGNUM'
+    $table = ConvertTo-SqlIdent ([string]$Pin.VersionRevisionsTable)
+    $col = ConvertTo-SqlIdent ([string]$Pin.VersionRevisionCol)
     $q = "SELECT COUNT(*) FROM $table WHERE $col = @r"
     $n = Invoke-FormPrepSql -Connection $Connection -Query $q -Parameters @{ '@r' = $rev } -Scalar
     return [int]$n -gt 0
@@ -51,11 +55,19 @@ function Get-InstallLogSnapshot {
         $Pin,
         [string]$Revision
     )
-    $table = ConvertTo-SqlIdent ('dbo.' + [string]$Pin.InstallLogTable)
-    $revCol = ConvertTo-SqlIdent $(if (-not (Test-ShellPinTokenEmpty $Pin.InstallLogRevisionCol)) { [string]$Pin.InstallLogRevisionCol } else { 'UPG' })
-    $dateColName = [string]$Pin.InstallLogDateCol
-    if (Test-ShellPinTokenEmpty $dateColName) { $dateColName = 'STARTDATE' }
-    $dateCol = ConvertTo-SqlIdent $dateColName
+    if ($null -eq $Pin) { throw 'pin missing' }
+    if (Test-ShellPinTokenEmpty $Pin.InstallLogTable) {
+        throw 'InstallLogTable is unpinned'
+    }
+    if (Test-ShellPinTokenEmpty $Pin.InstallLogRevisionCol) {
+        throw 'InstallLogRevisionCol is unpinned'
+    }
+    if (Test-ShellPinTokenEmpty $Pin.InstallLogDateCol) {
+        throw 'InstallLogDateCol is unpinned'
+    }
+    $table = ConvertTo-SqlIdent ([string]$Pin.InstallLogTable)
+    $revCol = ConvertTo-SqlIdent ([string]$Pin.InstallLogRevisionCol)
+    $dateCol = ConvertTo-SqlIdent ([string]$Pin.InstallLogDateCol)
     $rev = ConvertTo-RevisionSqlValue $Revision
     $q = "SELECT COUNT(*) AS n, MAX($dateCol) AS lastDate FROM $table WHERE $revCol = @r"
     $tbl = Invoke-FormPrepSql -Connection $Connection -Query $q -Parameters @{ '@r' = $rev }

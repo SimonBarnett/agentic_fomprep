@@ -1,0 +1,6 @@
+{
+  "name": "priority-hours-handoff-haitch",
+  "title": "Priority DBA hours handoff to Haitch",
+  "description": "After material DBA work: human-equivalent hours and WBS to Haitch. Backup notices via Haitch — not direct infra Teams.",
+  "version": "1.0.0"
+}

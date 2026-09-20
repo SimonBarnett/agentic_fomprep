@@ -1,0 +1,6 @@
+{
+  "name": "priority-backup-cutover",
+  "title": "Priority SQL backup path cutover",
+  "description": "Phased DEV then TST then PRI backup cutover to G: standard. Never auto-prune F: archives. Rollback notes.",
+  "version": "1.0.0"
+}

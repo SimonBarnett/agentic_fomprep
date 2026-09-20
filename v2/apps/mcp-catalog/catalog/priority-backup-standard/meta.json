@@ -1,0 +1,6 @@
+{
+  "name": "priority-backup-standard",
+  "title": "Priority SQL backup standard",
+  "description": "Target layout F:/G: mount points, FULL vs SIMPLE chains, job names, retention, CHECKSUM+COMPRESSION. Reference policy only.",
+  "version": "1.0.0"
+}

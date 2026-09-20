@@ -44,7 +44,7 @@ Earlier draft text claimed live `formlimited_audit` on DEV1 and cited `Invalid c
 
 ## Required fixes (issue #9, ordered)
 
-1. **Fix `formlimited_audit` SQL** — `FORMLIMITED.[T$EXEC]` + `T$EXEC.ENAME` join; pins + composed **CAT-T25** (not source regex). Broken at `c0355d8`, repaired at `7db4bcc`; gate/compose follow-up on issue #9 fix branch. Live audit artefact still red.
+1. **Fix `formlimited_audit` SQL** — `FORMLIMITED.[T$EXEC]` + `T$EXEC.ENAME` join; pins in `v2/config/pin.json` + composed **CAT-T25** (mutation bar, not source regex). Join/IN repair `7db4bcc`; compose gate + shared `Build-FormlimitedAuditSql` on issue #9 fix branch. **Offline green**; live audit artefact still red (#7 acceptance 2).
 2. **Withdraw false R1–R7 PASS claims**; committed WP0 evidence = `wp0-last.json` with WP0-R-SKIP when unset. **Addressed** in this doc.
 3. **De-dupe MRB docs** — keep this file; short duplicate is a pointer; no `docs/mrb-*.pdf`. **Addressed**; see `docs/README.md`.
 4. **Verdict vocabulary** — off-instance slice is **PASS-nits** (not PASS-with-nits). **Addressed** in this doc.

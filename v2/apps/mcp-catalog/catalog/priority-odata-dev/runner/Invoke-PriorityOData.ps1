@@ -20,6 +20,8 @@ param(
     [string]$Database,
     [string]$InstancesPath,
     [string]$FixturePath,
+    [string]$PinPath,
+    [switch]$ComposeSql,
     $Top
 )
 $ErrorActionPreference = 'Stop'
@@ -29,6 +31,8 @@ $lib = Join-Path $here 'lib'
 . (Join-Path $lib 'Get-WinrunCredential.ps1')
 . (Join-Path $lib 'sql.ps1')
 . (Join-Path $lib 'odata.ps1')
+. (Join-Path $lib 'pin.ps1')
+. (Join-Path $lib 'formlimited-audit-sql.ps1')
 
 $started = [datetime]::UtcNow
 $tool = $Action
@@ -113,6 +117,36 @@ if ($Action -eq 'formlimited_audit') {
         }
     }
 
+    $pinRead = Read-ShellPin -Path $PinPath -StartDir $here
+    if (-not $pinRead.ok) {
+        $result.reason = 'pin_missing'
+        Add-ODataError -Result $result -Source 'policy' -Severity 'Blocker' -Text ('pin file missing for SQL identifiers: ' + [string]$pinRead.reason)
+        Emit-OData $result 2 $pick
+    }
+    $sqlPin = $pinRead.pin
+    $sqlGaps = @(Get-SqlPinGaps -Pin $sqlPin)
+    if ($sqlGaps.Count -gt 0) {
+        $result.reason = 'pin_incomplete'
+        Add-ODataError -Result $result -Source 'policy' -Severity 'Blocker' -Text ('SQL identifiers unpinned. Gaps: ' + ($sqlGaps -join ', '))
+        Emit-OData $result 2 $pick
+    }
+
+    if ($ComposeSql) {
+        try {
+            $built = New-FormLimitedAuditSql -Pin $sqlPin -FormNames $formList
+            $result.ok = $true
+            $result.reason = 'composed'
+            $result.sql = $built.Sql
+            $result.sqlParameters = @($built.Placeholders)
+            $result.formCount = $formList.Count
+            Emit-OData $result 0 $pick
+        } catch {
+            $result.reason = 'compose_failed'
+            Add-ODataError -Result $result -Source 'policy' -Severity 'Blocker' -Text ([string]$_.Exception.Message)
+            Emit-OData $result 2 $pick
+        }
+    }
+
     $rawRows = @()
     if ($useFixture) {
         $fx = ConvertFrom-ODataFixture -Path $FixturePath
@@ -130,26 +164,8 @@ if ($Action -eq 'formlimited_audit') {
         $conn = $null
         try {
             $conn = New-InstanceSqlConnection -Instance $pick -Database $db
-            $params = @{}
-            $i = 0
-            $ph = @()
-            foreach ($f in $formList) {
-                $k = "@f$i"
-                $params[$k] = $f
-                $ph += $k
-                $i++
-            }
-            $flTable = ConvertTo-SqlIdent 'dbo.FORMLIMITED'
-            $execTable = ConvertTo-SqlIdent 'dbo.T$EXEC'
-            $flExec = ConvertTo-SqlIdent 'T$EXEC'
-            $eName = ConvertTo-SqlIdent 'ENAME'
-            $sql = @"
-SELECT FL.*
-FROM $flTable FL
-INNER JOIN $execTable E ON FL.$flExec = E.$flExec
-WHERE E.$eName IN ($($ph -join ', '))
-"@
-            $table = Invoke-FormPrepSql -Connection $conn -Query $sql -Parameters $params
+            $built = New-FormLimitedAuditSql -Pin $sqlPin -FormNames $formList
+            $table = Invoke-FormPrepSql -Connection $conn -Query $built.Sql -Parameters $built.Parameters
             foreach ($row in $table.Rows) {
                 $ht = @{}
                 foreach ($col in $table.Columns) { $ht[$col.ColumnName] = $row[$col.ColumnName] }

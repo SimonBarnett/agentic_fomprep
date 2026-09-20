@@ -2,6 +2,7 @@
 
 **FR:** docs/feature-request-priority-skills-catalog-2026-09-19.md  
 **Repo:** SimonBarnett/agentic_fomprep  
+**GitHub (MRB home):** https://github.com/SimonBarnett/agentic_fomprep/issues/7  
 
 ## Phases
 
@@ -30,8 +31,10 @@
 - Gates C-G stay parked until UNPARK
 
 ### P4 — Tests + docs
-- Extend Test-Pack (`v2/tools/Test-PriorityCatalog.ps1`)
-- Commit/push; Eshbel hostile MRB + UAT (OData dump + named Form Prep smoke when DEV1 up)
+- Extend Test-Pack (`v2/tools/Test-PriorityCatalog.ps1`) — offline gates **CAT-T1…CAT-T25** (catalog A–D, OData plugin, grab-only MCP, v1 untouched, `formlimited_audit` fixture + **composed** SQL via `New-FormLimitedAuditSql` / `-ComposeSql`). **CAT-T25 mutation bar:** deleting parameter binding, moving the join off the pinned `FormLimitedExecCol`→`ExecIdCol` key, or inlining a form literal must each turn CAT-T25 red (issue #11 / #19 evidence).
+- Run: `powershell -NoProfile -ExecutionPolicy Bypass -File v2\tools\Test-PriorityCatalog.ps1`
+- Offline evidence: committed `v2/tests/formlimited-audit-composed.json` (statement + placeholders the CAT-T25 compose path emits). Live acceptance (issue #7): `formlimited_audit` on proof SQL with pinned identifiers from `v2/config/pin.json` (`FormLimitedTable` / `FormLimitedExecCol` per `docs/wp0-recon.md`); Eshbel after ship — not a substitute for the composed artefact.
+- Commit/push; open PR for hostile MRB on issue #19 (Bob chairs; no merge from this job).
 
 ## Success
 

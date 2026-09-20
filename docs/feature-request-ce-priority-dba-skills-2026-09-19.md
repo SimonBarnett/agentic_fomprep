@@ -1,5 +1,6 @@
 ﻿# Feature request: CE Priority DBA agent skills suite
 
+**Intake issue / MRB home:** [GitHub issue #5](https://github.com/SimonBarnett/agentic_fomprep/issues/5)  
 **Date:** 2026-09-19  
 **Repo:** https://github.com/SimonBarnett/agentic_fomprep  
 **Raised by:** Tedious (via Simon)  

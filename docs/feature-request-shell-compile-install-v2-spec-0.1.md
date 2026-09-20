@@ -1,5 +1,6 @@
 # Feature request — Priority v2 shell compile + install (spec 0.1)
 
+**Intake issue / MRB home:** [GitHub issue #6](https://github.com/SimonBarnett/agentic_fomprep/issues/6)  
 **Source PDF:** [feature-request-shell-compile-install-v2-spec-0.1.pdf](./feature-request-shell-compile-install-v2-spec-0.1.pdf)  
 **Date:** 2026-09-18 · **Scope:** v2 only · **Do not change** repo-root v1 (`src\Prepare-NamedForm.ps1`)  
 **Status in repo:** implemented on v2 (`23e7e64`+ walker/SQL gate; `v2/config` pins). MRB home: [GitHub issue #6](https://github.com/SimonBarnett/agentic_fomprep/issues/6). Build plan: [build-and-test-plan-shell-compile-install-v2-spec-0.1.md](./build-and-test-plan-shell-compile-install-v2-spec-0.1.md). Live FR §15 / WP0-R* remain proof-host only (`PRIORITY_WP0_INSTANCE`).

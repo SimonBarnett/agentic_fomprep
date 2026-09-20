@@ -1,0 +1,16 @@
+{
+  "sqlHost": "sql.example.com",
+  "instanceIds": ["DEV", "TST", "PRI"],
+  "reportRoot": "C:\\Users\\YOU\\priority-dba-reports\\backup-audit",
+  "instances": [
+    {
+      "id": "example-dev",
+      "title": "Example DEV (optional row for formprep-style allowlists)",
+      "sqlHost": "sql.example.com",
+      "sqlInstance": "sql.example.com\\DEV",
+      "sqlDatabase": "master",
+      "agentWork": "C:\\Users\\YOU\\agent-work",
+      "allowLive": false
+    }
+  ]
+}

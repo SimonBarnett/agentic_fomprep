@@ -1,0 +1,6 @@
+{
+  "name": "priority-disk-mount-layout-report",
+  "title": "Priority disk and mount layout report",
+  "description": "IT-facing layout: MDF/LDF/backup paths, jobs, free space on mount points. PDF or markdown evidence.",
+  "version": "1.0.0"
+}

@@ -22,3 +22,20 @@ catalog/<skill-name>/
 ```
 
 Do not put passwords, CredMan secrets, or `prepare_form` / `compile_shell` / `install_shell` / `odata_get` / `odata_query` / `odata_dump_procedure` / `formlimited_audit` execution in this Amplify app.
+
+## DBA skills (Priority SQL / backup / health)
+
+| Skill id | Role |
+|----------|------|
+| `priority-backup-standard` | Target backup policy reference |
+| `priority-backup-audit` | Read-only gap audit vs standard |
+| `priority-backup-cutover` | Phased cutover procedure (human-gated) |
+| `priority-sunday-backup-check` | Weekly overnight verification + Haitch signal |
+| `priority-instance-health-collect` | sqlcmd health pack |
+| `priority-post-move-health` | Post-cutover smoke |
+| `priority-disk-mount-layout-report` | IT mount/path report |
+| `priority-ht-delete-deadlock-triage` | HT 1205 evidence checklist |
+| `priority-form-prep-after-sql-change` | Form Prep gate after trigger SQL |
+| `priority-hours-handoff-haitch` | Hours/WBS handoff process |
+
+Harvest scripts: `docs/skill-sources/dba/`. Config: `%USERPROFILE%\.priority-dba\instances.json` (see `priority-backup-audit/runner/instances.example.json`). Windows integrated SQL auth only.

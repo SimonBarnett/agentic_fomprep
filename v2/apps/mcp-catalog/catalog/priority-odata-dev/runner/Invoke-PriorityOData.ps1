@@ -139,7 +139,16 @@ if ($Action -eq 'formlimited_audit') {
                 $ph += $k
                 $i++
             }
-            $sql = "SELECT * FROM dbo.FORMLIMITED WHERE FORM IN (" + ($ph -join ', ') + ")"
+            $flTable = ConvertTo-SqlIdent 'dbo.FORMLIMITED'
+            $execTable = ConvertTo-SqlIdent 'dbo.T$EXEC'
+            $flExec = ConvertTo-SqlIdent 'T$EXEC'
+            $eName = ConvertTo-SqlIdent 'ENAME'
+            $sql = @"
+SELECT FL.*
+FROM $flTable FL
+INNER JOIN $execTable E ON FL.$flExec = E.$flExec
+WHERE E.$eName IN (" + ($ph -join ', ') + ")
+"@
             $table = Invoke-FormPrepSql -Connection $conn -Query $sql -Parameters $params
             foreach ($row in $table.Rows) {
                 $ht = @{}

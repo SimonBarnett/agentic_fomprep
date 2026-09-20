@@ -236,6 +236,14 @@ Add-Gate 'CAT-T24' $htOk 'HT-DL smoke catalog present with TEST company pitfall'
 $runnerPs1 = Join-Path $catalog 'priority-odata-dev\runner\Invoke-PriorityOData.ps1'
 Add-Gate 'CAT-T21' (Test-Path -LiteralPath $runnerPs1) 'catalog runner files present for get_runner_files'
 
+$odataRunner = Join-Path $v2 'plugins\priority-odata-dev\scripts\Invoke-PriorityOData.ps1'
+$odataSrc = Get-Content -LiteralPath $odataRunner -Raw -Encoding UTF8
+$sqlShapeOk = ($odataSrc -match 'ConvertTo-SqlIdent ''dbo\.FORMLIMITED''') -and
+    ($odataSrc -match 'ConvertTo-SqlIdent ''dbo\.T\$EXEC''') -and
+    ($odataSrc -match 'WHERE E\.\$eName IN') -and
+    ($odataSrc -notmatch 'FORMLIMITED WHERE FORM')
+Add-Gate 'CAT-T25' $sqlShapeOk 'formlimited_audit SQL resolves ENAME via T$EXEC join (no FORM column)'
+
 if ($failed -gt 0) {
     Write-Host "Test-PriorityCatalog FAIL ($failed)"
     exit 1

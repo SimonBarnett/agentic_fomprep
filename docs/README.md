@@ -1,6 +1,6 @@
 # Docs index
 
-Source-of-truth tracking for MRB and feature requests is moving to [GitHub issues](feature-request-git-mrb-intake-source-of-truth-2026-09-20.md) (see issue #8 when filed). This index lists parked markdown on `main`.
+Source-of-truth tracking for MRB and feature requests is on [GitHub issues](feature-request-git-mrb-intake-source-of-truth-2026-09-20.md) ([#8](https://github.com/SimonBarnett/agentic_fomprep/issues/8)). This index lists parked markdown on `main`.
 
 ## Feature requests
 
@@ -11,6 +11,7 @@ Source-of-truth tracking for MRB and feature requests is moving to [GitHub issue
 | [feature-request-ce-priority-dba-skills-2026-09-19.md](feature-request-ce-priority-dba-skills-2026-09-19.md) | CE Priority DBA skills |
 | [feature-request-priority-generic-catalog-rename-2026-09-19.md](feature-request-priority-generic-catalog-rename-2026-09-19.md) | `ce-priority-*` → `priority-*` rename |
 | [feature-request-git-mrb-intake-source-of-truth-2026-09-20.md](feature-request-git-mrb-intake-source-of-truth-2026-09-20.md) | Issues as MRB/FR home |
+| [feature-request-sql-pins-and-composed-sql-gates-2026-09-20.md](feature-request-sql-pins-and-composed-sql-gates-2026-09-20.md) | v2 SQL pins + composed-SQL gates ([#10](https://github.com/SimonBarnett/agentic_fomprep/issues/10)) |
 
 ## Build and test plans
 
@@ -27,6 +28,8 @@ Source-of-truth tracking for MRB and feature requests is moving to [GitHub issue
 | [mrb-2026-09-19-v1.md](mrb-2026-09-19-v1.md) | WP0 skeleton (pre-`23e7e64`) | PASS-with-nits (historical) | — |
 | [mrb-2026-09-19-wcf-walker-eshbel.md](mrb-2026-09-19-wcf-walker-eshbel.md) | `23e7e64` (+ catalog on same line) | PASS-nits (off-instance) | [#9](https://github.com/SimonBarnett/agentic_fomprep/issues/9) |
 | [mrb-wcf-walker-23e7e64-eshbel-2026-09-19.md](mrb-wcf-walker-23e7e64-eshbel-2026-09-19.md) | — | Pointer only | [#9](https://github.com/SimonBarnett/agentic_fomprep/issues/9) |
+| — | `c0355d8` | formlimited_audit join shipped with invalid `IN` SQL; CAT-T25 (source regex) green | [#11](https://github.com/SimonBarnett/agentic_fomprep/issues/11) |
+| — | `7db4bcc` | `IN` clause repair; CAT-T25 still source-regex | [#11](https://github.com/SimonBarnett/agentic_fomprep/issues/11) |
 
 ## WP0 / operator
 

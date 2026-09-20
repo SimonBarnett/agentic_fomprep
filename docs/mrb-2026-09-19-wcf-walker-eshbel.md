@@ -44,7 +44,7 @@ Earlier draft text claimed live `formlimited_audit` on DEV1 and cited `Invalid c
 
 ## Required fixes (issue #9, ordered)
 
-1. **Fix `formlimited_audit` SQL** — `FORMLIMITED.[T$EXEC]` + `T$EXEC.ENAME` join; offline CAT-T25. **Addressed** on the fix branch for this MRB.
+1. **Fix `formlimited_audit` SQL** — `FORMLIMITED.[T$EXEC]` + `T$EXEC.ENAME` join. Attempted at `c0355d8` with an invalid `IN` clause; repaired at `7db4bcc`. Source-regex **CAT-T25** as first written passed on the broken source ([MRB #11](https://github.com/SimonBarnett/agentic_fomprep/issues/11)). Composed-SQL gates land on [#10](https://github.com/SimonBarnett/agentic_fomprep/issues/10) (**CAT-T25** / **CAT-T26**).
 2. **Withdraw false R1–R7 PASS claims**; committed WP0 evidence = `wp0-last.json` with WP0-R-SKIP when unset. **Addressed** in this doc.
 3. **De-dupe MRB docs** — keep this file; short duplicate is a pointer; no `docs/mrb-*.pdf`. **Addressed**; see `docs/README.md`.
 4. **Verdict vocabulary** — off-instance slice is **PASS-nits** (not PASS-with-nits). **Addressed** in this doc.

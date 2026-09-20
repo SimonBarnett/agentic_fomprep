@@ -305,10 +305,25 @@ foreach ($g in $sqlScriptGlobs) {
 }
 Add-Gate 'CAT-T27' ($hardcodedHits.Count -eq 0) $(if ($hardcodedHits.Count -eq 0) { 'no hardcoded dbo.* ConvertTo-SqlIdent in v2 product runners' } else { ($hardcodedHits -join '; ') })
 
-$odataRunner = Join-Path $v2 'plugins\priority-odata-dev\scripts\Invoke-PriorityOData.ps1'
-$runnerHash = (Get-FileHash -LiteralPath $odataRunner -Algorithm SHA256).Hash
-$catalogRunnerHash = (Get-FileHash -LiteralPath $runnerPs1 -Algorithm SHA256).Hash
-Add-Gate 'CAT-T28' ($runnerHash -eq $catalogRunnerHash) 'priority-odata-dev plugin runner byte-identical to catalog runner copy'
+$runnerPairs = @(
+    @{ Plugin = 'priority-odata-dev'; Script = 'Invoke-PriorityOData.ps1' },
+    @{ Plugin = 'priority-formprep'; Script = 'Prepare-NamedForm.ps1' },
+    @{ Plugin = 'priority-shell-compile'; Script = 'Compile-Shell.ps1' },
+    @{ Plugin = 'priority-shell-install'; Script = 'Install-Shell.ps1' }
+)
+$runnerMismatch = @()
+foreach ($rp in $runnerPairs) {
+    $plugPath = Join-Path $v2 ("plugins\{0}\scripts\{1}" -f $rp.Plugin, $rp.Script)
+    $catPath = Join-Path $catalog ("{0}\runner\{1}" -f $rp.Plugin, $rp.Script)
+    if (-not (Test-Path -LiteralPath $plugPath) -or -not (Test-Path -LiteralPath $catPath)) {
+        $runnerMismatch += ($rp.Plugin + ': missing path')
+        continue
+    }
+    $hPlug = (Get-FileHash -LiteralPath $plugPath -Algorithm SHA256).Hash
+    $hCat = (Get-FileHash -LiteralPath $catPath -Algorithm SHA256).Hash
+    if ($hPlug -ne $hCat) { $runnerMismatch += $rp.Plugin }
+}
+Add-Gate 'CAT-T28' ($runnerMismatch.Count -eq 0) $(if ($runnerMismatch.Count -eq 0) { 'plugin scripts/ runners byte-identical to catalog runner/ copies' } else { ('runner hash mismatch: ' + ($runnerMismatch -join ', ')) })
 
 if ($failed -gt 0) {
     Write-Host "Test-PriorityCatalog FAIL ($failed)"

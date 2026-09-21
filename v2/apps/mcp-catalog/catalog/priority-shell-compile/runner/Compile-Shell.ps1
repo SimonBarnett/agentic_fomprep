@@ -146,7 +146,7 @@ try {
 }
 
 try {
-    if (-not (Test-PinnedEnameInExec -Connection $conn -Ename (Get-PinnedProcEname -Pin $pin -Role compile))) {
+    if (-not (Test-PinnedEnameInExec -Connection $conn -Pin $pin -Ename (Get-PinnedProcEname -Pin $pin -Role compile))) {
         $result.reason = 'pin_incomplete'
         Add-ShellError -Result $result -Source 'gate' -Severity 'Blocker' -Text ('pinned compile procedure ENAME not in T$EXEC: ' + (Get-PinnedProcEname -Pin $pin -Role compile))
         Emit-Compile $result 2 $pick
@@ -154,7 +154,7 @@ try {
     $revExists = Test-VersionRevisionExists -Connection $conn -Pin $pin -Revision $Revision
     if (-not $revExists) {
         $result.reason = 'revision_missing'
-        Add-ShellError -Result $result -Source 'gate' -Severity 'Blocker' -Text ("revision $Revision not on $($pin.VersionRevisionsEname).UPGNUM")
+        Add-ShellError -Result $result -Source 'gate' -Severity 'Blocker' -Text ("revision $Revision not on $($pin.VersionRevisionsTable).$($pin.VersionRevisionCol)")
         Emit-Compile $result 2 $pick
     }
 } catch {

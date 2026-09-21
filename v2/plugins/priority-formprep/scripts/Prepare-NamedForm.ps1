@@ -15,6 +15,8 @@ $ErrorActionPreference = 'Stop'
 $here = $PSScriptRoot
 . (Join-Path $here 'lib\Get-WinrunCredential.ps1')
 . (Join-Path $here 'lib\sql.ps1')
+. (Join-Path $here 'lib\pin.ps1')
+. (Join-Path $here 'lib\formlimited-audit-sql.ps1')
 
 if ($Name -notmatch '^[A-Za-z][A-Za-z0-9_]*$') { throw "Bad form name '$Name'" }
 
@@ -92,14 +94,24 @@ if (-not $workRoot) {
 }
 New-Item -ItemType Directory -Path $workRoot -Force | Out-Null
 
+$pinRead = Read-ShellPin -StartDir $here
+if (-not $pinRead.ok) {
+    Write-FailJson @{ ok = $false; reason = 'pin_missing'; detail = [string]$pinRead.reason } 2
+}
+$sqlPin = $pinRead.pin
+$sqlGaps = @(Get-FormPrepSqlPinGaps -Pin $sqlPin)
+if ($sqlGaps.Count -gt 0) {
+    Write-FailJson @{ ok = $false; reason = 'pin_incomplete'; gaps = $sqlGaps } 2
+}
+
 $conn = New-InstanceSqlConnection -Instance $pick
-$lockTable = ConvertTo-SqlIdent 'dbo.EXECPREPLOCK'
-$execTable = ConvertTo-SqlIdent 'dbo.T$EXEC'
-$lId = ConvertTo-SqlIdent 'T$EXEC'
-$lUpd = ConvertTo-SqlIdent 'UPD'
-$lPrep = ConvertTo-SqlIdent 'LASTPREPDATE'
-$eId = ConvertTo-SqlIdent 'T$EXEC'
-$eName = ConvertTo-SqlIdent 'ENAME'
+$lockTable = ConvertTo-SqlIdent ([string]$sqlPin.LockTable)
+$execTable = ConvertTo-SqlIdent ([string]$sqlPin.ExecTable)
+$lId = ConvertTo-SqlIdent ([string]$sqlPin.LockCols.ExecId)
+$lUpd = ConvertTo-SqlIdent ([string]$sqlPin.LockCols.Upd)
+$lPrep = ConvertTo-SqlIdent ([string]$sqlPin.LockCols.LastPrep)
+$eId = ConvertTo-SqlIdent ([string]$sqlPin.ExecIdCol)
+$eName = ConvertTo-SqlIdent ([string]$sqlPin.ExecNameCol)
 
 function Get-OneLock($c) {
     $t = Invoke-FormPrepSql -Connection $c -Query @"

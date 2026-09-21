@@ -105,22 +105,6 @@ Pin:
 - `VersionRevisionsTable=dbo.UPGRADES`
 - `VersionRevisionCol=UPGNUM`
 
-## FORMLIMITED table (dictionary `system` DB)
-
-Table `FORMLIMITED` columns observed (same CE DEV dictionary pass as `INSTALLEDUPGRADES`):
-
-| Column | Role |
-|---|---|
-| `T$EXEC` | link to executable row in `T$EXEC` (audit SQL join key; no `FORM` column on this table) |
-| `RESTFLAG` | OData REST exposure flag |
-| `LIMITFLAG` | limit flag paired with `RESTFLAG` (footgun audit) |
-| `USERS` | user login on the limit row |
-
-Pin:
-
-- `FormLimitedTable=dbo.FORMLIMITED`
-- `FormLimitedExecCol=T$EXEC`
-
 ## Install log table
 
 Table `INSTALLEDUPGRADES` columns observed:
@@ -180,8 +164,8 @@ Titles are from the dictionary rows above. `PinComplete=true` after Simon confir
 | DbiMarker | `""` (unknown) |
 | InstallErrorForm | `EXECUPGRERR` |
 | ExecTitleColumn | `TITLE` |
-| FormLimitedTable | `dbo.FORMLIMITED` |
-| FormLimitedExecCol | `T$EXEC` |
+| FormLimitedTable | `dbo.FORMLIMITED` (table name only; executable FK column not dictionary-pinned) |
+| FormLimitedExecCol | *(empty — unpinned until a dated system DB column list names the FK)* |
 | UpgradesDir | `C:\Priority\system\upgrades` |
 | ProofInstanceId | `ce-priority-dev` |
 | AllowedBuildSetRoots | `@('C:\Priority\system\upgrades')` |
@@ -195,4 +179,5 @@ Stock alternatives (not pinned): `TAKEUPGRADE` / `EXECUPGRADES`. Simon confirmed
 - This recon does not set `WcfFileStepWorks`.
 - No guessed ENAMEs (`PREPAREUPGRADE`, `INSTALLUPGRADE`, `PREPUPG`, `INSTUPG`, etc. were not used).
 - No DbiMarker invented from the public `DBI` modification code.
+- No `FORMLIMITED` executable foreign-key column in this recon note — `FormLimitedExecCol` stays empty in `v2/config/pin.json` until dictionary evidence exists (MRB issue #30).
 - v1 Form Prep pack unchanged.

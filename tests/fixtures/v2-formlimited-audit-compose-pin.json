@@ -26,7 +26,7 @@
     "LastPrep": "LASTPREPDATE"
   },
   "FormLimitedTable": "dbo.FORMLIMITED",
-  "FormLimitedExecCol": "",
+  "FormLimitedExecCol": "T$EXEC",
   "UpgradesDir": "C:\\Priority\\system\\upgrades",
   "ProofInstanceId": "ce-priority-dev",
   "AllowedBuildSetRoots": [

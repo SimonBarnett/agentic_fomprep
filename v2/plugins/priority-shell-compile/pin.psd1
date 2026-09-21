@@ -33,7 +33,7 @@
         LastPrep = 'LASTPREPDATE'
     }
     FormLimitedTable      = 'dbo.FORMLIMITED'
-    FormLimitedExecCol    = 'T$EXEC'
+    FormLimitedExecCol    = ''
     UpgradesDir           = 'C:\Priority\system\upgrades'
     ProofInstanceId       = 'ce-priority-dev'
     AllowedBuildSetRoots  = @('C:\Priority\system\upgrades')

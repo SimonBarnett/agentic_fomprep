@@ -1,0 +1,6 @@
+{
+  "name": "priority-backup-audit",
+  "title": "Priority SQL backup audit (read-only)",
+  "description": "Inventory Agent jobs, backup paths, recovery models, and gaps vs backup standard. Read-only; integrated auth.",
+  "version": "1.0.0"
+}

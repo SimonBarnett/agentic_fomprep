@@ -1,0 +1,6 @@
+{
+  "name": "priority-sunday-backup-check",
+  "title": "Priority Sunday backup check",
+  "description": "Post-overnight Agent job + G: path + PRI t-log check; short pass/fail for Haitch. Europe/London Sunday routine.",
+  "version": "1.0.0"
+}

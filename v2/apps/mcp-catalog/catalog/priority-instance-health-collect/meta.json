@@ -1,0 +1,6 @@
+{
+  "name": "priority-instance-health-collect",
+  "title": "Priority SQL instance health collect",
+  "description": "Portable sqlcmd health collection: disk mount points, memory pressure, early outage signals. Integrated auth.",
+  "version": "1.0.0"
+}

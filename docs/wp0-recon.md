@@ -19,7 +19,6 @@ This note records **observed** dictionary rows from the CE Priority DEV system D
 | AllowedComputer | `CE-PRIORITY-DEV1` (NetBIOS also `CE-PRIORITY-DEV`) |
 | ExecTitleColumn | `TITLE` (`T$EXEC.TITLE`) |
 | ExecTable / ExecNameCol / ExecIdCol | `dbo.T$EXEC` / `ENAME` / `T$EXEC` (matches v1 `config/dev.psd1`; not `dbo.EXEC`) |
-| FormLimitedTable / FormLimitedExecCol | `dbo.FORMLIMITED` / `T$EXEC` — audit filter joins `FORMLIMITED.[T$EXEC]` to `T$EXEC.T$EXEC`, then `T$EXEC.ENAME` for form names (no `FORM` column on `FORMLIMITED`; see MRB note issue #9) |
 
 The proof runner **must** set `PRIORITY_WP0_INSTANCE=ce-priority-dev` so WP0-R\* walks this instance (allowlist id, CredMan, dictionary SQL, upgrades path). Until that env is set on the runner, `Test-WP0` skips R\* (`WP0-R-SKIP`).
 
@@ -162,4 +161,5 @@ Stock alternatives (not pinned): `TAKEUPGRADE` / `EXECUPGRADES`. Simon confirmed
 - This recon does not set `WcfFileStepWorks`.
 - No guessed ENAMEs (`PREPAREUPGRADE`, `INSTALLUPGRADE`, `PREPUPG`, `INSTUPG`, etc. were not used).
 - No DbiMarker invented from the public `DBI` modification code.
+- No `FORMLIMITED` executable foreign-key column in this recon note — `FormLimitedExecCol` stays empty in `v2/config/pin.json` until dated system DB column evidence exists (MRB issue #32).
 - v1 Form Prep pack unchanged.

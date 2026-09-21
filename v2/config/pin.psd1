@@ -20,6 +20,11 @@
     DbiMarker             = ''
     InstallErrorForm      = 'EXECUPGRERR'
     ExecTitleColumn       = 'TITLE'
+    ExecTable             = 'dbo.T$EXEC'
+    ExecNameCol           = 'ENAME'
+    ExecIdCol             = 'T$EXEC'
+    FormLimitedTable      = 'dbo.FORMLIMITED'
+    FormLimitedExecCol    = ''
     UpgradesDir           = 'C:\Priority\system\upgrades'
     ProofInstanceId       = 'ce-priority-dev'
     AllowedBuildSetRoots  = @('C:\Priority\system\upgrades')

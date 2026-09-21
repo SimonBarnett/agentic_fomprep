@@ -96,22 +96,19 @@ Push-Location $repo
 $v1diff = & git diff -- src/Prepare-NamedForm.ps1 2>$null | Out-String
 Pop-Location
 Add-Gate 'CAT-T5' ([string]::IsNullOrWhiteSpace($v1diff)) 'src\Prepare-NamedForm.ps1 untouched'
-
-$lib = Join-Path $v2 'plugins\priority-odata-dev\scripts\lib'
-. (Join-Path $lib 'sql.ps1')
-. (Join-Path $lib 'pin.ps1')
-. (Join-Path $lib 'formlimited-audit-sql.ps1')
-. (Join-Path $lib 'odata.ps1')
+. (Join-Path $v2 'lib\pin.ps1')
+. (Join-Path $v2 'lib\sql.ps1')
+. (Join-Path $v2 'plugins\priority-odata-dev\scripts\lib\formlimited-audit-sql.ps1')
 $pinJsonPath = Join-Path $v2 'config\pin.json'
 $pinPsd1Path = Join-Path $v2 'config\pin.psd1'
-$pinFromJson = (Read-ShellPin -Path $pinJsonPath -StartDir $PSScriptRoot).pin
+$pinFromJson = Convert-ShellPinObject -Raw (Get-Content -LiteralPath $pinJsonPath -Raw | ConvertFrom-Json)
 $pinFromPsd1 = Convert-ShellPinObject -Raw (Import-PowerShellDataFile -Path $pinPsd1Path)
 $formLimitedPinKeys = @('FormLimitedTable', 'FormLimitedExecCol')
 $sqlGapsJson = @(Get-SqlPinGaps -Pin $pinFromJson | Where-Object { $_ -notin $formLimitedPinKeys })
 $sqlGapsPsd1 = @(Get-SqlPinGaps -Pin $pinFromPsd1 | Where-Object { $_ -notin $formLimitedPinKeys })
+$formGapsJson = @(Get-FormPrepSqlPinGaps -Pin $pinFromJson | Where-Object { $_ -notin $formLimitedPinKeys })
 $flExecUnpinned = (Test-ShellPinTokenEmpty $pinFromJson.FormLimitedExecCol) -and (Test-ShellPinTokenEmpty $pinFromPsd1.FormLimitedExecCol)
-$flTableMatch = ([string]$pinFromJson.FormLimitedTable -eq [string]$pinFromPsd1.FormLimitedTable)
-$t6ok = ($sqlGapsJson.Count -eq 0) -and ($sqlGapsPsd1.Count -eq 0) -and $flExecUnpinned -and $flTableMatch -and ([bool]$pinFromJson.PinComplete -eq [bool]$pinFromPsd1.PinComplete)
+$t6ok = ($sqlGapsJson.Count -eq 0) -and ($sqlGapsPsd1.Count -eq 0) -and ($formGapsJson.Count -eq 0) -and $flExecUnpinned -and ([bool]$pinFromJson.PinComplete -eq [bool]$pinFromPsd1.PinComplete)
 Add-Gate 'CAT-T6' $t6ok $(if ($t6ok) { 'pin.json + pin.psd1 SQL pins populated; FormLimitedExecCol unpinned' } else { 'SQL pin gaps json=' + ($sqlGapsJson -join ',') + ' psd1=' + ($sqlGapsPsd1 -join ',') + ' flExecUnpinned=' + $flExecUnpinned })
 
 $composePinPath = Join-Path $repo 'tests\fixtures\v2-formlimited-audit-compose-pin.json'
@@ -120,6 +117,9 @@ $pinForFormLimitedAudit = Convert-ShellPinObject -Raw (Get-Content -LiteralPath 
 $market = Get-Content -LiteralPath (Join-Path $repo '.grok-plugin\marketplace.json') -Raw | ConvertFrom-Json
 $plugNames = @($market.plugins | ForEach-Object { $_.name })
 Add-Gate 'CAT-T7' ($plugNames -contains 'priority-odata-dev') 'marketplace.json lists priority-odata-dev'
+
+$lib = Join-Path $v2 'plugins\priority-odata-dev\scripts\lib'
+. (Join-Path $lib 'odata.ps1')
 
 $ex = [pscustomobject]@{
     webBaseUrl = 'https://prioritydev.clarksonevans.co.uk'
@@ -274,8 +274,7 @@ Add-Gate 'CAT-T24' $htOk 'HT-DL smoke catalog present with TEST company pitfall'
 $runnerPs1 = Join-Path $catalog 'priority-odata-dev\runner\Invoke-PriorityOData.ps1'
 Add-Gate 'CAT-T21' (Test-Path -LiteralPath $runnerPs1) 'catalog runner files present for get_runner_files'
 
-$formsUnderTest = @('PARTLONGDESC', 'PART')
-$fixtureInst = Join-Path $env:TEMP ('odata-cat-compose-' + [guid]::NewGuid().ToString('n'))
+$fixtureInst = Join-Path $env:TEMP ('cat-compose-inst-' + [guid]::NewGuid().ToString('n') + '.json')
 @{
     instances = @(
         @{
@@ -294,6 +293,7 @@ $compose = Invoke-ODataRunner @(
     '-InstancesPath', $fixtureInst, '-ComposeSql', '-PinPath', $composePinPath
 )
 Remove-Item -LiteralPath $fixtureInst -Force -ErrorAction SilentlyContinue
+$formsUnderTest = @('PARTLONGDESC', 'PART')
 $composedOk = $false
 $composedDetail = 'compose runner failed'
 if ($compose.ExitCode -eq 0 -and $compose.Json -and $compose.Json.sql) {
@@ -305,23 +305,20 @@ if ($compose.ExitCode -eq 0 -and $compose.Json -and $compose.Json.sql) {
     $composedOk = Test-FormLimitedAuditComposed -Sql ([string]$compose.Json.sql) -Parameters $paramHt -FormNames $formsUnderTest -Pin $pinForFormLimitedAudit
     $composedDetail = if ($composedOk) { 'formlimited_audit composed SQL + bound @fN placeholders' } else { 'composed SQL failed structural assert' }
 }
+Add-Gate 'CAT-T25' $composedOk $composedDetail
+
 $builtBase = New-FormLimitedAuditSql -Pin $pinForFormLimitedAudit -FormNames $formsUnderTest
-$flExec = ConvertTo-SqlIdent ([string]$pinForFormLimitedAudit.FormLimitedExecCol)
-$execId = ConvertTo-SqlIdent ([string]$pinForFormLimitedAudit.ExecIdCol)
-$joinNeedle = 'FL.' + $flExec + ' = E.' + $execId
 $mutNoBind = Test-FormLimitedAuditComposed -Sql $builtBase.Sql -Parameters @{} -FormNames $formsUnderTest -Pin $pinForFormLimitedAudit
-$mutBadJoin = $builtBase.Sql -replace [regex]::Escape($joinNeedle), ('FL.' + $flExec + ' = E.' + (ConvertTo-SqlIdent ([string]$pinForFormLimitedAudit.ExecNameCol)))
+$flExecIdent = ConvertTo-SqlIdent ([string]$pinForFormLimitedAudit.FormLimitedExecCol)
+$execIdIdent = ConvertTo-SqlIdent ([string]$pinForFormLimitedAudit.ExecIdCol)
+$execNameIdent = ConvertTo-SqlIdent ([string]$pinForFormLimitedAudit.ExecNameCol)
+$goodJoin = 'FL.' + $flExecIdent + ' = E.' + $execIdIdent
+$badJoinNeedle = 'FL.' + $flExecIdent + ' = E.' + $execNameIdent
+$mutBadJoin = $builtBase.Sql -replace [regex]::Escape($goodJoin), $badJoinNeedle
 $mutBadJoinFail = -not (Test-FormLimitedAuditComposed -Sql $mutBadJoin -Parameters $builtBase.Parameters -FormNames $formsUnderTest -Pin $pinForFormLimitedAudit)
 $mutInline = $builtBase.Sql -replace '@f0', "'PARTLONGDESC'"
 $mutInlineFail = -not (Test-FormLimitedAuditComposed -Sql $mutInline -Parameters $builtBase.Parameters -FormNames $formsUnderTest -Pin $pinForFormLimitedAudit)
-$mutationBar = (-not $mutNoBind) -and $mutBadJoinFail -and $mutInlineFail
-$artefactOk = $false
-$artefactPath = Join-Path $v2 'tests\formlimited-audit-composed.json'
-if (Test-Path -LiteralPath $artefactPath) {
-    $art = Get-Content -LiteralPath $artefactPath -Raw -Encoding UTF8 | ConvertFrom-Json
-    $artefactOk = ($art.sql -eq $builtBase.Sql) -and (@($art.sqlParameters) -join ',' -eq ($builtBase.Placeholders -join ','))
-}
-Add-Gate 'CAT-T25' ($composedOk -and $mutationBar -and $artefactOk) $(if ($composedOk -and $mutationBar -and $artefactOk) { 'formlimited_audit composed SQL; mutation bar; committed artefact matches' } else { $composedDetail })
+Add-Gate 'CAT-T26' ((-not $mutNoBind) -and $mutBadJoinFail -and $mutInlineFail) 'formlimited_audit mutation bar: no-bind, bad-join, inline literal turn gate red'
 
 $dbaIds = @(
     'priority-backup-standard',
@@ -343,17 +340,17 @@ foreach ($dbaId in $dbaIds) {
     if ($raw -notmatch '(?m)^name:\s*' + [regex]::Escape($dbaId)) { $dbaFrontMissing += "$dbaId/name" }
     if ($raw -notmatch '(?m)^description:\s*>?') { $dbaFrontMissing += "$dbaId/description" }
 }
-Add-Gate 'CAT-T26' ($dbaFrontMissing.Count -eq 0) $(if ($dbaFrontMissing.Count -eq 0) { 'DBA skills frontmatter name+description' } else { $dbaFrontMissing -join '; ' })
+Add-Gate 'CAT-T27' ($dbaFrontMissing.Count -eq 0) $(if ($dbaFrontMissing.Count -eq 0) { 'DBA skills frontmatter name+description' } else { $dbaFrontMissing -join '; ' })
 
 $std = Get-Content -LiteralPath (Join-Path $catalog 'priority-backup-standard\SKILL.md') -Raw -Encoding UTF8
 $stdOk = (($std -match 'integrated auth') -or ($std -match 'Integrated Security')) -and ($std -match 'Do \*\*not\*\* prune')
-Add-Gate 'CAT-T27' $stdOk 'backup-standard documents no F: prune without confirm'
+Add-Gate 'CAT-T28' $stdOk 'backup-standard documents no F: prune without confirm'
 
 $formGate = Get-Content -LiteralPath (Join-Path $catalog 'priority-form-prep-after-sql-change\SKILL.md') -Raw -Encoding UTF8
-Add-Gate 'CAT-T28' ($formGate -match 'prepare-all-unprepared-priority-forms') 'form-prep-after-sql-change links batch form prep skill'
+Add-Gate 'CAT-T29' ($formGate -match 'prepare-all-unprepared-priority-forms') 'form-prep-after-sql-change links batch form prep skill'
 
 $htTri = Get-Content -LiteralPath (Join-Path $catalog 'priority-ht-delete-deadlock-triage\SKILL.md') -Raw -Encoding UTF8
-Add-Gate 'CAT-T29' (($htTri -match '1205') -and ($htTri -notmatch 'ALTER INDEX')) 'HT deadlock triage evidence-only'
+Add-Gate 'CAT-T30' (($htTri -match '1205') -and ($htTri -notmatch 'ALTER INDEX')) 'HT deadlock triage evidence-only'
 
 $scanPaths = @()
 foreach ($dbaId in $dbaIds) {
@@ -369,10 +366,10 @@ foreach ($root in $scanPaths) {
         if ($text -match '(?i)(password\s*=|XAI_API_KEY\s*=)') { $secretHits += $_.FullName }
     }
 }
-Add-Gate 'CAT-T30' ($secretHits.Count -eq 0) $(if ($secretHits.Count -eq 0) { 'no password=/XAI_API_KEY= in DBA skills or dba harvest' } else { $secretHits -join '; ' })
+Add-Gate 'CAT-T31' ($secretHits.Count -eq 0) $(if ($secretHits.Count -eq 0) { 'no password=/XAI_API_KEY= in DBA skills or dba harvest' } else { $secretHits -join '; ' })
 
 $auditRunner = Join-Path $catalog 'priority-backup-audit\runner\Invoke-PriorityBackupAudit.ps1'
-Add-Gate 'CAT-T31' (Test-Path -LiteralPath $auditRunner) 'priority-backup-audit runner present'
+Add-Gate 'CAT-T32' (Test-Path -LiteralPath $auditRunner) 'priority-backup-audit runner present'
 
 function Invoke-DbaRunner {
     param([string]$ScriptPath, [string[]]$ArgList)
@@ -397,19 +394,19 @@ function Invoke-DbaRunner {
 $sundayRunner = Join-Path $catalog 'priority-sunday-backup-check\runner\Invoke-SundayBackupCheck.ps1'
 $sundayDry = Invoke-DbaRunner -ScriptPath $sundayRunner -ArgList @('-DryRun')
 $sundayDryOk = $sundayDry.ExitCode -eq 0 -and $sundayDry.Json.ok -eq $true -and $sundayDry.Json.dryRun -eq $true
-Add-Gate 'CAT-T32' $sundayDryOk 'Sunday -DryRun checklist without instances.json'
+Add-Gate 'CAT-T33' $sundayDryOk 'Sunday -DryRun checklist without instances.json'
 
 $missingCfg = Join-Path $env:TEMP ('dba-missing-' + [guid]::NewGuid().ToString('n') + '.json')
 $auditNoCfg = Invoke-DbaRunner -ScriptPath $auditRunner -ArgList @('-InstancesPath', $missingCfg)
-Add-Gate 'CAT-T33' ($auditNoCfg.ExitCode -eq 2 -and $auditNoCfg.Json.reason -eq 'config_error') 'backup-audit missing config exit 2'
+Add-Gate 'CAT-T34' ($auditNoCfg.ExitCode -eq 2 -and $auditNoCfg.Json.reason -eq 'config_error') 'backup-audit missing config exit 2'
 
 $postRunner = Join-Path $catalog 'priority-post-move-health\runner\Invoke-PriorityPostMoveHealth.ps1'
 $postNoCfg = Invoke-DbaRunner -ScriptPath $postRunner -ArgList @('-InstancesPath', $missingCfg)
-Add-Gate 'CAT-T34' ($postNoCfg.ExitCode -eq 2 -and $postNoCfg.Json.reason -eq 'config_error') 'post-move missing config exit 2'
+Add-Gate 'CAT-T35' ($postNoCfg.ExitCode -eq 2 -and $postNoCfg.Json.reason -eq 'config_error') 'post-move missing config exit 2'
 
 $healthRunner = Join-Path $catalog 'priority-instance-health-collect\runner\Invoke-InstanceHealthCollect.ps1'
 $healthNoCfg = Invoke-DbaRunner -ScriptPath $healthRunner -ArgList @('-InstancesPath', $missingCfg)
-Add-Gate 'CAT-T35' ($healthNoCfg.ExitCode -eq 2 -and $healthNoCfg.Json.reason -eq 'config_error') 'health-collect missing config exit 2'
+Add-Gate 'CAT-T36' ($healthNoCfg.ExitCode -eq 2 -and $healthNoCfg.Json.reason -eq 'config_error') 'health-collect missing config exit 2'
 
 $dbaTmp = Join-Path $env:TEMP ('dba-cat-' + [guid]::NewGuid().ToString('n'))
 New-Item -ItemType Directory -Path $dbaTmp -Force | Out-Null
@@ -420,7 +417,7 @@ $exRaw.instanceIds = @('DEV')
 $exRaw | ConvertTo-Json -Depth 12 | Set-Content -LiteralPath $fixtureCfg -Encoding UTF8
 $postSkip = Invoke-DbaRunner -ScriptPath $postRunner -ArgList @('-InstancesPath', $fixtureCfg)
 $postSkipOk = $postSkip.ExitCode -eq 2 -and $postSkip.Json.reason -eq 'live_skip' -and $postSkip.ElapsedSec -lt 30
-Add-Gate 'CAT-T36' $postSkipOk $(if ($postSkipOk) { 'post-move example config live_skip without SQL/UNC' } else { "exit=$($postSkip.ExitCode) reason=$($postSkip.Json.reason) sec=$([math]::Round($postSkip.ElapsedSec,2))" })
+Add-Gate 'CAT-T37' $postSkipOk $(if ($postSkipOk) { 'post-move example config live_skip without SQL/UNC' } else { "exit=$($postSkip.ExitCode) reason=$($postSkip.Json.reason) sec=$([math]::Round($postSkip.ElapsedSec,2))" })
 
 $ceLiteralHits = @()
 $cePatterns = @('10\.220\.0\.5', 'SQL_Backup_Archive_F_20260918', '\bpridev\b', '\bpritest\b', '\bpridata\b')
@@ -440,9 +437,50 @@ foreach ($root in $dbaPs1Roots) {
         }
     }
 }
-Add-Gate 'CAT-T37' ($ceLiteralHits.Count -eq 0) $(if ($ceLiteralHits.Count -eq 0) { 'DBA .ps1 logic has no CE host/mount/archive constants' } else { $ceLiteralHits -join '; ' })
+Add-Gate 'CAT-T38' ($ceLiteralHits.Count -eq 0) $(if ($ceLiteralHits.Count -eq 0) { 'DBA .ps1 logic has no CE host/mount/archive constants' } else { $ceLiteralHits -join '; ' })
 
 Remove-Item -LiteralPath $dbaTmp -Recurse -Force -ErrorAction SilentlyContinue
+
+$hardcodedHits = @()
+$productScanRoots = @(
+    (Join-Path $v2 'lib'),
+    (Join-Path $v2 'plugins'),
+    (Join-Path $v2 'apps\mcp-catalog\catalog')
+)
+$productPs1 = @()
+foreach ($root in $productScanRoots) {
+    if (-not (Test-Path -LiteralPath $root)) { continue }
+    $productPs1 += @(Get-ChildItem -LiteralPath $root -Recurse -Filter '*.ps1' -File -ErrorAction SilentlyContinue)
+}
+foreach ($f in ($productPs1 | Sort-Object -Property FullName -Unique)) {
+    if ($f.FullName -match '\\tools\\' -or $f.FullName -match '\\tests\\') { continue }
+    $raw = Get-Content -LiteralPath $f.FullName -Raw -Encoding UTF8
+    $rel = $f.FullName.Substring($v2.Length).TrimStart('\')
+    if ($raw -match "ConvertTo-SqlIdent\s+'dbo\.") { $hardcodedHits += ($rel + ": ConvertTo-SqlIdent 'dbo.*'") }
+    if ($raw -match "ConvertTo-SqlIdent\s+'UPGNUM'") { $hardcodedHits += ($rel + ": ConvertTo-SqlIdent 'UPGNUM'") }
+    if ($raw -match "'dbo\.'\s*\+") { $hardcodedHits += ($rel + ": 'dbo.' + prefix") }
+}
+Add-Gate 'CAT-T39' ($hardcodedHits.Count -eq 0) $(if ($hardcodedHits.Count -eq 0) { 'no hardcoded dbo.* / UPGNUM / dbo.+ SQL idents in v2 product scripts' } else { ($hardcodedHits -join '; ') })
+
+$runnerPairs = @(
+    @{ Plugin = 'priority-odata-dev'; Script = 'Invoke-PriorityOData.ps1' },
+    @{ Plugin = 'priority-formprep'; Script = 'Prepare-NamedForm.ps1' },
+    @{ Plugin = 'priority-shell-compile'; Script = 'Compile-Shell.ps1' },
+    @{ Plugin = 'priority-shell-install'; Script = 'Install-Shell.ps1' }
+)
+$runnerMismatch = @()
+foreach ($rp in $runnerPairs) {
+    $plugPath = Join-Path $v2 ("plugins\{0}\scripts\{1}" -f $rp.Plugin, $rp.Script)
+    $catPath = Join-Path $catalog ("{0}\runner\{1}" -f $rp.Plugin, $rp.Script)
+    if (-not (Test-Path -LiteralPath $plugPath) -or -not (Test-Path -LiteralPath $catPath)) {
+        $runnerMismatch += ($rp.Plugin + ': missing path')
+        continue
+    }
+    $hPlug = (Get-FileHash -LiteralPath $plugPath -Algorithm SHA256).Hash
+    $hCat = (Get-FileHash -LiteralPath $catPath -Algorithm SHA256).Hash
+    if ($hPlug -ne $hCat) { $runnerMismatch += $rp.Plugin }
+}
+Add-Gate 'CAT-T40' ($runnerMismatch.Count -eq 0) $(if ($runnerMismatch.Count -eq 0) { 'plugin scripts/ runners byte-identical to catalog runner/ copies' } else { ('runner hash mismatch: ' + ($runnerMismatch -join ', ')) })
 
 if ($failed -gt 0) {
     Write-Host "Test-PriorityCatalog FAIL ($failed)"

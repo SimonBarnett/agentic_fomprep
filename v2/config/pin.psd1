@@ -11,18 +11,27 @@
     InstallUpgradeEname   = 'ZEMG_EXECUPGRADES'
     InstallUpgradeType    = 'P'
     VersionRevisionsEname = 'UPGRADES'
+    VersionRevisionsTable = 'dbo.UPGRADES'
+    VersionRevisionCol    = 'UPGNUM'
     RevisionInputStep     = 'PAR'
     FilePathInputStep     = 'FN'
     WcfFileStepWorks      = $null
-    InstallLogTable       = 'INSTALLEDUPGRADES'
+    InstallLogTable       = 'dbo.INSTALLEDUPGRADES'
     InstallLogRevisionCol = 'UPG'
     InstallLogDateCol     = 'STARTDATE'
     DbiMarker             = ''
     InstallErrorForm      = 'EXECUPGRERR'
     ExecTitleColumn       = 'TITLE'
+    # SQL dictionary pins (CE DEV system DB; see docs/wp0-recon.md). v1 config/dev.psd1 matches Exec/Lock.
     ExecTable             = 'dbo.T$EXEC'
     ExecNameCol           = 'ENAME'
     ExecIdCol             = 'T$EXEC'
+    LockTable             = 'dbo.EXECPREPLOCK'
+    LockCols              = @{
+        ExecId   = 'T$EXEC'
+        Upd      = 'UPD'
+        LastPrep = 'LASTPREPDATE'
+    }
     FormLimitedTable      = 'dbo.FORMLIMITED'
     FormLimitedExecCol    = ''
     UpgradesDir           = 'C:\Priority\system\upgrades'

@@ -21,6 +21,7 @@
 | [build-and-test-plan-ce-priority-dba-skills-2026-09-19.md](build-and-test-plan-ce-priority-dba-skills-2026-09-19.md) | ce-priority-dba-skills | [#5](https://github.com/SimonBarnett/agentic_fomprep/issues/5) |
 | [build-and-test-plan-priority-generic-catalog-rename-2026-09-19.md](build-and-test-plan-priority-generic-catalog-rename-2026-09-19.md) | priority-generic-catalog-rename | [#4](https://github.com/SimonBarnett/agentic_fomprep/issues/4) |
 | [build-and-test-plan-shell-compile-install-v2-spec-0.1.md](build-and-test-plan-shell-compile-install-v2-spec-0.1.md) | shell-compile-install v2 | [#6](https://github.com/SimonBarnett/agentic_fomprep/issues/6) |
+| [build-and-test-plan-sql-pins-and-composed-sql-gates-2026-09-20.md](build-and-test-plan-sql-pins-and-composed-sql-gates-2026-09-20.md) | sql-pins-and-composed-sql-gates | [#10](https://github.com/SimonBarnett/agentic_fomprep/issues/10) |
 
 ## MRB reviews (optional `/docs` archive)
 
@@ -29,6 +30,8 @@
 | [mrb-2026-09-19-v1.md](mrb-2026-09-19-v1.md) | WP0 skeleton (pre-`23e7e64`) | PASS-with-nits (historical token) | Pre-intake archive; FR [#6](https://github.com/SimonBarnett/agentic_fomprep/issues/6) |
 | [mrb-2026-09-19-wcf-walker-eshbel.md](mrb-2026-09-19-wcf-walker-eshbel.md) | `23e7e64` (+ catalog); SQL attempts `c0355d8`, `7db4bcc` | PASS-nits (off-instance); `formlimited_audit` composed gate on [#19](https://github.com/SimonBarnett/agentic_fomprep/issues/19) | [#9](https://github.com/SimonBarnett/agentic_fomprep/issues/9) |
 | [mrb-wcf-walker-23e7e64-eshbel-2026-09-19.md](mrb-wcf-walker-23e7e64-eshbel-2026-09-19.md) | — | Pointer only | [#9](https://github.com/SimonBarnett/agentic_fomprep/issues/9) |
+| — | `c0355d8` | formlimited_audit join shipped with invalid `IN` SQL; CAT-T25 (source regex) green | [#11](https://github.com/SimonBarnett/agentic_fomprep/issues/11) |
+| — | `7db4bcc` | `IN` clause repair; CAT-T25 still source-regex | [#11](https://github.com/SimonBarnett/agentic_fomprep/issues/11) |
 
 ## MRB issues without a `/docs` copy (GitHub only)
 

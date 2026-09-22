@@ -1,0 +1,9 @@
+{
+  "PinComplete": true,
+  "ExecTable": "dbo.T$EXEC",
+  "ExecNameCol": "ENAME",
+  "ExecIdCol": "T$EXEC",
+  "FormLimitedTable": "dbo.FORMLIMITED",
+  "FormLimitedExecCol": "T$EXEC",
+  "_note": "CAT-T25 offline harness only. Not dictionary recon. Do not copy into v2/config/pin.json until FORMLIMITED executable FK is observed on a proof instance."
+}

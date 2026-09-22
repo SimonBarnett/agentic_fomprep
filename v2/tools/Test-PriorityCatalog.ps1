@@ -242,6 +242,8 @@ $runnerPs1 = Join-Path $catalog 'priority-odata-dev\runner\Invoke-PriorityOData.
 Add-Gate 'CAT-T21' (Test-Path -LiteralPath $runnerPs1) 'catalog runner files present for get_runner_files'
 
 $formsUnderTest = @('PARTLONGDESC', 'PART')
+$harnessPinPath = Join-Path $v2 'tests\formlimited-audit-compose-pin.json'
+$pinHarness = (Read-ShellPin -Path $harnessPinPath -StartDir $PSScriptRoot).pin
 $fixtureInst = Join-Path $env:TEMP ('odata-cat-compose-' + [guid]::NewGuid().ToString('n'))
 @{
     instances = @(
@@ -256,9 +258,14 @@ $fixtureInst = Join-Path $env:TEMP ('odata-cat-compose-' + [guid]::NewGuid().ToS
         }
     )
 } | ConvertTo-Json -Depth 5 | Set-Content -LiteralPath $fixtureInst -Encoding UTF8
-$compose = Invoke-ODataRunner @(
+$refuseCompose = Invoke-ODataRunner @(
     '-Action', 'formlimited_audit', '-InstanceId', 'fixture-dev', '-Forms', 'PARTLONGDESC,PART',
     '-InstancesPath', $fixtureInst, '-ComposeSql', '-PinPath', $pinJsonPath
+)
+$refuseOk = ($refuseCompose.ExitCode -eq 2 -and $refuseCompose.Json.reason -eq 'pin_incomplete')
+$compose = Invoke-ODataRunner @(
+    '-Action', 'formlimited_audit', '-InstanceId', 'fixture-dev', '-Forms', 'PARTLONGDESC,PART',
+    '-InstancesPath', $fixtureInst, '-ComposeSql', '-PinPath', $harnessPinPath
 )
 Remove-Item -LiteralPath $fixtureInst -Force -ErrorAction SilentlyContinue
 $composedOk = $false
@@ -269,18 +276,18 @@ if ($compose.ExitCode -eq 0 -and $compose.Json -and $compose.Json.sql) {
         $idx = [int]($ph -replace '^@f', '')
         $paramHt[$ph] = $formsUnderTest[$idx]
     }
-    $composedOk = Test-FormLimitedAuditComposed -Sql ([string]$compose.Json.sql) -Parameters $paramHt -FormNames $formsUnderTest -Pin $pinFromJson
+    $composedOk = Test-FormLimitedAuditComposed -Sql ([string]$compose.Json.sql) -Parameters $paramHt -FormNames $formsUnderTest -Pin $pinHarness
     $composedDetail = if ($composedOk) { 'formlimited_audit composed SQL + bound @fN placeholders' } else { 'composed SQL failed structural assert' }
 }
-$builtBase = New-FormLimitedAuditSql -Pin $pinFromJson -FormNames $formsUnderTest
-$flExec = ConvertTo-SqlIdent ([string]$pinFromJson.FormLimitedExecCol)
-$execId = ConvertTo-SqlIdent ([string]$pinFromJson.ExecIdCol)
+$builtBase = New-FormLimitedAuditSql -Pin $pinHarness -FormNames $formsUnderTest
+$flExec = ConvertTo-SqlIdent ([string]$pinHarness.FormLimitedExecCol)
+$execId = ConvertTo-SqlIdent ([string]$pinHarness.ExecIdCol)
 $joinNeedle = 'FL.' + $flExec + ' = E.' + $execId
-$mutNoBind = Test-FormLimitedAuditComposed -Sql $builtBase.Sql -Parameters @{} -FormNames $formsUnderTest -Pin $pinFromJson
-$mutBadJoin = $builtBase.Sql -replace [regex]::Escape($joinNeedle), ('FL.' + $flExec + ' = E.' + (ConvertTo-SqlIdent ([string]$pinFromJson.ExecNameCol)))
-$mutBadJoinFail = -not (Test-FormLimitedAuditComposed -Sql $mutBadJoin -Parameters $builtBase.Parameters -FormNames $formsUnderTest -Pin $pinFromJson)
+$mutNoBind = Test-FormLimitedAuditComposed -Sql $builtBase.Sql -Parameters @{} -FormNames $formsUnderTest -Pin $pinHarness
+$mutBadJoin = $builtBase.Sql -replace [regex]::Escape($joinNeedle), ('FL.' + $flExec + ' = E.' + (ConvertTo-SqlIdent ([string]$pinHarness.ExecNameCol)))
+$mutBadJoinFail = -not (Test-FormLimitedAuditComposed -Sql $mutBadJoin -Parameters $builtBase.Parameters -FormNames $formsUnderTest -Pin $pinHarness)
 $mutInline = $builtBase.Sql -replace '@f0', "'PARTLONGDESC'"
-$mutInlineFail = -not (Test-FormLimitedAuditComposed -Sql $mutInline -Parameters $builtBase.Parameters -FormNames $formsUnderTest -Pin $pinFromJson)
+$mutInlineFail = -not (Test-FormLimitedAuditComposed -Sql $mutInline -Parameters $builtBase.Parameters -FormNames $formsUnderTest -Pin $pinHarness)
 $mutationBar = (-not $mutNoBind) -and $mutBadJoinFail -and $mutInlineFail
 $artefactOk = $false
 $artefactPath = Join-Path $v2 'tests\formlimited-audit-composed.json'
@@ -288,7 +295,7 @@ if (Test-Path -LiteralPath $artefactPath) {
     $art = Get-Content -LiteralPath $artefactPath -Raw -Encoding UTF8 | ConvertFrom-Json
     $artefactOk = ($art.sql -eq $builtBase.Sql) -and (@($art.sqlParameters) -join ',' -eq ($builtBase.Placeholders -join ','))
 }
-Add-Gate 'CAT-T25' ($composedOk -and $mutationBar -and $artefactOk) $(if ($composedOk -and $mutationBar -and $artefactOk) { 'formlimited_audit composed SQL; mutation bar; committed artefact matches' } else { $composedDetail })
+Add-Gate 'CAT-T25' ($refuseOk -and $composedOk -and $mutationBar -and $artefactOk) $(if ($refuseOk -and $composedOk -and $mutationBar -and $artefactOk) { 'pin.json refuses compose; harness composed SQL; mutation bar; artefact matches' } else { if (-not $refuseOk) { 'v2/config/pin.json must refuse -ComposeSql (FormLimitedExecCol unpinned)' } else { $composedDetail } })
 
 if ($failed -gt 0) {
     Write-Host "Test-PriorityCatalog FAIL ($failed)"

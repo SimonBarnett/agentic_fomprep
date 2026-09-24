@@ -1,18 +1,18 @@
 ---
-name: ce-priority-ht-delete-smoke
+name: priority-ht-delete-smoke
 description: >
-  CE Priority house-type DELETE smoke (HT-DL) on TEST under concurrent recalc.
+  Priority house-type DELETE smoke (HT-DL) on TEST under concurrent recalc.
   Use when the user says HT delete, house type delete, HT-DL, Ctrl+Delete HOUSETYPEID,
-  or /ce-priority-ht-delete-smoke.
+  or /priority-ht-delete-smoke.
 ---
 
-# CE Priority house-type DELETE smoke (HT-DL)
+# Priority house-type DELETE smoke (HT-DL)
 
-Grab from catalog MCP `https://mcp-priority.ntsa.uk/mcp` (`get_skill` with `name=ce-priority-ht-delete-smoke`). Browser/desktop only.
+Grab from catalog MCP `https://mcp-priority.ntsa.uk/mcp` (`get_skill` with `name=priority-ht-delete-smoke`). Browser/desktop only.
 
 Follow **priority-uat-orchestrator** standing rules. Trigger sign lives in **priority-form-engineering** (PRE-DELETE `:ELEMENT = - :ELEMENT`). Do not restate the trigger body here.
 
-Host: `prioritytest.clarksonevans.co.uk`. Confirm company title first (DNAME `base` = UI "T - Clarkson Evans Live - 20251031"; UI "Test" = DNAME `test`, empty PR26*). USERENV can stick -- relogin after change.
+Use the deployment TEST web instance from config (e.g. Clarkson Evans `prioritytest.clarksonevans.co.uk`). Confirm company title first (DNAME vs UI label pitfalls are instance-specific — see orchestrator).
 
 ## When
 

@@ -1,5 +1,6 @@
 ﻿# Feature request: Rename ce-priority-* catalog to Priority-generic only
 
+**Intake issue / MRB home:** [GitHub issue #4](https://github.com/SimonBarnett/agentic_fomprep/issues/4)  
 **Date:** 2026-09-19  
 **Repo:** https://github.com/SimonBarnett/agentic_fomprep  
 **Raised by:** Simon (via Bob)  

@@ -1,0 +1,19 @@
+﻿{
+    "generatedAt":  "2026-09-20T23:33:00.4915155Z",
+    "gate":  "CAT-T25",
+    "formNames":  [
+                      "PARTLONGDESC",
+                      "PART"
+                  ],
+    "sql":  "SELECT FL.*\r\nFROM [dbo].[FORMLIMITED] FL\r\nINNER JOIN [dbo].[T$EXEC] E ON FL.[T$EXEC] = E.[T$EXEC]\r\nWHERE E.[ENAME] IN (@f0, @f1)",
+    "sqlParameters":  [
+                          "@f0",
+                          "@f1"
+                      ],
+    "parameterValues":  {
+                            "@f0":  "PARTLONGDESC",
+                            "@f1":  "PART"
+                        },
+    "pinPath":  "tests/fixtures/v2-formlimited-audit-compose-pin.json",
+    "note":  "Offline composition artefact; not a live SQL run. Test-only FK pin (T$EXEC); production pin refuses until dictionary evidence (issue #32)."
+}

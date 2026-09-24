@@ -20,9 +20,9 @@ Any CE Priority user-test on DEV or TEST web.
 
 | Work | Skill |
 |------|-------|
-| Project create TC-01-05 | ce-priority-project-create-smoke |
-| Day Works gates A-B | ce-priority-day-works-uat |
-| House-type DELETE smoke | ce-priority-ht-delete-smoke |
+| Project create TC-01-05 | priority-project-create-smoke |
+| Day Works gates A-B | priority-day-works-uat |
+| House-type DELETE smoke | priority-ht-delete-smoke |
 | Named Form Prep / generator / PRE-DELETE code | priority-form-engineering |
 
 Gates C-G (parallel DW lines, Quote, COW, Word, full UAT-01..14) stay parked until UNPARK.

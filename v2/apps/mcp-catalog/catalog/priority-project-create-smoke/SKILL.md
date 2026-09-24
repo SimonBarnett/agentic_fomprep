@@ -1,22 +1,22 @@
 ---
-name: ce-priority-project-create-smoke
+name: priority-project-create-smoke
 description: >
-  CE Priority project create smoke TC-01-05: new project, team, contract, copy HT,
+  Priority project create smoke TC-01-05: new project, team, contract, copy HT,
   paste plots. Use when the user says project create smoke, TC-01, copy house type,
-  paste plots, or /ce-priority-project-create-smoke.
+  paste plots, or /priority-project-create-smoke.
 ---
 
-# CE Priority project create smoke (TC-01-05)
+# Priority project create smoke (TC-01-05)
 
-Grab from catalog MCP `https://mcp-priority.ntsa.uk/mcp` (`get_skill` with `name=ce-priority-project-create-smoke`). Browser/desktop only.
+Grab from catalog MCP `https://mcp-priority.ntsa.uk/mcp` (`get_skill` with `name=priority-project-create-smoke`). Browser/desktop only.
 
-Follow **priority-uat-orchestrator** standing rules (login Si, banned sites, video/CASE, pickers, one retry then CASE). Host: `prioritydev.clarksonevans.co.uk`.
+Follow **priority-uat-orchestrator** standing rules (login Si, banned sites, video/CASE, pickers, one retry then CASE). Web host comes from the deployment instance config (e.g. Clarkson Evans DEV in `instances.example.json`).
 
 Source leaflet was not on this box; procedure is the Jester harvest 2026-09-19.
 
 ## When
 
-Smoke a new CE **site / project** through team -> contract -> copy HT -> paste plots (TC-01-05).
+Smoke a new **site / project** through team -> contract -> copy HT -> paste plots (TC-01-05).
 
 ## Sequence
 

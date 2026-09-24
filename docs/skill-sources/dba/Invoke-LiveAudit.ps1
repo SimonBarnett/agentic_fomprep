@@ -1,7 +1,15 @@
 #Requires -Version 5.1
+[CmdletBinding()]
+param(
+    [Parameter(Mandatory = $true)]
+    [string]$SqlHost,
+    [Parameter(Mandatory = $true)]
+    [string[]]$Instances,
+    [Parameter(Mandatory = $true)]
+    [string]$OutRoot
+)
+
 $ErrorActionPreference = 'Continue'
-$SqlHost = '10.220.0.5'
-$OutRoot = 'C:\Users\medatech.si\dba-reports\backup-audit-20260917\live'
 New-Item -ItemType Directory -Force -Path $OutRoot | Out-Null
 
 function Invoke-Sql {
@@ -43,23 +51,14 @@ function Save-Tsv {
 }
 
 $report = New-Object System.Collections.Generic.List[string]
-[void]$report.Add('# CE Priority backup audit (live)')
+[void]$report.Add('# Priority SQL backup audit (live)')
 [void]$report.Add(('Collected ' + (Get-Date -Format 'yyyy-MM-dd HH:mm:ss') + ' from ' + $env:COMPUTERNAME + ' against ' + $SqlHost + ' - READ-ONLY'))
 [void]$report.Add('')
-[void]$report.Add('## Disk snapshot (host WMI earlier today)')
-[void]$report.Add('| Mount | Role | Cap GB | Free GB | Free % |')
-[void]$report.Add('|---|---|---:|---:|---:|')
-[void]$report.Add('| F:\pridata | PRI data | 1500 | 1297.7 | 86.5 |')
-[void]$report.Add('| F:\pridev | DEV data | 1000 | 820.8 | 82.1 |')
-[void]$report.Add('| F:\pritest | TST data | 1494 | 1353.1 | 90.6 |')
-[void]$report.Add('| G:\pridata / H: | PRI log+backup | 1500 | 769.3 | 51.3 |')
-[void]$report.Add('| G:\pridev | DEV log+backup | 1000 | 764.5 | 76.5 |')
-[void]$report.Add('| G:\pritest | TST log+backup | 1494 | 1332.1 | 89.2 |')
-[void]$report.Add('')
-[void]$report.Add('Backup folder names seen on G: LiveBack (PRI), DevBackups (DEV), TestBack / TestBackups (TST).')
+[void]$report.Add('## Disk snapshot')
+[void]$report.Add('Collect mount-point free space from host WMI or SQL dm_os_volume_stats per deployment docs; not embedded in this script.')
 [void]$report.Add('')
 
-foreach ($inst in @('PRI','TST','DEV')) {
+foreach ($inst in @($Instances)) {
   Write-Host ("=== {0} ===" -f $inst)
   $idir = Join-Path $OutRoot $inst
   New-Item -ItemType Directory -Force -Path $idir | Out-Null

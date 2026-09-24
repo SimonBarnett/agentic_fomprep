@@ -8,8 +8,8 @@
 
 ### P0 — Catalog ports (A)
 - Add `catalog/` entries (or v2 plugin catalog folders per existing v2 pattern) for:
-  - ce-priority-project-create-smoke
-  - ce-priority-day-works-uat
+  - priority-project-create-smoke
+  - priority-day-works-uat
   - prepare-all-unprepared-priority-forms
   - (optional) Medatech hours skills if in-scope
 - Each: `meta.json` + `SKILL.md` ported from workflow leaflets; no handler edits on Amplify catalog host beyond dropping folders.
@@ -26,15 +26,15 @@
 
 ### P3 — priority-uat-orchestrator + Jester harvest (D)
 - Expand `priority-uat-orchestrator` with cross-cutting standing rules (not a stub)
-- Flesh `ce-priority-project-create-smoke` and `ce-priority-day-works-uat`
-- Add `ce-priority-ht-delete-smoke`
+- Flesh `priority-project-create-smoke` and `priority-day-works-uat`
+- Add `priority-ht-delete-smoke`
 - Gates C-G stay parked until UNPARK
 
 ### P4 — Tests + docs
-- Extend Test-Pack (`v2/tools/Test-PriorityCatalog.ps1`) — offline gates **CAT-T1…CAT-T25** (catalog A–D, OData plugin, grab-only MCP, v1/pin untouched, `formlimited_audit` fixture + SQL shape).
+- Extend Test-Pack (`v2/tools/Test-PriorityCatalog.ps1`) — offline gates **CAT-T1…CAT-T25** (catalog A–D, OData plugin, grab-only MCP, v1 untouched, `formlimited_audit` fixture + **composed** SQL via `New-FormLimitedAuditSql` / `-ComposeSql`). **CAT-T25 mutation bar:** deleting parameter binding, moving the join off the pinned `FormLimitedExecCol`→`ExecIdCol` key, or inlining a form literal must each turn CAT-T25 red (issue #11 / #19 evidence).
 - Run: `powershell -NoProfile -ExecutionPolicy Bypass -File v2\tools\Test-PriorityCatalog.ps1`
-- Live acceptance (issue #7): `formlimited_audit` on proof SQL joins `dbo.FORMLIMITED` to `dbo.T$EXEC` on `T$EXEC` and filters `ENAME` (not `FORMLIMITED.FORM`, which is not in the CE dictionary).
-- Commit/push; open PR for hostile MRB on issue #7 (Bob chairs UAT; no merge from this job).
+- Offline evidence: committed `v2/tests/formlimited-audit-composed.json` (statement + placeholders the CAT-T25 compose path emits via `tests/fixtures/v2-formlimited-audit-compose-pin.json` — test-only FK pin, not dictionary evidence). Live acceptance (issue #7): `formlimited_audit` on proof SQL stays **red** until `FormLimitedExecCol` is pinned from dated system DB column evidence (production `v2/config/pin.json` refuses when empty); Eshbel after ship — not a substitute for the composed artefact.
+- Commit/push; open PR for hostile MRB on issue #19 (Bob chairs; no merge from this job).
 
 ## Success
 

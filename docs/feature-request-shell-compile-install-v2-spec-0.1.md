@@ -1,8 +1,9 @@
 # Feature request — Priority v2 shell compile + install (spec 0.1)
 
+**Intake issue / MRB home:** [GitHub issue #6](https://github.com/SimonBarnett/agentic_fomprep/issues/6)  
 **Source PDF:** [feature-request-shell-compile-install-v2-spec-0.1.pdf](./feature-request-shell-compile-install-v2-spec-0.1.pdf)  
 **Date:** 2026-09-18 · **Scope:** v2 only · **Do not change** repo-root v1 (`src\Prepare-NamedForm.ps1`)  
-**Status in repo:** parked in `/docs` for later — build agent not started.
+**Status in repo:** implemented on v2 (`23e7e64`+ walker/SQL gate; `v2/config` pins). MRB home: [GitHub issue #6](https://github.com/SimonBarnett/agentic_fomprep/issues/6). Build plan: [build-and-test-plan-shell-compile-install-v2-spec-0.1.md](./build-and-test-plan-shell-compile-install-v2-spec-0.1.md). Live FR §15 / WP0-R* remain proof-host only (`PRIORITY_WP0_INSTANCE`).
 
 ## What the request asks for
 
@@ -37,21 +38,20 @@ Checked against `main` @ `24f71b7` (`v2/` tree):
 
 ---
 
-## Gaps — not in v2 yet (this feature request)
+## Gaps — remaining (post-implementation)
 
-| Gap | Notes |
+| Item | Status |
 |---|---|
-| `catalog/priority-shell-compile/` + `catalog/priority-shell-install/` | Missing entirely |
-| Tools `compile_shell` / `install_shell` | Not in plugin MCP |
-| `Compile-Shell.ps1` / `Install-Shell.ps1` | Missing |
-| Shell `.sh` parser, path allowlist, DBI refuse (`allow_dbi`) | Missing |
-| WP0 pins for Prepare Upgrade / Install Upgrade ENAMEs + file-step / SQL gate | Missing (`pin.json` / `pin.psd1` for shell) |
-| `v2/tools/Test-WP0.ps1` shell fail-fast suite (WP0-T* / WP0-R*) | Missing (only `v2/tools/parse-check.ps1` today) |
-| Install SQL gate (revision row / TAKESINGLEENT → T$EXEC) | Missing |
-| `postInstall.formsUnprepared[]` handoff to `prepare_form` | Missing |
-| Fixtures for sanitized `.sh` parser tests | Missing |
+| Catalog + plugins + runners | **Done** — `v2/apps/mcp-catalog/catalog/priority-shell-*`, `v2/plugins/priority-shell-*` |
+| `compile_shell` / `install_shell` MCP tools | **Done** — separate plugins; catalog host grab-only |
+| `Compile-Shell.ps1` / `Install-Shell.ps1` + `v2/lib` | **Done** — sync via `v2/tools/Sync-ShellRunnerLibs.ps1` |
+| Parser, path allowlist, DBI refuse | **Done** — fixtures under plugin `fixtures/`; WP0-T7/T8/T13 |
+| Medatech pins + SQL gate + handoff | **Done** — `v2/config/pin.json`; WP0-T11/T12; `docs/wp0-recon.md` |
+| `v2/tools/Test-WP0.ps1` | **Done** — offline T*; R* when `PRIORITY_WP0_INSTANCE` set |
+| `WcfFileStepWorks` / `DbiMarker` | **Open recon** — intentionally null/empty until walk + real `.sh` (not guessed) |
+| FR §15 live compile→install→prep | **Proof host** — WP0-R* + operator ATs; off-instance covered by T* only |
 
-**Bottom line:** v2 already has the **platform** (catalog MCP + allowlisted local execute + formprep skill). This feature request is **new product surface on that platform** — compile/install shell skills — not a redo of formprep or the catalog host.
+**Bottom line:** Product surface is on v2. Merge-ready off-instance gates are green; Bob MRB on issue #6 tracks proof-instance closure and UAT stamp — not declared in this doc.
 
 ---
 

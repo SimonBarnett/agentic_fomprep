@@ -4,7 +4,7 @@
 **Repo:** https://github.com/SimonBarnett/agentic_fomprep
 **Raised by:** MRB worker (hostile MRB of `7db4bccdb8355a321c3f60e8961f6376ccdf265`)
 **Parked by:** bob-spec-intake
-**MRB home:** the `feature-request` issue that links this document
+**MRB home:** [GitHub issue #10](https://github.com/SimonBarnett/agentic_fomprep/issues/10)
 
 ## Ask
 

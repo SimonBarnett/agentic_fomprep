@@ -119,7 +119,12 @@ $plugNames = @($market.plugins | ForEach-Object { $_.name })
 Add-Gate 'CAT-T7' ($plugNames -contains 'priority-odata-dev') 'marketplace.json lists priority-odata-dev'
 
 $lib = Join-Path $v2 'plugins\priority-odata-dev\scripts\lib'
+. (Join-Path $lib 'sql.ps1')
+. (Join-Path $lib 'pin.ps1')
+. (Join-Path $lib 'formlimited-audit-sql.ps1')
 . (Join-Path $lib 'odata.ps1')
+$pinJsonPath = Join-Path $v2 'config\pin.json'
+$pinFromJson = (Read-ShellPin -Path $pinJsonPath -StartDir $PSScriptRoot).pin
 
 $ex = [pscustomobject]@{
     webBaseUrl = 'https://prioritydev.clarksonevans.co.uk'

@@ -23,6 +23,10 @@ try {
     exit 2
 }
 
+if (Test-DbaLiveSkipped -Config $cfg) {
+    Write-DbaSkipJson -Reason 'live_skip' -Message 'allowLiveDba is false or sqlHost is an example host; configure instances.json for live health collect.'
+}
+
 $repo = Get-PriorityRepoRoot -StartDir $PSScriptRoot
 $sqlFile = Join-Path $repo 'docs\skill-sources\dba\dba_instance_health_collect.sql'
 if (-not (Test-Path -LiteralPath $sqlFile)) {

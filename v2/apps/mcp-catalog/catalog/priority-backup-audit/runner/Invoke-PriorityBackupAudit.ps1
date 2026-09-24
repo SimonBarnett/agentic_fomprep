@@ -27,6 +27,10 @@ try {
     exit 2
 }
 
+if (Test-DbaLiveSkipped -Config $cfg) {
+    Write-DbaSkipJson -Reason 'live_skip' -Message 'allowLiveDba is false or sqlHost is an example host; configure instances.json for live DBA.'
+}
+
 $repo = Get-PriorityRepoRoot -StartDir $PSScriptRoot
 $scriptName = if ($Mode -eq 'live') { 'Invoke-LiveAudit.ps1' } else { 'Invoke-BackupAudit.ps1' }
 $script = Join-Path $repo ("docs\skill-sources\dba\{0}" -f $scriptName)
@@ -35,9 +39,22 @@ if (-not (Test-Path -LiteralPath $script)) {
     exit 2
 }
 
+$mountPaths = @()
+foreach ($di in @($cfg.dbaInstances)) {
+    if ($di.dataMountPath) { $mountPaths += [string]$di.dataMountPath }
+    if ($di.logBackupMountPath) { $mountPaths += [string]$di.logBackupMountPath }
+}
+
 if ($Mode -eq 'live') {
-    & $script
+    & $script -SqlHost $cfg.sqlHost -Instances $cfg.instanceIds -OutRoot $cfg.reportRoot
 } else {
-    & $script -SqlHost $cfg.sqlHost -Instances $cfg.instanceIds -OutRoot $cfg.reportRoot -HistoryDays $HistoryDays
+    $auditArgs = @{
+        SqlHost      = $cfg.sqlHost
+        Instances    = $cfg.instanceIds
+        OutRoot      = $cfg.reportRoot
+        HistoryDays  = $HistoryDays
+    }
+    if ($mountPaths.Count -gt 0) { $auditArgs['MountPaths'] = $mountPaths }
+    & $script @auditArgs
 }
 exit $LASTEXITCODE

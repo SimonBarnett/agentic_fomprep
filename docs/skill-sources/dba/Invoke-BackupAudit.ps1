@@ -1,16 +1,19 @@
 #Requires -Version 5.1
 <#
 .SYNOPSIS
-  READ-ONLY CE Priority SQL backup audit (PRI/TST/DEV on 10.220.0.5).
-  Writes evidence under C:\Users\medatech.si\dba-reports\backup-audit-20260917\
+  READ-ONLY Priority SQL backup audit for configured named instances.
+  SqlHost, Instances, and OutRoot are supplied by the catalog wrapper from instances.json.
   Does NOT alter jobs, plans, databases, or delete any backup files.
-  Only creates/writes the report folder (requested).
 #>
 [CmdletBinding()]
 param(
-  [string]$SqlHost = '10.220.0.5',
-  [string[]]$Instances = @('PRI','TST','DEV'),
-  [string]$OutRoot = 'C:\Users\medatech.si\dba-reports\backup-audit-20260917',
+  [Parameter(Mandatory = $true)]
+  [string]$SqlHost,
+  [Parameter(Mandatory = $true)]
+  [string[]]$Instances,
+  [Parameter(Mandatory = $true)]
+  [string]$OutRoot,
+  [string[]]$MountPaths = @(),
   [int]$HistoryDays = 14
 )
 
@@ -83,10 +86,8 @@ function Format-BytesGB {
   return ('{0:N2}' -f ($Bytes / 1GB))
 }
 
-# ---------- A) Host disk / mount points (from DEV1 via remote paths / CIM if local mounts visible) ----------
-# On DEV1, F:/G: mounts for pridata/pridev/pritest are on CE-AZ-UK-S-PRIO, not local.
-# Prefer: (1) Get-CimInstance against remote host if allowed; (2) fall back to SQL dm_os_volume_stats per instance;
-# (3) dir sizes via UNC if accessible: \\10.220.0.5\...
+# ---------- A) Host disk / mount points ----------
+# MountPaths optional (from instances.json dbaInstances data/log paths). Falls back to CIM on sqlHost only.
 
 $diskReport = New-Object System.Text.StringBuilder
 [void]$diskReport.AppendLine("# Disk / volume audit")
@@ -94,13 +95,9 @@ $diskReport = New-Object System.Text.StringBuilder
 [void]$diskReport.AppendLine("Collector host: $env:COMPUTERNAME / $env:USERDOMAIN\$env:USERNAME")
 [void]$diskReport.AppendLine("")
 
-$targetPaths = @(
-  'F:\pridata','F:\pridev','F:\pritest',
-  'G:\pridata','G:\pridev','G:\pritest',
-  'H:\','H:\Backup','H:\Backups'
-)
+$targetPaths = @($MountPaths | Where-Object { -not [string]::IsNullOrWhiteSpace($_) })
 
-# Try remote Win32_Volume / Win32_LogicalDisk on 10.220.0.5
+# Try remote Win32_Volume / Win32_LogicalDisk on SQL host
 $remoteHost = $SqlHost
 [void]$diskReport.AppendLine("## Attempt: CIM Win32_Volume on $remoteHost")
 try {
@@ -554,11 +551,11 @@ foreach ($inst in $Instances) {
     $mp = [string]$r['volume_mount_point']
     $freePct = $r['free_pct']
     $freeGb = $r['free_gb']
-    if ($mp -match 'pridev' -and $freePct -ne [DBNull]::Value -and [double]$freePct -lt 5) {
+    if ($freePct -ne [DBNull]::Value -and [double]$freePct -lt 5) {
       $critAlerts += [pscustomobject]@{ Instance=$inst; Alert="CRITICAL free space $mp free_pct=$freePct free_gb=$freeGb" }
     }
-    if ($mp -match 'pridev' -and $freePct -ne [DBNull]::Value -and [double]$freePct -lt 10) {
-      $critAlerts += [pscustomobject]@{ Instance=$inst; Alert="WARN/CRITICAL pridev volume $mp free_pct=$freePct free_gb=$freeGb" }
+    elseif ($freePct -ne [DBNull]::Value -and [double]$freePct -lt 10) {
+      $critAlerts += [pscustomobject]@{ Instance=$inst; Alert="WARN low free space $mp free_pct=$freePct free_gb=$freeGb" }
     }
   }
 
@@ -574,12 +571,15 @@ foreach ($inst in $Instances) {
   [void]$md.AppendLine("## A) Backup folders on disk")
   $candidateBackupRoots = @()
   if ($backupDir) { $candidateBackupRoots += $backupDir }
-  # Common layout from host disk mgmt
-  switch ($inst) {
-    'PRI' { $candidateBackupRoots += @('G:\pridata\Backup','G:\pridata\Backups','H:\Backup','H:\Backups','F:\pridata\Backup','F:\pridata\Backups') }
-    'TST' { $candidateBackupRoots += @('G:\pritest\Backup','G:\pritest\Backups','F:\pritest\Backup','F:\pritest\Backups') }
-    'DEV' { $candidateBackupRoots += @('G:\pridev\Backup','G:\pridev\Backups','F:\pridev\Backup','F:\pridev\Backups') }
+  foreach ($mp in @($MountPaths)) {
+    if ([string]::IsNullOrWhiteSpace($mp)) { continue }
+    $candidateBackupRoots += @(
+      (Join-Path $mp 'Backup'),
+      (Join-Path $mp 'Backups'),
+      (Join-Path $mp 'MSSQL\Backup')
+    )
   }
+  $candidateBackupRoots += @('H:\Backup', 'H:\Backups')
   $candidateBackupRoots = $candidateBackupRoots | Select-Object -Unique
 
   $folderLines = @()
@@ -901,10 +901,10 @@ ORDER BY d.name;
 
 # ---------- Build consolidated gap report ----------
 $gapMd = New-Object System.Text.StringBuilder
-[void]$gapMd.AppendLine("# CE Priority SQL Backup Audit - Gap Report")
+[void]$gapMd.AppendLine("# Priority SQL Backup Audit - Gap Report")
 [void]$gapMd.AppendLine("")
-[void]$gapMd.AppendLine("**Host:** CE-AZ-UK-S-PRIO (10.220.0.5)  ")
-[void]$gapMd.AppendLine("**Instances:** PRI (Standard), TST, DEV  ")
+[void]$gapMd.AppendLine("**Host:** $SqlHost  ")
+[void]$gapMd.AppendLine("**Instances:** $($Instances -join ', ')  ")
 [void]$gapMd.AppendLine("**Collected:** $stamp ($utcStamp) from $env:COMPUTERNAME as $env:USERDOMAIN\$env:USERNAME  ")
 [void]$gapMd.AppendLine("**Mode:** READ-ONLY (report folder write only; no ALTER / no deletes / no job changes)")
 [void]$gapMd.AppendLine("")
@@ -1015,7 +1015,7 @@ foreach ($inst in $Instances) {
 [void]$gapMd.AppendLine("")
 
 [void]$gapMd.AppendLine("## Recommended changes (DO NOT APPLY - plan only)")
-[void]$gapMd.AppendLine("1. Confirm/remediate **G:\pridev** (and any pridev mount under G:) free space before adding more backup traffic; if critical, purge obsolete backups/logs on that volume first (after verifying restore chain).")
+[void]$gapMd.AppendLine("1. Confirm/remediate low free space on backup/log mounts (see volume stats) before adding more backup traffic; if critical, purge obsolete backups/logs on that volume first (after verifying restore chain).")
 [void]$gapMd.AppendLine("2. For each of PRI, TST, DEV: ensure a **weekly FULL** backup job/plan exists, enabled, CHECKSUM + COMPRESSION, destination under the instance **G:** backup folder (not F:).")
 [void]$gapMd.AppendLine("3. For each instance: add/enable **daily DIFF** to the same G: backup folder.")
 [void]$gapMd.AppendLine("4. For each instance: add/enable **hourly LOG** backups for all FULL recovery databases to the G: backup folder; verify no FULL-recovery DB remains with log_reuse_wait_desc=LOG_BACKUP.")
@@ -1036,7 +1036,7 @@ Write-SectionFile (Join-Path $OutRoot 'GAP_REPORT.md') $gapMd.ToString()
 $sum = New-Object System.Text.StringBuilder
 [void]$sum.AppendLine("# Backup audit summary - 2026-09-17")
 [void]$sum.AppendLine("")
-[void]$sum.AppendLine("Collected $stamp from $env:COMPUTERNAME against 10.220.0.5 \{PRI,TST,DEV}. READ-ONLY.")
+[void]$sum.AppendLine("Collected $stamp from $env:COMPUTERNAME against $SqlHost \{$(($Instances -join ','))}. READ-ONLY.")
 [void]$sum.AppendLine("")
 [void]$sum.AppendLine("## Critical alerts")
 if ($critAlerts.Count -eq 0) { [void]$sum.AppendLine("- (none auto-flagged)") }

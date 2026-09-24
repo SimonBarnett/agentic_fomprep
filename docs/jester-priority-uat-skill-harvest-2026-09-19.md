@@ -58,6 +58,6 @@ TEST under concurrent recalc (do not drain Stack). Confirm company title first. 
 | Harvest | Catalog skill |
 |---------|----------------|
 | Cross-cutting rules | Fold into `priority-uat-orchestrator` (was stub) |
-| TC-01–05 | `ce-priority-project-create-smoke` |
-| Day Works A–B | `ce-priority-day-works-uat` (C–G parked note) |
-| HT-DL | new `ce-priority-ht-delete-smoke` (or section under form-engineering + UAT) |
+| TC-01–05 | `priority-project-create-smoke` |
+| Day Works A–B | `priority-day-works-uat` (C–G parked note) |
+| HT-DL | `priority-ht-delete-smoke` (or section under form-engineering + UAT) |

@@ -17,13 +17,17 @@ function Test-VersionRevisionExists {
         [string]$Revision
     )
     if ($null -eq $Connection) { throw 'SQL connection is required' }
-    if ($null -eq $Pin -or (Test-ShellPinTokenEmpty $Pin.VersionRevisionsEname)) {
-        throw 'VersionRevisionsEname is unpinned'
+    if ($null -eq $Pin) { throw 'pin missing' }
+    if (Test-ShellPinTokenEmpty $Pin.VersionRevisionsTable) {
+        throw 'VersionRevisionsTable is unpinned'
+    }
+    if (Test-ShellPinTokenEmpty $Pin.VersionRevisionCol) {
+        throw 'VersionRevisionCol is unpinned'
     }
     $rev = ConvertTo-RevisionSqlValue $Revision
     if ($null -eq $rev) { return $false }
-    $table = ConvertTo-SqlIdent ('dbo.' + [string]$Pin.VersionRevisionsEname)
-    $col = ConvertTo-SqlIdent 'UPGNUM'
+    $table = ConvertTo-SqlIdent ([string]$Pin.VersionRevisionsTable)
+    $col = ConvertTo-SqlIdent ([string]$Pin.VersionRevisionCol)
     $q = "SELECT COUNT(*) FROM $table WHERE $col = @r"
     $n = Invoke-FormPrepSql -Connection $Connection -Query $q -Parameters @{ '@r' = $rev } -Scalar
     return [int]$n -gt 0
@@ -32,11 +36,15 @@ function Test-VersionRevisionExists {
 function Test-PinnedEnameInExec {
     param(
         $Connection,
+        $Pin,
         [string]$Ename
     )
     if ([string]::IsNullOrWhiteSpace($Ename)) { return $false }
-    $execTable = ConvertTo-SqlIdent 'dbo.T$EXEC'
-    $enameCol = ConvertTo-SqlIdent 'ENAME'
+    if ($null -eq $Pin -or (Test-ShellPinTokenEmpty $Pin.ExecTable) -or (Test-ShellPinTokenEmpty $Pin.ExecNameCol)) {
+        throw 'ExecTable / ExecNameCol unpinned'
+    }
+    $execTable = ConvertTo-SqlIdent ([string]$Pin.ExecTable)
+    $enameCol = ConvertTo-SqlIdent ([string]$Pin.ExecNameCol)
     $n = Invoke-FormPrepSql -Connection $Connection -Query "SELECT COUNT(*) FROM $execTable WHERE $enameCol = @n" -Parameters @{ '@n' = $Ename } -Scalar
     return [int]$n -gt 0
 }
@@ -47,11 +55,19 @@ function Get-InstallLogSnapshot {
         $Pin,
         [string]$Revision
     )
-    $table = ConvertTo-SqlIdent ('dbo.' + [string]$Pin.InstallLogTable)
-    $revCol = ConvertTo-SqlIdent $(if (-not (Test-ShellPinTokenEmpty $Pin.InstallLogRevisionCol)) { [string]$Pin.InstallLogRevisionCol } else { 'UPG' })
-    $dateColName = [string]$Pin.InstallLogDateCol
-    if (Test-ShellPinTokenEmpty $dateColName) { $dateColName = 'STARTDATE' }
-    $dateCol = ConvertTo-SqlIdent $dateColName
+    if ($null -eq $Pin) { throw 'pin missing' }
+    if (Test-ShellPinTokenEmpty $Pin.InstallLogTable) {
+        throw 'InstallLogTable is unpinned'
+    }
+    if (Test-ShellPinTokenEmpty $Pin.InstallLogRevisionCol) {
+        throw 'InstallLogRevisionCol is unpinned'
+    }
+    if (Test-ShellPinTokenEmpty $Pin.InstallLogDateCol) {
+        throw 'InstallLogDateCol is unpinned'
+    }
+    $table = ConvertTo-SqlIdent ([string]$Pin.InstallLogTable)
+    $revCol = ConvertTo-SqlIdent ([string]$Pin.InstallLogRevisionCol)
+    $dateCol = ConvertTo-SqlIdent ([string]$Pin.InstallLogDateCol)
     $rev = ConvertTo-RevisionSqlValue $Revision
     $q = "SELECT COUNT(*) AS n, MAX($dateCol) AS lastDate FROM $table WHERE $revCol = @r"
     $tbl = Invoke-FormPrepSql -Connection $Connection -Query $q -Parameters @{ '@r' = $rev }
@@ -97,6 +113,7 @@ function Test-InstallLogAdvanced {
 function Get-MissingExecEnames {
     param(
         $Connection,
+        $Pin,
         [string[]]$Names
     )
     $missing = @()
@@ -106,7 +123,7 @@ function Get-MissingExecEnames {
         return @($wanted)
     }
     foreach ($n in $wanted) {
-        if (-not (Test-PinnedEnameInExec -Connection $Connection -Ename $n)) {
+        if (-not (Test-PinnedEnameInExec -Connection $Connection -Pin $Pin -Ename $n)) {
             $missing += , $n
         }
     }

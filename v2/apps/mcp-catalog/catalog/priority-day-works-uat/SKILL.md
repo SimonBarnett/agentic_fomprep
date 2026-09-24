@@ -1,16 +1,16 @@
 ---
-name: ce-priority-day-works-uat
+name: priority-day-works-uat
 description: >
-  CE Priority Day Works UAT gates A-B (part long-desc History; Edit header Day Works
+  Priority Day Works UAT gates A-B (part long-desc History; Edit header Day Works
   plus VAT). Gates C-G stay parked until UNPARK. Use when the user says Day Works UAT,
-  DW-A, DW-B, ZCLA_DAYWORKS, or /ce-priority-day-works-uat.
+  DW-A, DW-B, ZCLA_DAYWORKS, or /priority-day-works-uat.
 ---
 
-# CE Priority Day Works UAT
+# Priority Day Works UAT
 
-Grab from catalog MCP `https://mcp-priority.ntsa.uk/mcp` (`get_skill` with `name=ce-priority-day-works-uat`). Browser/desktop only.
+Grab from catalog MCP `https://mcp-priority.ntsa.uk/mcp` (`get_skill` with `name=priority-day-works-uat`). Browser/desktop only.
 
-Follow **priority-uat-orchestrator** standing rules. Host: `prioritydev.clarksonevans.co.uk`. **Unparked gates only.**
+Follow **priority-uat-orchestrator** standing rules. Web host from instance config. **Unparked gates only.**
 
 ## When
 

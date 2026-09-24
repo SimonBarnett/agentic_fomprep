@@ -1,10 +1,10 @@
 # Feature request: MRB + FR intake live in GitHub issues, not only /docs
 
 **Date:** 2026-09-20
+**Intake issue / MRB home:** [GitHub issue #8](https://github.com/SimonBarnett/agentic_fomprep/issues/8)
 **Repo:** https://github.com/SimonBarnett/agentic_fomprep
 **Raised by:** MRB worker (hostile MRB of `80d8ce4`)
 **Parked by:** bob-spec-intake
-**MRB home:** this issue
 
 ## Ask
 

@@ -1,51 +1,40 @@
 ---
 name: priority-day-works-uat
-description: >
-  Priority Day Works UAT gates A-B (part long-desc History; Edit header Day Works
-  plus VAT). Gates C-G stay parked until UNPARK. Use when the user says Day Works UAT,
-  DW-A, DW-B, ZCLA_DAYWORKS, or /priority-day-works-uat.
+description: >-
+  Priority Day Works UAT gates A–B (part long-desc History; Edit header Day Works + VAT). Gates C–G parked until UNPARK. Use for Day Works UAT, DW-A, DW-B, ZCLA_DAYWORKS, or /priority-day-works-uat.
 ---
 
 # Priority Day Works UAT
 
-Grab from catalog MCP `https://mcp-priority.ntsa.uk/mcp` (`get_skill` with `name=priority-day-works-uat`). Browser/desktop only.
+Grab from catalog MCP `https://mcp-priority.ntsa.uk/mcp` (`get_skill` with `name=priority-day-works-uat`). Browser/desktop only. This catalog does not drive the UI.
 
-Follow **priority-uat-orchestrator** standing rules. Web host from instance config. **Unparked gates only.**
+Follow **priority-uat-orchestrator**. Unparked gates only. Work type **Extras**. Day Works flag on Edit (`ZCLA_DAYWORKS`), not Fix. Do not touch old HT Day Work spine. Source: `docs/skill-sources/uat/priority-day-works-uat.md` (2026-09-24).
 
-## When
+## Gate A — Part long-desc + History
 
-Day Works UAT on DEV web. Work type **Extras**. Day Works flag on Edit (`ZCLA_DAYWORKS`), not Fix. Quote/COW from History/Neil GUID when those gates unpark — do not invent GUIDs. Do not touch the old HT Day Work spine.
+Pre-UI STRUCT on DEV1 when UNPARK names it (CE example `wp1_gate_a_struct_assert.ps1`): exit 0 → UI/video; exit 1 → CASE, no tab hunt. Do not invent the script in this repo.
 
-Source: Jester harvest 2026-09-19.
+Path: Part Catalogue → Parts → sibling **Long Description** (not global search).
 
-## Gate A -- Part long-desc + History
+Pass: USERLOGIN+UDATE+CURREV headers; child RTF not TEXTLINE; reopen History after leave; empty-no-mint; one edit = one header; fail bad UDATE; FORMJOIN DREV→DHIST PART+REVISIONID; no cross-part Revision Text bleed.
 
-Pre-UI STRUCT on DEV1: `wp1_gate_a_struct_assert.ps1` -- exit 0 then UI/video only; exit 1 CASE, no tab hunt. Do not invent that script in this repo; if it is missing on DEV1, CASE.
+Cases DW-A1–A4. Unprepared / mint skip → CASE Form Prep (engineering).
 
-Path: Part Catalogue -> Parts -> sibling **Long Description** (not global search).
+## Gate B — Edit header Day Works + VAT
 
-Forms: PARTLONGDESC / DREV headers / DHIST RTF.
-
-Pass: USERLOGIN + UDATE + CURREV headers; drill RTF not TEXTLINE; reopen History after leave.
-
-Cases: DW-A1-A4.
-
-Harden: empty-no-mint; one real edit = one header; fail UDATE 01/01/88 or <1000; FORMJOIN DREV->DHIST PART+REVISIONID keys; no cross-part bleed.
-
-## Gate B -- Edit header Day Works + VAT
-
-Nav: Projects -> Plots -> Element Acts -> sub-level **Element Edits** (not Open Edit for an already-open Extra).
+Nav: Projects → Plots → Element Acts → sub-level **Element Edits** → Enter existing EDITID. **Never** Open Edit / Re-Open / Close Edit for an already-open Extra.
 
 - DW-B1 `DAYWORKS=Y`
-- DW-B2 VAT PARTNAME -> PART
+- DW-B2 VAT via picker (PARTNAME→PART)
 - DW-B3 TOTVAT readonly
 
-Gotchas: T$$ columns + Form Prep; PO/EXTFILENAME stubs; Day Works field POS near INVSEP; avoid mid-save UPDATE clash on the same EDITID; SQL assert DAYWORKS/PART/TOTVAT.
+Gotchas: T$$ + Form Prep; PO/EXTFILENAME stubs; Day Works POS near INVSEP; mid-save “Record has been modified/deleted” → CASE; optional SQL assert.
 
-## Gates C-G -- PARKED
+## Gates C–G — PARKED
 
-Parked until UNPARK: parallel DW lines, Quote, COW, Word, full UAT-01..14. Do not run them. If asked, point at this section and the orchestrator UNPARK protocol.
+Parallel DW lines, Quote, COW, Word, full UAT-01..14, ELEDITDW: do not run until UNPARK.
 
 ## Pass / fail
 
-PASS: screen-record. FAIL: CASE/DOCNO/STEP/ACTION/FIELD/TRIED/ERROR/SCREEN. One retry then CASE.
+PASS: screen-record. FAIL: CASE pack. One retry then park.
+

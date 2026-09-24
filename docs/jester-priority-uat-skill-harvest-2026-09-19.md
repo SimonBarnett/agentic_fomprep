@@ -1,3 +1,5 @@
+**Supplement (2026-09-24):** full procedure is in [jester-priority-uat-skill-harvest-2026-09-24.md](jester-priority-uat-skill-harvest-2026-09-24.md) and `docs/skill-sources/uat/`.
+
 # Jester testing-skill harvest — CE Priority UAT (2026-09-19)
 
 **From:** Jester via Eshbel  

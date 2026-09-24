@@ -482,6 +482,57 @@ foreach ($rp in $runnerPairs) {
 }
 Add-Gate 'CAT-T40' ($runnerMismatch.Count -eq 0) $(if ($runnerMismatch.Count -eq 0) { 'plugin scripts/ runners byte-identical to catalog runner/ copies' } else { ('runner hash mismatch: ' + ($runnerMismatch -join ', ')) })
 
+$dbaIds = @(
+    'priority-backup-standard',
+    'priority-backup-audit',
+    'priority-backup-cutover',
+    'priority-sunday-backup-check',
+    'priority-instance-health-collect',
+    'priority-post-move-health',
+    'priority-disk-mount-layout-report',
+    'priority-ht-delete-deadlock-triage',
+    'priority-form-prep-after-sql-change',
+    'priority-hours-handoff-haitch'
+)
+$dbaFrontMissing = @()
+foreach ($dbaId in $dbaIds) {
+    $skillPath = Join-Path $catalog "$dbaId\SKILL.md"
+    if (-not (Test-Path -LiteralPath $skillPath)) { $dbaFrontMissing += $dbaId; continue }
+    $raw = Get-Content -LiteralPath $skillPath -Raw -Encoding UTF8
+    if ($raw -notmatch '(?m)^name:\s*' + [regex]::Escape($dbaId)) { $dbaFrontMissing += "$dbaId/name" }
+    if ($raw -notmatch '(?m)^description:\s*>?') { $dbaFrontMissing += "$dbaId/description" }
+}
+Add-Gate 'CAT-T26' ($dbaFrontMissing.Count -eq 0) $(if ($dbaFrontMissing.Count -eq 0) { 'DBA skills frontmatter name+description' } else { $dbaFrontMissing -join '; ' })
+
+$std = Get-Content -LiteralPath (Join-Path $catalog 'priority-backup-standard\SKILL.md') -Raw -Encoding UTF8
+$stdOk = (($std -match 'integrated auth') -or ($std -match 'Integrated Security')) -and ($std -match 'Do \*\*not\*\* prune')
+Add-Gate 'CAT-T27' $stdOk 'backup-standard documents no F: prune without confirm'
+
+$formGate = Get-Content -LiteralPath (Join-Path $catalog 'priority-form-prep-after-sql-change\SKILL.md') -Raw -Encoding UTF8
+Add-Gate 'CAT-T28' ($formGate -match 'prepare-all-unprepared-priority-forms') 'form-prep-after-sql-change links batch form prep skill'
+
+$htTri = Get-Content -LiteralPath (Join-Path $catalog 'priority-ht-delete-deadlock-triage\SKILL.md') -Raw -Encoding UTF8
+Add-Gate 'CAT-T29' (($htTri -match '1205') -and ($htTri -notmatch 'ALTER INDEX')) 'HT deadlock triage evidence-only'
+
+$scanPaths = @()
+foreach ($dbaId in $dbaIds) {
+    $scanPaths += Join-Path $catalog $dbaId
+}
+$scanPaths += Join-Path $repo 'docs\skill-sources\dba'
+$secretHits = @()
+foreach ($root in $scanPaths) {
+    if (-not (Test-Path -LiteralPath $root)) { continue }
+    Get-ChildItem -Path $root -Recurse -File -ErrorAction SilentlyContinue | ForEach-Object {
+        $text = Get-Content -LiteralPath $_.FullName -Raw -Encoding UTF8 -ErrorAction SilentlyContinue
+        if (-not $text) { return }
+        if ($text -match '(?i)(password\s*=|XAI_API_KEY\s*=)') { $secretHits += $_.FullName }
+    }
+}
+Add-Gate 'CAT-T30' ($secretHits.Count -eq 0) $(if ($secretHits.Count -eq 0) { 'no password=/XAI_API_KEY= in DBA skills or dba harvest' } else { $secretHits -join '; ' })
+
+$auditRunner = Join-Path $catalog 'priority-backup-audit\runner\Invoke-PriorityBackupAudit.ps1'
+Add-Gate 'CAT-T31' (Test-Path -LiteralPath $auditRunner) 'priority-backup-audit runner present'
+
 if ($failed -gt 0) {
     Write-Host "Test-PriorityCatalog FAIL ($failed)"
     exit 1

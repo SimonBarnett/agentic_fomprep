@@ -39,3 +39,18 @@ Do not put passwords, CredMan secrets, or `prepare_form` / `compile_shell` / `in
 | `priority-hours-handoff-haitch` | Hours/WBS handoff process |
 
 Harvest scripts: `docs/skill-sources/dba/`. Config: `%USERPROFILE%\.priority-dba\instances.json` (see `priority-backup-audit/runner/instances.example.json`). Windows integrated SQL auth only.
+
+## Reporting hours (timesheet entry)
+
+Distinct from `priority-hours-handoff-haitch` (DBA → Haitch notice). Procedure bodies: `docs/skill-sources/hours/`.
+
+| Skill id | Role |
+|----------|------|
+| `priority-hours-orchestrator` | Standing rules: 8h weekday, Recording Hours, WBS, draft→confirm |
+| `priority-hours-search-by-date-employee` | F11 / month wildcard search |
+| `priority-hours-enter-line` | UI line entry |
+| `priority-hours-less-than-8-report` | Less than 8 Rep Hours → Excel |
+| `priority-hours-export-excel` | Export search results, No Template |
+| `priority-hours-odata-post` | OData TRANSORDER_q POST |
+
+CE / Medatech project codes in those skills are examples. Instance URLs and credentials stay in operator config.

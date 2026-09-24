@@ -10,7 +10,7 @@ Build agent: port catalog SKILL.md from:
    - prepare-all-unprepared-priority-forms
 4. Do not invent ENAMEs. Do not edit v1 Prepare-NamedForm.ps1.
 
-Ionos 2026-09-19: Grok Bot workflow leaflets were not on this box. UAT skills were written from the Jester harvest. `prepare-all-unprepared-priority-forms` documents the repo DEV method (named Form Prep; headed web tile fallback). Medatech hours trio skipped (optional / out of CE scope). Gates C-G stay parked until UNPARK.
+Ionos 2026-09-19: Grok Bot workflow leaflets were not on this box. UAT skills were written from the Jester harvest. `prepare-all-unprepared-priority-forms` documents the repo DEV method (named Form Prep; headed web tile fallback). The Medatech hours trio was skipped that day (optional / out of CE scope); reporting-hours procedures landed 2026-09-24 — see the Hours section below. Gates C-G stay parked until UNPARK.
 
 ## CE Priority DBA harvest (Tedious 2026-09-19)
 
@@ -39,4 +39,14 @@ Skills must be **Priority-generic** (config-driven instance). CE is an example d
 | `priority-hours-handoff-haitch` | process only |
 
 Form-prep / UAT catalog skills remain under the same `v2/apps/mcp-catalog/catalog/` tree (project-create, day-works, HT smoke, formprep, shell, OData, orchestrator).
+
+## Haitch Priority reporting-hours harvest (2026-09-24)
+
+Source dump for `docs/haitch-priority-hours-skill-harvest-2026-09-24.md`.
+
+Canonical procedure: `docs/skill-sources/hours/`.
+
+Catalog: `priority-hours-orchestrator`, `priority-hours-search-by-date-employee`, `priority-hours-enter-line`, `priority-hours-less-than-8-report`, `priority-hours-export-excel`, `priority-hours-odata-post`.
+
+Does **not** replace `priority-hours-handoff-haitch` (DBA → Haitch handoff).
 

@@ -69,7 +69,13 @@ $expected = @(
     'priority-disk-mount-layout-report',
     'priority-ht-delete-deadlock-triage',
     'priority-form-prep-after-sql-change',
-    'priority-hours-handoff-haitch'
+    'priority-hours-handoff-haitch',
+    'priority-hours-orchestrator',
+    'priority-hours-search-by-date-employee',
+    'priority-hours-enter-line',
+    'priority-hours-less-than-8-report',
+    'priority-hours-export-excel',
+    'priority-hours-odata-post'
 )
 $missing = @()
 foreach ($n in $expected) {

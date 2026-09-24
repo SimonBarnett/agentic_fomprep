@@ -1,0 +1,6 @@
+{
+  "name": "priority-hours-export-excel",
+  "title": "Priority hours export to Excel",
+  "description": "Export Reports of Project Hrs/Expenses search results to Excel with No Template.",
+  "version": "1.0.0"
+}

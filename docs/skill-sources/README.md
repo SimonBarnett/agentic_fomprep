@@ -23,3 +23,20 @@ See `MANIFEST.md` in that folder. Tedious owns UAT + hostile MRB after implement
 ### Naming rule (Simon)
 Skills must be **Priority-generic** (config-driven instance). CE is an example deployment, not the skill identity.
 
+### Catalog ids (DBA suite, issue #5)
+
+| Catalog folder | Harvest / runner |
+|----------------|------------------|
+| `priority-backup-standard` | `dba/BACKUP_STANDARD.md` |
+| `priority-backup-audit` | `Invoke-BackupAudit.ps1`, `Invoke-LiveAudit.ps1` |
+| `priority-backup-cutover` | procedure skill (no live auto-cutover) |
+| `priority-sunday-backup-check` | `sunday-ce-priority-backup-check.ROUTINE.md` |
+| `priority-instance-health-collect` | `dba_instance_health_collect.sql` |
+| `priority-post-move-health` | `Invoke-PostMoveHealth.ps1` |
+| `priority-disk-mount-layout-report` | collect + IT narrative |
+| `priority-ht-delete-deadlock-triage` | checklist; links `ce-priority-ht-delete-smoke` |
+| `priority-form-prep-after-sql-change` | links `prepare-all-unprepared-priority-forms` |
+| `priority-hours-handoff-haitch` | process only |
+
+Form-prep / UAT catalog skills remain under the same `v2/apps/mcp-catalog/catalog/` tree (project-create, day-works, HT smoke, formprep, shell, OData, orchestrator).
+

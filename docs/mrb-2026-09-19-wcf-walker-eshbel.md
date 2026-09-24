@@ -24,7 +24,7 @@ Offline WP0-T* gates in that file are green (`failed=0`). That is not live compi
 
 ## Historical note (FORM column bug)
 
-Earlier draft text claimed live `formlimited_audit` on DEV1 and cited `Invalid column name 'FORM'`. The defect was real: `FORMLIMITED` has no `FORM` column; filter via `FORMLIMITED.[T$EXEC]` joined to `T$EXEC.ENAME`. Commit `c0355d8` moved the filter to `ENAME` but composed an invalid `IN (" + (@f0 @f1 -join ', ') + ")` list; offline **CAT-T25** at that SHA regex-matched runner source and stayed green. `7db4bcc` repaired the here-string expansion but CAT-T25 still asserted source text, not the composed statement — fixture CAT-T16/T17/T18 never hit the SQL branch. Issue #19 required fixes land `New-FormLimitedAuditSql` + composed **CAT-T25** (mutation bar: drop binding, wrong join column, inline literals each fail). Live SQL on a proof instance remains red until Eshbel runs acceptance 2 on DEV1.
+Earlier draft text claimed live `formlimited_audit` on DEV1 and cited `Invalid column name 'FORM'`. The defect was real: `FORMLIMITED` has no `FORM` column; filter via `FORMLIMITED.[T$EXEC]` joined to `T$EXEC.ENAME`. Commit `c0355d8` moved the filter to `ENAME` but composed an invalid `IN (" + (@f0 @f1 -join ', ') + ")` list; offline **CAT-T25** at that SHA regex-matched runner source and stayed green. `7db4bcc` repaired the here-string expansion but CAT-T25 still asserted source text, not the composed statement — fixture CAT-T16/T17/T18 never hit the SQL branch. Issue #10 lands `New-FormLimitedAuditSql` + composed **CAT-T25** / mutation **CAT-T26**; live SQL on a proof instance remains red until Eshbel runs acceptance 2 on DEV1.
 
 ## Spec MUST / MUST NOT (walker + catalog)
 
@@ -44,7 +44,7 @@ Earlier draft text claimed live `formlimited_audit` on DEV1 and cited `Invalid c
 
 ## Required fixes (issue #9, ordered)
 
-1. **Fix `formlimited_audit` SQL** — `FORMLIMITED.[T$EXEC]` + `T$EXEC.ENAME` join; offline composed CAT-T25 (not source regex). **Partial** through `7db4bcc`; composed gate + pins tracked on issue #19 / #7 acceptance 2.
+1. **Fix `formlimited_audit` SQL** — `FORMLIMITED.[T$EXEC]` + `T$EXEC.ENAME` join; offline composed **CAT-T25** / **CAT-T26** (not source regex). **Partial** through `7db4bcc`; composed gate + pins tracked on [#10](https://github.com/SimonBarnett/agentic_fomprep/issues/10) / #7 acceptance 2.
 2. **Withdraw false R1–R7 PASS claims**; committed WP0 evidence = `wp0-last.json` with WP0-R-SKIP when unset. **Addressed** in this doc.
 3. **De-dupe MRB docs** — keep this file; short duplicate is a pointer; no `docs/mrb-*.pdf`. **Addressed**; see `docs/README.md`.
 4. **Verdict vocabulary** — off-instance slice is **PASS-nits** (not PASS-with-nits). **Addressed** in this doc.

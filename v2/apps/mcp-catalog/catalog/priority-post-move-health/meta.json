@@ -1,0 +1,6 @@
+{
+  "name": "priority-post-move-health",
+  "title": "Priority post-move backup health",
+  "description": "After backup-path moves: services, jobs, G: paths, smoke DIFF/TLOG VERIFYONLY. Read-only smoke; integrated auth.",
+  "version": "1.0.0"
+}

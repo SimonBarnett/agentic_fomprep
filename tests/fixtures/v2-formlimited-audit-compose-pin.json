@@ -1,0 +1,35 @@
+{
+  "PinComplete": true,
+  "PrepareUpgradeEname": "ZEMG_TAKEUPGRADE",
+  "PrepareUpgradeType": "P",
+  "InstallUpgradeEname": "ZEMG_EXECUPGRADES",
+  "InstallUpgradeType": "P",
+  "VersionRevisionsEname": "UPGRADES",
+  "VersionRevisionsTable": "dbo.UPGRADES",
+  "VersionRevisionCol": "UPGNUM",
+  "RevisionInputStep": "PAR",
+  "FilePathInputStep": "FN",
+  "WcfFileStepWorks": null,
+  "InstallLogTable": "dbo.INSTALLEDUPGRADES",
+  "InstallLogRevisionCol": "UPG",
+  "InstallLogDateCol": "STARTDATE",
+  "DbiMarker": "",
+  "InstallErrorForm": "EXECUPGRERR",
+  "ExecTitleColumn": "TITLE",
+  "ExecTable": "dbo.T$EXEC",
+  "ExecNameCol": "ENAME",
+  "ExecIdCol": "T$EXEC",
+  "LockTable": "dbo.EXECPREPLOCK",
+  "LockCols": {
+    "ExecId": "T$EXEC",
+    "Upd": "UPD",
+    "LastPrep": "LASTPREPDATE"
+  },
+  "FormLimitedTable": "dbo.FORMLIMITED",
+  "FormLimitedExecCol": "T$EXEC",
+  "UpgradesDir": "C:\\Priority\\system\\upgrades",
+  "ProofInstanceId": "ce-priority-dev",
+  "AllowedBuildSetRoots": [
+    "C:\\Priority\\system\\upgrades"
+  ]
+}

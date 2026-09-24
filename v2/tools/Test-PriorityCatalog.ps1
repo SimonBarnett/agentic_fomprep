@@ -298,9 +298,14 @@ $fixtureInst = Join-Path $env:TEMP ('cat-compose-inst-' + [guid]::NewGuid().ToSt
         }
     )
 } | ConvertTo-Json -Depth 5 | Set-Content -LiteralPath $fixtureInst -Encoding UTF8
-$compose = Invoke-ODataRunner @(
+$refuseCompose = Invoke-ODataRunner @(
     '-Action', 'formlimited_audit', '-InstanceId', 'fixture-dev', '-Forms', 'PARTLONGDESC,PART',
     '-InstancesPath', $fixtureInst, '-ComposeSql', '-PinPath', $composePinPath
+)
+$refuseOk = ($refuseCompose.ExitCode -eq 2 -and $refuseCompose.Json.reason -eq 'pin_incomplete')
+$compose = Invoke-ODataRunner @(
+    '-Action', 'formlimited_audit', '-InstanceId', 'fixture-dev', '-Forms', 'PARTLONGDESC,PART',
+    '-InstancesPath', $fixtureInst, '-ComposeSql', '-PinPath', $harnessPinPath
 )
 Remove-Item -LiteralPath $fixtureInst -Force -ErrorAction SilentlyContinue
 $formsUnderTest = @('PARTLONGDESC', 'PART')

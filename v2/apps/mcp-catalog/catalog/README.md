@@ -40,17 +40,14 @@ Do not put passwords, CredMan secrets, or `prepare_form` / `compile_shell` / `in
 
 Harvest scripts: `docs/skill-sources/dba/`. Config: `%USERPROFILE%\.priority-dba\instances.json` (see `priority-backup-audit/runner/instances.example.json`). Windows integrated SQL auth only.
 
-## Reporting hours (timesheet entry)
-
-Distinct from `priority-hours-handoff-haitch` (DBA → Haitch notice). Procedure bodies: `docs/skill-sources/hours/`.
+## Programming skills (triggers, UDATE, Form Prep, shells)
 
 | Skill id | Role |
 |----------|------|
-| `priority-hours-orchestrator` | Standing rules: 8h weekday, Recording Hours, WBS, draft→confirm |
-| `priority-hours-search-by-date-employee` | F11 / month wildcard search |
-| `priority-hours-enter-line` | UI line entry |
-| `priority-hours-less-than-8-report` | Less than 8 Rep Hours → Excel |
-| `priority-hours-export-excel` | Export search results, No Template |
-| `priority-hours-odata-post` | OData TRANSORDER_q POST |
+| `priority-procedure-style` | Trigger/SQLI banners, debug includes, dedicated TRIG |
+| `priority-sql-udate-user` | UDATE minutes-since-1988 and USERLOGIN |
+| `priority-formprep-shadow-tables` | pritempdb T$$ shadows and EXECPREPLOCK success gate |
+| `priority-recalc-concurrency` | ELEMENT sign, RECALC clear, stale-price consumers |
+| `priority-version-revision-discipline` | Dedicated shells, TAKETRIG shape, install-row verify |
 
-CE / Medatech project codes in those skills are examples. Instance URLs and credentials stay in operator config.
+Harvest: `docs/skill-sources/programming/`. FR: `docs/feature-request-eshbel-priority-programming-harvest-2026-09-24.md`.

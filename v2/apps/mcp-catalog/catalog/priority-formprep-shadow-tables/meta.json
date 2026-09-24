@@ -1,0 +1,6 @@
+{
+  "name": "priority-formprep-shadow-tables",
+  "title": "Form Prep shadow tables",
+  "description": "Create pritempdb T$$ shadow tables and treat EXECPREPLOCK as the only Form Prep success signal.",
+  "version": "1.0.0"
+}

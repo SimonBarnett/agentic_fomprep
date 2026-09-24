@@ -1,0 +1,6 @@
+{
+  "name": "priority-sql-udate-user",
+  "title": "Priority SQL UDATE / user",
+  "description": "Mint History or audit rows with correct Priority UDATE (minutes since 1988-01-01) and USERLOGIN resolution.",
+  "version": "1.0.0"
+}

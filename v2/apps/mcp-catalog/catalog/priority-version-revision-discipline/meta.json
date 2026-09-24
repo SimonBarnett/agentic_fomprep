@@ -1,0 +1,6 @@
+{
+  "name": "priority-version-revision-discipline",
+  "title": "Version Revision discipline",
+  "description": "Maintain dedicated Version Revision shells, correct TAKETRIG step shape, and verify INSTALLEDUPGTRIG after install.",
+  "version": "1.0.0"
+}

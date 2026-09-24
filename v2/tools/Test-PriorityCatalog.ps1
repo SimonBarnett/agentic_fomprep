@@ -69,7 +69,12 @@ $expected = @(
     'priority-disk-mount-layout-report',
     'priority-ht-delete-deadlock-triage',
     'priority-form-prep-after-sql-change',
-    'priority-hours-handoff-haitch'
+    'priority-hours-handoff-haitch',
+    'priority-procedure-style',
+    'priority-sql-udate-user',
+    'priority-formprep-shadow-tables',
+    'priority-recalc-concurrency',
+    'priority-version-revision-discipline'
 )
 $missing = @()
 foreach ($n in $expected) {
@@ -79,7 +84,7 @@ foreach ($n in $expected) {
         if (-not (Test-Path -LiteralPath $p)) { $missing += "$n/$f" }
     }
 }
-Add-Gate 'CAT-T1' ($missing.Count -eq 0) $(if ($missing.Count -eq 0) { 'catalog meta.json + SKILL.md for A-D' } else { $missing -join '; ' })
+Add-Gate 'CAT-T1' ($missing.Count -eq 0) $(if ($missing.Count -eq 0) { 'catalog meta.json + SKILL.md for A-D + programming' } else { $missing -join '; ' })
 
 $odataSkill = Get-Content -LiteralPath (Join-Path $catalog 'priority-odata-dev\SKILL.md') -Raw -Encoding UTF8
 $footgunOk = ($odataSkill -match 'FORMLIMITED') -and ($odataSkill -match 'RESTFLAG') -and ($odataSkill -match 'LIMITFLAG') -and ($odataSkill -match 'sibling-tab')
@@ -356,6 +361,52 @@ Add-Gate 'CAT-T29' ($formGate -match 'prepare-all-unprepared-priority-forms') 'f
 
 $htTri = Get-Content -LiteralPath (Join-Path $catalog 'priority-ht-delete-deadlock-triage\SKILL.md') -Raw -Encoding UTF8
 Add-Gate 'CAT-T30' (($htTri -match '1205') -and ($htTri -notmatch 'ALTER INDEX')) 'HT deadlock triage evidence-only'
+Add-Gate 'CAT-T30b' (($htTri -match 'priority-ht-delete-smoke') -and ($htTri -notmatch 'ce-priority-ht-delete-smoke') -and ($htTri -match 'priority-recalc-concurrency')) 'HT triage links priority-ht-delete-smoke and recalc-concurrency'
+
+$progIds = @(
+    'priority-procedure-style',
+    'priority-sql-udate-user',
+    'priority-formprep-shadow-tables',
+    'priority-recalc-concurrency',
+    'priority-version-revision-discipline'
+)
+$progMissing = @()
+foreach ($progId in $progIds) {
+    $skillPath = Join-Path $catalog "$progId\SKILL.md"
+    $metaPath = Join-Path $catalog "$progId\meta.json"
+    if (-not (Test-Path -LiteralPath $skillPath)) { $progMissing += "$progId/SKILL.md"; continue }
+    $raw = Get-Content -LiteralPath $skillPath -Raw -Encoding UTF8
+    if ($raw -notmatch '(?m)^name:\s*' + [regex]::Escape($progId)) { $progMissing += "$progId/name" }
+    if ($raw -notmatch '(?m)^description:\s*>?') { $progMissing += "$progId/description" }
+    if (-not (Test-Path -LiteralPath $metaPath)) { $progMissing += "$progId/meta.json"; continue }
+    $meta = Get-Content -LiteralPath $metaPath -Raw -Encoding UTF8 | ConvertFrom-Json
+    if ([string]$meta.name -ne $progId) { $progMissing += "$progId/meta.name" }
+    if ([string]$meta.version -ne '1.0.0') { $progMissing += "$progId/meta.version" }
+    if ($meta.PSObject.Properties.Name -notcontains 'title' -or $meta.PSObject.Properties.Name -notcontains 'description') {
+        $progMissing += "$progId/meta.shape"
+    }
+}
+$progSrc = @('MANIFEST.md', 'PROCEDURE_STYLE.md', 'SQL_UDATE_USER.md', 'FORMPREP_SHADOW_TABLES.md', 'RECALC_CONCURRENCY.md', 'VERSION_REVISION.md', 'SDK_FEATURE_MAP.md')
+$progSrcRoot = Join-Path $repo 'docs\skill-sources\programming'
+foreach ($srcName in $progSrc) {
+    if (-not (Test-Path -LiteralPath (Join-Path $progSrcRoot $srcName))) { $progMissing += "programming/$srcName" }
+}
+$progSecretRoots = @($progSrcRoot)
+foreach ($progId in $progIds) { $progSecretRoots += (Join-Path $catalog $progId) }
+foreach ($root in $progSecretRoots) {
+    if (-not (Test-Path -LiteralPath $root)) { continue }
+    Get-ChildItem -Path $root -Recurse -File -ErrorAction SilentlyContinue | ForEach-Object {
+        $text = Get-Content -LiteralPath $_.FullName -Raw -Encoding UTF8 -ErrorAction SilentlyContinue
+        if ($text -and ($text -match '(?i)(password\s*=|XAI_API_KEY\s*=)')) { $progMissing += ("secret:" + $_.Name) }
+    }
+}
+Add-Gate 'CAT-T41' ($progMissing.Count -eq 0) $(if ($progMissing.Count -eq 0) { 'programming skills meta version 1.0.0 + skill-sources' } else { $progMissing -join '; ' })
+
+$engLinkMiss = @($progIds | Where-Object { $eng -notmatch [regex]::Escape($_) })
+Add-Gate 'CAT-T42' ($engLinkMiss.Count -eq 0) $(if ($engLinkMiss.Count -eq 0) { 'form-engineering links programming suite' } else { $engLinkMiss -join '; ' })
+
+$odataTexec = ($odataSkill -match '\[T\$EXEC\]') -and ($odataSkill -match 'FORMLIMITED\.FORM`? does not exist') -and ($odataSkill -match 'CATALOGA')
+Add-Gate 'CAT-T43' $odataTexec 'odata-dev documents FORMLIMITED [T$EXEC] key and CATALOG SQL register'
 
 $scanPaths = @()
 foreach ($dbaId in $dbaIds) {

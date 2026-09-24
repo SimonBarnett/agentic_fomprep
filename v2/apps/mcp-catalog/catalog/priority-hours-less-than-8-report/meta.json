@@ -1,0 +1,6 @@
+{
+  "name": "priority-hours-less-than-8-report",
+  "title": "Priority less-than-8 report hours",
+  "description": "Run Less than 8 Rep Hours shortcut, Excel No Template; empty means all weekdays in range are full.",
+  "version": "1.0.0"
+}

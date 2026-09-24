@@ -1,0 +1,6 @@
+{
+  "name": "priority-hours-search-by-date-employee",
+  "title": "Priority hours search by date and employee",
+  "description": "F11 / month-wildcard search on Reports of Project Hrs/Expenses by date and employee; never Down into Tasks.",
+  "version": "1.0.0"
+}

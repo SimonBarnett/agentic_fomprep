@@ -1,0 +1,6 @@
+{
+  "name": "priority-procedure-style",
+  "title": "Priority procedure style",
+  "description": "Write or edit Priority form triggers and SQLI procedures: banners, Inputs/Outputs, debug includes, dedicated vs shared TRIG.",
+  "version": "1.0.0"
+}

@@ -39,3 +39,15 @@ Do not put passwords, CredMan secrets, or `prepare_form` / `compile_shell` / `in
 | `priority-hours-handoff-haitch` | Hours/WBS handoff process |
 
 Harvest scripts: `docs/skill-sources/dba/`. Config: `%USERPROFILE%\.priority-dba\instances.json` (see `priority-backup-audit/runner/instances.example.json`). Windows integrated SQL auth only.
+
+## Programming skills (triggers, UDATE, Form Prep, shells)
+
+| Skill id | Role |
+|----------|------|
+| `priority-procedure-style` | Trigger/SQLI banners, debug includes, dedicated TRIG |
+| `priority-sql-udate-user` | UDATE minutes-since-1988 and USERLOGIN |
+| `priority-formprep-shadow-tables` | pritempdb T$$ shadows and EXECPREPLOCK success gate |
+| `priority-recalc-concurrency` | ELEMENT sign, RECALC clear, stale-price consumers |
+| `priority-version-revision-discipline` | Dedicated shells, TAKETRIG shape, install-row verify |
+
+Harvest: `docs/skill-sources/programming/`. FR: `docs/feature-request-eshbel-priority-programming-harvest-2026-09-24.md`.

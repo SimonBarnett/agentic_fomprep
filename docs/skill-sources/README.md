@@ -34,9 +34,29 @@ Skills must be **Priority-generic** (config-driven instance). CE is an example d
 | `priority-instance-health-collect` | `dba_instance_health_collect.sql` |
 | `priority-post-move-health` | `Invoke-PostMoveHealth.ps1` |
 | `priority-disk-mount-layout-report` | collect + IT narrative |
-| `priority-ht-delete-deadlock-triage` | checklist; links `ce-priority-ht-delete-smoke` |
+| `priority-ht-delete-deadlock-triage` | checklist; links `priority-ht-delete-smoke` |
 | `priority-form-prep-after-sql-change` | links `prepare-all-unprepared-priority-forms` |
 | `priority-hours-handoff-haitch` | process only |
 
 Form-prep / UAT catalog skills remain under the same `v2/apps/mcp-catalog/catalog/` tree (project-create, day-works, HT smoke, formprep, shell, OData, orchestrator).
+
+## Eshbel Priority programming harvest (2026-09-24)
+
+Source dump for FR `docs/feature-request-eshbel-priority-programming-harvest-2026-09-24.md`.
+
+Canonical copies: `docs/skill-sources/programming/`.
+
+See `MANIFEST.md` in that folder. Eshbel owns hostile MRB after implement.
+
+### Catalog ids (programming suite)
+
+| Catalog folder | Harvest |
+|----------------|---------|
+| `priority-procedure-style` | PROCEDURE_STYLE.md |
+| `priority-sql-udate-user` | SQL_UDATE_USER.md |
+| `priority-formprep-shadow-tables` | FORMPREP_SHADOW_TABLES.md |
+| `priority-recalc-concurrency` | RECALC_CONCURRENCY.md |
+| `priority-version-revision-discipline` | VERSION_REVISION.md |
+
+Also expand existing: `priority-form-engineering`, `priority-odata-dev` (`T$EXEC` key), `priority-ht-delete-deadlock-triage` (rename ce-* smoke refs).
 

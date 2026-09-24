@@ -124,7 +124,12 @@ $plugNames = @($market.plugins | ForEach-Object { $_.name })
 Add-Gate 'CAT-T7' ($plugNames -contains 'priority-odata-dev') 'marketplace.json lists priority-odata-dev'
 
 $lib = Join-Path $v2 'plugins\priority-odata-dev\scripts\lib'
+. (Join-Path $lib 'sql.ps1')
+. (Join-Path $lib 'pin.ps1')
+. (Join-Path $lib 'formlimited-audit-sql.ps1')
 . (Join-Path $lib 'odata.ps1')
+$pinJsonPath = Join-Path $v2 'config\pin.json'
+$pinFromJson = (Read-ShellPin -Path $pinJsonPath -StartDir $PSScriptRoot).pin
 
 $ex = [pscustomobject]@{
     webBaseUrl = 'https://prioritydev.clarksonevans.co.uk'
@@ -532,6 +537,178 @@ foreach ($rp in $runnerPairs) {
     if ($hPlug -ne $hCat) { $runnerMismatch += $rp.Plugin }
 }
 Add-Gate 'CAT-T40' ($runnerMismatch.Count -eq 0) $(if ($runnerMismatch.Count -eq 0) { 'plugin scripts/ runners byte-identical to catalog runner/ copies' } else { ('runner hash mismatch: ' + ($runnerMismatch -join ', ')) })
+
+$dbaIds = @(
+    'priority-backup-standard',
+    'priority-backup-audit',
+    'priority-backup-cutover',
+    'priority-sunday-backup-check',
+    'priority-instance-health-collect',
+    'priority-post-move-health',
+    'priority-disk-mount-layout-report',
+    'priority-ht-delete-deadlock-triage',
+    'priority-form-prep-after-sql-change',
+    'priority-hours-handoff-haitch'
+)
+$dbaFrontMissing = @()
+foreach ($dbaId in $dbaIds) {
+    $skillPath = Join-Path $catalog "$dbaId\SKILL.md"
+    if (-not (Test-Path -LiteralPath $skillPath)) { $dbaFrontMissing += $dbaId; continue }
+    $raw = Get-Content -LiteralPath $skillPath -Raw -Encoding UTF8
+    if ($raw -notmatch '(?m)^name:\s*' + [regex]::Escape($dbaId)) { $dbaFrontMissing += "$dbaId/name" }
+    if ($raw -notmatch '(?m)^description:\s*>?') { $dbaFrontMissing += "$dbaId/description" }
+}
+Add-Gate 'CAT-T26' ($dbaFrontMissing.Count -eq 0) $(if ($dbaFrontMissing.Count -eq 0) { 'DBA skills frontmatter name+description' } else { $dbaFrontMissing -join '; ' })
+
+$std = Get-Content -LiteralPath (Join-Path $catalog 'priority-backup-standard\SKILL.md') -Raw -Encoding UTF8
+$stdOk = (($std -match 'integrated auth') -or ($std -match 'Integrated Security')) -and ($std -match 'Do \*\*not\*\* prune')
+Add-Gate 'CAT-T27' $stdOk 'backup-standard documents no F: prune without confirm'
+
+$formGate = Get-Content -LiteralPath (Join-Path $catalog 'priority-form-prep-after-sql-change\SKILL.md') -Raw -Encoding UTF8
+Add-Gate 'CAT-T28' ($formGate -match 'prepare-all-unprepared-priority-forms') 'form-prep-after-sql-change links batch form prep skill'
+
+$htTri = Get-Content -LiteralPath (Join-Path $catalog 'priority-ht-delete-deadlock-triage\SKILL.md') -Raw -Encoding UTF8
+Add-Gate 'CAT-T29' (($htTri -match '1205') -and ($htTri -notmatch 'ALTER INDEX')) 'HT deadlock triage evidence-only'
+
+$scanPaths = @()
+foreach ($dbaId in $dbaIds) {
+    $scanPaths += Join-Path $catalog $dbaId
+}
+$scanPaths += Join-Path $repo 'docs\skill-sources\dba'
+$secretHits = @()
+foreach ($root in $scanPaths) {
+    if (-not (Test-Path -LiteralPath $root)) { continue }
+    Get-ChildItem -Path $root -Recurse -File -ErrorAction SilentlyContinue | ForEach-Object {
+        $text = Get-Content -LiteralPath $_.FullName -Raw -Encoding UTF8 -ErrorAction SilentlyContinue
+        if (-not $text) { return }
+        if ($text -match '(?i)(password\s*=|XAI_API_KEY\s*=)') { $secretHits += $_.FullName }
+    }
+}
+Add-Gate 'CAT-T30' ($secretHits.Count -eq 0) $(if ($secretHits.Count -eq 0) { 'no password=/XAI_API_KEY= in DBA skills or dba harvest' } else { $secretHits -join '; ' })
+
+$auditRunner = Join-Path $catalog 'priority-backup-audit\runner\Invoke-PriorityBackupAudit.ps1'
+Add-Gate 'CAT-T31' (Test-Path -LiteralPath $auditRunner) 'priority-backup-audit runner present'
+
+$dbaIds = @(
+    'priority-backup-standard',
+    'priority-backup-audit',
+    'priority-backup-cutover',
+    'priority-sunday-backup-check',
+    'priority-instance-health-collect',
+    'priority-post-move-health',
+    'priority-disk-mount-layout-report',
+    'priority-ht-delete-deadlock-triage',
+    'priority-form-prep-after-sql-change',
+    'priority-hours-handoff-haitch'
+)
+$dbaFrontMissing = @()
+foreach ($dbaId in $dbaIds) {
+    $skillPath = Join-Path $catalog "$dbaId\SKILL.md"
+    if (-not (Test-Path -LiteralPath $skillPath)) { $dbaFrontMissing += $dbaId; continue }
+    $raw = Get-Content -LiteralPath $skillPath -Raw -Encoding UTF8
+    if ($raw -notmatch '(?m)^name:\s*' + [regex]::Escape($dbaId)) { $dbaFrontMissing += "$dbaId/name" }
+    if ($raw -notmatch '(?m)^description:\s*>?') { $dbaFrontMissing += "$dbaId/description" }
+}
+Add-Gate 'CAT-T26' ($dbaFrontMissing.Count -eq 0) $(if ($dbaFrontMissing.Count -eq 0) { 'DBA skills frontmatter name+description' } else { $dbaFrontMissing -join '; ' })
+
+$std = Get-Content -LiteralPath (Join-Path $catalog 'priority-backup-standard\SKILL.md') -Raw -Encoding UTF8
+$stdOk = (($std -match 'integrated auth') -or ($std -match 'Integrated Security')) -and ($std -match 'Do \*\*not\*\* prune')
+Add-Gate 'CAT-T27' $stdOk 'backup-standard documents no F: prune without confirm'
+
+$formGate = Get-Content -LiteralPath (Join-Path $catalog 'priority-form-prep-after-sql-change\SKILL.md') -Raw -Encoding UTF8
+Add-Gate 'CAT-T28' ($formGate -match 'prepare-all-unprepared-priority-forms') 'form-prep-after-sql-change links batch form prep skill'
+
+$htTri = Get-Content -LiteralPath (Join-Path $catalog 'priority-ht-delete-deadlock-triage\SKILL.md') -Raw -Encoding UTF8
+Add-Gate 'CAT-T29' (($htTri -match '1205') -and ($htTri -notmatch 'ALTER INDEX')) 'HT deadlock triage evidence-only'
+
+$scanPaths = @()
+foreach ($dbaId in $dbaIds) {
+    $scanPaths += Join-Path $catalog $dbaId
+}
+$scanPaths += Join-Path $repo 'docs\skill-sources\dba'
+$secretHits = @()
+foreach ($root in $scanPaths) {
+    if (-not (Test-Path -LiteralPath $root)) { continue }
+    Get-ChildItem -Path $root -Recurse -File -ErrorAction SilentlyContinue | ForEach-Object {
+        $text = Get-Content -LiteralPath $_.FullName -Raw -Encoding UTF8 -ErrorAction SilentlyContinue
+        if (-not $text) { return }
+        if ($text -match '(?i)(password\s*=|XAI_API_KEY\s*=)') { $secretHits += $_.FullName }
+    }
+}
+Add-Gate 'CAT-T30' ($secretHits.Count -eq 0) $(if ($secretHits.Count -eq 0) { 'no password=/XAI_API_KEY= in DBA skills or dba harvest' } else { $secretHits -join '; ' })
+
+$auditRunner = Join-Path $catalog 'priority-backup-audit\runner\Invoke-PriorityBackupAudit.ps1'
+Add-Gate 'CAT-T31' (Test-Path -LiteralPath $auditRunner) 'priority-backup-audit runner present'
+
+function Invoke-DbaRunner {
+    param([string]$ScriptPath, [string[]]$ArgList)
+    $all = @('-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', $ScriptPath) + $ArgList
+    $sw = [System.Diagnostics.Stopwatch]::StartNew()
+    $out = & powershell.exe @all 2>&1 | Out-String
+    $sw.Stop()
+    $code = $LASTEXITCODE
+    $jsonText = Get-JsonLastLine $out
+    $obj = $null
+    if ($jsonText) {
+        try { $obj = $jsonText | ConvertFrom-Json } catch { $obj = $null }
+    }
+    return [pscustomobject]@{
+        ExitCode   = $code
+        StdOut     = $out
+        Json       = $obj
+        ElapsedSec = $sw.Elapsed.TotalSeconds
+    }
+}
+
+$sundayRunner = Join-Path $catalog 'priority-sunday-backup-check\runner\Invoke-SundayBackupCheck.ps1'
+$sundayDry = Invoke-DbaRunner -ScriptPath $sundayRunner -ArgList @('-DryRun')
+$sundayDryOk = $sundayDry.ExitCode -eq 0 -and $sundayDry.Json.ok -eq $true -and $sundayDry.Json.dryRun -eq $true
+Add-Gate 'CAT-T32' $sundayDryOk 'Sunday -DryRun checklist without instances.json'
+
+$missingCfg = Join-Path $env:TEMP ('dba-missing-' + [guid]::NewGuid().ToString('n') + '.json')
+$auditNoCfg = Invoke-DbaRunner -ScriptPath $auditRunner -ArgList @('-InstancesPath', $missingCfg)
+Add-Gate 'CAT-T33' ($auditNoCfg.ExitCode -eq 2 -and $auditNoCfg.Json.reason -eq 'config_error') 'backup-audit missing config exit 2'
+
+$postRunner = Join-Path $catalog 'priority-post-move-health\runner\Invoke-PriorityPostMoveHealth.ps1'
+$postNoCfg = Invoke-DbaRunner -ScriptPath $postRunner -ArgList @('-InstancesPath', $missingCfg)
+Add-Gate 'CAT-T34' ($postNoCfg.ExitCode -eq 2 -and $postNoCfg.Json.reason -eq 'config_error') 'post-move missing config exit 2'
+
+$healthRunner = Join-Path $catalog 'priority-instance-health-collect\runner\Invoke-InstanceHealthCollect.ps1'
+$healthNoCfg = Invoke-DbaRunner -ScriptPath $healthRunner -ArgList @('-InstancesPath', $missingCfg)
+Add-Gate 'CAT-T35' ($healthNoCfg.ExitCode -eq 2 -and $healthNoCfg.Json.reason -eq 'config_error') 'health-collect missing config exit 2'
+
+$dbaTmp = Join-Path $env:TEMP ('dba-cat-' + [guid]::NewGuid().ToString('n'))
+New-Item -ItemType Directory -Path $dbaTmp -Force | Out-Null
+$exampleCfg = Join-Path $catalog 'priority-backup-audit\runner\instances.example.json'
+$fixtureCfg = Join-Path $dbaTmp 'instances.json'
+$exRaw = Get-Content -LiteralPath $exampleCfg -Raw -Encoding UTF8 | ConvertFrom-Json
+$exRaw.instanceIds = @('DEV')
+$exRaw | ConvertTo-Json -Depth 12 | Set-Content -LiteralPath $fixtureCfg -Encoding UTF8
+$postSkip = Invoke-DbaRunner -ScriptPath $postRunner -ArgList @('-InstancesPath', $fixtureCfg)
+$postSkipOk = $postSkip.ExitCode -eq 2 -and $postSkip.Json.reason -eq 'live_skip' -and $postSkip.ElapsedSec -lt 30
+Add-Gate 'CAT-T36' $postSkipOk $(if ($postSkipOk) { 'post-move example config live_skip without SQL/UNC' } else { "exit=$($postSkip.ExitCode) reason=$($postSkip.Json.reason) sec=$([math]::Round($postSkip.ElapsedSec,2))" })
+
+$ceLiteralHits = @()
+$cePatterns = @('10\.220\.0\.5', 'SQL_Backup_Archive_F_20260918', '\bpridev\b', '\bpritest\b', '\bpridata\b')
+$dbaPs1Roots = @(
+    (Join-Path $repo 'docs\skill-sources\dba')
+)
+foreach ($dbaId in $dbaIds) {
+    $dbaPs1Roots += Join-Path $catalog "$dbaId\runner"
+}
+foreach ($root in $dbaPs1Roots) {
+    if (-not (Test-Path -LiteralPath $root)) { continue }
+    Get-ChildItem -Path $root -Recurse -File -Filter '*.ps1' -ErrorAction SilentlyContinue | ForEach-Object {
+        $text = Get-Content -LiteralPath $_.FullName -Raw -Encoding UTF8 -ErrorAction SilentlyContinue
+        if (-not $text) { return }
+        foreach ($pat in $cePatterns) {
+            if ($text -match $pat) { $ceLiteralHits += ($_.FullName + ':' + $pat) }
+        }
+    }
+}
+Add-Gate 'CAT-T37' ($ceLiteralHits.Count -eq 0) $(if ($ceLiteralHits.Count -eq 0) { 'DBA .ps1 logic has no CE host/mount/archive constants' } else { $ceLiteralHits -join '; ' })
+
+Remove-Item -LiteralPath $dbaTmp -Recurse -Force -ErrorAction SilentlyContinue
 
 if ($failed -gt 0) {
     Write-Host "Test-PriorityCatalog FAIL ($failed)"

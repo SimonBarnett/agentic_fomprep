@@ -261,19 +261,19 @@ $engOk = ($eng -match 'Prepare-NamedForm\.ps1') -and ($eng -match 'ZCLA_CHKPNT-D
 Add-Gate 'CAT-T19' $engOk 'form-engineering points at v1 Prepare-NamedForm; HT PRE-DELETE'
 
 $uat = Get-Content -LiteralPath (Join-Path $catalog 'priority-uat-orchestrator\SKILL.md') -Raw -Encoding UTF8
-$uatOk = ($uat -match 'CASE') -and ($uat -match 'DOCNO') -and ($uat -match 'UNPARK') -and ($uat -match 'Jester') -and ($uat -match 'PR25000001') -and ($uat -match 'priority-ht-delete-smoke')
-Add-Gate 'CAT-T20' $uatOk 'UAT orchestrator UNPARK/CASE + Jester harvest note'
+$uatOk = ($uat -match 'CASE') -and ($uat -match 'DOCNO') -and ($uat -match 'UNPARK') -and ($uat -match 'skill-sources/uat/priority-uat-orchestrator') -and ($uat -match 'PR25000001') -and ($uat -match 'priority-ht-delete-smoke')
+Add-Gate 'CAT-T20' $uatOk 'UAT orchestrator UNPARK/CASE + skill-sources/uat'
 
 $create = Get-Content -LiteralPath (Join-Path $catalog 'priority-project-create-smoke\SKILL.md') -Raw -Encoding UTF8
-$createOk = ($create -match 'ZGEM_ERR_NOTINTEAM') -and ($create -match 'PV system') -and ($create -match 'EL=5') -and ($create -match 'SNG-ROW') -and ($create -match 'TC-01b')
-Add-Gate 'CAT-T22' $createOk 'project-create smoke has Jester TC-01-05 detail'
+$createOk = ($create -match 'ZGEM_ERR_NOTINTEAM') -and ($create -match 'PV system') -and ($create -match 'EL=5') -and ($create -match 'SNG-ROW') -and ($create -match 'Internal Project Team')
+Add-Gate 'CAT-T22' $createOk 'project-create smoke has TC-01-05 detail'
 
 $dw = Get-Content -LiteralPath (Join-Path $catalog 'priority-day-works-uat\SKILL.md') -Raw -Encoding UTF8
-$dwOk = ($dw -match 'ZCLA_DAYWORKS') -and ($dw -match 'DW-B1') -and ($dw -match 'PARTLONGDESC') -and ($dw -match 'PARKED') -and ($dw -match 'UNPARK')
+$dwOk = ($dw -match 'ZCLA_DAYWORKS') -and ($dw -match 'DW-B1') -and ($dw -match 'Long Description') -and ($dw -match 'PARKED') -and ($dw -match 'UNPARK')
 Add-Gate 'CAT-T23' $dwOk 'Day Works A-B fleshed; C-G parked until UNPARK'
 
 $ht = Get-Content -LiteralPath (Join-Path $catalog 'priority-ht-delete-smoke\SKILL.md') -Raw -Encoding UTF8
-$htOk = ($ht -match 'ZCLA_HTEDIT') -and ($ht -match '1205') -and ($ht -match 'HOUSETYPEID') -and ($ht -match 'prioritytest')
+$htOk = ($ht -match 'ZCLA_HTEDIT') -and ($ht -match '1205') -and ($ht -match 'HOUSETYPEID') -and ($ht -match 'DNAME')
 Add-Gate 'CAT-T24' $htOk 'HT-DL smoke catalog present with TEST company pitfall'
 
 $runnerPs1 = Join-Path $catalog 'priority-odata-dev\runner\Invoke-PriorityOData.ps1'

@@ -1,0 +1,6 @@
+{
+  "name": "priority-hours-odata-post",
+  "title": "Priority hours OData post",
+  "description": "Post confirmed timesheet lines via OData TRANSORDER_q; PDES max 60; force FLAG N for non-billable; prefer over UI automation.",
+  "version": "1.0.0"
+}

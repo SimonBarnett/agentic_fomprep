@@ -1,60 +1,56 @@
 ---
 name: priority-uat-orchestrator
-description: >
-  Cross-cutting CE Priority UAT standing rules: login Si, banned sites, video/CASE,
-  company confirmation, UNPARK protocol. Use when running CE Priority user tests
-  on DEV or TEST web, or /priority-uat-orchestrator.
+description: >-
+  Cross-cutting Priority UAT standing rules: login, banned sites, human video/CASE, company/DNAME confirmation, UNPARK protocol. Use for any Priority web user test on DEV or TEST, or /priority-uat-orchestrator.
 ---
 
-# CE Priority UAT orchestrator
+# Priority UAT orchestrator
 
 Grab from catalog MCP `https://mcp-priority.ntsa.uk/mcp` (`get_skill` with `name=priority-uat-orchestrator`). Browser/desktop only. This catalog does not drive the UI.
 
-Authoritative harvest: Jester UAT harvest in `docs/jester-priority-uat-skill-harvest-2026-09-19.md`. Child skills hold procedure; this skill holds standing rules. Do not duplicate those rules in the children beyond a pointer.
+Authoritative harvest: `docs/skill-sources/uat/priority-uat-orchestrator.md` (2026-09-24). Child skills hold procedure; this skill holds standing rules.
 
 ## When
 
-Any CE Priority user-test on DEV or TEST web.
+Any Priority web user-test on a configured DEV or TEST instance.
 
 ## Child skills
 
 | Work | Skill |
 |------|-------|
-| Project create TC-01-05 | priority-project-create-smoke |
-| Day Works gates A-B | priority-day-works-uat |
-| House-type DELETE smoke | priority-ht-delete-smoke |
-| Named Form Prep / generator / PRE-DELETE code | priority-form-engineering |
+| Project create TC-01–05 | `priority-project-create-smoke` |
+| Day Works gates A–B | `priority-day-works-uat` |
+| House-type DELETE smoke | `priority-ht-delete-smoke` |
+| Named Form Prep / generator / PRE-DELETE | `priority-form-engineering` |
+| Unprepared forms batch | `prepare-all-unprepared-priority-forms` |
 
-Gates C-G (parallel DW lines, Quote, COW, Word, full UAT-01..14) stay parked until UNPARK.
+Gates C–G stay parked until UNPARK.
 
 ## Hard rules
 
-- Tester read-only on product code; CASE to engineering; no Recalc/HTSWAP/Clear Plots unless the case says so.
+- Tester read-only on product code; CASE to engineering; no Recalc/HTSWAP/Clear Plots/Site Bom/Margin unless the case says so.
 - Max one retry of the same failing step without an engineering reply; then CASE and park.
-- Login `Si` (case-sensitive). If the password is prefilled, Log In immediately.
-- Prefer pickers over free text (Branch, Contract Type, VAT Code).
-- Banned sites: PR25000001 / 004 / 010. Avoid Recalc Plots/Types, HT Swap, Clear Plots, Site Bom, Margin unless unparked.
+- Login is case-sensitive (CE example `Si`). If password is prefilled, Log In / Enter immediately.
+- Prefer pickers over free text (Branch, Contract Type, VAT Code, company).
+- Banned fixtures are case-pack specific (CE example PR25000001 / 004 / 010).
 
 ## Evidence
 
-- PASS: screen-record. A silent pass without video is not allowed for formal UAT.
-- FAIL: CASE/DOCNO/STEP/ACTION/FIELD/TRIED/ERROR/SCREEN (exact text).
-- Human packs: human speed, mouse visible (`ffmpeg x11grab -draw_mouse 1`), click ripples, cut idle, burn-in subtitles. Capture the correct Priority display (wrong DISPLAY = empty video).
+- PASS → screen-record. Silent pass without video is not formal UAT.
+- FAIL → CASE/DOCNO/STEP/ACTION/FIELD/TRIED/ERROR/SCREEN (exact text).
+- Human packs: human speed; mouse visible (`ffmpeg x11grab -draw_mouse 1`); click ripples; cut idle; burn-in subtitles; capture the correct Priority display (wrong DISPLAY = empty video).
+
+## Company / DNAME
+
+UI title ≠ SQL DNAME. CE TEST example: UI **T - Clarkson Evans Live - 20251031** = DNAME `base`; UI **Test** = DNAME `test` (empty of PR26* fixtures). Confirm company title after login; USERENV can stick — relogin after change.
 
 ## Env
 
-| Host | Use | Company pitfall |
-|------|-----|-----------------|
-| prioritydev.clarksonevans.co.uk | Day Works / create-smoke | Usually D / SQL `base` |
-| prioritytest.clarksonevans.co.uk | HT-delete | DNAME `base` = UI title "T - Clarkson Evans Live - 20251031"; UI "Test" = DNAME `test` (empty PR26*). Confirm company title; USERENV can stick -- relogin after change. |
-
-Thick client: CE-PRIORITY-DEV1, SQL `10.220.0.5\DEV`. Browser/desktop only (no MCP execute).
+Hosts and jump boxes come from instance config. CE examples only: `prioritydev.clarksonevans.co.uk` (Day Works / create-smoke), `prioritytest.clarksonevans.co.uk` (HT-delete), thick client CE-PRIORITY-DEV1, SQL `10.220.0.5\DEV`.
 
 ## UNPARK / CASE
 
-Do not run a parked gate until an UNPARK note names it. Company confirmation is required on TEST before any mutate.
-
-FAIL parks with this pack (exact text, every field):
+Do not run a parked gate until UNPARK names CASE/DOCNO/steps. Company confirmation required on TEST before mutate.
 
 ```
 CASE:
@@ -67,8 +63,7 @@ ERROR:
 SCREEN:
 ```
 
-PASS needs video. Silent pass without video is not formal UAT.
-
 ## Not this catalog
 
-Do not expect UAT tools on `mcp-priority.ntsa.uk`. Do not put secrets in git.
+No secrets in git. No invented ENAMEs. Amplify MCP is grab-only.
+

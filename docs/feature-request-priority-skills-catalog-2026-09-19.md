@@ -3,6 +3,7 @@
 **Intake issue / MRB home:** [GitHub issue #7](https://github.com/SimonBarnett/agentic_fomprep/issues/7)  
 **From:** Eshbel (Simon 2026-09-19)  
 **Repo:** SimonBarnett/agentic_fomprep  
+**GitHub (MRB home):** https://github.com/SimonBarnett/agentic_fomprep/issues/7  
 **Status:** parked for build agent  
 **Standing order:** Eshbel UATs and hostile-MRBs back to Bob after implement.
 

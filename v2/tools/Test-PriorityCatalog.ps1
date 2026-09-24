@@ -268,7 +268,7 @@ $dwOk = ($dw -match 'ZCLA_DAYWORKS') -and ($dw -match 'DW-B1') -and ($dw -match 
 Add-Gate 'CAT-T23' $dwOk 'Day Works A-B fleshed; C-G parked until UNPARK'
 
 $ht = Get-Content -LiteralPath (Join-Path $catalog 'priority-ht-delete-smoke\SKILL.md') -Raw -Encoding UTF8
-$htOk = ($ht -match 'ZCLA_HTEDIT') -and ($ht -match '1205') -and ($ht -match 'HOUSETYPEID') -and ($ht -match 'prioritytest')
+$htOk = ($ht -match 'ZCLA_HTEDIT') -and ($ht -match '1205') -and ($ht -match 'HOUSETYPEID') -and ($ht -match 'DNAME')
 Add-Gate 'CAT-T24' $htOk 'HT-DL smoke catalog present with TEST company pitfall'
 
 $runnerPs1 = Join-Path $catalog 'priority-odata-dev\runner\Invoke-PriorityOData.ps1'

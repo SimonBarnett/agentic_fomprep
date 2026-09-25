@@ -3,7 +3,7 @@
 **Intake / track with:** [GitHub issue #7](https://github.com/SimonBarnett/agentic_fomprep/issues/7) (skills catalog) — this FR is an additive harvest, not a replacement.
 **From:** Eshbel (Simon 2026-09-24: "harvest all the Priority programming skills you have learned into that repo")
 **Repo:** SimonBarnett/agentic_fomprep
-**Status:** ready for build agent
+**Status:** shipped — merged via [PR #45](https://github.com/SimonBarnett/agentic_fomprep/pull/45) on 2026-09-24 (18:51 UTC). Hostile MRB (Eshbel) pending.
 **Standing order:** Eshbel UATs / hostile-MRBs after implement. Bob owns intake wiring if needed.
 
 ## Goal

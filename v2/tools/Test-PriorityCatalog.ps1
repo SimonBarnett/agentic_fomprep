@@ -305,7 +305,7 @@ $refuseCompose = Invoke-ODataRunner @(
 $refuseOk = ($refuseCompose.ExitCode -eq 2 -and $refuseCompose.Json.reason -eq 'pin_incomplete')
 $compose = Invoke-ODataRunner @(
     '-Action', 'formlimited_audit', '-InstanceId', 'fixture-dev', '-Forms', 'PARTLONGDESC,PART',
-    '-InstancesPath', $fixtureInst, '-ComposeSql', '-PinPath', $harnessPinPath
+    '-InstancesPath', $fixtureInst, '-ComposeSql', '-PinPath', $composePinPath
 )
 Remove-Item -LiteralPath $fixtureInst -Force -ErrorAction SilentlyContinue
 $formsUnderTest = @('PARTLONGDESC', 'PART')

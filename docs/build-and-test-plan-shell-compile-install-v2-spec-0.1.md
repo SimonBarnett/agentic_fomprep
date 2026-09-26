@@ -77,4 +77,10 @@ Capture walk transcript under proof `agentWork` as `last-wcf-walk.json` when pin
 | Install SQL gate + handoff | `Test-WP0` T11–T12; install result schema |
 | Pins from recon | `v2/config/pin.json`, `docs/wp0-recon.md` |
 | v1 frozen | `Test-WP0` T9 |
-| Live §15 ATs | WP0-R* on proof host only (not required for off-instance merge) |
+| Live §15 ATs | WP0-R* on proof host only — [issue #56](https://github.com/SimonBarnett/agentic_fomprep/issues/56) (not required for off-instance merge) |
+
+## Done offline (2026-09-26 / FR #6 seat)
+
+- `Test-WP0` T1–T13 **PASS**; `WP0-R-SKIP` when `PRIORITY_WP0_INSTANCE` unset (expected)
+- Catalog + plugins `priority-shell-compile` / `priority-shell-install` present
+- Live proof + `WcfFileStepWorks` / `DbiMarker` evidence → **#56**

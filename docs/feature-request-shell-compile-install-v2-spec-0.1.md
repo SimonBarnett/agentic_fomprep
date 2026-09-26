@@ -3,7 +3,7 @@
 **Intake issue / MRB home:** [GitHub issue #6](https://github.com/SimonBarnett/agentic_fomprep/issues/6)  
 **Source PDF:** [feature-request-shell-compile-install-v2-spec-0.1.pdf](./feature-request-shell-compile-install-v2-spec-0.1.pdf)  
 **Date:** 2026-09-18 · **Scope:** v2 only · **Do not change** repo-root v1 (`src\Prepare-NamedForm.ps1`)  
-**Status in repo:** implemented on v2 (`23e7e64`+ walker/SQL gate; `v2/config` pins). MRB home: [GitHub issue #6](https://github.com/SimonBarnett/agentic_fomprep/issues/6). Build plan: [build-and-test-plan-shell-compile-install-v2-spec-0.1.md](./build-and-test-plan-shell-compile-install-v2-spec-0.1.md). Live FR §15 / WP0-R* remain proof-host only (`PRIORITY_WP0_INSTANCE`).
+**Status in repo:** **OFFLINE SHIPPED** on v2 (`23e7e64`+ walker/SQL gate; `v2/config` pins; WP0-T* green). MRB home: [GitHub issue #6](https://github.com/SimonBarnett/agentic_fomprep/issues/6). Build plan: [build-and-test-plan-shell-compile-install-v2-spec-0.1.md](./build-and-test-plan-shell-compile-install-v2-spec-0.1.md). Live FR §15 / WP0-R* parked as [issue #56](https://github.com/SimonBarnett/agentic_fomprep/issues/56) (proof host + `PRIORITY_WP0_INSTANCE` only).
 
 ## What the request asks for
 
@@ -48,10 +48,10 @@ Checked against `main` @ `24f71b7` (`v2/` tree):
 | Parser, path allowlist, DBI refuse | **Done** — fixtures under plugin `fixtures/`; WP0-T7/T8/T13 |
 | Medatech pins + SQL gate + handoff | **Done** — `v2/config/pin.json`; WP0-T11/T12; `docs/wp0-recon.md` |
 | `v2/tools/Test-WP0.ps1` | **Done** — offline T*; R* when `PRIORITY_WP0_INSTANCE` set |
-| `WcfFileStepWorks` / `DbiMarker` | **Open recon** — intentionally null/empty until walk + real `.sh` (not guessed) |
-| FR §15 live compile→install→prep | **Proof host** — WP0-R* + operator ATs; off-instance covered by T* only |
+| `WcfFileStepWorks` / `DbiMarker` | **Open recon** — intentionally null/empty until walk + real `.sh` (not guessed); tracked in [#56](https://github.com/SimonBarnett/agentic_fomprep/issues/56) |
+| FR §15 live compile→install→prep | **Proof host** — [#56](https://github.com/SimonBarnett/agentic_fomprep/issues/56); WP0-R* + operator ATs; off-instance covered by T* only |
 
-**Bottom line:** Product surface is on v2. Merge-ready off-instance gates are green; Bob MRB on issue #6 tracks proof-instance closure and UAT stamp — not declared in this doc.
+**Bottom line:** Product surface is on v2. Off-instance gates (WP0-T*, Test-Pack WP0) are green on MarchHare/sandboxes. Live §15 / pin walk evidence is **not** claimed here — see [#56](https://github.com/SimonBarnett/agentic_fomprep/issues/56). Bob chairs any human UAT stamp after proof-host green.
 
 ---
 

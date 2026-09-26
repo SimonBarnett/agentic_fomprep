@@ -10,7 +10,7 @@ description: >
 
 Grab from catalog MCP `https://mcp-priority.ntsa.uk/mcp` (`get_skill` with `name=priority-sunday-backup-check`).
 
-Human routine (~09:00 Europe/London). Matches harvest text in `docs/skill-sources/dba/sunday-ce-priority-backup-check.ROUTINE.md`.
+Human routine (~09:00 Europe/London). Matches historical harvest dump `docs/skill-sources/dba/sunday-ce-priority-backup-check.ROUTINE.md` (filename kept for git history; catalog skill id is `priority-sunday-backup-check`).
 
 ## When
 

@@ -86,6 +86,42 @@ foreach ($n in $expected) {
 }
 Add-Gate 'CAT-T1' ($missing.Count -eq 0) $(if ($missing.Count -eq 0) { 'catalog meta.json + SKILL.md for A-D + programming' } else { $missing -join '; ' })
 
+# FR #4: Priority-generic catalog — no ce-priority-* skill folders / skill ids.
+$ceDirs = @(Get-ChildItem -LiteralPath $catalog -Directory -ErrorAction SilentlyContinue |
+        Where-Object { $_.Name -like 'ce-priority-*' } |
+        ForEach-Object { $_.Name })
+$ceSkillIdHits = @()
+Get-ChildItem -LiteralPath $catalog -Directory -ErrorAction SilentlyContinue | ForEach-Object {
+    $skillMd = Join-Path $_.FullName 'SKILL.md'
+    $metaJs = Join-Path $_.FullName 'meta.json'
+    if (Test-Path -LiteralPath $skillMd) {
+        $raw = Get-Content -LiteralPath $skillMd -Raw -Encoding UTF8
+        if ($raw -match '(?m)^name:\s*ce-priority-') {
+            $ceSkillIdHits += "$($_.Name)/SKILL.md:name"
+        }
+        # Old folder-style skill path references (not historical dump filenames / ProofInstanceId).
+        if ($raw -match 'ce-priority-(day-works-uat|ht-delete-smoke|project-create-smoke)\b') {
+            $ceSkillIdHits += "$($_.Name)/SKILL.md:legacy-id"
+        }
+    }
+    if (Test-Path -LiteralPath $metaJs) {
+        try {
+            $meta = Get-Content -LiteralPath $metaJs -Raw -Encoding UTF8 | ConvertFrom-Json
+            if ([string]$meta.name -like 'ce-priority-*') {
+                $ceSkillIdHits += "$($_.Name)/meta.json:name"
+            }
+        }
+        catch { $ceSkillIdHits += "$($_.Name)/meta.json:parse" }
+    }
+}
+$ceGateOk = ($ceDirs.Count -eq 0) -and ($ceSkillIdHits.Count -eq 0)
+Add-Gate 'CAT-T44' $ceGateOk $(if ($ceGateOk) {
+        'no ce-priority-* catalog folders or skill ids (FR #4)'
+    }
+    else {
+        @($ceDirs + $ceSkillIdHits) -join '; '
+    })
+
 $odataSkill = Get-Content -LiteralPath (Join-Path $catalog 'priority-odata-dev\SKILL.md') -Raw -Encoding UTF8
 $footgunOk = ($odataSkill -match 'FORMLIMITED') -and ($odataSkill -match 'RESTFLAG') -and ($odataSkill -match 'LIMITFLAG') -and ($odataSkill -match 'sibling-tab')
 Add-Gate 'CAT-T2' $footgunOk 'priority-odata-dev SKILL.md documents FORMLIMITED/RESTFLAG footgun'

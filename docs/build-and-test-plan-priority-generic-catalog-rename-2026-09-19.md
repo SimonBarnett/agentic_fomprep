@@ -16,3 +16,9 @@
 ## Success
 
 Acceptance criteria in the FR all green on main.
+
+## Done (2026-09-26)
+
+- Catalog folders renamed in `6a929db` (`priority-day-works-uat`, `priority-ht-delete-smoke`, `priority-project-create-smoke`).
+- Durable offline gate: `CAT-T44` in `v2/tools/Test-PriorityCatalog.ps1` (no `ce-priority-*` folders / skill `name` fields).
+- Exempt from the skill-id rg gate: `ProofInstanceId=ce-priority-dev` (example allowlist instance) and historical `docs/skill-sources/dba/sunday-ce-priority-*.ROUTINE.md` dump filenames.

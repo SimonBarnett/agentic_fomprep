@@ -2,6 +2,7 @@
 
 **Intake issue / MRB home:** [GitHub issue #4](https://github.com/SimonBarnett/agentic_fomprep/issues/4)  
 **Date:** 2026-09-19  
+**Status:** SHIPPED on main (catalog rename `6a929db`; durable gate `CAT-T44` on FR #4)  
 **Repo:** https://github.com/SimonBarnett/agentic_fomprep  
 **Raised by:** Simon (via Bob)  
 **Build:** Bob Start-BobBuild on ionos  

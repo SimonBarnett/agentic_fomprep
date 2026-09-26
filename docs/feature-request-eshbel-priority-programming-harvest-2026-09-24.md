@@ -106,7 +106,7 @@ Add:
 
 ### `priority-ht-delete-deadlock-triage`
 
-Rename leftover `ce-priority-ht-delete-smoke` references to `priority-ht-delete-smoke`. Note hang-without-1205 = ELEMENT sign (recalc-concurrency), not only classic 1205.
+Catalog skill id is `priority-ht-delete-smoke` (FR #4 stripped `ce-priority-*`). Note hang-without-1205 = ELEMENT sign (recalc-concurrency), not only classic 1205.
 
 ### `docs/skill-sources/README.md`
 

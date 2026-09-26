@@ -12,6 +12,7 @@
 | [feature-request-priority-generic-catalog-rename-2026-09-19.md](feature-request-priority-generic-catalog-rename-2026-09-19.md) | [#4](https://github.com/SimonBarnett/agentic_fomprep/issues/4) | `ce-priority-*` → `priority-*` rename |
 | [feature-request-sql-pins-and-composed-sql-gates-2026-09-20.md](feature-request-sql-pins-and-composed-sql-gates-2026-09-20.md) | [#10](https://github.com/SimonBarnett/agentic_fomprep/issues/10) | Pin SQL identifiers; gate composed SQL |
 | [feature-request-git-mrb-intake-source-of-truth-2026-09-20.md](feature-request-git-mrb-intake-source-of-truth-2026-09-20.md) | [#8](https://github.com/SimonBarnett/agentic_fomprep/issues/8) | Issues as MRB/FR home (this intake) |
+| [feature-request-priority-uat-fast-path-and-video-skill.md](feature-request-priority-uat-fast-path-and-video-skill.md) | [#53](https://github.com/SimonBarnett/agentic_fomprep/issues/53) | Fast UAT vs video pack (parked from MRB #3) |
 
 ## Build and test plans
 

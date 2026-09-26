@@ -124,14 +124,12 @@ if ($Action -eq 'formlimited_audit') {
         Emit-OData $result 2 $pick
     }
     $sqlPin = $pinRead.pin
-    $needSqlPin = $ComposeSql -or -not $useFixture
-    if ($needSqlPin) {
-        $sqlGaps = @(Get-SqlPinGaps -Pin $sqlPin)
-        if ($sqlGaps.Count -gt 0) {
-            $result.reason = 'pin_incomplete'
-            Add-ODataError -Result $result -Source 'policy' -Severity 'Blocker' -Text ('SQL identifiers unpinned. Gaps: ' + ($sqlGaps -join ', '))
-            Emit-OData $result 2 $pick
-        }
+    # Always require FormLimited SQL pins (incl. fixture) — CAT-T6b / MRB #3.
+    $sqlGaps = @(Get-SqlPinGaps -Pin $sqlPin)
+    if ($sqlGaps.Count -gt 0) {
+        $result.reason = 'pin_incomplete'
+        Add-ODataError -Result $result -Source 'policy' -Severity 'Blocker' -Text ('SQL identifiers unpinned. Gaps: ' + ($sqlGaps -join ', '))
+        Emit-OData $result 2 $pick
     }
 
     if ($ComposeSql) {

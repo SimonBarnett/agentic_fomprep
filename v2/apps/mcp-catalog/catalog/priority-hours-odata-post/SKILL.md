@@ -7,6 +7,8 @@ description: >-
 
 # Priority hours OData post
 
+Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
+
 Grab from catalog MCP `https://mcp-priority.ntsa.uk/mcp` (`get_skill` with `name=priority-hours-odata-post`).
 
 Authoritative harvest: `docs/skill-sources/hours/priority-hours-odata-post.md` (2026-09-24 Haitch).
@@ -41,3 +43,4 @@ Authoritative harvest: `docs/skill-sources/hours/priority-hours-odata-post.md` (
 - Log passwords.
 - Invent base URLs — use operator allowlist.
 - Post agent jargon or WP codes in PDES.
+

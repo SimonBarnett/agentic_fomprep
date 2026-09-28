@@ -9,6 +9,8 @@ description: >
 
 # Priority shell install
 
+Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
+
 Grab this skill from catalog MCP `https://mcp-priority.ntsa.uk/mcp` (`get_skill` with `name=priority-shell-install`). Install **locally** against an instance the **user** listed. This catalog does not call SQL or WCF.
 
 This is **not** form prep and **not** compile. Do not call `compile_shell` or `prepare_form` from this tool. If the shell names forms, return `postInstall.formsUnprepared[]` for the caller to feed `prepare_form`. Do not change repo-root `src\Prepare-NamedForm.ps1`.
@@ -84,3 +86,4 @@ Populate `errors[]` in order, whatever WP0 finds exists: SDK messages, upgrade/r
 ## Not this catalog
 
 Do not call `install_shell` on `mcp-priority.ntsa.uk`. That host has no ERP SQL. Write runner files from `get_runner_files` (or use the Grok plugin `priority-shell-install`) and run them where WCF and dictionary SQL are reachable.
+

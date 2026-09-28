@@ -8,6 +8,8 @@ description: >
 
 # Priority procedure style
 
+Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
+
 Grab from catalog MCP `https://mcp-priority.ntsa.uk/mcp` (`get_skill` with `name=priority-procedure-style`).
 
 Authority: `docs/skill-sources/programming/PROCEDURE_STYLE.md`.
@@ -28,3 +30,4 @@ Authoring or heavily editing form triggers, SQLI procedures, or #INCLUDE bodies.
 
 - Form Prep / generator nav: **priority-form-engineering**
 - UDATE mint: **priority-sql-udate-user**
+

@@ -7,6 +7,8 @@ description: >-
 
 # Priority hours export to Excel
 
+Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
+
 Grab from catalog MCP `https://mcp-priority.ntsa.uk/mcp` (`get_skill` with `name=priority-hours-export-excel`).
 
 Authoritative harvest: `docs/skill-sources/hours/priority-hours-export-excel.md` (2026-09-24 Haitch).
@@ -24,3 +26,4 @@ Authoritative harvest: `docs/skill-sources/hours/priority-hours-export-excel.md`
 ## Notes
 
 - Prefer this for human review; prefer OData query for agent reconciliation when available.
+

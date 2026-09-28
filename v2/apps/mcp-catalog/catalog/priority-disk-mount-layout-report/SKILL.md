@@ -8,6 +8,8 @@ description: >
 
 # Priority disk and mount layout report (IT)
 
+Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
+
 Grab from catalog MCP `https://mcp-priority.ntsa.uk/mcp` (`get_skill` with `name=priority-disk-mount-layout-report`).
 
 Explains **where SQL lives** for infrastructure teams: MDF/LDF paths, backup roots, maintenance jobs, and **free space on mount points** (example CE: `F:\pridev`, `G:\pridata` backed by larger volumes — not ~1 GB drive-letter stubs).
@@ -40,3 +42,4 @@ Hard-code one customer as the only template in automation. No passwords in the r
 ## Handoff
 
 Route through **priority-hours-handoff-haitch** / Haitch for customer-facing send — not direct Teams to infra unless standing order changes.
+

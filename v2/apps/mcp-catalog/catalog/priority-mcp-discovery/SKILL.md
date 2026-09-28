@@ -7,6 +7,8 @@ description: >
 
 # Priority MCP discovery
 
+Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
+
 Grab from catalog MCP `https://mcp-priority.ntsa.uk/mcp` (`get_skill` with `name=priority-mcp-discovery`).
 Docs: https://prioritysoftware.github.io/mcp/tools/
 
@@ -77,3 +79,4 @@ Agent has company Name, entity names, keys, and subform list before mutating dat
 
 - Guess company titles as `company_name`
 - Skip Hidden key fields when planning updates
+

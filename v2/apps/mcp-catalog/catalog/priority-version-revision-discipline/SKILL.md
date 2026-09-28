@@ -8,6 +8,8 @@ description: >
 
 # Version Revision discipline
 
+Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
+
 Grab from catalog MCP `https://mcp-priority.ntsa.uk/mcp` (`get_skill` with `name=priority-version-revision-discipline`).
 
 Authority: `docs/skill-sources/programming/VERSION_REVISION.md`.
@@ -24,3 +26,4 @@ Authority: `docs/skill-sources/programming/VERSION_REVISION.md`.
 
 - **priority-shell-compile**, **priority-shell-install**
 - **priority-form-engineering**
+

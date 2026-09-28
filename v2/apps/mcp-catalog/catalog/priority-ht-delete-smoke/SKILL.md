@@ -7,6 +7,8 @@ description: >-
 
 # Priority house-type DELETE smoke (HT-DL)
 
+Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
+
 Grab from catalog MCP `https://mcp-priority.ntsa.uk/mcp` (`get_skill` with `name=priority-ht-delete-smoke`).
 This catalog does not drive the UI or WCF.
 
@@ -30,3 +32,4 @@ Use TEST from instance config. Confirm company title first (CE: UI **T - Clarkso
 - Human video → bob-design-uat **`uat-video-pack`** only.
 
 Learned sign (form-engineering): `:ELEMENT = - :ELEMENT` before `#INCLUDE ZCLA_ELACT/ZCLA_CHKPNT-DEL`.
+

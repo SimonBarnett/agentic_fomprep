@@ -7,6 +7,8 @@ description: >
 
 # Priority MCP help and AI skills
 
+Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
+
 Grab from catalog MCP `https://mcp-priority.ntsa.uk/mcp` (`get_skill` with `name=priority-mcp-help-and-skills`).
 Docs: https://prioritysoftware.github.io/mcp/skills/
 
@@ -72,3 +74,4 @@ Agent returns help text or follows a fetched skill without inventing codes.
 - Invent `skill_code` values
 - Commit fetched skill dumps that contain secrets
 - Treat catalog `priority-mcp-*` leaflets as substitutes for tenant `skill_list` content
+

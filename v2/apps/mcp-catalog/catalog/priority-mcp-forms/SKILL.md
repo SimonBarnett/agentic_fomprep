@@ -7,6 +7,8 @@ description: >
 
 # Priority MCP forms
 
+Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
+
 Grab from catalog MCP `https://mcp-priority.ntsa.uk/mcp` (`get_skill` with `name=priority-mcp-forms`).
 Docs: https://prioritysoftware.github.io/mcp/forms/
 
@@ -98,3 +100,4 @@ Fetch returns expected rows; update/create returns success without missing-key e
 - Invent mandatory field values the user did not supply
 - Omit Hidden keys on update
 - Use MCP for Direct Activation workflows
+

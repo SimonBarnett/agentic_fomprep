@@ -7,6 +7,8 @@ description: >-
 
 # Priority hours orchestrator
 
+Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
+
 Grab from catalog MCP `https://mcp-priority.ntsa.uk/mcp` (`get_skill` with `name=priority-hours-orchestrator`).
 
 Authoritative harvest: `docs/skill-sources/hours/priority-hours-orchestrator.md` (2026-09-24 Haitch).
@@ -55,3 +57,4 @@ Recording Hours stay on the recording project, not the customer project.
 ## Prefer OData
 
 UI automation for hours is fragile. Prefer `priority-hours-odata-post` when credentials and entity set are known. Use UI skills for search/verify and when OData is unavailable.
+

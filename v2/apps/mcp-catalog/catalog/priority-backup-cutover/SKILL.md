@@ -8,6 +8,8 @@ description: >
 
 # Priority SQL backup cutover (phased apply)
 
+Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
+
 Grab from catalog MCP `https://mcp-priority.ntsa.uk/mcp` (`get_skill` with `name=priority-backup-cutover`).
 
 Applies **priority-backup-standard** on live SQL **only** with human sign-off. Out of scope for unattended agents on PRI without Tedious UAT.
@@ -50,3 +52,4 @@ Any job failure, backup still on F:, or PRI log_reuse_wait stuck — stop phase,
 ## Reference
 
 Plan context: `docs/skill-sources/dba/` harvest pack (`BACKUP_STANDARD.md`, audit scripts). CE change plan may appear as historical markdown in the same folder when Tedious adds it.
+

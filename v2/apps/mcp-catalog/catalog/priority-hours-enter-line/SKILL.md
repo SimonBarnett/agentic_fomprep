@@ -7,6 +7,8 @@ description: >-
 
 # Priority hours enter line
 
+Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
+
 Grab from catalog MCP `https://mcp-priority.ntsa.uk/mcp` (`get_skill` with `name=priority-hours-enter-line`).
 
 Authoritative harvest: `docs/skill-sources/hours/priority-hours-enter-line.md` (2026-09-24 Haitch).
@@ -36,3 +38,4 @@ Authoritative harvest: `docs/skill-sources/hours/priority-hours-enter-line.md` (
 
 - Re-search the day and sum hours (must be ≤8.0).
 - Optionally run `priority-hours-less-than-8-report` for the month.
+

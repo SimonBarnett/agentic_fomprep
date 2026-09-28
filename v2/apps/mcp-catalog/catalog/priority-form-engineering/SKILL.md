@@ -8,6 +8,8 @@ description: >
 
 # Priority form engineering (CE DEV)
 
+Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
+
 Grab from catalog MCP `https://mcp-priority.ntsa.uk/mcp` (`get_skill` with `name=priority-form-engineering`).
 
 Do **not** edit repo-root `src\Prepare-NamedForm.ps1`. Do **not** guess Prepare Upgrade / Install Upgrade ENAMEs. Use `v2/config/pin.json` (PinComplete names are Simon-confirmed Medatech wrappers). FORMLIMITED/RESTFLAG footgun is owned by **priority-odata-dev**. HT-DL UAT procedure is **priority-ht-delete-smoke**.
@@ -66,3 +68,4 @@ Pointers only. Authority: `docs/skill-sources/programming/`.
 - **priority-formprep-shadow-tables**
 - **priority-recalc-concurrency**
 - **priority-version-revision-discipline**
+

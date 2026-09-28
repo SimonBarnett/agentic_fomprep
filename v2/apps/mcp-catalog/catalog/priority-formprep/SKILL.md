@@ -9,6 +9,8 @@ description: >
 
 # Priority named-form prep
 
+Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
+
 Grab this skill from catalog MCP `https://mcp-priority.ntsa.uk/mcp` (`get_skill`). Compile **locally** against an instance the **user** listed. This catalog does not call SQL or WCF.
 
 The CE DEV1 pack at repo-root `src\Prepare-NamedForm.ps1` is a separate in-flight agent path. Do not change it.
@@ -64,3 +66,4 @@ Proc default `FORMPREPDRCT2` (Reprepare Form). Do not switch to `FORMPREPDRCT` u
 ## Not this catalog
 
 Do not call `prepare_form` on `mcp-priority.ntsa.uk`. That host has no ERP SQL. Write runner files from `get_runner_files` (or use the Grok plugin) and run them where WCF and dictionary SQL are reachable.
+

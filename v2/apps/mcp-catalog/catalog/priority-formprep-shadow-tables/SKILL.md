@@ -8,6 +8,8 @@ description: >
 
 # Form Prep shadow tables
 
+Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
+
 Grab from catalog MCP `https://mcp-priority.ntsa.uk/mcp` (`get_skill` with `name=priority-formprep-shadow-tables`).
 
 Authority: `docs/skill-sources/programming/FORMPREP_SHADOW_TABLES.md`.
@@ -22,3 +24,4 @@ Authority: `docs/skill-sources/programming/FORMPREP_SHADOW_TABLES.md`.
 
 - Runner: **priority-formprep**
 - After SQL trigger change: **priority-form-prep-after-sql-change**
+

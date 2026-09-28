@@ -8,6 +8,8 @@ description: >
 
 # Priority Sunday backup check
 
+Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
+
 Grab from catalog MCP `https://mcp-priority.ntsa.uk/mcp` (`get_skill` with `name=priority-sunday-backup-check`).
 
 Human routine (~09:00 Europe/London). Matches historical harvest dump `docs/skill-sources/dba/sunday-ce-priority-backup-check.ROUTINE.md` (filename kept for git history; catalog skill id is `priority-sunday-backup-check`).
@@ -43,3 +45,4 @@ Execute the checklist manually on the jump box with integrated auth, or extend t
 ## Related
 
 **priority-backup-audit** for deep gap reports; **priority-hours-handoff-haitch** after material DBA work.
+

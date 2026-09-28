@@ -7,6 +7,8 @@ description: >-
 
 # Priority hours search by date and employee
 
+Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
+
 Grab from catalog MCP `https://mcp-priority.ntsa.uk/mcp` (`get_skill` with `name=priority-hours-search-by-date-employee`).
 
 Authoritative harvest: `docs/skill-sources/hours/priority-hours-search-by-date-employee.md` (2026-09-24 Haitch).
@@ -34,3 +36,4 @@ Authoritative harvest: `docs/skill-sources/hours/priority-hours-search-by-date-e
 - Confirm the employee id/name from config (example Medatech: `SimonB`).
 - Empty result for a weekday usually means nothing booked yet — draft from calendar/agents.
 - Do not invent rows while searching; entry is a separate skill.
+

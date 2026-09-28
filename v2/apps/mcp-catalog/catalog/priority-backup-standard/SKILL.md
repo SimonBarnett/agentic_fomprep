@@ -8,6 +8,8 @@ description: >
 
 # Priority SQL backup standard (reference)
 
+Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
+
 Grab from catalog MCP `https://mcp-priority.ntsa.uk/mcp` (`get_skill` with `name=priority-backup-standard`).
 
 This skill is the **policy** other DBA skills measure against. Deployment-specific paths and host names live in **config** (`instances.json`, env), not in skill logic.
@@ -68,3 +70,4 @@ Auditor or cutover skill can map every instance to this table with no ambiguous 
 ## Canonical doc
 
 `docs/skill-sources/dba/BACKUP_STANDARD.md` (harvested reference; CE is one example deployment).
+

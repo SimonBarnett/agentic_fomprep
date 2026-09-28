@@ -7,6 +7,8 @@ description: >
 
 # Priority MCP setup
 
+Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
+
 Grab from catalog MCP `https://mcp-priority.ntsa.uk/mcp` (`get_skill` with `name=priority-mcp-setup`).
 Official docs: https://prioritysoftware.github.io/mcp/setup/
 
@@ -103,3 +105,4 @@ Client lists Priority MCP tools without 401/404. Tenant and host match the user'
 
 - Discovery tools: `priority-mcp-discovery`
 - Forms / procedures / search / help: sibling `priority-mcp-*` skills
+

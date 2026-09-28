@@ -8,6 +8,8 @@ description: >
 
 # Form Prep gate after SQL dictionary change
 
+Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
+
 Grab from catalog MCP `https://mcp-priority.ntsa.uk/mcp` (`get_skill` with `name=priority-form-prep-after-sql-change`).
 
 Dictionary edits (`FORMTRIGTEXT`, PRE-DELETE/PRE-INSERT bodies, related procs) **invalidate** prepared forms until Form Prep succeeds with SQL gates.
@@ -42,3 +44,4 @@ All touched forms pass SQL gate; then re-run the relevant UAT catalog skill.
 ## Related
 
 **priority-ht-delete-deadlock-triage** when 1205 involved trigger work.
+

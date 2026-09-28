@@ -7,6 +7,8 @@ description: >
 
 # Priority MCP procedures
 
+Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
+
 Grab from catalog MCP `https://mcp-priority.ntsa.uk/mcp` (`get_skill` with `name=priority-mcp-procedures`).
 Docs: https://prioritysoftware.github.io/mcp/procedures/
 
@@ -77,3 +79,4 @@ Procedure reaches `end` (or delivers display/download URL) without dropping requ
 
 - Start without `procedure_type` from search
 - Send partial `fields` on `input` steps
+

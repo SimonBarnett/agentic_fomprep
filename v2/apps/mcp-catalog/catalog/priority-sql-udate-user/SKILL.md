@@ -8,6 +8,8 @@ description: >
 
 # Priority SQL UDATE and user fields
 
+Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
+
 Grab from catalog MCP `https://mcp-priority.ntsa.uk/mcp` (`get_skill` with `name=priority-sql-udate-user`).
 
 Authority: `docs/skill-sources/programming/SQL_UDATE_USER.md`.
@@ -22,3 +24,4 @@ Authority: `docs/skill-sources/programming/SQL_UDATE_USER.md`.
 
 - Form engineering: **priority-form-engineering**
 - Day Works Gate A History asserts: **priority-day-works-uat**
+

@@ -8,6 +8,8 @@ description: >
 
 # Recalc concurrency
 
+Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
+
 Grab from catalog MCP `https://mcp-priority.ntsa.uk/mcp` (`get_skill` with `name=priority-recalc-concurrency`).
 
 Authority: `docs/skill-sources/programming/RECALC_CONCURRENCY.md`.
@@ -24,3 +26,4 @@ Authority: `docs/skill-sources/programming/RECALC_CONCURRENCY.md`.
 - UAT smoke: **priority-ht-delete-smoke**
 - Deadlock evidence: **priority-ht-delete-deadlock-triage**
 - Trigger text: **priority-form-engineering**
+

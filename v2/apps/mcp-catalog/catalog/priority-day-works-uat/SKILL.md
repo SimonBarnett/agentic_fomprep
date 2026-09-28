@@ -7,6 +7,8 @@ description: >-
 
 # Priority Day Works UAT
 
+Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
+
 Grab from catalog MCP `https://mcp-priority.ntsa.uk/mcp` (`get_skill` with `name=priority-day-works-uat`).
 This catalog does not drive the UI or WCF.
 
@@ -41,3 +43,4 @@ Parallel DW lines, Quote, COW, Word, full UAT-01..14, ELEDITDW: do not run until
 - **PASS:** structured result; screenshots only on full PASS (optional). **No** mandatory video.
 - **FAIL:** CASE pack. One retry then park.
 - Human video → bob-design-uat **`uat-video-pack`** only.
+

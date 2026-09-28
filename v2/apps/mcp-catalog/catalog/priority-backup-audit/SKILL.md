@@ -7,6 +7,8 @@ description: >
 
 # Priority SQL backup audit (read-only)
 
+Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
+
 Grab from catalog MCP `https://mcp-priority.ntsa.uk/mcp` (`get_skill` with `name=priority-backup-audit`).
 
 Compares live SQL Agent jobs, maintenance plans, backup destinations, recovery models, and files on the backup volume against **priority-backup-standard**. Does **not** change jobs, plans, or delete backup files.
@@ -58,3 +60,4 @@ If SQL is unreachable: script writes ERROR rows; treat as **fail for live UAT**,
 ## Reference
 
 Canonical scripts: `docs/skill-sources/dba/Invoke-BackupAudit.ps1`, `Invoke-LiveAudit.ps1`.
+

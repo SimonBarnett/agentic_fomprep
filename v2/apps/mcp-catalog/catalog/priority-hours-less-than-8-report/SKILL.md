@@ -7,6 +7,8 @@ description: >-
 
 # Priority less-than-8 report hours
 
+Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
+
 Grab from catalog MCP `https://mcp-priority.ntsa.uk/mcp` (`get_skill` with `name=priority-hours-less-than-8-report`).
 
 Authoritative harvest: `docs/skill-sources/hours/priority-hours-less-than-8-report.md` (2026-09-24 Haitch).
@@ -26,3 +28,4 @@ Authoritative harvest: `docs/skill-sources/hours/priority-hours-less-than-8-repo
 
 - After filling a month, the report should be **empty** for that employee’s weekdays.
 - Use as the post-entry verification check, not as the entry UI.
+

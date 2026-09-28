@@ -7,6 +7,8 @@ description: >-
 
 # Priority project create smoke (TC-01–05)
 
+Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
+
 Grab from catalog MCP `https://mcp-priority.ntsa.uk/mcp` (`get_skill` with `name=priority-project-create-smoke`).
 This catalog does not drive the UI or WCF.
 
@@ -37,3 +39,4 @@ Smoke a new site/project through team → contract → copy HT → paste plots.
 - **PASS:** structured result (DOCNO + chain asserted). Screenshots **only if everything passed** (optional). **No** mandatory video / screen-record.
 - **FAIL:** CASE pack (SCREEN optional if no headed capture).
 - Human video evidence → bob-design-uat **`uat-video-pack`** only (orchestrator route).
+

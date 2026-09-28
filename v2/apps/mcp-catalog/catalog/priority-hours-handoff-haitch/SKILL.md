@@ -7,6 +7,8 @@ description: >
 
 # Priority DBA hours handoff (Haitch)
 
+Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
+
 Grab from catalog MCP `https://mcp-priority.ntsa.uk/mcp` (`get_skill` with `name=priority-hours-handoff-haitch`).
 
 Standing process after non-trivial DBA work (cutover, audit remediation, Sunday failures, health incidents).
@@ -34,3 +36,4 @@ Haitch has hours, WBS, pass/fail facts, and links to evidence sufficient for Sim
 ## Related
 
 **priority-sunday-backup-check** weekly signal; **priority-backup-cutover** for phased work.
+

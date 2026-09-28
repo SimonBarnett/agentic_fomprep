@@ -8,6 +8,8 @@ description: >
 
 # Priority SQL instance health collect
 
+Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
+
 Grab from catalog MCP `https://mcp-priority.ntsa.uk/mcp` (`get_skill` with `name=priority-instance-health-collect`).
 
 Runs `docs/skill-sources/dba/dba_instance_health_collect.sql` against each configured instance (`HOST\DEV`, `\TST`, `\PRI`). Requires VIEW SERVER STATE on the jump-box login.
@@ -39,3 +41,4 @@ Embed customer IP as the only allowed host — use config. No SQL passwords.
 ## Offline
 
 Catalog test: script present, config missing → exit 2 (**skip**). Live UAT on jump box with integrated auth.
+

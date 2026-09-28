@@ -7,6 +7,8 @@ description: >
 
 # Priority MCP search
 
+Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
+
 Grab from catalog MCP `https://mcp-priority.ntsa.uk/mcp` (`get_skill` with `name=priority-mcp-search`).
 Docs: https://prioritysoftware.github.io/mcp/search/ and tools reference.
 
@@ -60,3 +62,4 @@ Agent picks the right search tool and returns usable hits or entity names.
 
 - Assume every form is indexed for enterprise search
 - Use form date formats (`DD/MM/YY`) on enterprise_search dates
+

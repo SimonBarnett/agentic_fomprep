@@ -8,6 +8,8 @@ description: >
 
 # Priority OData (DEV)
 
+Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
+
 Grab this skill from catalog MCP `https://mcp-priority.ntsa.uk/mcp` (`get_skill` with `name=priority-odata-dev`). Call OData **locally** against an instance the **user** listed. This catalog does not call ERP HTTP or SQL.
 
 Do not change repo-root `src\Prepare-NamedForm.ps1`. Do not guess Prepare Upgrade / Install Upgrade ENAMEs; use `v2/config/pin.json`.
@@ -84,3 +86,4 @@ Path must be relative (e.g. `EPROG`). Refuse `http(s):`, `..`, and absolute URLs
 ## Not this catalog
 
 Do not call `odata_get` on `mcp-priority.ntsa.uk`. That host has no ERP. Write runner files from `get_runner_files` (or use the Grok plugin `priority-odata-dev`) and run them where Priority HTTP and dictionary SQL are reachable.
+

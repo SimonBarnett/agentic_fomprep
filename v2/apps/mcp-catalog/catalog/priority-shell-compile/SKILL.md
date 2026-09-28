@@ -9,6 +9,8 @@ description: >
 
 # Priority shell compile
 
+Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
+
 Grab this skill from catalog MCP `https://mcp-priority.ntsa.uk/mcp` (`get_skill` with `name=priority-shell-compile`). Compile **locally** against an instance the **user** listed. This catalog does not call SQL or WCF.
 
 This is **not** form prep and **not** install. Do not call `install_shell` from this tool. Do not change repo-root `src\Prepare-NamedForm.ps1`.
@@ -74,3 +76,4 @@ On **fail**, `errors[]` length >= 1. On **success**, omit empty error-form scrap
 ## Not this catalog
 
 Do not call `compile_shell` on `mcp-priority.ntsa.uk`. That host has no ERP SQL. Write runner files from `get_runner_files` (or use the Grok plugin `priority-shell-compile`) and run them where WCF and dictionary SQL are reachable.
+

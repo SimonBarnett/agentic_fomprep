@@ -1,4 +1,4 @@
-﻿#requires -Version 5.1
+#requires -Version 5.1
 <#
 .SYNOPSIS
     Offline gates for Priority skills catalog A-D + OData plugin. No live OData/SQL.
@@ -74,7 +74,13 @@ $expected = @(
     'priority-sql-udate-user',
     'priority-formprep-shadow-tables',
     'priority-recalc-concurrency',
-    'priority-version-revision-discipline'
+    'priority-version-revision-discipline',
+    'priority-mcp-setup',
+    'priority-mcp-discovery',
+    'priority-mcp-forms',
+    'priority-mcp-procedures',
+    'priority-mcp-search',
+    'priority-mcp-help-and-skills'
 )
 $missing = @()
 foreach ($n in $expected) {
@@ -85,6 +91,31 @@ foreach ($n in $expected) {
     }
 }
 Add-Gate 'CAT-T1' ($missing.Count -eq 0) $(if ($missing.Count -eq 0) { 'catalog meta.json + SKILL.md for A-D + programming' } else { $missing -join '; ' })
+
+# FR #51: Priority Cloud MCP skills — frontmatter + cloud-only + no secret assignments
+$mcpIds = @(
+    'priority-mcp-setup',
+    'priority-mcp-discovery',
+    'priority-mcp-forms',
+    'priority-mcp-procedures',
+    'priority-mcp-search',
+    'priority-mcp-help-and-skills'
+)
+$mcpFrontMissing = @()
+$mcpCloudMissing = @()
+$mcpSecretHits = @()
+foreach ($mcpId in $mcpIds) {
+    $skillPath = Join-Path $catalog "$mcpId\SKILL.md"
+    if (-not (Test-Path -LiteralPath $skillPath)) { $mcpFrontMissing += $mcpId; continue }
+    $mraw = Get-Content -LiteralPath $skillPath -Raw -Encoding UTF8
+    if ($mraw -notmatch '(?m)^name:\s*' + [regex]::Escape($mcpId)) { $mcpFrontMissing += "$mcpId/name" }
+    if ($mraw -notmatch '(?m)^description:\s*>?') { $mcpFrontMissing += "$mcpId/description" }
+    if ($mraw -notmatch '(?i)cloud-only|Priority Cloud') { $mcpCloudMissing += $mcpId }
+    if ($mraw -match '(?i)(password\s*=|XAI_API_KEY\s*=)') { $mcpSecretHits += $mcpId }
+}
+Add-Gate 'CAT-T45' ($mcpFrontMissing.Count -eq 0) $(if ($mcpFrontMissing.Count -eq 0) { 'MCP skills frontmatter name+description' } else { $mcpFrontMissing -join '; ' })
+Add-Gate 'CAT-T46' ($mcpCloudMissing.Count -eq 0) $(if ($mcpCloudMissing.Count -eq 0) { 'MCP skills document cloud-only / Priority Cloud' } else { $mcpCloudMissing -join '; ' })
+Add-Gate 'CAT-T47' ($mcpSecretHits.Count -eq 0) $(if ($mcpSecretHits.Count -eq 0) { 'MCP skills have no password=/XAI_API_KEY= assignments' } else { $mcpSecretHits -join '; ' })
 
 # FR #4: Priority-generic catalog â€” no ce-priority-* skill folders / skill ids.
 $ceDirs = @(Get-ChildItem -LiteralPath $catalog -Directory -ErrorAction SilentlyContinue |

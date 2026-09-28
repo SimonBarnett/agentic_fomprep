@@ -62,3 +62,17 @@ See `MANIFEST.md` in that folder. Eshbel owns hostile MRB after implement.
 
 Also expand existing: `priority-form-engineering`, `priority-odata-dev` (`T$EXEC` key), `priority-ht-delete-deadlock-triage` (rename ce-* smoke refs).
 
+## Priority Cloud MCP skills (issue #51)
+
+Official Priority MCP docs: https://prioritysoftware.github.io/mcp/
+
+| Catalog folder | Focus |
+|----------------|-------|
+| priority-mcp-setup | Connection / PAT / OAuth2 |
+| priority-mcp-discovery | companies / entity_search / form_columns / form_tree |
+| priority-mcp-forms | form_fetch / form_update |
+| priority-mcp-procedures | procedure_start / procedure_continue |
+| priority-mcp-search | enterprise_search vs entity_search |
+| priority-mcp-help-and-skills | help / skill_list / skill_fetch |
+
+These are catalog leaflets (no local execute plugin). Cloud tenant credentials stay outside git.

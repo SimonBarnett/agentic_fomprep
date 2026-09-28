@@ -10,7 +10,7 @@ Build agent: port catalog SKILL.md from:
    - prepare-all-unprepared-priority-forms
 4. Do not invent ENAMEs. Do not edit v1 Prepare-NamedForm.ps1.
 
-Ionos 2026-09-19: Grok Bot workflow leaflets were not on this box. UAT skills were written from the Jester harvest. `prepare-all-unprepared-priority-forms` documents the repo DEV method (named Form Prep; headed web tile fallback). The Medatech hours trio was skipped that day (optional / out of CE scope); reporting-hours procedures landed 2026-09-24 — see the Hours section below. Gates C-G stay parked until UNPARK.
+Ionos 2026-09-19: Grok Bot workflow leaflets were not on this box. UAT skills were written from the Jester harvest. `prepare-all-unprepared-priority-forms` documents the repo DEV method (named Form Prep; headed web tile fallback). The Medatech hours trio was skipped that day (optional / out of CE scope); reporting-hours procedures landed 2026-09-24 â€” see the Hours section below. Gates C-G stay parked until UNPARK.
 
 2026-09-24: full learned UAT procedure lives under `docs/skill-sources/uat/` (see that folder's README). Catalog `SKILL.md` files for `priority-uat-orchestrator`, `priority-project-create-smoke`, `priority-day-works-uat`, and `priority-ht-delete-smoke` are ported from those sources. CE hosts and companies are examples only.
 
@@ -59,6 +59,7 @@ See `MANIFEST.md` in that folder. Eshbel owns hostile MRB after implement.
 | `priority-formprep-shadow-tables` | FORMPREP_SHADOW_TABLES.md |
 | `priority-recalc-concurrency` | RECALC_CONCURRENCY.md |
 | `priority-version-revision-discipline` | VERSION_REVISION.md |
+| `priority-dictionary-sql` | `DICTIONARY_SQL.md` |
 
 Also expand existing: `priority-form-engineering`, `priority-odata-dev` (`T$EXEC` key), `priority-ht-delete-deadlock-triage` (rename ce-* smoke refs).
 

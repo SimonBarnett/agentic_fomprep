@@ -76,6 +76,7 @@ $expected = @(
     'priority-formprep-shadow-tables',
     'priority-recalc-concurrency',
     'priority-version-revision-discipline',
+    'priority-dictionary-sql',
     'priority-mcp-setup',
     'priority-mcp-discovery',
     'priority-mcp-forms',
@@ -447,7 +448,8 @@ $progIds = @(
     'priority-sql-udate-user',
     'priority-formprep-shadow-tables',
     'priority-recalc-concurrency',
-    'priority-version-revision-discipline'
+    'priority-version-revision-discipline',
+    'priority-dictionary-sql'
 )
 $progMissing = @()
 foreach ($progId in $progIds) {
@@ -465,7 +467,7 @@ foreach ($progId in $progIds) {
         $progMissing += "$progId/meta.shape"
     }
 }
-$progSrc = @('MANIFEST.md', 'PROCEDURE_STYLE.md', 'SQL_UDATE_USER.md', 'FORMPREP_SHADOW_TABLES.md', 'RECALC_CONCURRENCY.md', 'VERSION_REVISION.md', 'SDK_FEATURE_MAP.md')
+$progSrc = @('MANIFEST.md', 'PROCEDURE_STYLE.md', 'SQL_UDATE_USER.md', 'FORMPREP_SHADOW_TABLES.md', 'RECALC_CONCURRENCY.md', 'VERSION_REVISION.md', 'DICTIONARY_SQL.md', 'SDK_FEATURE_MAP.md')
 $progSrcRoot = Join-Path $repo 'docs\skill-sources\programming'
 foreach ($srcName in $progSrc) {
     if (-not (Test-Path -LiteralPath (Join-Path $progSrcRoot $srcName))) { $progMissing += "programming/$srcName" }

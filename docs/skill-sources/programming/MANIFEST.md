@@ -12,3 +12,5 @@ FR: `docs/feature-request-eshbel-priority-programming-harvest-2026-09-24.md`
 | RECALC_CONCURRENCY.md | priority-recalc-concurrency |
 | VERSION_REVISION.md | priority-version-revision-discipline |
 | SDK_FEATURE_MAP.md | (docs only; optional catalog later) |
+
+| DICTIONARY_SQL.md | priority-dictionary-sql | IDENTITY-safe dictionary inserts; EXECPREPLOCK / name_missing |

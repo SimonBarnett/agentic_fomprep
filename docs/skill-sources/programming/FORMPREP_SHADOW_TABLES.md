@@ -6,6 +6,7 @@ Before preparing forms that touch new tables, create in **pritempdb**:
 
 - `dbo.T$$<TNAME>` mirroring live base columns
 - `T$LINKID` as required by Form Prep temp linking
+- Unique indexes on `T$$` tables with **`IGNORE_DUP_KEY = ON`** (same Tabula rule as live tables)
 
 Also register dictionary objects (CATALOG family). `TNAME` max length **20**. Missing shadows → SQL 208 during prep.
 

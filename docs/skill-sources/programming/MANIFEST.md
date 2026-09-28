@@ -14,3 +14,5 @@ FR: `docs/feature-request-eshbel-priority-programming-harvest-2026-09-24.md`
 | SDK_FEATURE_MAP.md | (docs only; optional catalog later) |
 
 | DICTIONARY_SQL.md | priority-dictionary-sql | IDENTITY-safe dictionary inserts; EXECPREPLOCK / name_missing |
+| IGNORE_DUP_KEY.md | priority-dictionary-sql | Tabula unique indexes must use IGNORE_DUP_KEY=ON |
+| FORMCLMNSA_JOINS.md | priority-dictionary-sql / priority-formprep | Child FORMCLMNSA `= :$$.COL`; joins survive Form Prep |

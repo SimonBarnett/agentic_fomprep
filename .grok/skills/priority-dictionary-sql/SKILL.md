@@ -23,7 +23,10 @@ Foundation: harvest-priority-skills -> report back to https://github.com/SimonBa
 5. `CATALOG` live columns are `TNAME`, `T$TABLE`, `SIZE` only (no TITLE/EDES
    on CE DEV).
 6. PowerShell helpers must not pipeline-log (`Tee-Object`) inside functions
-   that `return` ids ÔÇö logging pollutes the return as `Object[]`.
+   that `return` ids — logging pollutes the return as `Object[]`.
+7. Physical unique indexes / PKs: **`WITH (IGNORE_DUP_KEY = ON)`** (Tabula).
+   Same for `T$$` shadows. Dedupe before CREATE if needed.
+8. Child joins need **FORMCLMNSA** `= :$$.COL` or Form Prep rewrites FORMJOINS.
 
 ## Minimal form bootstrap (after physical table + T$$)
 

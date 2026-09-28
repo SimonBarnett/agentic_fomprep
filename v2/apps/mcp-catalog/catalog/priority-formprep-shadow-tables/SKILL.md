@@ -17,8 +17,9 @@ Authority: `docs/skill-sources/programming/FORMPREP_SHADOW_TABLES.md`.
 ## Hard rules
 
 1. New tables need `pritempdb.dbo.T$$<TNAME>` (+ `T$LINKID`) and CATALOG (`TNAME` ≤ 20).
-2. Success only `ok` **and** EXECPREPLOCK `UPD=N` **and** LASTPREPDATE advanced — never fake UPD=N.
-3. Prefer Named Form Prep / Web SDK; distrust agent WINRUN exit 0 without EXECPREPLOCK change; avoid `bin\formprep.exe` auth failures.
+2. Unique indexes on `T$$` shadows need **`IGNORE_DUP_KEY = ON`** (same Tabula rule as live tables).
+3. Success only `ok` **and** EXECPREPLOCK `UPD=N` **and** LASTPREPDATE advanced — never fake UPD=N.
+4. Prefer Named Form Prep / Web SDK; distrust agent WINRUN exit 0 without EXECPREPLOCK change; avoid `bin\formprep.exe` auth failures.
 
 ## Related
 

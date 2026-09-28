@@ -94,7 +94,7 @@ foreach ($n in $expected) {
 }
 Add-Gate 'CAT-T1' ($missing.Count -eq 0) $(if ($missing.Count -eq 0) { 'catalog meta.json + SKILL.md for A-D + programming' } else { $missing -join '; ' })
 
-# FR #51: Priority Cloud MCP skills — frontmatter + cloud-only + no secret assignments
+# FR #51: Priority Cloud MCP skills â€” frontmatter + cloud-only + no secret assignments
 $mcpIds = @(
     'priority-mcp-setup',
     'priority-mcp-discovery',
@@ -119,7 +119,7 @@ Add-Gate 'CAT-T45' ($mcpFrontMissing.Count -eq 0) $(if ($mcpFrontMissing.Count -
 Add-Gate 'CAT-T46' ($mcpCloudMissing.Count -eq 0) $(if ($mcpCloudMissing.Count -eq 0) { 'MCP skills document cloud-only / Priority Cloud' } else { $mcpCloudMissing -join '; ' })
 Add-Gate 'CAT-T47' ($mcpSecretHits.Count -eq 0) $(if ($mcpSecretHits.Count -eq 0) { 'MCP skills have no password=/XAI_API_KEY= assignments' } else { $mcpSecretHits -join '; ' })
 
-# FR #4: Priority-generic catalog â€” no ce-priority-* skill folders / skill ids.
+# FR #4: Priority-generic catalog Ã¢â‚¬â€ no ce-priority-* skill folders / skill ids.
 $ceDirs = @(Get-ChildItem -LiteralPath $catalog -Directory -ErrorAction SilentlyContinue |
         Where-Object { $_.Name -like 'ce-priority-*' } |
         ForEach-Object { $_.Name })
@@ -345,6 +345,8 @@ Add-Gate 'CAT-T22' $createOk 'project-create smoke has TC-01-05 detail'
 $dw = Get-Content -LiteralPath (Join-Path $catalog 'priority-day-works-uat\SKILL.md') -Raw -Encoding UTF8
 $dwOk = ($dw -match 'ZCLA_DAYWORKS') -and ($dw -match 'DW-B1') -and ($dw -match 'Long Description') -and ($dw -match 'PARKED') -and ($dw -match 'UNPARK')
 Add-Gate 'CAT-T23' $dwOk 'Day Works A-B fleshed; C-G parked until UNPARK'
+$dwKeysOk = ($dw -match 'FORMJOINS') -and ($dw -match 'FORMKEYS') -and ($dw -match 'REVISIONID') -and ($dw -match 'not.*PART')
+Add-Gate 'CAT-T23b' $dwKeysOk 'Day Works Gate A FORMJOINS vs FORMKEYS (issue #52)'
 
 $ht = Get-Content -LiteralPath (Join-Path $catalog 'priority-ht-delete-smoke\SKILL.md') -Raw -Encoding UTF8
 $htOk = ($ht -match 'ZCLA_HTEDIT') -and ($ht -match '1205') -and ($ht -match 'HOUSETYPEID') -and ($ht -match 'DNAME')

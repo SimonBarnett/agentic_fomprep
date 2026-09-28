@@ -8,17 +8,23 @@ description: >
 
 # Form Prep shadow tables
 
+Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
+
 Grab from catalog MCP `https://mcp-priority.ntsa.uk/mcp` (`get_skill` with `name=priority-formprep-shadow-tables`).
 
 Authority: `docs/skill-sources/programming/FORMPREP_SHADOW_TABLES.md`.
 
 ## Hard rules
 
+Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
+
 1. New tables need `pritempdb.dbo.T$$<TNAME>` (+ `T$LINKID`) and CATALOG (`TNAME` ≤ 20).
 2. Success only `ok` **and** EXECPREPLOCK `UPD=N` **and** LASTPREPDATE advanced — never fake UPD=N.
 3. Prefer Named Form Prep / Web SDK; distrust agent WINRUN exit 0 without EXECPREPLOCK change; avoid `bin\formprep.exe` auth failures.
 
 ## Related
+
+Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
 
 - Runner: **priority-formprep**
 - After SQL trigger change: **priority-form-prep-after-sql-change**

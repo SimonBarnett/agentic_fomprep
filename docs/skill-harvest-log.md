@@ -5,3 +5,5 @@
 - 2026-09-28 (DEV1 / Day Works WP3): New skill `priority-dictionary-sql` (.grok + catalog) and `docs/skill-sources/programming/DICTIONARY_SQL.md`. IDENTITY-safe CATALOG/COLUMNS/T$EXEC/INDEXES inserts; COLUMNS.CNAME; INDEXES.T$KEY; EXECPREPLOCK required before Named Form Prep (`name_missing`); EXECMODULE; shell DBI CREATE TABLE pattern; PowerShell Tee-Object return pollution. Clarified `priority-formprep` catalog `name_missing` / `still_unprepared` (FCLMN).
 
 - 2026-09-28: Rebased honesty-box / Foundation harvest onto main after CONFLICTING PR #68 (issue #58). CAT-T50 asserts Foundation on all priority-* leaflets.
+
+- 2026-09-28 (DEV1): Form Prep `Variable with two different types : SORT` — `:VAR` type clash (`ZCLA_ELEDITSPLIT` `:SORT = ''` vs numeric `:SORT`). Harvested into `PROCEDURE_STYLE.md`, `FORMTRIG_VAR_TYPES.md`, catalog `priority-procedure-style`, `priority-formprep` (WCF warnings + formStart vs SQL gate), `priority-uat-wcf` (`startSubForm` when direct `formStart` says unprepared). Fix applied on DEV as `:DWFIXSORT`.

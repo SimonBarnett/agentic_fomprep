@@ -18,7 +18,7 @@ Smoke-delete a house type on Priority **TEST** web under concurrent recalc load.
 ## Pass / fail
 
 - **Hang** (~minutes, progress stuck) **without** SQL 1205 text = **FAIL** (often PRE-DELETE ELEMENT sign). CASE; do not keep retrying the same HT.
-- **PASS:** HOUSETYPEID gone; no hang; no 1205; sibling HTs untouched as required; **video**.
+- **PASS:** HOUSETYPEID gone; no hang; no 1205; sibling HTs untouched as required; structured result; screenshots only on full PASS (optional); **no mandatory video** (human packs → bob-design-uat uat-video-pack).
 - **FAIL:** CASE/DOCNO/STEP/ACTION/FIELD/TRIED/ERROR/SCREEN.
 
 ## Learned product note (for engineering, not tester edit)

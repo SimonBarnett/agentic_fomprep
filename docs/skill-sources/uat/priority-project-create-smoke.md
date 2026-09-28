@@ -22,5 +22,5 @@ Smoke a new site/project through team → contract → copy house type → paste
 
 ## Pass / fail
 
-- PASS: screen-record of the new DOCNO with team, contract, copied HT, pasted plots (human pack rules).
+- PASS: structured assert of the new DOCNO with team, contract, copied HT, pasted plots (fast path). Screenshots only on full PASS (optional). No mandatory video — human packs use bob-design-uat uat-video-pack.
 - FAIL: CASE/DOCNO/STEP/ACTION/FIELD/TRIED/ERROR/SCREEN.

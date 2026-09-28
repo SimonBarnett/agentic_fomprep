@@ -25,8 +25,10 @@ Authoring or heavily editing form triggers, SQLI procedures, or #INCLUDE bodies.
 3. Debug: site debug `#INCLUDE`; set `:RUN_BY` before includes; gate on `:DEBUG=1` → `:DEBUGFILE`.
 4. Prefer **dedicated** TRIG ids; do not overwrite shared POST-FORM used by siblings.
 5. Customer prefix; copy vendor — do not edit vendor in place.
+6. **One type per `:VAR` name.** Form Prep error `Variable with two different types : X` means `:X` was used as CHAR and INT/REAL in the same compile unit. Rename (e.g. CHAR `:DWFIXSORT` vs numeric `:SORT`). See `PROCEDURE_STYLE.md`.
 
 ## Related
 
 - Form Prep / generator nav: **priority-form-engineering**
 - UDATE mint: **priority-sql-udate-user**
+- Form Prep WCF: **priority-formprep**

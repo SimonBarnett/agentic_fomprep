@@ -63,6 +63,20 @@ On **fail**, `errors[]` always includes `source=FORMPREPERRS` (rows `TYPE: MESSA
 
 Proc default `FORMPREPDRCT2` (Reprepare Form). Do not switch to `FORMPREPDRCT` unless the user pinned it; that proc can claim success without moving LASTPREPDATE.
 
+## WCF compile warnings (2026-09-28)
+
+SDK step `messagetype=error` with text:
+
+`Variable with two different types : SORT`
+
+is a **trigger :VAR type clash** (see **priority-procedure-style**). Fix the trigger, then re-prep. Prep may still print “successfully completed” after the error — **do not trust that toast**; require UPD=N + LASTPREPDATE↑ and a clean errors list.
+
+### `formStart` still “unprepared” after SQL gate
+
+`EXECPREPLOCK.UPD=N` + advanced `LASTPREPDATE` does **not** always make `priority.formStart('ZCLA_…')` succeed. On CE DEV, stock forms (`PART`, `LOGPART`) open; many `ZCLA_*` still return *unprepared* on **direct** `formStart`.
+
+**Workaround for UAT/smoke:** open the **parent** that works (`PART`) then `startSubForm('ZCLA_PARTLONGDESC')` / `ZCLA_PARTLONGDREV` / child `ZCLA_PARTLONGDHIST`. See **priority-uat-wcf**.
+
 ## Not this catalog
 
 Do not call `prepare_form` on `mcp-priority.ntsa.uk`. That host has no ERP SQL. Write runner files from `get_runner_files` (or use the Grok plugin) and run them where WCF and dictionary SQL are reachable.

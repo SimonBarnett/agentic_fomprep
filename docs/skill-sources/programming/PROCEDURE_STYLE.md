@@ -1,15 +1,15 @@
-# Priority procedure / trigger style
+﻿# Priority procedure / trigger style
 
 Priority-generic. CE examples are labeled.
 
 ## Banner (required on new or heavily touched triggers/procedures)
 
 ```
-/* <NAME> — <one-line purpose> */
+/* <NAME> â€” <one-line purpose> */
 /* Inputs */
-/*   :VAR1 — … */
+/*   :VAR1 â€” â€¦ */
 /* Outputs */
-/*   :VAR2 — … */
+/*   :VAR2 â€” â€¦ */
 /* Heading */
 /* Sub-heading */
 ```
@@ -28,10 +28,33 @@ Overwriting a shared POST-FORM (one TRIG id used by many forms) silently changes
 
 ## #INCLUDE navigation (Form Generator)
 
-- F6 on include line → INCLUDE Line; F12 then F6 for body.
+- F6 on include line â†’ INCLUDE Line; F12 then F6 for body.
 - Do not F6 an empty Form Name (opens wrong generator).
 
 ## Customization rules
 
 - Customer objects use a 4-letter prefix.
 - Copy vendor objects; do not edit vendor in place.
+
+## :VAR type consistency (CAST IRON)
+
+Priority Form Prep fails with:
+
+`Variable with two different types : VARNAME`
+
+when the same `:VAR` is used as CHAR in one place and INT/REAL in another
+**in the compile unit** (same trigger, #INCLUDE chain, or forms prepared
+together).
+
+### Known CE case (2026-09-28)
+
+`ZCLA_ELEDITSPLIT` TRIG 22 had `:SORT = ''` (CHAR) then
+`INTO :SORT, :FIXID` from `STRIND(...)` while other CE triggers
+(e.g. `ZCLA_FIXACT`) use `:SORT` as numeric (`:SORT = 0`,
+`MAX(SORT) INTO :SORT`).
+
+**Fix:** rename the CHAR use to a dedicated name, e.g. `:DWFIXSORT`.
+Do not reuse a well-known numeric name for a string.
+
+Replay SQL (DEV applied): see Day Works
+`scripts/fixes/Fix-ZCLA_ELEDITSPLIT-SORT.SQL`.

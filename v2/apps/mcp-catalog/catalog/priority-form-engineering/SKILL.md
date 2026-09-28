@@ -55,7 +55,7 @@ UAT smoke of the delete is **priority-ht-delete-smoke** (TEST, company title fir
 - Dedicated Version Revision shells. Never mix Day Works into upgrade 8338.
 - Install with zero TAKETRIG rows = silent miss -- verify INSTALLEDUPGTRIG / hashes.
 - Compile/install ENAMEs come from `v2/config/pin.json` only. Do not invent others. See **priority-shell-compile** and **priority-shell-install**.
-- Shell discipline (one workstream, TAKETRIG step shape, verify INSTALLEDUPGTRIG): **priority-version-revision-discipline**.
+- Shell discipline (one workstream, TAKETRIG step shape, verify INSTALLEDUPGTRIG): **priority-version-revision-discipline, **priority-dictionary-sql****.
 
 ## Related programming skills
 
@@ -65,4 +65,4 @@ Pointers only. Authority: `docs/skill-sources/programming/`.
 - **priority-sql-udate-user**
 - **priority-formprep-shadow-tables**
 - **priority-recalc-concurrency**
-- **priority-version-revision-discipline**
+- **priority-version-revision-discipline, **priority-dictionary-sql****

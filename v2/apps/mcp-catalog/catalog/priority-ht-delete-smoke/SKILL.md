@@ -7,6 +7,8 @@ description: >-
 
 # Priority house-type DELETE smoke (HT-DL)
 
+Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
+
 Grab from catalog MCP `https://mcp-priority.ntsa.uk/mcp` (`get_skill` with `name=priority-ht-delete-smoke`).
 This catalog does not drive the UI or WCF.
 
@@ -16,6 +18,8 @@ Use TEST from instance config. Confirm company title first (CE: UI **T - Clarkso
 
 ## Sequence
 
+Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
+
 1. Confirm company title. Wrong company = stop.
 2. Leave Stack/recalc running. Do not drain Stack.
 3. Projects F11 DOCNO → House Types → HOUSETYPEID → Ctrl+Delete (or equivalent WCF delete action).
@@ -23,6 +27,8 @@ Use TEST from instance config. Confirm company title first (CE: UI **T - Clarkso
 5. Independent gate: re-read HOUSETYPEID gone (WCF/SQL) — do not trust UI toast alone.
 
 ## Pass / fail
+
+Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
 
 - Hang without 1205 = FAIL (PRE-DELETE ELEMENT sign). CASE; do not keep retrying.
 - **PASS:** HT gone, no hang, no 1205; structured result; screenshots only on full PASS (optional). **No** mandatory video.

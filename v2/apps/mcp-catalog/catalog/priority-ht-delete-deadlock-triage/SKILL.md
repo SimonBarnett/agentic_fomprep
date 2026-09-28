@@ -8,15 +8,21 @@ description: >
 
 # Priority HT delete deadlock triage (ops + evidence)
 
+Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
+
 Grab from catalog MCP `https://mcp-priority.ntsa.uk/mcp` (`get_skill` with `name=priority-ht-delete-deadlock-triage`).
 
 When UI **Ctrl+Delete** on house types surfaces **SQL error 1205**, collect evidence before changing triggers or indexes. UAT smoke procedure remains **priority-ht-delete-smoke**; trigger sign lives in **priority-form-engineering**. Hang with no 1205: check ELEMENT sign via **priority-recalc-concurrency**, not only deadlock graphs.
 
 ## When
 
+Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
+
 HT delete hangs or 1205 under concurrent recalc; after trigger edits suspected.
 
 ## Checklist (read-only first)
+
+Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
 
 1. **Deadlock graph** — Extended Events or `system_health` session; save `.xdl` / graph XML to `reportRoot`.
 2. **FORMTRIGTEXT** — Compare PRE-DELETE trigger bodies **DEV vs TST** for the form involved (often HT / checkpoint family). Document diff; do not deploy without Eshbel/Jester review.
@@ -26,13 +32,19 @@ HT delete hangs or 1205 under concurrent recalc; after trigger edits suspected.
 
 ## Do not
 
+Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
+
 - Auto-deploy index or trigger changes from this skill.
 - Put SQL passwords in evidence bundles.
 
 ## Success
 
+Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
+
 Root cause hypothesis documented with graphs + text diff; owners assigned (Eshbel/Jester); Form Prep completed before next smoke.
 
 ## Fail / escalate
+
+Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
 
 Persistent 1205 with no graph — escalate with CASE fields per **priority-ht-delete-smoke** (DOCNO, STEP, ERROR).

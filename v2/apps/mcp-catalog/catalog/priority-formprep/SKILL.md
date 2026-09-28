@@ -9,11 +9,15 @@ description: >
 
 # Priority named-form prep
 
+Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
+
 Grab this skill from catalog MCP `https://mcp-priority.ntsa.uk/mcp` (`get_skill`). Compile **locally** against an instance the **user** listed. This catalog does not call SQL or WCF.
 
 The CE DEV1 pack at repo-root `src\Prepare-NamedForm.ps1` is a separate in-flight agent path. Do not change it.
 
 ## Hard rules
+
+Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
 
 1. Never report prepared unless `ok=true` **and** `UPD='N'` **and** bigint `LASTPREPDATE` increased on **that instance**.
 2. Never `UPDATE … SET UPD='N'` to fake success.
@@ -24,12 +28,16 @@ The CE DEV1 pack at repo-root `src\Prepare-NamedForm.ps1` is a separate in-fligh
 
 ## Allowlist (user fills this)
 
+Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
+
 `%USERPROFILE%\.priority-formprep\instances.json`  
 Override: env `PRIORITY_FORMPREP_INSTANCES`.
 
 Copy `instances.example.json` from `get_runner_files`. Many instances are allowed. Passwords stay in CredMan (`credentialTarget`). `allowLive` defaults false.
 
 ## Loop
+
+Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
 
 1. `list_instances` (local plugin) or read the JSON (no secrets in stdout besides ids/titles).
 2. If more than one instance and the user did not name an id, ask.
@@ -47,6 +55,8 @@ Or local MCP tool `prepare_form` `{ instance_id, name }`.
 
 ## Success / errors
 
+Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
+
 | `ok` | `reason` | Meaning |
 |------|----------|---------|
 | true | prepared | UPD=N and lastPrep advanced |
@@ -62,5 +72,7 @@ On **fail**, `errors[]` always includes `source=FORMPREPERRS` (rows `TYPE: MESSA
 Proc default `FORMPREPDRCT2` (Reprepare Form). Do not switch to `FORMPREPDRCT` unless the user pinned it; that proc can claim success without moving LASTPREPDATE.
 
 ## Not this catalog
+
+Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
 
 Do not call `prepare_form` on `mcp-priority.ntsa.uk`. That host has no ERP SQL. Write runner files from `get_runner_files` (or use the Grok plugin) and run them where WCF and dictionary SQL are reachable.

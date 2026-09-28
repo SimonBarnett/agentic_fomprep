@@ -8,6 +8,8 @@ description: >-
 
 # Priority UAT orchestrator
 
+Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
+
 Grab from catalog MCP `https://mcp-priority.ntsa.uk/mcp` (`get_skill` with `name=priority-uat-orchestrator`).
 This catalog does not drive the UI or WCF.
 
@@ -16,9 +18,13 @@ Child skills hold procedure; this skill holds standing rules. FR: `docs/feature-
 
 ## When
 
+Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
+
 Any Priority user-test on a configured DEV or TEST instance.
 
 ## Route (CAST IRON — Simon 2026-09-24)
+
+Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
 
 | Ask | Skill |
 |-----|-------|
@@ -28,6 +34,8 @@ Any Priority user-test on a configured DEV or TEST instance.
 Default = fast test. Invoke `uat-video-pack` only when a human pack is explicitly requested.
 
 ## Child skills (fast standard test)
+
+Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
 
 | Work | Skill |
 |------|-------|
@@ -42,6 +50,8 @@ Gates C–G stay parked until UNPARK.
 
 ## Hard rules
 
+Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
+
 - Tester read-only on product code; CASE to engineering; no Recalc/HTSWAP/Clear Plots/Site Bom/Margin unless the case says so.
 - Max one retry of the same failing step without an engineering reply; then CASE and park.
 - Login is case-sensitive (CE example `Si`). If password is prefilled, Log In / Enter immediately.
@@ -49,6 +59,8 @@ Gates C–G stay parked until UNPARK.
 - Banned fixtures are case-pack specific (CE example PR25000001 / 004 / 010).
 
 ## Evidence (fast standard test)
+
+Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
 
 - Prefer WCF `formStart` / `getRows` / field set / action (see `priority-uat-wcf`) over headed browser when the same fields/actions can be asserted.
 - Independent gate after the walk: SQL, OData, or re-read — never trust SDK "completed" alone.
@@ -58,17 +70,25 @@ Gates C–G stay parked until UNPARK.
 
 ## Video / human packs
 
+Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
+
 All human-speed / mouse / ripples / idle cuts / burn-in subtitle rules live in **bob-design-uat `uat-video-pack`**. Orchestrator only points there. Do not require headed Chrome for standard smoke when WCF can assert the same checks.
 
 ## Company / DNAME
+
+Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
 
 UI title ≠ SQL DNAME. CE TEST example: UI **T - Clarkson Evans Live - 20251031** = DNAME `base`; UI **Test** = DNAME `test` (empty of PR26* fixtures). Confirm company title after login; USERENV can stick — relogin after change. Pin company via instance config DNAME, not UI title.
 
 ## Env
 
+Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
+
 Hosts and jump boxes come from instance config. CE examples only: `prioritydev.clarksonevans.co.uk` (Day Works / create-smoke), `prioritytest.clarksonevans.co.uk` (HT-delete), thick client CE-PRIORITY-DEV1, SQL `10.220.0.5\DEV`.
 
 ## UNPARK / CASE
+
+Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
 
 Do not run a parked gate until UNPARK names CASE/DOCNO/steps. Company confirmation required on TEST before mutate.
 
@@ -84,5 +104,7 @@ SCREEN:
 ```
 
 ## Not this catalog
+
+Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
 
 No secrets in git. No invented ENAMEs. Amplify MCP is grab-only. Do not edit v1 `src\Prepare-NamedForm.ps1` for UAT.

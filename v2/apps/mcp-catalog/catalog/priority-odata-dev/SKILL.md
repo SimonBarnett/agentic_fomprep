@@ -8,15 +8,21 @@ description: >
 
 # Priority OData (DEV)
 
+Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
+
 Grab this skill from catalog MCP `https://mcp-priority.ntsa.uk/mcp` (`get_skill` with `name=priority-odata-dev`). Call OData **locally** against an instance the **user** listed. This catalog does not call ERP HTTP or SQL.
 
 Do not change repo-root `src\Prepare-NamedForm.ps1`. Do not guess Prepare Upgrade / Install Upgrade ENAMEs; use `v2/config/pin.json`.
 
 ## When
 
+Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
+
 Reading or writing Priority dictionary or business data via OData instead of UI-only. Procedure archaeology via EPROG. FORMLIMITED / RESTFLAG audits.
 
 ## Hard rules
+
+Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
 
 1. Never log passwords. CredMan only (`credentialTarget` on the allowlist row). Username is case-sensitive (`Si` on CE DEV).
 2. Never invent `webBaseUrl`, SQL instance, or company. Only ids from the user's allowlist.
@@ -28,6 +34,8 @@ Reading or writing Priority dictionary or business data via OData instead of UI-
 
 ## FORMLIMITED / RESTFLAG (critical)
 
+Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
+
 - `RESTFLAG=Y` on FORMLIMITED can expose forms to OData **but** with LIMITFLAG blank + Si can **hide** the same forms from web sibling-tab strips (seen on PART long-desc tabs 2026-09-15).
 - Do **not** leave RESTFLAG-only FORMLIMITED on UI-tested forms until the LIMITFLAG/RESTFLAG pattern for "OData without hiding UI" is confirmed.
 - Deleting bad FORMLIMITED rows restored UI tabs.
@@ -36,6 +44,8 @@ Reading or writing Priority dictionary or business data via OData instead of UI-
 - CATALOG OData may return "API cannot be run"; register CATALOG/COLUMNS/INDEXES/INDCLMNS/CATALOGA via SQL first (`TNAME` max 20).
 
 ## Allowlist (user fills this)
+
+Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
 
 `%USERPROFILE%\.priority-formprep\instances.json`
 Override: env `PRIORITY_FORMPREP_INSTANCES`.
@@ -52,6 +62,8 @@ CE DEV proven (document only; still use the allowlist row, do not hardcode in th
 - Forms: EFORM family when licensed; structural asserts may use SQL on DEV when OData 401
 
 ## Loop
+
+Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
 
 1. `list_instances` (local plugin) or read the JSON (no secrets besides ids/titles).
 2. If more than one instance and the user did not name an id, ask.
@@ -72,6 +84,8 @@ Or local MCP tools `odata_get` / `odata_query` / `odata_dump_procedure` / `forml
 
 ## Tools
 
+Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
+
 | Tool | Does |
 |------|------|
 | odata_get | GET a relative path |
@@ -82,5 +96,7 @@ Or local MCP tools `odata_get` / `odata_query` / `odata_dump_procedure` / `forml
 Path must be relative (e.g. `EPROG`). Refuse `http(s):`, `..`, and absolute URLs.
 
 ## Not this catalog
+
+Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
 
 Do not call `odata_get` on `mcp-priority.ntsa.uk`. That host has no ERP. Write runner files from `get_runner_files` (or use the Grok plugin `priority-odata-dev`) and run them where Priority HTTP and dictionary SQL are reachable.

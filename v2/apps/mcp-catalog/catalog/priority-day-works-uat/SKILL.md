@@ -18,6 +18,11 @@ Path: Part Catalogue → Parts → sibling **Long Description** (not global sear
 
 Pass: USERLOGIN+UDATE+CURREV headers; child RTF not TEXTLINE; reopen History after leave; empty-no-mint; one edit = one header; fail bad UDATE; FORMJOIN DREV→DHIST PART+REVISIONID; no cross-part Revision Text bleed.
 
+Dictionary (DEV `system` / company `base`): parent columns on **FORMJOINS** —
+`PART` PART→`ZCLA_PARTLONGDREV`; `PART`+`REVISIONID` DREV→`ZCLA_PARTLONGDHIST`.
+**FORMKEYS.NAME** is the form's own key (`REVISIONID` on DREV; `TEXTLINE` on
+DESC/DHIST) — it is **not** `PART`. Do not assert `FORMKEYS.NAME = 'PART'`.
+
 Cases DW-A1–A4. Unprepared / mint skip → CASE Form Prep (engineering).
 
 ## Gate B — Edit header Day Works + VAT

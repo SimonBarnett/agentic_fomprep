@@ -312,6 +312,8 @@ Add-Gate 'CAT-T22' $createOk 'project-create smoke has TC-01-05 detail'
 $dw = Get-Content -LiteralPath (Join-Path $catalog 'priority-day-works-uat\SKILL.md') -Raw -Encoding UTF8
 $dwOk = ($dw -match 'ZCLA_DAYWORKS') -and ($dw -match 'DW-B1') -and ($dw -match 'Long Description') -and ($dw -match 'PARKED') -and ($dw -match 'UNPARK')
 Add-Gate 'CAT-T23' $dwOk 'Day Works A-B fleshed; C-G parked until UNPARK'
+$dwKeysOk = ($dw -match 'FORMJOINS') -and ($dw -match 'FORMKEYS') -and ($dw -match 'REVISIONID') -and ($dw -match "not.*PART")
+Add-Gate 'CAT-T23b' $dwKeysOk 'Day Works Gate A FORMJOINS vs FORMKEYS (issue #52)'
 
 $ht = Get-Content -LiteralPath (Join-Path $catalog 'priority-ht-delete-smoke\SKILL.md') -Raw -Encoding UTF8
 $htOk = ($ht -match 'ZCLA_HTEDIT') -and ($ht -match '1205') -and ($ht -match 'HOUSETYPEID') -and ($ht -match 'DNAME')

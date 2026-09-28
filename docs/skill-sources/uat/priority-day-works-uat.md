@@ -32,6 +32,17 @@ Forms: PARTLONGDESC / DREV headers / DHIST RTF.
 - FORMJOIN DREV→DHIST must key PART+REVISIONID (no cross-part bleed of Revision Text).
 - Wrong path (Child Parts / Part Spec 2) can throw inventory-control toast — navigate back to Long Description sibling.
 
+### Dictionary: FORMJOINS vs FORMKEYS (Gate A structure)
+
+Read-only structure on DEV (dictionary database `system`, history rows in company
+`base`). Do not copy `TEXT` or `USERLOGIN` into evidence. Parent columns live on
+`FORMJOINS`: `PART` from `PART` to `ZCLA_PARTLONGDREV` (`ONAME`/`TNAME` `PART`);
+`PART` and `REVISIONID` from `ZCLA_PARTLONGDREV` to `ZCLA_PARTLONGDHIST`.
+`FORMKEYS.NAME` is the form's own key: `REVISIONID` on `ZCLA_PARTLONGDREV`,
+`TEXTLINE` on `ZCLA_PARTLONGDESC` and `ZCLA_PARTLONGDHIST`. It is **not** `PART`.
+(Assert that looked for `FORMKEYS.NAME = 'PART'` returned 0 rows — CASE written;
+assert left locked. Harvested 2026-09-25 from CE-PRIORITY-DEV1 proving cycle.)
+
 ### Form Prep dependency
 
 If History is unprepared / missing headers / mint skipped: CASE (often EXECPREPLOCK UPD=Y or missing FORMKEYS/EXPRESSION). Tester does not Form Prep unless UNPARK says so — see `priority-form-engineering`.

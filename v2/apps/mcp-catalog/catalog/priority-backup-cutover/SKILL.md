@@ -16,13 +16,9 @@ Applies **priority-backup-standard** on live SQL **only** with human sign-off. O
 
 ## When
 
-Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
-
 Moving backup roots to G:, enabling Phase 4 Agent jobs, or fixing recovery model mismatch after audit gaps.
 
 ## Order
-
-Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
 
 1. **DEV** — validate SIMPLE chain, jobs, G: paths, post-move health
 2. **TST** — same
@@ -31,8 +27,6 @@ Foundation: harvest-priority-skills -> report back to https://github.com/SimonBa
 Run **priority-backup-audit** before and after each phase.
 
 ## Do
-
-Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
 
 1. Confirm `Default BackupDirectory` and physical files target G: mount for each instance (from config).
 2. Create or fix Agent jobs per standard naming (`{INST}_FULL_WEEKLY`, etc.).
@@ -43,26 +37,18 @@ Foundation: harvest-priority-skills -> report back to https://github.com/SimonBa
 
 ## Do not
 
-Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
-
 - **Never** prune or delete old F: backup directory trees without **explicit** Simon/Tedious confirm.
 - Put SQL passwords in git or chat — Windows integrated auth on the jump box only.
 - Run PRI cutover in this repo’s CI or offline tests.
 
 ## Success
 
-Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
-
 Overnight jobs succeed; backups only on G:; audit gap report clean; post-move health PASS.
 
 ## Escalate
 
-Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
-
 Any job failure, backup still on F:, or PRI log_reuse_wait stuck — stop phase, capture job history, use **priority-sunday-backup-check** facts for Haitch handoff.
 
 ## Reference
-
-Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
 
 Plan context: `docs/skill-sources/dba/` harvest pack (`BACKUP_STANDARD.md`, audit scripts). CE change plan may appear as historical markdown in the same folder when Tedious adds it.

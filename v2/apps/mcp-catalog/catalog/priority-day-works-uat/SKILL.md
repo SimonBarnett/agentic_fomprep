@@ -16,8 +16,6 @@ Follow **priority-uat-orchestrator** (fast standard test). Unparked gates only. 
 
 ## Gate A â€” Part long-desc + History
 
-Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
-
 Pre-UI STRUCT on DEV1 when UNPARK names it (CE example `wp1_gate_a_struct_assert.ps1`): exit 0 â†’ continue fast path; exit 1 â†’ CASE, no tab hunt. Do not invent the script in this repo.
 
 Path: Part Catalogue â†’ Parts â†’ sibling **Long Description** (not global search). Prefer WCF/SQL asserts over headed UI when STRUCT already covers the gate.
@@ -33,8 +31,6 @@ Cases DW-A1â€“A4. Unprepared / mint skip â†’ CASE Form Prep (engineeri
 
 ## Gate B â€” Edit header Day Works + VAT
 
-Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
-
 Nav: Projects â†’ Plots â†’ Element Acts â†’ sub-level **Element Edits** â†’ Enter existing EDITID. **Never** Open Edit / Re-Open / Close Edit for an already-open Extra.
 
 - DW-B1 `DAYWORKS=Y`
@@ -45,13 +41,9 @@ Gotchas: T$$ + Form Prep; PO/EXTFILENAME stubs; Day Works POS near INVSEP; mid-s
 
 ## Gates Câ€“G â€” PARKED
 
-Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
-
 Parallel DW lines, Quote, COW, Word, full UAT-01..14, ELEDITDW: do not run until UNPARK.
 
 ## Pass / fail
-
-Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
 
 - **PASS:** structured result; screenshots only on full PASS (optional). **No** mandatory video.
 - **FAIL:** CASE pack. One retry then park.

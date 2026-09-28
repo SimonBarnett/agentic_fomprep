@@ -21,8 +21,6 @@ After a successful install, `postInstall.formsUnprepared[]` lists `TAKESINGLEENT
 
 ## Hard rules
 
-Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
-
 1. Never report installed unless the install gate holds: procedure reached end without Blocker messages; pinned install-log / revision row advanced after `startedAt`; every `TAKESINGLEENT` name parsed from the shell exists in `T$EXEC` on that instance; no `errors[].severity=Blocker`.
 2. Never SQL-fake an install.
 3. Never invent instance URLs.
@@ -36,16 +34,12 @@ Foundation: harvest-priority-skills -> report back to https://github.com/SimonBa
 
 ## Allowlist (user fills this)
 
-Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
-
 `%USERPROFILE%\.priority-formprep\instances.json`  
 Override: env `PRIORITY_FORMPREP_INSTANCES`.
 
 `install_shell.shell` must resolve under `buildSetRoot`, `agentWork`, env `PRIORITY_SHELL_BUILDSET`, or pin `AllowedBuildSetRoots`. Refuse `..`, foreign UNC, and catalog fixtures.
 
 ## Loop
-
-Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
 
 1. `list_instances` (local plugin) or read the JSON (no secrets besides ids/titles).
 2. If more than one instance and the user did not name an id, ask.
@@ -66,8 +60,6 @@ Or local MCP tool `install_shell` `{ instance_id, shell, allow_dbi? }`. `allow_d
 `-WhatIf` parses and allowlists but does not call WCF (`reason=whatIf`, exit 0).
 
 ## Success / errors
-
-Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
 
 | `ok` | `reason` | Meaning |
 |------|----------|---------|
@@ -92,7 +84,5 @@ On **fail**, `errors[]` length >= 1 (`source` = parse \| policy \| gate \| sdk).
 Populate `errors[]` in order, whatever WP0 finds exists: SDK messages, upgrade/revision error form, gate failures, parse/path/DBI refuses.
 
 ## Not this catalog
-
-Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
 
 Do not call `install_shell` on `mcp-priority.ntsa.uk`. That host has no ERP SQL. Write runner files from `get_runner_files` (or use the Grok plugin `priority-shell-install`) and run them where WCF and dictionary SQL are reachable.

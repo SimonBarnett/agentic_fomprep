@@ -119,15 +119,16 @@ Add-Gate 'CAT-T45' ($mcpFrontMissing.Count -eq 0) $(if ($mcpFrontMissing.Count -
 Add-Gate 'CAT-T46' ($mcpCloudMissing.Count -eq 0) $(if ($mcpCloudMissing.Count -eq 0) { 'MCP skills document cloud-only / Priority Cloud' } else { $mcpCloudMissing -join '; ' })
 Add-Gate 'CAT-T47' ($mcpSecretHits.Count -eq 0) $(if ($mcpSecretHits.Count -eq 0) { 'MCP skills have no password=/XAI_API_KEY= assignments' } else { $mcpSecretHits -join '; ' })
 
-# FR #58: Foundation line on every priority-* catalog leaflet
+# FR #58: exactly one Foundation line on every priority-* catalog leaflet
 $foundationMissing = @()
 Get-ChildItem -LiteralPath $catalog -Directory -ErrorAction SilentlyContinue | Where-Object { $_.Name -like 'priority-*' } | ForEach-Object {
     $skillMd = Join-Path $_.FullName 'SKILL.md'
     if (-not (Test-Path -LiteralPath $skillMd)) { $foundationMissing += "$($_.Name)/SKILL.md"; return }
     $fraw = Get-Content -LiteralPath $skillMd -Raw -Encoding UTF8
-    if ($fraw -notmatch 'Foundation:\s*harvest-priority-skills') { $foundationMissing += $_.Name }
+    $fc = ([regex]::Matches($fraw, 'Foundation:\s*harvest-priority-skills')).Count
+    if ($fc -ne 1) { $foundationMissing += ($_.Name + ':' + $fc) }
 }
-Add-Gate 'CAT-T50' ($foundationMissing.Count -eq 0) $(if ($foundationMissing.Count -eq 0) { 'all priority-* leaflets have Foundation harvest line' } else { $foundationMissing -join '; ' })
+Add-Gate 'CAT-T50' ($foundationMissing.Count -eq 0) $(if ($foundationMissing.Count -eq 0) { 'all priority-* leaflets have exactly one Foundation harvest line' } else { $foundationMissing -join '; ' })
 
 # FR #4: Priority-generic catalog Ã¢â‚¬â€ no ce-priority-* skill folders / skill ids.
 $ceDirs = @(Get-ChildItem -LiteralPath $catalog -Directory -ErrorAction SilentlyContinue |

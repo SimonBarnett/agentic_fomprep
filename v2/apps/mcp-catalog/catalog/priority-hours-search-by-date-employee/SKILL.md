@@ -15,13 +15,9 @@ Authoritative harvest: `docs/skill-sources/hours/priority-hours-search-by-date-e
 
 # Priority hours — search by date and employee
 
-Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
-
 **Form:** Reports of Project Hrs/Expenses (name varies by localisation).
 
 ## Day search (F11)
-
-Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
 
 1. Open Reports of Project Hrs/Expenses.
 2. F11 or magnifying glass.
@@ -31,15 +27,11 @@ Foundation: harvest-priority-skills -> report back to https://github.com/SimonBa
 
 ## Month search
 
-Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
-
 1. F11 on the same form.
 2. Date: `??/MM/YY` (e.g. `??/09/26` for all days in Sep 2026).
 3. Tab to Employee; type fragment; Enter to search.
 
 ## Notes
-
-Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
 
 - Confirm the employee id/name from config (example Medatech: `SimonB`).
 - Empty result for a weekday usually means nothing booked yet — draft from calendar/agents.

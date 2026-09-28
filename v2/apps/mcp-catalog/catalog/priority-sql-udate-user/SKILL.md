@@ -16,15 +16,11 @@ Authority: `docs/skill-sources/programming/SQL_UDATE_USER.md`.
 
 ## Hard rules
 
-Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
-
 1. `UDATE` = minutes since 1988-01-01. Use `SQL.DATE` in form/SQLI; never `MAX(UDATE)+1` in SQL Server triggers.
 2. `SQL.USERLOGIN` is invalid — use `USERLOGIN` from `USERS` where `USER = SQL.USER`.
 3. Gate mint on meaningful text only; avoid empty leave-field spam and cross-part Curr bleed.
 
 ## Related
-
-Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
 
 - Form engineering: **priority-form-engineering**
 - Day Works Gate A History asserts: **priority-day-works-uat**

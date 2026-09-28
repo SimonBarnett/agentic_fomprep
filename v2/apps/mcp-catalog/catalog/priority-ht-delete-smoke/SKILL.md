@@ -18,8 +18,6 @@ Use TEST from instance config. Confirm company title first (CE: UI **T - Clarkso
 
 ## Sequence
 
-Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
-
 1. Confirm company title. Wrong company = stop.
 2. Leave Stack/recalc running. Do not drain Stack.
 3. Projects F11 DOCNO → House Types → HOUSETYPEID → Ctrl+Delete (or equivalent WCF delete action).
@@ -27,8 +25,6 @@ Foundation: harvest-priority-skills -> report back to https://github.com/SimonBa
 5. Independent gate: re-read HOUSETYPEID gone (WCF/SQL) — do not trust UI toast alone.
 
 ## Pass / fail
-
-Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
 
 - Hang without 1205 = FAIL (PRE-DELETE ELEMENT sign). CASE; do not keep retrying.
 - **PASS:** HT gone, no hang, no 1205; structured result; screenshots only on full PASS (optional). **No** mandatory video.

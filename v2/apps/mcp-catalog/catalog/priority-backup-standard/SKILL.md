@@ -16,8 +16,6 @@ This skill is the **policy** other DBA skills measure against. Deployment-specif
 
 ## Target layout (config-driven)
 
-Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
-
 | Role | Typical pattern (example CE) |
 |------|------------------------------|
 | Data files | `F:\{mountName}\...` — monitor **mount points**, not ~1 GB drive-letter stubs |
@@ -28,16 +26,12 @@ Map `mountName` and `INST` per deployment in config (example names: `pridev`, `p
 
 ## Recovery and chains
 
-Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
-
 | Tier | Recovery | Backup chain |
 |------|----------|--------------|
 | Production / PRI | FULL (tempdb may stay SIMPLE) | Weekly FULL + daily DIFF + **hourly TLOG** |
 | Non-prod DEV/TST | SIMPLE | Weekly FULL + daily DIFF — **no** t-log chain |
 
 ## Agent jobs (enabled naming pattern)
-
-Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
 
 Per instance `INST`:
 
@@ -50,15 +44,11 @@ Schedules are deployment-specific; CE Phase 4 example lives in repo `docs/skill-
 
 ## Retention (cleanup jobs)
 
-Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
-
 - `.bak` older than **14** days
 - `.trn` older than **3** days
 - Scope: that instance’s **G:** backup root only
 
 ## Technical defaults
-
-Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
 
 - CHECKSUM + COMPRESSION on native backups
 - Leave legacy maint-plan jobs **disabled** (not deleted) after cutover unless Tedious/Simon says otherwise
@@ -66,25 +56,17 @@ Foundation: harvest-priority-skills -> report back to https://github.com/SimonBa
 
 ## When
 
-Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
-
 Designing cutover, auditing gaps, or explaining IT layout reports.
 
 ## Success
-
-Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
 
 Auditor or cutover skill can map every instance to this table with no ambiguous paths.
 
 ## Do not
 
-Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
-
 - Hard-code one customer host as the only valid target in automation
 - Store or request SQL passwords — integrated auth from the jump box only
 
 ## Canonical doc
-
-Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
 
 `docs/skill-sources/dba/BACKUP_STANDARD.md` (harvested reference; CE is one example deployment).

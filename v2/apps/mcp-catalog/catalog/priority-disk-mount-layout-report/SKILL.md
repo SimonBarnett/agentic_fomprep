@@ -16,13 +16,9 @@ Explains **where SQL lives** for infrastructure teams: MDF/LDF paths, backup roo
 
 ## When
 
-Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
-
 Capacity planning, post-cutover communication, or annual infra review.
 
 ## Collect
-
-Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
 
 1. Run **priority-instance-health-collect** and **priority-backup-audit**; keep TSV/TXT under `reportRoot`.
 2. From SQL (integrated auth on jump box), capture per instance:
@@ -33,24 +29,16 @@ Foundation: harvest-priority-skills -> report back to https://github.com/SimonBa
 
 ## Example artifact
 
-Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
-
 Historical CE PDF lived on the harvest host under `dba-reports/backup-audit-20260917/` (see `docs/skill-sources/dba/MANIFEST.md`). Regenerate from fresh collect output — do not commit customer PDFs with internal paths unless policy allows.
 
 ## Success
-
-Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
 
 Reader can see mount-point capacity, backup location on G:, and job names without opening SQL Server.
 
 ## Do not
 
-Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
-
 Hard-code one customer as the only template in automation. No passwords in the report bundle.
 
 ## Handoff
-
-Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
 
 Route through **priority-hours-handoff-haitch** / Haitch for customer-facing send — not direct Teams to infra unless standing order changes.

@@ -15,13 +15,9 @@ Authoritative harvest: `docs/skill-sources/hours/priority-hours-odata-post.md` (
 
 # Priority hours — OData post (TRANSORDER)
 
-Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
-
 **When:** Posting confirmed draft lines; prefer over UI automation.
 
 ## Auth / endpoint (config — do not hardcode secrets)
-
-Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
 
 - Username: employee OData user (example: `SimonB`).
 - Password: from secrets store (example env name `PRIORITY_ODATA_PASSWORD`) — never write secrets into skills or git.
@@ -30,8 +26,6 @@ Foundation: harvest-priority-skills -> report back to https://github.com/SimonBa
 
 ## Field discipline (learned)
 
-Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
-
 - **PDES** (description): max **60** characters; truncate intelligently.
 - Billable **FLAG**: force **N** for non-billable customers (examples: recording project `PR17000010`, other internal non-billable). Customer project (example `PR230001`) typically **Y** unless policy says otherwise.
 - Date, project, WBS, hours must match the confirmed draft.
@@ -39,16 +33,12 @@ Foundation: harvest-priority-skills -> report back to https://github.com/SimonBa
 
 ## Loop
 
-Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
-
 1. GET existing lines for employee+date (avoid duplicates).
 2. POST each new line from the confirmed draft.
 3. Re-GET and sum; expect 8.0h on a full weekday including Recording Hours.
 4. Optionally verify with Less-than-8 report for the month.
 
 ## Do not
-
-Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
 
 - Log passwords.
 - Invent base URLs — use operator allowlist.

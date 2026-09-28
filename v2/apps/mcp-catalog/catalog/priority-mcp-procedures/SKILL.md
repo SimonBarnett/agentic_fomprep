@@ -14,13 +14,9 @@ Docs: https://prioritysoftware.github.io/mcp/procedures/
 
 ## When
 
-Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
-
 Running a Priority procedure or report through MCP as a step machine.
 
 ## Flow
-
-Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
 
 1. `entity_search` → name + `procedure_type` (`P` or `R`)
 2. `procedure_start` → `session` + first `step_type`
@@ -28,11 +24,7 @@ Foundation: harvest-priority-skills -> report back to https://github.com/SimonBa
 
 ## Tools
 
-Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
-
 ### procedure_start
-
-Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
 
 | Param | Required |
 |-------|----------|
@@ -41,8 +33,6 @@ Foundation: harvest-priority-skills -> report back to https://github.com/SimonBa
 | `company_name` | Yes |
 
 ### procedure_continue
-
-Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
 
 | Param | Required |
 |-------|----------|
@@ -54,8 +44,6 @@ Foundation: harvest-priority-skills -> report back to https://github.com/SimonBa
 | `action` | Yes (shape depends on step) |
 
 ## Step actions
-
-Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
 
 | step_type | action |
 |-----------|--------|
@@ -71,8 +59,6 @@ Foundation: harvest-priority-skills -> report back to https://github.com/SimonBa
 
 ## Worked example
 
-Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
-
 ```json
 { "company_name": "test", "procedure_name": "ORDERSBYCUST", "procedure_type": "P" }
 ```
@@ -81,21 +67,15 @@ Then continue with format selection / date inputs per step responses until `end`
 
 ## Gotchas
 
-Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
-
 - Pass the same `session` every continue
 - API transactions per call; polling wait steps still costs
 - Cloud-only
 
 ## Success
 
-Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
-
 Procedure reaches `end` (or delivers display/download URL) without dropping required input fields.
 
 ## Do not
-
-Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
 
 - Start without `procedure_type` from search
 - Send partial `fields` on `input` steps

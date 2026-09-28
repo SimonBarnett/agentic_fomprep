@@ -1,0 +1,43 @@
+# Priority dictionary SQL (IDENTITY-safe)
+
+CE DEV (`system` DB) harvest 2026-09-28 from Day Works WP3 bootstrap.
+
+## Identity columns
+
+| Table | Identity |
+|-------|----------|
+| CATALOG | `T$TABLE` |
+| COLUMNS | `T$COLUMN` |
+| T$EXEC | `T$EXEC` |
+| INDEXES | `T$KEY` |
+
+Insert without those columns; read `SCOPE_IDENTITY()`.
+
+## Column name traps
+
+- COLUMNS: **`CNAME`** (not NAME)
+- INDEXES: **`T$KEY`** (not T$INDEX); children in **INDCLMNS** `(T$KEY, T$COLUMN, PRIO)`
+- CATALOG live: `TNAME`, `T$TABLE`, `SIZE` only
+
+## Form Prep bootstrap
+
+1. Physical table + `pritempdb` `T$$` shadow
+2. CATALOG + COLUMNS + INDEXES/INDCLMNS
+3. T$EXEC TYPE=F + EXECMODULE (MODULE=1 for CE Internal Development)
+4. **EXECPREPLOCK** row (UPD=Y, LASTPREPDATE=0) — without it Prepare-NamedForm returns `name_missing`
+5. Form Generator FCLMN paint
+6. Named Form Prep → UPD=N and LASTPREPDATE advanced
+
+## Shell DBI (Version Revision .sh)
+
+```
+DBI <<\EOF
+CREATE TABLE ZCLA_EXAMPLE 'Title' 0
+COL1(INT,13,'Label')
+COL2(CHAR,64,'GUID')
+UNIQUE(COL1,COL2)
+;
+EOF
+```
+
+See CE `C:\Priority\system\upgrades\8311.sh` / Day Works `shells/8357.sh`.

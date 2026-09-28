@@ -52,9 +52,9 @@ Or local MCP tool `prepare_form` `{ instance_id, name }`.
 | `ok` | `reason` | Meaning |
 |------|----------|---------|
 | true | prepared | UPD=N and lastPrep advanced |
-| false | still_unprepared | Still UPD=Y |
+| false | still_unprepared | Still UPD=Y (also when Form Generator has not painted FCLMN — SDK/FORMPREPERRS empty) |
 | false | lastprep_unchanged | UPD=N but date did not move |
-| false | name_missing | ENAME not in T$EXEC/EXECPREPLOCK |
+| false | name_missing | ENAME missing from `T$EXEC` **or** no `EXECPREPLOCK` row (Prepare-NamedForm INNER JOINs lock — seed UPD=Y LASTPREPDATE=0 before first prep) |
 | false | no_cred | CredMan missing |
 | false | instance_unknown | id not in allowlist |
 | false | live_refused | Looks live/PRI and allowLive is false |

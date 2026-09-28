@@ -28,6 +28,22 @@ Insert without those columns; read `SCOPE_IDENTITY()`.
 5. Form Generator FCLMN paint
 6. Named Form Prep ÔåÆ UPD=N and LASTPREPDATE advanced
 
+## Physical unique indexes (SQL Server)
+
+Priority / Tabula requires unique indexes with **`IGNORE_DUP_KEY = ON`**:
+
+```sql
+CREATE UNIQUE CLUSTERED INDEX [TNAME#1#COL]
+ON dbo.TNAME (COL)
+WITH (IGNORE_DUP_KEY = ON);
+```
+
+Bare SSMS PKs (option OFF) cause Tabula login: *Ignore Duplicate Values* — first company often reported as `system`. See `IGNORE_DUP_KEY.md`.
+
+## Child form joins
+
+Join columns need **FORMCLMNSA** expressions (`= :$$.COL`). Without them Form Prep can rewrite FORMJOINS and trigger Unique Index / Origin Table warnings. See `FORMCLMNSA_JOINS.md`.
+
 ## Shell DBI (Version Revision .sh)
 
 ```
@@ -40,4 +56,4 @@ UNIQUE(COL1,COL2)
 EOF
 ```
 
-See CE `C:\Priority\system\upgrades\8311.sh` / Day Works `shells/8357.sh`.
+After shell install / SQL CREATE, verify physical unique indexes have `ignore_dup_key = 1`. See CE `C:\Priority\system\upgrades\8311.sh` / Day Works `shells/8357.sh`.

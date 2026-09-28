@@ -8,6 +8,8 @@ description: >
 
 # Priority SQL backup standard (reference)
 
+Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
+
 Grab from catalog MCP `https://mcp-priority.ntsa.uk/mcp` (`get_skill` with `name=priority-backup-standard`).
 
 This skill is the **policy** other DBA skills measure against. Deployment-specific paths and host names live in **config** (`instances.json`, env), not in skill logic.
@@ -16,7 +18,7 @@ This skill is the **policy** other DBA skills measure against. Deployment-specif
 
 | Role | Typical pattern (example CE) |
 |------|------------------------------|
-| Data files | `F:\{mountName}\...` — monitor **mount points**, not ~1 GB drive-letter stubs |
+| Data files | `F:\{mountName}\...` â€” monitor **mount points**, not ~1 GB drive-letter stubs |
 | Logs + backups | `G:\{mountName}\MSSQL16.{INST}\MSSQL\Backup` |
 | Default backup directory | Same G: backup root per instance |
 
@@ -27,7 +29,7 @@ Map `mountName` and `INST` per deployment in config (example names: `pridev`, `p
 | Tier | Recovery | Backup chain |
 |------|----------|--------------|
 | Production / PRI | FULL (tempdb may stay SIMPLE) | Weekly FULL + daily DIFF + **hourly TLOG** |
-| Non-prod DEV/TST | SIMPLE | Weekly FULL + daily DIFF — **no** t-log chain |
+| Non-prod DEV/TST | SIMPLE | Weekly FULL + daily DIFF â€” **no** t-log chain |
 
 ## Agent jobs (enabled naming pattern)
 
@@ -36,7 +38,7 @@ Per instance `INST`:
 - `{INST}_FULL_WEEKLY`
 - `{INST}_DIFF_DAILY`
 - `{INST}_BAK_CLEANUP`
-- `{INST}_TLOG_HOURLY` — **PRI only**
+- `{INST}_TLOG_HOURLY` â€” **PRI only**
 
 Schedules are deployment-specific; CE Phase 4 example lives in repo `docs/skill-sources/dba/BACKUP_STANDARD.md`.
 
@@ -44,7 +46,7 @@ Schedules are deployment-specific; CE Phase 4 example lives in repo `docs/skill-
 
 - `.bak` older than **14** days
 - `.trn` older than **3** days
-- Scope: that instance’s **G:** backup root only
+- Scope: that instanceâ€™s **G:** backup root only
 
 ## Technical defaults
 
@@ -63,7 +65,7 @@ Auditor or cutover skill can map every instance to this table with no ambiguous 
 ## Do not
 
 - Hard-code one customer host as the only valid target in automation
-- Store or request SQL passwords — integrated auth from the jump box only
+- Store or request SQL passwords â€” integrated auth from the jump box only
 
 ## Canonical doc
 

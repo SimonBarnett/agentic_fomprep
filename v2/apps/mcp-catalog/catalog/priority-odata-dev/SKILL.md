@@ -8,6 +8,8 @@ description: >
 
 # Priority OData (DEV)
 
+Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
+
 Grab this skill from catalog MCP `https://mcp-priority.ntsa.uk/mcp` (`get_skill` with `name=priority-odata-dev`). Call OData **locally** against an instance the **user** listed. This catalog does not call ERP HTTP or SQL.
 
 Do not change repo-root `src\Prepare-NamedForm.ps1`. Do not guess Prepare Upgrade / Install Upgrade ENAMEs; use `v2/config/pin.json`.
@@ -32,7 +34,7 @@ Reading or writing Priority dictionary or business data via OData instead of UI-
 - Do **not** leave RESTFLAG-only FORMLIMITED on UI-tested forms until the LIMITFLAG/RESTFLAG pattern for "OData without hiding UI" is confirmed.
 - Deleting bad FORMLIMITED rows restored UI tabs.
 - `formlimited_audit` flags `restflag_without_limitflag` when RESTFLAG=Y and LIMITFLAG is not Y.
-- Dictionary key is **`[T$EXEC]`** (join via ENAME as needed). **`FORMLIMITED.FORM` does not exist** — querying it yields `sql_failed` (issue #7 / MRB `80d8ce4`).
+- Dictionary key is **`[T$EXEC]`** (join via ENAME as needed). **`FORMLIMITED.FORM` does not exist** â€” querying it yields `sql_failed` (issue #7 / MRB `80d8ce4`).
 - CATALOG OData may return "API cannot be run"; register CATALOG/COLUMNS/INDEXES/INDCLMNS/CATALOGA via SQL first (`TNAME` max 20).
 
 ## Allowlist (user fills this)

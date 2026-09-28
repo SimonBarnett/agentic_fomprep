@@ -8,6 +8,8 @@ description: >
 
 # Form Prep gate after SQL dictionary change
 
+Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
+
 Grab from catalog MCP `https://mcp-priority.ntsa.uk/mcp` (`get_skill` with `name=priority-form-prep-after-sql-change`).
 
 Dictionary edits (`FORMTRIGTEXT`, PRE-DELETE/PRE-INSERT bodies, related procs) **invalidate** prepared forms until Form Prep succeeds with SQL gates.
@@ -18,7 +20,7 @@ After any trigger/procedure SQL change on DEV (or target UAT instance) and **bef
 
 ## Required next step
 
-Run **prepare-all-unprepared-priority-forms** for the affected ENAME(s) — do **not** duplicate that loop here.
+Run **prepare-all-unprepared-priority-forms** for the affected ENAME(s) â€” do **not** duplicate that loop here.
 
 Minimum:
 
@@ -33,7 +35,7 @@ Success = EXECPREPLOCK `UPD=N` **and** `LASTPREPDATE` advanced. Never SQL-flip `
 
 - DEV only for unattended agents unless user allowlists otherwise.
 - Never edit repo-root `src\Prepare-NamedForm.ps1` from this skill.
-- CredMan for web/Si secrets — never log passwords.
+- CredMan for web/Si secrets â€” never log passwords.
 
 ## Success
 

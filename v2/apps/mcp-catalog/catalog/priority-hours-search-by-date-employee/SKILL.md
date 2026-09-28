@@ -7,11 +7,13 @@ description: >-
 
 # Priority hours search by date and employee
 
+Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
+
 Grab from catalog MCP `https://mcp-priority.ntsa.uk/mcp` (`get_skill` with `name=priority-hours-search-by-date-employee`).
 
 Authoritative harvest: `docs/skill-sources/hours/priority-hours-search-by-date-employee.md` (2026-09-24 Haitch).
 
-# Priority hours — search by date and employee
+# Priority hours â€” search by date and employee
 
 **Form:** Reports of Project Hrs/Expenses (name varies by localisation).
 
@@ -19,7 +21,7 @@ Authoritative harvest: `docs/skill-sources/hours/priority-hours-search-by-date-e
 
 1. Open Reports of Project Hrs/Expenses.
 2. F11 or magnifying glass.
-3. Date: type **DDMMYY** (six digits, no separators) — Priority accepts this in the date finder.
+3. Date: type **DDMMYY** (six digits, no separators) â€” Priority accepts this in the date finder.
 4. **Right Arrow** to Employee (never Down into Tasks).
 5. Type a name fragment; Enter to accept autocomplete; Enter again to run search.
 
@@ -32,5 +34,5 @@ Authoritative harvest: `docs/skill-sources/hours/priority-hours-search-by-date-e
 ## Notes
 
 - Confirm the employee id/name from config (example Medatech: `SimonB`).
-- Empty result for a weekday usually means nothing booked yet — draft from calendar/agents.
+- Empty result for a weekday usually means nothing booked yet â€” draft from calendar/agents.
 - Do not invent rows while searching; entry is a separate skill.

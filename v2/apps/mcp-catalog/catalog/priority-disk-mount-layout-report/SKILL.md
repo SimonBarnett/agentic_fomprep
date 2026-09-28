@@ -8,9 +8,11 @@ description: >
 
 # Priority disk and mount layout report (IT)
 
+Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
+
 Grab from catalog MCP `https://mcp-priority.ntsa.uk/mcp` (`get_skill` with `name=priority-disk-mount-layout-report`).
 
-Explains **where SQL lives** for infrastructure teams: MDF/LDF paths, backup roots, maintenance jobs, and **free space on mount points** (example CE: `F:\pridev`, `G:\pridata` backed by larger volumes — not ~1 GB drive-letter stubs).
+Explains **where SQL lives** for infrastructure teams: MDF/LDF paths, backup roots, maintenance jobs, and **free space on mount points** (example CE: `F:\pridev`, `G:\pridata` backed by larger volumes â€” not ~1 GB drive-letter stubs).
 
 ## When
 
@@ -27,7 +29,7 @@ Capacity planning, post-cutover communication, or annual infra review.
 
 ## Example artifact
 
-Historical CE PDF lived on the harvest host under `dba-reports/backup-audit-20260917/` (see `docs/skill-sources/dba/MANIFEST.md`). Regenerate from fresh collect output — do not commit customer PDFs with internal paths unless policy allows.
+Historical CE PDF lived on the harvest host under `dba-reports/backup-audit-20260917/` (see `docs/skill-sources/dba/MANIFEST.md`). Regenerate from fresh collect output â€” do not commit customer PDFs with internal paths unless policy allows.
 
 ## Success
 
@@ -39,4 +41,4 @@ Hard-code one customer as the only template in automation. No passwords in the r
 
 ## Handoff
 
-Route through **priority-hours-handoff-haitch** / Haitch for customer-facing send — not direct Teams to infra unless standing order changes.
+Route through **priority-hours-handoff-haitch** / Haitch for customer-facing send â€” not direct Teams to infra unless standing order changes.

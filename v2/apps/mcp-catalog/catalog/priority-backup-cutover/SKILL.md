@@ -8,6 +8,8 @@ description: >
 
 # Priority SQL backup cutover (phased apply)
 
+Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
+
 Grab from catalog MCP `https://mcp-priority.ntsa.uk/mcp` (`get_skill` with `name=priority-backup-cutover`).
 
 Applies **priority-backup-standard** on live SQL **only** with human sign-off. Out of scope for unattended agents on PRI without Tedious UAT.
@@ -18,9 +20,9 @@ Moving backup roots to G:, enabling Phase 4 Agent jobs, or fixing recovery model
 
 ## Order
 
-1. **DEV** — validate SIMPLE chain, jobs, G: paths, post-move health
-2. **TST** — same
-3. **PRI** — FULL chain + hourly TLOG; **never** without explicit production approval
+1. **DEV** â€” validate SIMPLE chain, jobs, G: paths, post-move health
+2. **TST** â€” same
+3. **PRI** â€” FULL chain + hourly TLOG; **never** without explicit production approval
 
 Run **priority-backup-audit** before and after each phase.
 
@@ -36,8 +38,8 @@ Run **priority-backup-audit** before and after each phase.
 ## Do not
 
 - **Never** prune or delete old F: backup directory trees without **explicit** Simon/Tedious confirm.
-- Put SQL passwords in git or chat — Windows integrated auth on the jump box only.
-- Run PRI cutover in this repo’s CI or offline tests.
+- Put SQL passwords in git or chat â€” Windows integrated auth on the jump box only.
+- Run PRI cutover in this repoâ€™s CI or offline tests.
 
 ## Success
 
@@ -45,7 +47,7 @@ Overnight jobs succeed; backups only on G:; audit gap report clean; post-move he
 
 ## Escalate
 
-Any job failure, backup still on F:, or PRI log_reuse_wait stuck — stop phase, capture job history, use **priority-sunday-backup-check** facts for Haitch handoff.
+Any job failure, backup still on F:, or PRI log_reuse_wait stuck â€” stop phase, capture job history, use **priority-sunday-backup-check** facts for Haitch handoff.
 
 ## Reference
 

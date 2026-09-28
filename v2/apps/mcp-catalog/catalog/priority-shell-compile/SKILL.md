@@ -9,6 +9,8 @@ description: >
 
 # Priority shell compile
 
+Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
+
 Grab this skill from catalog MCP `https://mcp-priority.ntsa.uk/mcp` (`get_skill` with `name=priority-shell-compile`). Compile **locally** against an instance the **user** listed. This catalog does not call SQL or WCF.
 
 This is **not** form prep and **not** install. Do not call `install_shell` from this tool. Do not change repo-root `src\Prepare-NamedForm.ps1`.
@@ -19,9 +21,9 @@ This is **not** form prep and **not** install. Do not call `install_shell` from 
 
 1. Never report compiled unless the compile gate holds: procedure reached end without Blocker messages, output `.sh` exists, size > 0, path returned.
 2. Never SQL-fake a compile.
-3. Never invent `webBaseUrl`, SQL instance, or company. Only ids from the user’s allowlist.
+3. Never invent `webBaseUrl`, SQL instance, or company. Only ids from the userâ€™s allowlist.
 4. Never log the web password. CredMan only.
-5. One revision per call. SDK/procedure “successfully completed” is not success.
+5. One revision per call. SDK/procedure â€œsuccessfully completedâ€ is not success.
 6. If `instances.json` is missing or empty: **stop** and tell the user to fill it.
 7. Never run when `allowLive` is false and the row looks live/PRI.
 8. Never create Version Revisions or fixture entities.
@@ -46,9 +48,9 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts\Compile-Shell.ps1 -I
 Or local MCP tool `compile_shell` `{ instance_id, revision }`.
 
 4. Report `ok`, `reason`, `revision`, `path`, `bytes`, every `errors[]` line.
-5. `pin_incomplete` → stop. Pins must stay dictionary-backed. Do not guess.
-6. `no_cred` → stop; human sets CredMan for that row’s `credentialTarget`.
-7. `ok=false` → return `errors[]` (never empty). Do not install.
+5. `pin_incomplete` â†’ stop. Pins must stay dictionary-backed. Do not guess.
+6. `no_cred` â†’ stop; human sets CredMan for that rowâ€™s `credentialTarget`.
+7. `ok=false` â†’ return `errors[]` (never empty). Do not install.
 
 `-WhatIf` does not call WCF (`reason=whatIf`, exit 0).
 

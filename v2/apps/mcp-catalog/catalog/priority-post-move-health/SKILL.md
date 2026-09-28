@@ -8,6 +8,8 @@ description: >
 
 # Priority post-move backup health
 
+Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
+
 Grab from catalog MCP `https://mcp-priority.ntsa.uk/mcp` (`get_skill` with `name=priority-post-move-health`).
 
 Runs after **priority-backup-cutover** phases. Confirms services, job enablement, backup paths on G:, and optional smoke backups with VERIFYONLY.

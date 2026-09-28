@@ -7,19 +7,21 @@ description: >
 
 # Priority SQL backup audit (read-only)
 
+Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
+
 Grab from catalog MCP `https://mcp-priority.ntsa.uk/mcp` (`get_skill` with `name=priority-backup-audit`).
 
 Compares live SQL Agent jobs, maintenance plans, backup destinations, recovery models, and files on the backup volume against **priority-backup-standard**. Does **not** change jobs, plans, or delete backup files.
 
 ## When
 
-Before or after a backup cutover; weekly health; answering “are we aligned with the standard?”
+Before or after a backup cutover; weekly health; answering â€œare we aligned with the standard?â€
 
 ## Inputs
 
 | Input | Source |
 |-------|--------|
-| SQL host | `instances.json` → `sqlHost` (example CE: jump box reaches `10.220.0.5`) |
+| SQL host | `instances.json` â†’ `sqlHost` (example CE: jump box reaches `10.220.0.5`) |
 | Instance names | `instanceIds` e.g. `DEV`, `TST`, `PRI` |
 | Report folder | `reportRoot` (writable evidence path on the jump box) |
 

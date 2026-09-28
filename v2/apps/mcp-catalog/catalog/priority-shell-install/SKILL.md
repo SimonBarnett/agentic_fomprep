@@ -9,6 +9,8 @@ description: >
 
 # Priority shell install
 
+Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
+
 Grab this skill from catalog MCP `https://mcp-priority.ntsa.uk/mcp` (`get_skill` with `name=priority-shell-install`). Install **locally** against an instance the **user** listed. This catalog does not call SQL or WCF.
 
 This is **not** form prep and **not** compile. Do not call `compile_shell` or `prepare_form` from this tool. If the shell names forms, return `postInstall.formsUnprepared[]` for the caller to feed `prepare_form`. Do not change repo-root `src\Prepare-NamedForm.ps1`.
@@ -27,7 +29,7 @@ After a successful install, `postInstall.formsUnprepared[]` lists `TAKESINGLEENT
 6. Never create `ZCLA_AGENT_SI_*` (or any fixture) from this tool.
 7. Never auto-prepare forms after install.
 8. Never run when `allowLive` is false and the row looks live/PRI.
-9. `shell` is a path on the runner / build set, not “latest file in system\upgrades”.
+9. `shell` is a path on the runner / build set, not â€œlatest file in system\upgradesâ€.
 10. One `.sh` per call. No directory install.
 
 ## Allowlist (user fills this)
@@ -49,11 +51,11 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts\Install-Shell.ps1 -I
 
 Or local MCP tool `install_shell` `{ instance_id, shell, allow_dbi? }`. `allow_dbi` defaults false.
 
-4. Parse the file **before** WCF. Not a Priority shell → `reason=parse_failed`, no install.
-5. If parse shows DBI and `allow_dbi` is false → `reason=dbi_refused`, no WCF.
+4. Parse the file **before** WCF. Not a Priority shell â†’ `reason=parse_failed`, no install.
+5. If parse shows DBI and `allow_dbi` is false â†’ `reason=dbi_refused`, no WCF.
 6. Report `ok`, `reason`, `path`, `revision`, `codes[]`, `dbi`, `gate`, `postInstall.formsUnprepared[]`, every `errors[]` line.
-7. `pin_incomplete` → stop. Pins must stay dictionary-backed. Do not guess.
-8. `no_cred` → stop.
+7. `pin_incomplete` â†’ stop. Pins must stay dictionary-backed. Do not guess.
+8. `no_cred` â†’ stop.
 
 `-WhatIf` parses and allowlists but does not call WCF (`reason=whatIf`, exit 0).
 

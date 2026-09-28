@@ -6,6 +6,8 @@ description: >-
 
 # Priority house-type DELETE smoke (HT-DL)
 
+Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
+
 Grab from catalog MCP `https://mcp-priority.ntsa.uk/mcp` (`get_skill` with `name=priority-ht-delete-smoke`). Browser/desktop only. This catalog does not drive the UI.
 
 Follow **priority-uat-orchestrator**. PRE-DELETE sign lives in **priority-form-engineering**. Deadlock checklist: **priority-ht-delete-deadlock-triage**. Source: `docs/skill-sources/uat/priority-ht-delete-smoke.md` (2026-09-24).
@@ -16,8 +18,8 @@ Use TEST web from instance config. Confirm company title first (CE: UI **T - Cla
 
 1. Confirm company title. Wrong company = stop.
 2. Leave Stack/recalc running. Do not drain Stack.
-3. Projects F11 DOCNO → House Types → HOUSETYPEID → Ctrl+Delete.
-4. Open `ZCLA_HTEDIT` blocks delete — pick a 0-edit fixture.
+3. Projects F11 DOCNO â†’ House Types â†’ HOUSETYPEID â†’ Ctrl+Delete.
+4. Open `ZCLA_HTEDIT` blocks delete â€” pick a 0-edit fixture.
 
 ## Pass / fail
 

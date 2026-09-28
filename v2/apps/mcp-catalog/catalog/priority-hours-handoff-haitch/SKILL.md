@@ -7,6 +7,8 @@ description: >
 
 # Priority DBA hours handoff (Haitch)
 
+Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
+
 Grab from catalog MCP `https://mcp-priority.ntsa.uk/mcp` (`get_skill` with `name=priority-hours-handoff-haitch`).
 
 Standing process after non-trivial DBA work (cutover, audit remediation, Sunday failures, health incidents).
@@ -18,9 +20,9 @@ Closing a DBA task that consumed material time or needs customer-visible billing
 ## Do
 
 1. Summarize **what** ran (instances, read-only vs change, evidence paths under `reportRoot`).
-2. Record **human-equivalent hours** and WBS code (example format: `2.35` — use your org’s active WBS).
+2. Record **human-equivalent hours** and WBS code (example format: `2.35` â€” use your orgâ€™s active WBS).
 3. Send **Haitch** the summary; Haitch routes customer/infra comms including backup notices.
-4. Attach pointers to audit/health outputs — not raw secrets.
+4. Attach pointers to audit/health outputs â€” not raw secrets.
 
 ## Do not
 

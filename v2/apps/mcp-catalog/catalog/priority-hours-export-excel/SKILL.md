@@ -7,11 +7,13 @@ description: >-
 
 # Priority hours export to Excel
 
+Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
+
 Grab from catalog MCP `https://mcp-priority.ntsa.uk/mcp` (`get_skill` with `name=priority-hours-export-excel`).
 
 Authoritative harvest: `docs/skill-sources/hours/priority-hours-export-excel.md` (2026-09-24 Haitch).
 
-# Priority hours — export search results to Excel
+# Priority hours â€” export search results to Excel
 
 **When:** Need a spreadsheet of booked Reports of Project Hrs/Expenses rows (day or month search already on screen).
 
@@ -19,7 +21,7 @@ Authoritative harvest: `docs/skill-sources/hours/priority-hours-export-excel.md`
 
 1. Run the search skill so results are visible.
 2. Export / Download as Spreadsheet with **No Template** (avoid styled templates that drop columns).
-3. Save under the operator’s agreed report root; do not commit exports with personal data to git.
+3. Save under the operatorâ€™s agreed report root; do not commit exports with personal data to git.
 
 ## Notes
 

@@ -9,6 +9,8 @@ description: >
 
 # Priority named-form prep
 
+Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
+
 Grab this skill from catalog MCP `https://mcp-priority.ntsa.uk/mcp` (`get_skill`). Compile **locally** against an instance the **user** listed. This catalog does not call SQL or WCF.
 
 The CE DEV1 pack at repo-root `src\Prepare-NamedForm.ps1` is a separate in-flight agent path. Do not change it.
@@ -16,10 +18,10 @@ The CE DEV1 pack at repo-root `src\Prepare-NamedForm.ps1` is a separate in-fligh
 ## Hard rules
 
 1. Never report prepared unless `ok=true` **and** `UPD='N'` **and** bigint `LASTPREPDATE` increased on **that instance**.
-2. Never `UPDATE … SET UPD='N'` to fake success.
-3. Never invent `webBaseUrl`, SQL instance, or company. Only ids from the user’s allowlist.
+2. Never `UPDATE â€¦ SET UPD='N'` to fake success.
+3. Never invent `webBaseUrl`, SQL instance, or company. Only ids from the userâ€™s allowlist.
 4. Never log the web password. CredMan only.
-5. One name per call. SDK “successfully completed” is not success.
+5. One name per call. SDK â€œsuccessfully completedâ€ is not success.
 6. If `instances.json` is missing or empty: **stop** and tell the user to fill it. Do not recon-guess live.
 
 ## Allowlist (user fills this)
@@ -41,9 +43,9 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts\Prepare-NamedForm.ps
 
 Or local MCP tool `prepare_form` `{ instance_id, name }`.
 
-4. Report `ok`, `reason`, lastprep before→after, upd before→after, every `errors[]` line.
-5. `no_cred` → stop; human sets CredMan for that row’s `credentialTarget`.
-6. `ok=false` → return FORMPREPERRS lines. Do not SQL-flip. Do not re-prep in a loop without a form change.
+4. Report `ok`, `reason`, lastprep beforeâ†’after, upd beforeâ†’after, every `errors[]` line.
+5. `no_cred` â†’ stop; human sets CredMan for that rowâ€™s `credentialTarget`.
+6. `ok=false` â†’ return FORMPREPERRS lines. Do not SQL-flip. Do not re-prep in a loop without a form change.
 
 ## Success / errors
 
@@ -57,7 +59,7 @@ Or local MCP tool `prepare_form` `{ instance_id, name }`.
 | false | instance_unknown | id not in allowlist |
 | false | live_refused | Looks live/PRI and allowLive is false |
 
-On **fail**, `errors[]` always includes `source=FORMPREPERRS` (rows `TYPE: MESSAGE/CMESSAGE`, or “returned no rows after failed prep”). On **success**, FORMPREPERRS is omitted (clean compile leaves that form empty).
+On **fail**, `errors[]` always includes `source=FORMPREPERRS` (rows `TYPE: MESSAGE/CMESSAGE`, or â€œreturned no rows after failed prepâ€). On **success**, FORMPREPERRS is omitted (clean compile leaves that form empty).
 
 Proc default `FORMPREPDRCT2` (Reprepare Form). Do not switch to `FORMPREPDRCT` unless the user pinned it; that proc can claim success without moving LASTPREPDATE.
 

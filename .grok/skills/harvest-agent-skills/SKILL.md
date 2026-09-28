@@ -7,9 +7,32 @@ description: >
   learned a procedure, hourly skill check, /harvest-agent-skills. Prefer
   deterministic scripts over LLM reasoning. Does not dispatch product builds.
 github: https://github.com/SimonBarnett/agentic_fomprep
+three_laws: bound
 ---
 
 # Harvest agent skills (honesty box)
+
+Twin of SimonBarnett/skill-tree / ce-dayworks honesty-box harvest. Local
+changes: `github:` is this repo, Priority row points at
+`harvest-priority-skills`, Day Works row points at `ce-dayworks`. Fix the
+shared pattern upstream in skill-tree, then re-twin.
+
+## Three Laws
+
+This skill is bound by Asimov's Three Laws as Simon wrote them in
+SimonBarnett/skill-tree `CAST_IRON/THREE_LAWS.md`. No harvest may loosen it.
+
+## AUTOMATIC harvest (CAST IRON - no waiting)
+
+**You MUST ALWAYS harvest new or changed skills to the relevant home
+repo AUTOMATICALLY in the same turn you learn or fix them.**
+
+Do not ask permission. Do not defer to "later", hourly checks, or Bob.
+Do not leave a playbook only in chat, `~/.grok/skills`, or a temp dir.
+Map domain -> home repo (table below) and open the **branch + PR** (or
+`harvest:` / `FR:` issue if PR is blocked) before you end the turn.
+
+Empty harvest only when nothing new and nothing broken.
 
 ## Home GitHub (required on every harvest skill)
 
@@ -23,11 +46,14 @@ frontmatter `github:` MUST name the public repo that owns that book.
 | IRC wire, Jeeves, talk seats, SEAL, moot, file, dumb, Ergo, Watch-Bobiverse | `SimonBarnett/agentic_irc` | `.grok/skills/harvest-agent-skills/SKILL.md` |
 | Fleet / build / MRB / Bob jobs / TipForm | `SimonBarnett/agentic_build` | `.grok/skills/harvest-agent-skills/SKILL.md` |
 | MUD / Discworld | `SimonBarnett/mud-skill` | `.grok/skills/harvest-agent-skills/SKILL.md` |
-| Visionary / new-product strategy | `SimonBarnett/skills-visionary` | `.grok/skills/harvest-agent-skills/SKILL.md` |
+| Visionary / new-product strategy / Plan git helpers | `SimonBarnett/skill-tree` | `.grok/skills/harvest-agent-skills/SKILL.md` |
 | Design UAT | `SimonBarnett/bob-design-uat` | `.grok/skills/harvest-agent-skills/SKILL.md` |
 | Club Madeira Awin connector | `SimonBarnett/club-madeira-awin-connector` | `.grok/skills/harvest-agent-skills/SKILL.md` |
-| Formprep / MSSQL fleet playbooks | `SimonBarnett/agentic_fomprep` | `.grok/skills/harvest-agent-skills/SKILL.md` |
+| Club Madeira affiliate onboarding (dual gate, GUID, DNS TXT) | `SimonBarnett/club-madeira-onboarding` | `.grok/skills/harvest-agent-skills/SKILL.md` |
 | IRC client-as-skill | `SimonBarnett/irc-skill` | that repo's harvest skill (if present) |
+| Priority general: catalog / formprep / OData / shell / UAT / hours / DBA (`priority-*`) | `SimonBarnett/agentic_fomprep` | `.grok/skills/harvest-priority-skills/SKILL.md` |
+| CE Day Works requirement, WP/gate status, Day Works-only playbooks | `SimonBarnett/ce-dayworks` | `.grok/skills/harvest-agent-skills/SKILL.md` |
+| Formprep book / MSSQL fleet playbooks owned only here | `SimonBarnett/agentic_fomprep` | `.grok/skills/harvest-agent-skills/SKILL.md` (this file) |
 | Other skill products | that public repo | `.grok/skills/harvest-agent-skills/SKILL.md` |
 
 ## CAST IRON - cost of using this skill book
@@ -36,8 +62,7 @@ frontmatter `github:` MUST name the public repo that owns that book.
 
 This is an honesty box. Using any skill from this book binds you to return
 what you learned, what broke, and what is missing. Silence after a useful
-session is a breach of the bargain. Do not wait for an hourly task, a
-reminder, or Bob to dismiss you.
+session is a breach of the bargain.
 
 ### You MUST report back to the home GitHub when any of these are true
 
@@ -47,21 +72,57 @@ reminder, or Bob to dismiss you.
 3. You hit a **bug**, gap, or missing tool that a deterministic script should
    own.
 4. You invented a workaround that should become a skill or a code change.
+5. You **created a new skill** or skill book surface in-session.
 
 ### How to report (strict order - no main pushes)
 
 1. **Skill harvest / playbook / fix with write access** -> branch + **pull
-   request** against the home repo. Never `git push origin main` for harvest.
+   request** against the home repo **in this turn**. Never `git push origin main`
+   for harvest.
 2. **If the PR cannot be opened** (no permission, API fail, fork blocked) ->
    open a **GitHub issue** on the home repo titled `harvest:` or `FR:` and
-   paste the intended PR title, branch name, file list, and full body.
+   paste the intended PR title, branch name, file list, and full body **in
+   this turn**.
 3. **Bugs / feature requests without a ready patch** -> GitHub **issue** or
    **FR** on the home repo (use that repo's FR/issue templates if present).
-4. Empty harvest (nothing new, nothing broken): **no commit, no empty PR**.
+4. **No `gh`, or `gh` not authenticated** -> POST the Bob intake webhook
+   (below). Do not ask anyone to create a GitHub account.
+5. **Offline** (intake unreachable) -> write `harvest-outbox/<ts>.json`
+   locally (same JSON as the intake payload) and retry on the next run.
+6. Empty harvest (nothing new, nothing broken): **no commit, no empty PR**.
    Still OK to stay silent only in that case.
 
 Prefer `gh` / existing harvest scripts over free-form reasoning. If a script
 exists, run it; do not re-derive the procedure in chat.
+
+### Intake fallback (no gh)
+
+`POST https://irc.ntsa.uk/bob/v1/intake` with JSON:
+
+```json
+{
+  "kind": "harvest",
+  "repo": "SimonBarnett/agentic_fomprep",
+  "title": "harvest: short title",
+  "body": "markdown",
+  "files": [{"path": ".grok/skills/foo/SKILL.md", "content": "..."}],
+  "source": {"machine": "HOST", "agent": "seat", "skill_book": "agentic_fomprep", "version": "0"},
+  "idempotency_key": "unique-per-submission"
+}
+```
+
+Set `repo` to the home repo from the table. Optional header
+`X-Bob-Intake-Key: <fleet intake key>`, taken from env only
+(`BOB_INTAKE_KEY`); never log it, never write it to the outbox or git.
+
+```powershell
+Invoke-RestMethod -Method Post -Uri 'https://irc.ntsa.uk/bob/v1/intake' -ContentType 'application/json' `
+  -Headers @{ 'X-Bob-Intake-Key' = $env:BOB_INTAKE_KEY } -Body (Get-Content payload.json -Raw)
+```
+
+Expect `202` with `{intake_id, url}` or `{intake_id, queued:true}`. Status:
+`GET /bob/v1/intake/<id>`. Anything else: treat as offline and write the
+outbox file.
 
 ## Token efficiency (non-negotiable)
 
@@ -74,35 +135,46 @@ exists, run it; do not re-derive the procedure in chat.
 
 ## Scan (deterministic first)
 
-1. Diff local installed skills vs repo `.grok/skills/` - promote repeatable
-   user-only playbooks.
+1. Diff local installed skills vs repo `.grok/skills/` / catalog - promote
+   repeatable user-only playbooks.
 2. Run repo harvest script if present; do not reinvent it.
 3. Check recent `docs/*` FRs and `docs/skill-harvest-log.md` (create if missing).
-4. Skip one-off incident notes and noisy chat.
+4. Retry any files left in `harvest-outbox/`.
+5. Skip one-off incident notes and noisy chat.
 
 A candidate is useful only if it is **repeatable**, has a clear trigger, and
 is not a single incident report.
 
 ## Write
 
-1. Edit or add `.grok/skills/<name>/SKILL.md` (`name` + `description`;
-   foundation skill also has `github:` of THIS repo).
-2. Append a dated line to `docs/skill-harvest-log.md`.
-3. Commit on a **branch**, open a **PR**. Link related issues.
-4. If this repo has a Test-Pack / skill list gate, add the new name and run it.
+1. Priority playbooks: follow `harvest-priority-skills` (skill-sources +
+   catalog leaflet + optional `.grok/skills` mirror).
+2. Book-level / non-Priority: edit or add `.grok/skills/<name>/SKILL.md`
+   (`name` + `description`; foundation skill also has `github:` of THIS repo).
+3. Append a dated line to `docs/skill-harvest-log.md`.
+4. Commit on a **branch**, open a **PR**. Link related issues.
+5. If this repo has a Test-Pack / skill list gate, add the new name and run it.
 
 ## Do not
 
 - Push harvest to `main`.
 - Commit "nothing found".
-- Force-push, secrets, or live credentials into skills.
+- Force-push, secrets, or live credentials into skills (including the intake
+  key).
 - Invent skills from noisy session chat.
 - Claim ready for human UAT from a harvest alone.
 - Start unrelated product jobs under the harvest label.
 - Spend tokens reasoning through a path a script already encodes.
+- **End the turn** with a new/fixed skill only in chat, temp, or `~/.grok`
+  without a home-repo PR, `harvest:` issue, intake POST or outbox file.
+- Ask the human whether to harvest when the honesty box already fires.
+- Route Day Works-only playbooks here; those go to `SimonBarnett/ce-dayworks`.
 
 ## Inclusion rule
 
 **Every skill book MUST include this foundation skill** (twin with that book's
 `github:`). Other skills in the book SHOULD link it in one line:
 `Foundation: harvest-agent-skills (honesty box) -> report back to <github>.`
+
+Priority catalog leaflets use:
+`Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.`

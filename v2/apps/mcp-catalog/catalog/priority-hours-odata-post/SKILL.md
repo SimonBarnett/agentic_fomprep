@@ -7,19 +7,21 @@ description: >-
 
 # Priority hours OData post
 
+Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
+
 Grab from catalog MCP `https://mcp-priority.ntsa.uk/mcp` (`get_skill` with `name=priority-hours-odata-post`).
 
 Authoritative harvest: `docs/skill-sources/hours/priority-hours-odata-post.md` (2026-09-24 Haitch).
 
-# Priority hours — OData post (TRANSORDER)
+# Priority hours â€” OData post (TRANSORDER)
 
 **When:** Posting confirmed draft lines; prefer over UI automation.
 
-## Auth / endpoint (config — do not hardcode secrets)
+## Auth / endpoint (config â€” do not hardcode secrets)
 
 - Username: employee OData user (example: `SimonB`).
-- Password: from secrets store (example env name `PRIORITY_ODATA_PASSWORD`) — never write secrets into skills or git.
-- Live company OData may work while a DEV company returns 401 with the same credential — treat as separate allowlist rows.
+- Password: from secrets store (example env name `PRIORITY_ODATA_PASSWORD`) â€” never write secrets into skills or git.
+- Live company OData may work while a DEV company returns 401 with the same credential â€” treat as separate allowlist rows.
 - Entity set used in practice: **`TRANSORDER_q`** (confirm on the target instance; name can vary by version).
 
 ## Field discipline (learned)
@@ -39,5 +41,5 @@ Authoritative harvest: `docs/skill-sources/hours/priority-hours-odata-post.md` (
 ## Do not
 
 - Log passwords.
-- Invent base URLs — use operator allowlist.
+- Invent base URLs â€” use operator allowlist.
 - Post agent jargon or WP codes in PDES.

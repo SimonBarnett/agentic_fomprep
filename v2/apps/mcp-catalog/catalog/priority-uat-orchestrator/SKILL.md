@@ -6,6 +6,8 @@ description: >-
 
 # Priority UAT orchestrator
 
+Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
+
 Grab from catalog MCP `https://mcp-priority.ntsa.uk/mcp` (`get_skill` with `name=priority-uat-orchestrator`). Browser/desktop only. This catalog does not drive the UI.
 
 Authoritative harvest: `docs/skill-sources/uat/priority-uat-orchestrator.md` (2026-09-24). Child skills hold procedure; this skill holds standing rules.
@@ -18,13 +20,13 @@ Any Priority web user-test on a configured DEV or TEST instance.
 
 | Work | Skill |
 |------|-------|
-| Project create TC-01–05 | `priority-project-create-smoke` |
-| Day Works gates A–B | `priority-day-works-uat` |
+| Project create TC-01â€“05 | `priority-project-create-smoke` |
+| Day Works gates Aâ€“B | `priority-day-works-uat` |
 | House-type DELETE smoke | `priority-ht-delete-smoke` |
 | Named Form Prep / generator / PRE-DELETE | `priority-form-engineering` |
 | Unprepared forms batch | `prepare-all-unprepared-priority-forms` |
 
-Gates C–G stay parked until UNPARK.
+Gates Câ€“G stay parked until UNPARK.
 
 ## Hard rules
 
@@ -36,13 +38,13 @@ Gates C–G stay parked until UNPARK.
 
 ## Evidence
 
-- PASS → screen-record. Silent pass without video is not formal UAT.
-- FAIL → CASE/DOCNO/STEP/ACTION/FIELD/TRIED/ERROR/SCREEN (exact text).
+- PASS â†’ screen-record. Silent pass without video is not formal UAT.
+- FAIL â†’ CASE/DOCNO/STEP/ACTION/FIELD/TRIED/ERROR/SCREEN (exact text).
 - Human packs: human speed; mouse visible (`ffmpeg x11grab -draw_mouse 1`); click ripples; cut idle; burn-in subtitles; capture the correct Priority display (wrong DISPLAY = empty video).
 
 ## Company / DNAME
 
-UI title ≠ SQL DNAME. CE TEST example: UI **T - Clarkson Evans Live - 20251031** = DNAME `base`; UI **Test** = DNAME `test` (empty of PR26* fixtures). Confirm company title after login; USERENV can stick — relogin after change.
+UI title â‰  SQL DNAME. CE TEST example: UI **T - Clarkson Evans Live - 20251031** = DNAME `base`; UI **Test** = DNAME `test` (empty of PR26* fixtures). Confirm company title after login; USERENV can stick â€” relogin after change.
 
 ## Env
 

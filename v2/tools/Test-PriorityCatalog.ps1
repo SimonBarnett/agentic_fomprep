@@ -57,6 +57,7 @@ $expected = @(
     'priority-odata-dev',
     'priority-form-engineering',
     'priority-uat-orchestrator',
+    'priority-uat-wcf',
     'priority-formprep',
     'priority-shell-compile',
     'priority-shell-install',
@@ -333,7 +334,7 @@ $engOk = ($eng -match 'Prepare-NamedForm\.ps1') -and ($eng -match 'ZCLA_CHKPNT-D
 Add-Gate 'CAT-T19' $engOk 'form-engineering points at v1 Prepare-NamedForm; HT PRE-DELETE'
 
 $uat = Get-Content -LiteralPath (Join-Path $catalog 'priority-uat-orchestrator\SKILL.md') -Raw -Encoding UTF8
-$uatOk = ($uat -match 'CASE') -and ($uat -match 'DOCNO') -and ($uat -match 'UNPARK') -and ($uat -match 'skill-sources/uat/priority-uat-orchestrator') -and ($uat -match 'PR25000001') -and ($uat -match 'priority-ht-delete-smoke')
+$uatOk = ($uat -match 'CASE') -and ($uat -match 'DOCNO') -and ($uat -match 'UNPARK') -and ($uat -match 'skill-sources/uat/priority-uat-orchestrator') -and ($uat -match 'PR25000001') -and ($uat -match 'priority-ht-delete-smoke') -and ($uat -match 'uat-video-pack') -and ($uat -match 'fast') -and ($uat -notmatch 'Silent pass without video is not formal UAT')
 Add-Gate 'CAT-T20' $uatOk 'UAT orchestrator UNPARK/CASE + skill-sources/uat'
 
 $create = Get-Content -LiteralPath (Join-Path $catalog 'priority-project-create-smoke\SKILL.md') -Raw -Encoding UTF8
@@ -347,6 +348,12 @@ Add-Gate 'CAT-T23' $dwOk 'Day Works A-B fleshed; C-G parked until UNPARK'
 $ht = Get-Content -LiteralPath (Join-Path $catalog 'priority-ht-delete-smoke\SKILL.md') -Raw -Encoding UTF8
 $htOk = ($ht -match 'ZCLA_HTEDIT') -and ($ht -match '1205') -and ($ht -match 'HOUSETYPEID') -and ($ht -match 'DNAME')
 Add-Gate 'CAT-T24' $htOk 'HT-DL smoke catalog present with TEST company pitfall'
+
+$fastCreate = ($create -match 'no mandatory video|No mandatory video|\*\*No\*\* mandatory video') -and ($create -notmatch 'PASS: screen-record')
+$fastDw = ($dw -match 'no mandatory video|No mandatory video') -and ($dw -notmatch 'PASS: screen-record')
+$fastHt = ($ht -match 'no mandatory video|No mandatory video|\*\*No\*\* mandatory video') -and ($ht -notmatch 'with video')
+Add-Gate 'CAT-T48' ($fastCreate -and $fastDw -and $fastHt) $(if ($fastCreate -and $fastDw -and $fastHt) { 'UAT smokes: fast path, no mandatory video' } else { "create=$fastCreate dw=$fastDw ht=$fastHt" })
+Add-Gate 'CAT-T49' (Test-Path -LiteralPath (Join-Path $catalog 'priority-uat-wcf\SKILL.md')) 'priority-uat-wcf shared kernel present'
 
 $runnerPs1 = Join-Path $catalog 'priority-odata-dev\runner\Invoke-PriorityOData.ps1'
 Add-Gate 'CAT-T21' (Test-Path -LiteralPath $runnerPs1) 'catalog runner files present for get_runner_files'

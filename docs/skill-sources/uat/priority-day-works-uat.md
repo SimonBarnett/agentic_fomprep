@@ -12,7 +12,7 @@ Quote/COW gates use History/Neil GUID when those gates unpark — do not invent 
 
 On the instance DEV jump box, run the structural assert script if the UNPARK names it (CE example: `wp1_gate_a_struct_assert.ps1` on CE-PRIORITY-DEV1).
 
-- Exit 0 STRUCT PASS → UI / video only (RTF, leave-field, Components as named).
+- Exit 0 STRUCT PASS → continue fast path (UI optional) (RTF, leave-field, Components as named).
 - Exit 1 STRUCT FAIL → CASE engineering; **no tab hunting**.
 - Do not invent that script in this repo; if missing on the jump box, CASE.
 
@@ -59,7 +59,7 @@ Day Works field POS is often near INVSEP after Form Prep / FORMCLMNS fixes.
 - Missing T$$ columns / unprepared `ZCLA_ELEDIT` → CASE Form Prep (engineering).
 - Save may require PO / EXTFILENAME stubs (“Extra must have a purchase order”).
 - Mid-save UPDATE on same EDITID → “Record has been modified/deleted” — stop, CASE; do not thrash Ctrl+Enter.
-- Optional SQL assert DAYWORKS/PART/TOTVAT when engineering asks; UI+video remains the UAT evidence.
+- Optional SQL assert DAYWORKS/PART/TOTVAT when engineering asks; structured/SQL assert is the standard-path evidence; video only via uat-video-pack.
 
 ## Gates C–G — PARKED
 
@@ -67,4 +67,4 @@ Parallel DW lines, Quote, COW, Word, full UAT-01..14, ELEDITDW remarks/quote: **
 
 ## Pass / fail
 
-PASS: screen-record. FAIL: CASE pack. One retry then park.
+PASS: structured result; screenshots only on full PASS (optional); no mandatory video. FAIL: CASE pack. One retry then park. Human video → bob-design-uat uat-video-pack.

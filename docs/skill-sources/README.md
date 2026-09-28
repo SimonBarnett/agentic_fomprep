@@ -76,3 +76,7 @@ Official Priority MCP docs: https://prioritysoftware.github.io/mcp/
 | priority-mcp-help-and-skills | help / skill_list / skill_fetch |
 
 These are catalog leaflets (no local execute plugin). Cloud tenant credentials stay outside git.
+
+## UAT fast path (issue #53)
+
+Standard smokes use the fastest assert path (WCF preferred). Video/human packs live in SimonBarnett/bob-design-uat `uat-video-pack`. Catalog: `priority-uat-orchestrator`, `priority-uat-wcf`, plus project-create / day-works / ht-delete smokes.

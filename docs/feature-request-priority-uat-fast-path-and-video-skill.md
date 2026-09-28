@@ -4,7 +4,7 @@
 **From:** Jester (UAT agent) per Simon  
 **Parked by:** Bob, 2026-09-25  
 **Repo:** SimonBarnett/agentic_fomprep  
-**Status:** ready for build  
+**Status:** implemented 2026-09-28 (catalog + sources); Bob MRB / Jester UAT after merge still open  
 **Related:** PR #44 (UAT skill harvest 1.1.0, merged; still carries mandatory video); formprep WCF walker (`src/sdk/run-formprep.mjs`, `v2/lib/wcf.ps1`); video pack skill `uat-video-pack` in SimonBarnett/bob-design-uat (PR #75)
 
 ## Problem
@@ -35,9 +35,9 @@ Harvested UAT skills still bake "screen-record every PASS or CASE on fail" into 
 ## Acceptance
 
 - [x] FR parked under `docs/feature-request-*.md`
-- [ ] Catalog / skill-sources say: fastest path; screenshots only on full PASS; no mandatory video
-- [ ] Video rules live only in bob-design-uat `uat-video-pack` (+ orchestrator pointer)
-- [ ] Offline `Test-PriorityCatalog.ps1` still PASS
+- [x] Catalog / skill-sources say: fastest path; screenshots only on full PASS; no mandatory video
+- [x] Video rules live only in bob-design-uat `uat-video-pack` (+ orchestrator pointer)
+- [x] Offline `Test-PriorityCatalog.ps1` still PASS
 - [ ] Bob MRB; Jester hostile UAT after merge
 
 ## Notes for implementer

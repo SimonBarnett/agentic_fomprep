@@ -1,20 +1,22 @@
 ---
 name: priority-day-works-uat
 description: >-
-  Priority Day Works UAT gates A–B (part long-desc History; Edit header Day Works + VAT). Gates C–G parked until UNPARK. Use for Day Works UAT, DW-A, DW-B, ZCLA_DAYWORKS, or /priority-day-works-uat.
+  Priority Day Works UAT gates A–B (fast path). Gates C–G parked until UNPARK. Prefer WCF/SQL;
+  no mandatory video. Use for Day Works UAT, DW-A, DW-B, ZCLA_DAYWORKS, or /priority-day-works-uat.
 ---
 
 # Priority Day Works UAT
 
-Grab from catalog MCP `https://mcp-priority.ntsa.uk/mcp` (`get_skill` with `name=priority-day-works-uat`). Browser/desktop only. This catalog does not drive the UI.
+Grab from catalog MCP `https://mcp-priority.ntsa.uk/mcp` (`get_skill` with `name=priority-day-works-uat`).
+This catalog does not drive the UI or WCF.
 
-Follow **priority-uat-orchestrator**. Unparked gates only. Work type **Extras**. Day Works flag on Edit (`ZCLA_DAYWORKS`), not Fix. Do not touch old HT Day Work spine. Source: `docs/skill-sources/uat/priority-day-works-uat.md` (2026-09-24).
+Follow **priority-uat-orchestrator** (fast standard test). Unparked gates only. Work type **Extras**. Day Works flag on Edit (`ZCLA_DAYWORKS`), not Fix. Do not touch old HT Day Work spine. Source: `docs/skill-sources/uat/priority-day-works-uat.md` (2026-09-28).
 
 ## Gate A — Part long-desc + History
 
-Pre-UI STRUCT on DEV1 when UNPARK names it (CE example `wp1_gate_a_struct_assert.ps1`): exit 0 → UI/video; exit 1 → CASE, no tab hunt. Do not invent the script in this repo.
+Pre-UI STRUCT on DEV1 when UNPARK names it (CE example `wp1_gate_a_struct_assert.ps1`): exit 0 → continue fast path; exit 1 → CASE, no tab hunt. Do not invent the script in this repo.
 
-Path: Part Catalogue → Parts → sibling **Long Description** (not global search).
+Path: Part Catalogue → Parts → sibling **Long Description** (not global search). Prefer WCF/SQL asserts over headed UI when STRUCT already covers the gate.
 
 Pass: USERLOGIN+UDATE+CURREV headers; child RTF not TEXTLINE; reopen History after leave; empty-no-mint; one edit = one header; fail bad UDATE; FORMJOIN DREV→DHIST PART+REVISIONID; no cross-part Revision Text bleed.
 
@@ -36,5 +38,6 @@ Parallel DW lines, Quote, COW, Word, full UAT-01..14, ELEDITDW: do not run until
 
 ## Pass / fail
 
-PASS: screen-record. FAIL: CASE pack. One retry then park.
-
+- **PASS:** structured result; screenshots only on full PASS (optional). **No** mandatory video.
+- **FAIL:** CASE pack. One retry then park.
+- Human video → bob-design-uat **`uat-video-pack`** only.

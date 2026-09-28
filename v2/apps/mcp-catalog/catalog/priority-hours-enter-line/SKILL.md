@@ -15,13 +15,9 @@ Authoritative harvest: `docs/skill-sources/hours/priority-hours-enter-line.md` (
 
 # Priority hours — enter a line (UI)
 
-Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
-
 **Form:** Reports of Project Hrs/Expenses.
 
 ## Hard rules
-
-Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
 
 1. **Never leave the current row incomplete.** Leaving early creates a record with missing columns.
 2. **WBS is required** before leaving the line. Tab to WBS, **F6**, pick a code — never Tab/Ctrl+Enter with WBS blank.
@@ -29,8 +25,6 @@ Foundation: harvest-priority-skills -> report back to https://github.com/SimonBa
 4. Fill every column on the line before Ctrl+Enter: Date, Project, WBS, Part (if used), Hours / Total to Charge, Billable flag, Part Description.
 
 ## Loop
-
-Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
 
 1. Navigate to a blank line (or Ctrl+Enter from a completed row).
 2. Enter Date.
@@ -41,8 +35,6 @@ Foundation: harvest-priority-skills -> report back to https://github.com/SimonBa
 7. Only when complete: Ctrl+Enter for the next blank line, or leave the form after the last line.
 
 ## After a batch
-
-Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
 
 - Re-search the day and sum hours (must be ≤8.0).
 - Optionally run `priority-hours-less-than-8-report` for the month.

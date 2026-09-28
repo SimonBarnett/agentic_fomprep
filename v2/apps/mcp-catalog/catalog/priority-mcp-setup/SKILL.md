@@ -16,13 +16,9 @@ This skill configures a **client** to talk to Priority Software's cloud MCP. It 
 
 ## When
 
-Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
-
 First-time MCP connect, auth failures (`401 Missing authentication`), picking host/tenant, or deciding cloud vs on-prem.
 
 ## Prerequisites
-
-Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
 
 | Requirement | Notes |
 |-------------|--------|
@@ -34,8 +30,6 @@ Foundation: harvest-priority-skills -> report back to https://github.com/SimonBa
 **On-prem / IIS** (example `priority.medatecherp.co.uk`) has **no** MCP endpoint (404). Do not invent one.
 
 ## Endpoint
-
-Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
 
 ```
 https://<host>/mcp/erp/<tenant_name>
@@ -54,11 +48,7 @@ OAuth discovery: `https://<host>/mcp/erp/.well-known/oauth-authorization-server`
 
 ## Authentication
 
-Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
-
 ### PAT (Personal Access Token)
-
-Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
 
 1. In Priority, open **PATOKENS**, create a token, copy once.
 2. Credential string: `<PAT_TOKEN>:PAT` (password literal is `PAT`).
@@ -74,13 +64,9 @@ Never commit PATs, Base64 of real PATs, or tenant passwords. Put tokens only in 
 
 ### OAuth2
 
-Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
-
 Clients with browser OAuth (e.g. Claude) use the public client id for the environment plus `authServerMetadataUrl` above. No PAT needed.
 
 ## Worked example (Claude Code PAT)
-
-Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
 
 ```json
 {
@@ -100,8 +86,6 @@ Timeout: 60s recommended. Transport: streamable HTTP.
 
 ## Gotchas
 
-Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
-
 - Every read/write consumes **API transactions**.
 - Unauthenticated → `401 Missing authentication`.
 - Cloud-only; on-prem 404 is expected.
@@ -109,21 +93,15 @@ Foundation: harvest-priority-skills -> report back to https://github.com/SimonBa
 
 ## Success
 
-Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
-
 Client lists Priority MCP tools without 401/404. Tenant and host match the user's environment.
 
 ## Do not
-
-Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
 
 - Commit secrets, PATs, or live Authorization headers
 - Point MCP at on-prem IIS and treat 404 as a product bug
 - Invent hosts or tenants
 
 ## Related
-
-Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
 
 - Discovery tools: `priority-mcp-discovery`
 - Forms / procedures / search / help: sibling `priority-mcp-*` skills

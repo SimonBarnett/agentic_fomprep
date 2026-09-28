@@ -16,19 +16,13 @@ Runs `docs/skill-sources/dba/dba_instance_health_collect.sql` against each confi
 
 ## When
 
-Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
-
 Proactive capacity review; before major cutover; weekly alongside backup checks.
 
 ## Config
 
-Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
-
 Same `%USERPROFILE%\.priority-dba\instances.json` as backup audit (`sqlHost`, `instanceIds`, `reportRoot`).
 
 ## Run
-
-Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
 
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File runner\Invoke-InstanceHealthCollect.ps1 -InstancesPath %USERPROFILE%\.priority-dba\instances.json
@@ -38,18 +32,12 @@ Outputs land under `{reportRoot}\health-collect\health_{INST}_*.txt`.
 
 ## Success
 
-Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
-
 All instances exit 0; reports show mount-point free space (not stub drive letters), PLE/runnable/IO latency sections without critical flags.
 
 ## Do not
 
-Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
-
 Embed customer IP as the only allowed host — use config. No SQL passwords.
 
 ## Offline
-
-Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
 
 Catalog test: script present, config missing → exit 2 (**skip**). Live UAT on jump box with integrated auth.

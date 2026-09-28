@@ -14,13 +14,9 @@ Catalog leaflet only — execute where WCF is reachable (same pattern as formpre
 
 ## When
 
-Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
-
 Running **fast standard** UAT smokes (`priority-project-create-smoke`, `priority-day-works-uat`, `priority-ht-delete-smoke`) without headed video.
 
 ## Pattern (mirror formprep)
-
-Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
 
 1. CredMan for password — never log or commit secrets.
 2. Pin company **DNAME** from instance config (not UI title).
@@ -30,8 +26,6 @@ Foundation: harvest-priority-skills -> report back to https://github.com/SimonBa
 6. Prefer this path over headed Chrome when the same fields/actions can be asserted.
 
 ## Do not
-
-Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
 
 - Invent procedure ENAMEs (pins / Eshbel-supplied only)
 - Edit v1 `src\Prepare-NamedForm.ps1` for UAT

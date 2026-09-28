@@ -16,17 +16,11 @@ Direct Activations / form Actions are **not** supported on MCP — use the Prior
 
 ## When
 
-Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
-
 Fetching or creating/updating ERP records through Priority Cloud MCP (not local OData).
 
 ## Tools
 
-Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
-
 ### form_fetch
-
-Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
 
 | Param | Type | Required |
 |-------|------|----------|
@@ -45,8 +39,6 @@ Date filter values use Priority formats (e.g. Date8 `DD/MM/YY`), not ISO.
 
 ### form_update
 
-Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
-
 | Param | Type | Required |
 |-------|------|----------|
 | `company_name` | string | Yes |
@@ -63,8 +55,6 @@ HTML text forms: update `TEXT` with HTML as returned by fetch (`_is_html_form`).
 Partial success: parent may save while subforms fail — retry from the failed child using returned parent keys; do not recreate the parent.
 
 ## Worked example (fetch)
-
-Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
 
 ```json
 {
@@ -84,8 +74,6 @@ Foundation: harvest-priority-skills -> report back to https://github.com/SimonBa
 
 ## Worked example (create)
 
-Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
-
 ```json
 {
   "company_name": "test",
@@ -99,21 +87,15 @@ Foundation: harvest-priority-skills -> report back to https://github.com/SimonBa
 
 ## Gotchas
 
-Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
-
 - Hidden keys (e.g. `ORD` beside `ORDNAME`) are still required on update
 - API transaction cost on every call
 - Cloud-only
 
 ## Success
 
-Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
-
 Fetch returns expected rows; update/create returns success without missing-key errors.
 
 ## Do not
-
-Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
 
 - Invent mandatory field values the user did not supply
 - Omit Hidden keys on update

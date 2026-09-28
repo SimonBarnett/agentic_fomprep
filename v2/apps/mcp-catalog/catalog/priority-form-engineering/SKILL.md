@@ -16,13 +16,9 @@ Do **not** edit repo-root `src\Prepare-NamedForm.ps1`. Do **not** guess Prepare 
 
 ## When
 
-Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
-
 Changing CE custom forms, triggers, or shells on DEV.
 
 ## Named Form Prep (DEV)
-
-Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
 
 Entry: `src\Prepare-NamedForm.ps1` (repo path; operators may use mapped `M:\py\agentic_fomprep\...`). Web SDK EFORM -> FORMPREPDRCT2. Portable plugin: `priority-formprep` (`prepare_form`).
 
@@ -38,8 +34,6 @@ ENAME must match `^[A-Za-z][A-Za-z0-9_]*$`. One name per call. SDK "successfully
 
 ## Generator / nav gotchas
 
-Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
-
 - F6 on a menu opens Menu Generator -- highlight the form then F6 for Form Generator.
 - F11 on Form Name (top list) to find forms; Sub-level Forms F6 x2 down; never F6 empty Form Name.
 - #INCLUDE: F6 on the include line -> INCLUDE Line; F12 then F6 for body.
@@ -51,8 +45,6 @@ Foundation: harvest-priority-skills -> report back to https://github.com/SimonBa
 
 ## House type PRE-DELETE (2026-09-18)
 
-Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
-
 - `ZCLA_CHKPNT-DEL` expects **positive** `:ELEMENT`. PRE-DELETE must `:ELEMENT = - :ELEMENT` after selecting PROJACT<0 backups or the loop hangs.
 - Hang-without-1205 details live in **priority-recalc-concurrency** (ELEMENT sign, entity-only RECALC clear, dependent pre-purge).
 - Optional harden: clear ZCLA_RECALC for that HT only; pre-purge ZCLA_SMALLWORKSPLOT for those checkpoints.
@@ -62,16 +54,12 @@ UAT smoke of the delete is **priority-ht-delete-smoke** (TEST, company title fir
 
 ## Shells
 
-Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
-
 - Dedicated Version Revision shells. Never mix Day Works into upgrade 8338.
 - Install with zero TAKETRIG rows = silent miss -- verify INSTALLEDUPGTRIG / hashes.
 - Compile/install ENAMEs come from `v2/config/pin.json` only. Do not invent others. See **priority-shell-compile** and **priority-shell-install**.
 - Shell discipline (one workstream, TAKETRIG step shape, verify INSTALLEDUPGTRIG): **priority-version-revision-discipline, **priority-dictionary-sql****.
 
 ## Related programming skills
-
-Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
 
 Pointers only. Authority: `docs/skill-sources/programming/`.
 

@@ -15,13 +15,9 @@ Authoritative harvest: `docs/skill-sources/hours/priority-hours-less-than-8-repo
 
 # Priority hours — Less than 8 Rep Hours report
 
-Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
-
 **Purpose:** Find weekdays with under 8.0 booked report hours. Empty result means all days in range are full.
 
 ## Steps
-
-Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
 
 1. From Priority **My Shortcuts**, open **Less than 8 Rep Hours** (exact title may vary).
 2. Download as Spreadsheet (**No Template**).
@@ -29,8 +25,6 @@ Foundation: harvest-priority-skills -> report back to https://github.com/SimonBa
 4. Open Excel: short days list booked hours < 8.
 
 ## Success
-
-Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
 
 - After filling a month, the report should be **empty** for that employee’s weekdays.
 - Use as the post-entry verification check, not as the entry UI.

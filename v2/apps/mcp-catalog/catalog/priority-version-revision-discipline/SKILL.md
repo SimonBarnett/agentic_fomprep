@@ -16,8 +16,6 @@ Authority: `docs/skill-sources/programming/VERSION_REVISION.md`.
 
 ## Hard rules
 
-Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
-
 1. One dedicated shell per workstream; Prepare after meaningful batches; do not mix unrelated upgrades.
 2. Re-prepare after content change is normal.
 3. TAKETRIG steps: `HOWCREATED=M`, `AFTERPREP=Y`, `OPTFLAG` blank â€” else silent zero-row install.
@@ -26,13 +24,9 @@ Foundation: harvest-priority-skills -> report back to https://github.com/SimonBa
 
 ## Related
 
-Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
-
 - **priority-shell-compile**, **priority-shell-install**
 - **priority-form-engineering**
 
 ## Shell DBI new tables
-
-Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
 
 Author `NN.sh` with `DBI CREATE TABLE ... UNIQUE(...);` (see `DICTIONARY_SQL.md` / CE upgrades `8311.sh`). Re-Prepare after content change.

@@ -15,13 +15,9 @@ Standing process after non-trivial DBA work (cutover, audit remediation, Sunday 
 
 ## When
 
-Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
-
 Closing a DBA task that consumed material time or needs customer-visible billing/traceability.
 
 ## Do
-
-Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
 
 1. Summarize **what** ran (instances, read-only vs change, evidence paths under `reportRoot`).
 2. Record **human-equivalent hours** and WBS code (example format: `2.35` — use your org’s active WBS).
@@ -30,19 +26,13 @@ Foundation: harvest-priority-skills -> report back to https://github.com/SimonBa
 
 ## Do not
 
-Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
-
 - Teams Gergo (or other infra) **directly** for backup notices unless standing order explicitly changes.
 - Put SQL passwords or API keys in the handoff text.
 
 ## Success
 
-Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
-
 Haitch has hours, WBS, pass/fail facts, and links to evidence sufficient for Simon/customer follow-up.
 
 ## Related
-
-Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
 
 **priority-sunday-backup-check** weekly signal; **priority-backup-cutover** for phased work.

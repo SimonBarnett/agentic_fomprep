@@ -1,13 +1,12 @@
 ---
 name: harvest-priority-skills
 description: >
-  Promote repeatable Priority / formprep / hours / UAT / DBA / Priority MCP
+  Promote repeatable Priority-generic formprep / hours / UAT / Priority MCP
   playbooks into SimonBarnett/agentic_fomprep (catalog + docs/skill-sources +
-  optional .grok/skills). Use when you learn a new Priority procedure, or the
-  user says harvest skills, add it to the skills, skill harvest, harvest back
-  to the Priority repo, /harvest-priority-skills, CAST IRON harvest, honesty
-  box, or everyone harvest your skill. AUTOMATIC same-turn. Does not dispatch
-  product builds.
+  optional .grok/skills). Nothing that requires a Clarkson Evans Priority
+  installation. Use when you learn a new Priority procedure, or the user says
+  harvest skills, /harvest-priority-skills, CAST IRON harvest, honesty box.
+  AUTOMATIC same-turn. Does not dispatch product builds.
 ---
 
 # Harvest Priority skills (`agentic_fomprep`)
@@ -15,7 +14,7 @@ description: >
 Remote: `https://github.com/SimonBarnett/agentic_fomprep`.
 
 Foundation bargain (book-wide): see `harvest-agent-skills` (honesty box /
-Three Laws). This skill owns **Priority-domain** harvest paths in this repo.
+Three Laws). This skill owns **Priority-generic** harvest paths in this repo.
 
 ## CAST IRON (Simon 2026-09-22 / honesty-box 2026-09-28)
 
@@ -27,7 +26,9 @@ learned a repeatable Priority procedure or hit a wrong skill.
 
 | Playbook | Repo | Harvest skill |
 |----------|------|----------------|
-| Priority catalog, formprep, hours, UAT, OData, shell, DBA, Priority MCP | `SimonBarnett/agentic_fomprep` | `harvest-priority-skills` (this file) |
+| Priority-**generic** catalog, formprep, hours, UAT, OData, shell, Priority MCP (no CE install required) | `SimonBarnett/agentic_fomprep` | `harvest-priority-skills` (this file) |
+| Clarkson Evans Priority instance / hardware / DBA / CE customisations | `SimonBarnett/ce-priority` | `.grok/skills/harvest-agent-skills` |
+| CE Day Works **product** only | `SimonBarnett/ce-dayworks` | `.grok/skills/harvest-agent-skills` |
 | Fleet / build / MRB / Bob jobs | `SimonBarnett/agentic_build` | `harvest-agent-skills` |
 | IRC wire, talk seats, SEAL, moot, file, dumb, invite-airc, Ergo, Watch-Bobiverse, Halloy | `SimonBarnett/agentic_irc` | harvest into that repo's `.grok/skills/` |
 | Other skill products | that public repo | `.grok/skills/harvest-agent-skills/SKILL.md` |
@@ -63,8 +64,10 @@ lands the PR (same as DEV1 -> ionos path for issue #58).
   `Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.`
 - No secrets, passwords, or live OData bases hardcoded.
 - Do not invent ENAMEs or edit v1 Form Prep runners unless the FR says so.
-- Keep DBA handoff (`priority-hours-handoff-haitch`) distinct from timesheet
+- Keep hours handoff (`priority-hours-handoff-haitch`) distinct from timesheet
   skills (`priority-hours-*` entry/search/OData).
+- CE DBA / hardware / install scripts → `ce-priority` (`docs/dba/`), never
+  re-land under `docs/skill-sources/dba/` here (pointer README only).
 
 ## Do not
 
@@ -73,3 +76,4 @@ lands the PR (same as DEV1 -> ionos path for issue #58).
 - Invent skills from noisy chat without a procedure.
 - Claim ready for human UAT.
 - Route IRC playbooks into this repo - those go to `agentic_irc`.
+- Land content that **requires** a Clarkson Evans Priority installation.

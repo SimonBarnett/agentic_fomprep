@@ -14,33 +14,26 @@ Ionos 2026-09-19: Grok Bot workflow leaflets were not on this box. UAT skills we
 
 2026-09-24: full learned UAT procedure lives under `docs/skill-sources/uat/` (see that folder's README). Catalog `SKILL.md` files for `priority-uat-orchestrator`, `priority-project-create-smoke`, `priority-day-works-uat`, and `priority-ht-delete-smoke` are ported from those sources. CE hosts and companies are examples only.
 
-## CE Priority DBA harvest (Tedious 2026-09-19)
+## CE Priority DBA (relocated 2026-09-29)
 
-Source dump for FR `docs/feature-request-ce-priority-dba-skills-2026-09-19.md`.
-
-Canonical copies live under `docs/skill-sources/dba/` (from CE-PRIORITY-DEV1 `C:\Users\medatech.si\dba-reports\harvest-for-bob\`).
-
-See `MANIFEST.md` in that folder. Tedious owns UAT + hostile MRB after implement.
+CE-bound DBA / hardware / install pack moved to private
+[`SimonBarnett/ce-priority`](https://github.com/SimonBarnett/ce-priority)
+`docs/dba/`. See `docs/skill-sources/dba/README.md` (pointer only).
 
 ### Naming rule (Simon)
-Skills must be **Priority-generic** (config-driven instance). CE is an example deployment, not the skill identity.
+Skills in **this** repo must be **Priority-generic** (config-driven instance).
+CE hosts, disk letters, and CE-only scripts are **not** skill identity here —
+harvest those to `ce-priority`.
 
-### Catalog ids (DBA suite, issue #5)
+Portable adjacent skills that stay in the catalog (not CE DBA scripts):
 
-| Catalog folder | Harvest / runner |
-|----------------|------------------|
-| `priority-backup-standard` | `dba/BACKUP_STANDARD.md` |
-| `priority-backup-audit` | `Invoke-BackupAudit.ps1`, `Invoke-LiveAudit.ps1` |
-| `priority-backup-cutover` | procedure skill (no live auto-cutover) |
-| `priority-sunday-backup-check` | `sunday-ce-priority-backup-check.ROUTINE.md` |
-| `priority-instance-health-collect` | `dba_instance_health_collect.sql` |
-| `priority-post-move-health` | `Invoke-PostMoveHealth.ps1` |
-| `priority-disk-mount-layout-report` | collect + IT narrative |
+| Catalog folder | Notes |
+|----------------|-------|
 | `priority-ht-delete-deadlock-triage` | checklist; links `priority-ht-delete-smoke` |
 | `priority-form-prep-after-sql-change` | links `prepare-all-unprepared-priority-forms` |
-| `priority-hours-handoff-haitch` | process only |
+| `priority-hours-handoff-haitch` | process only (generic handoff) |
 
-Form-prep / UAT catalog skills remain under the same `v2/apps/mcp-catalog/catalog/` tree (project-create, day-works, HT smoke, formprep, shell, OData, orchestrator).
+Form-prep / UAT catalog skills remain under `v2/apps/mcp-catalog/catalog/`.
 
 ## Eshbel Priority programming harvest (2026-09-24)
 

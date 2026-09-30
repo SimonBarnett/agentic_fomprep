@@ -15,3 +15,7 @@
 - Relocated CE DBA pack to private `SimonBarnett/ce-priority` `docs/dba/`; `docs/skill-sources/dba/` is pointer-only.
 - Harvest domain table: CE instance/DBA/customisations -> ce-priority; Day Works product -> ce-dayworks.
 - Added Priority-generic `INDEXES_TYPE_A_IDENTITY.md` and `MSG154_OPTIMISTIC_LOCK.md` under programming/.
+
+## 2026-09-30 - empty named trigger stub
+
+Added docs/skill-sources/programming/EMPTY_NAMED_TRIGGER_STUB.md.

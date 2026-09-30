@@ -5,6 +5,7 @@ Authoritative procedure for catalog skills:
 | Source | Catalog folder |
 |--------|----------------|
 | `priority-uat-orchestrator.md` | `priority-uat-orchestrator` |
+| `priority-uat-wcf.md` | `priority-uat-wcf` |
 | `priority-project-create-smoke.md` | `priority-project-create-smoke` |
 | `priority-day-works-uat.md` | `priority-day-works-uat` |
 | `priority-ht-delete-smoke.md` | `priority-ht-delete-smoke` |

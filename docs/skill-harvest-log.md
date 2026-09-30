@@ -8,7 +8,7 @@
 
 - 2026-09-28 (DEV1): Tabula *Ignore Duplicate Values* + Unique Index/Origin. Harvested `IGNORE_DUP_KEY.md` + `FORMCLMNSA_JOINS.md`; updated `DICTIONARY_SQL.md`, `FORMPREP_SHADOW_TABLES.md`, catalog `priority-dictionary-sql` / `priority-formprep-shadow-tables`. Physical unique indexes need `IGNORE_DUP_KEY=ON` (company often reported as `system`); child joins need FORMCLMNSA `= :$$.COL`.
 
-- 2026-09-28 (DEV1): Form Prep `Variable with two different types : SORT` � `:VAR` type clash (`ZCLA_ELEDITSPLIT` `:SORT = ''` vs numeric `:SORT`). Harvested into `PROCEDURE_STYLE.md`, `FORMTRIG_VAR_TYPES.md`, catalog `priority-procedure-style`, `priority-formprep` (WCF warnings + formStart vs SQL gate), `priority-uat-wcf` (`startSubForm` when direct `formStart` says unprepared). Fix applied on DEV as `:DWFIXSORT`.
+- 2026-09-28 (DEV1): Form Prep `Variable with two different types : SORT` ï¿½ `:VAR` type clash (`ZCLA_ELEDITSPLIT` `:SORT = ''` vs numeric `:SORT`). Harvested into `PROCEDURE_STYLE.md`, `FORMTRIG_VAR_TYPES.md`, catalog `priority-procedure-style`, `priority-formprep` (WCF warnings + formStart vs SQL gate), `priority-uat-wcf` (`startSubForm` when direct `formStart` says unprepared). Fix applied on DEV as `:DWFIXSORT`.
 
 ## 2026-09-29 - ce-priority split + leave-line generics
 
@@ -19,3 +19,7 @@
 ## 2026-09-30 - empty named trigger stub
 
 Added docs/skill-sources/programming/EMPTY_NAMED_TRIGGER_STUB.md.
+
+## 2026-09-30 - WCF Projects hierarchy / retrieve window
+
+Expanded `priority-uat-wcf` skill-source + catalog (v1.1.0): parent `startSubForm` when `formStart` stays O11 after Form Prep; `DOCUMENTS_p` retrieve windows and sticky empty `DOCNO`/`DOC` filters; clearSearchFilter + reload before `setActiveRow`; plot vs element `PROJACT` keys; `Owner missing`; multi-project scan fallback; unique appname/devicename. Product runner stays in ce-dayworks.

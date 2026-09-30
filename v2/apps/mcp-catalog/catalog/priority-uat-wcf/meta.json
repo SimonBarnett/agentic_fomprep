@@ -1,1 +1,1 @@
-{"name":"priority-uat-wcf","title":"Priority UAT WCF walker","description":"Shared WCF/web-sdk notes for fast UAT smokes.","version":"1.0.0"}
+{"name":"priority-uat-wcf","title":"Priority UAT WCF walker","description":"Shared WCF/web-sdk notes: formStart vs startSubForm, retrieve windows, sticky filters, plot vs element keys, Owner missing.","version":"1.1.0"}

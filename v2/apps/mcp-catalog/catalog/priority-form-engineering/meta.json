@@ -1,6 +1,6 @@
 {
   "name": "priority-form-engineering",
   "title": "Priority form engineering",
-  "description": "Named Form Prep success gate, Form Generator nav, house-type PRE-DELETE, shell install verify. Does not fork v1 Prepare-NamedForm.ps1.",
-  "version": "1.0.0"
+  "description": "Named Form Prep success gate, Form Generator nav, house-type PRE-DELETE, shell install verify, msg 154 leave-line pointers. Does not fork v1 Prepare-NamedForm.ps1.",
+  "version": "1.1.0"
 }

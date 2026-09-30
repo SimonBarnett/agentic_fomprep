@@ -59,6 +59,18 @@ UAT smoke of the delete is **priority-ht-delete-smoke** (TEST, company title fir
 - Compile/install ENAMEs come from `v2/config/pin.json` only. Do not invent others. See **priority-shell-compile** and **priority-shell-install**.
 - Shell discipline (one workstream, TAKETRIG step shape, verify INSTALLEDUPGTRIG): **priority-version-revision-discipline, **priority-dictionary-sql****.
 
+## Leave-line / msg 154
+
+Priority msg 154 (*original form record has been modified*) is optimistic
+lock on `:$1.*`. Two generic causes:
+
+1. Mid-edit DB write (e.g. file attach) without PRE-UPDATE `:$1` resync.
+2. Nullable origin columns on the form with NULL in existing rows (`NULL = NULL`
+   matches 0 rows). DEFAULT + backfill; users must re-retrieve.
+
+Authority: `docs/skill-sources/programming/MSG154_OPTIMISTIC_LOCK.md`.
+Identity UPDATE 8102: `INDEXES_TYPE_A_IDENTITY.md`.
+
 ## Related programming skills
 
 Pointers only. Authority: `docs/skill-sources/programming/`.
@@ -67,4 +79,5 @@ Pointers only. Authority: `docs/skill-sources/programming/`.
 - **priority-sql-udate-user**
 - **priority-formprep-shadow-tables**
 - **priority-recalc-concurrency**
-- **priority-version-revision-discipline, **priority-dictionary-sql****
+- **priority-version-revision-discipline**
+- **priority-dictionary-sql**

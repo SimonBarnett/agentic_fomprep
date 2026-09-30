@@ -36,6 +36,16 @@ Overwriting a shared POST-FORM (one TRIG id used by many forms) silently changes
 - Customer objects use a 4-letter prefix.
 - Copy vendor objects; do not edit vendor in place.
 
+## FORMTRIGTEXT.TEXT line length (CAST IRON)
+
+Each `FORMTRIGTEXT.TEXT` row is short (observed **max length 68** on current
+estates). Long `SELECT … INTO :$1.…` lines truncate mid-statement and leave
+SELECT/INTO column lists mismatched — Form Prep may still succeed while
+runtime is wrong.
+
+Split across multiple TEXTORD lines. Count characters before INSERT/UPDATE.
+See also msg 154 resync hygiene in `MSG154_OPTIMISTIC_LOCK.md`.
+
 ## :VAR type consistency (CAST IRON)
 
 Priority Form Prep fails with:

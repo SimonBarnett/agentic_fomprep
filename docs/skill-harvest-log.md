@@ -27,3 +27,7 @@ Expanded `priority-uat-wcf` skill-source + catalog (v1.1.0): parent `startSubFor
 ## 2026-09-30 - Version Revision TAKE steps (Eshbel shell files)
 
 Expanded `VERSION_REVISION.md` + catalog `priority-version-revision-discipline` v1.1.0 from Eshbel Installing Customizations: Revision Steps (`UPGNOTES`) must be flagged/added before Prepare; SQL `FORMTRIGTEXT` patches do not auto-create TAKE rows; empty steps = non-shippable shell; TAKETRIG shape; headless Prepare may still need a human click. CE proof: shell 8366 Price Log Fix.
+
+## 2026-09-30 - msg 154 nullable form columns + FORMTRIGTEXT 68
+
+Expanded `MSG154_OPTIMISTIC_LOCK.md`: Cause B = nullable origin columns painted on the form with NULL in existing rows (`NULL = NULL` → 0-row UPDATE); DEFAULT + backfill; resync hygiene (do not resync the column the user is editing); `FORMTRIGTEXT.TEXT` max ~68. Updated `PROCEDURE_STYLE.md`, catalog `priority-procedure-style` / `priority-form-engineering` (meta 1.1.0). Version Revision TAKE-steps harvest: merged PR #88.

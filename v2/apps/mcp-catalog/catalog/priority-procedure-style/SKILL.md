@@ -26,9 +26,11 @@ Authoring or heavily editing form triggers, SQLI procedures, or #INCLUDE bodies.
 4. Prefer **dedicated** TRIG ids; do not overwrite shared POST-FORM used by siblings.
 5. Customer prefix; copy vendor — do not edit vendor in place.
 6. **One type per `:VAR` name.** Form Prep error `Variable with two different types : X` means `:X` was used as CHAR and INT/REAL in the same compile unit. Rename (e.g. CHAR `:DWFIXSORT` vs numeric `:SORT`). See `PROCEDURE_STYLE.md`.
+7. **`FORMTRIGTEXT.TEXT` max ~68 chars per line.** Split long SQL across TEXTORD rows; truncated INTO lists break runtime after a clean Form Prep.
 
 ## Related
 
 - Form Prep / generator nav: **priority-form-engineering**
+- Msg 154 / `:$1` optimistic lock: `docs/skill-sources/programming/MSG154_OPTIMISTIC_LOCK.md`
 - UDATE mint: **priority-sql-udate-user**
 - Form Prep WCF: **priority-formprep**

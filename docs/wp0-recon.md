@@ -138,9 +138,9 @@ Pin:
 
 ## DbiMarker
 
-`DbiMarker` is left as the empty string.
+`DbiMarker` = `DBI` (observed 2026-10-01 on **CE-PRIORITY-DEV1**).
 
-Not observed in the first shell sample pass. **Do not invent** a token. The parser default (`DBI` as a public Version Revision modification code) is not a dictionary pin and must not be copied into this field until a real on-disk `.sh` on this instance shows a marker.
+Live on-disk shells under `C:\Priority\system\upgrades` show the heredoc marker `DBI <<\EOF` (examples: `8369.sh`, `8341.sh`, `1000.sh`). Install refuse path also reported `codes=["DBI"]` / `dbi=true` / `reason=dbi_refused` for `8369.sh` without `-AllowDbi`. Evidence: `v2/tests/wp0-live-2026-10-01/` and `docs/wp0-live-proof-ce-priority-dev1-2026-10-01.md`.
 
 ## Pins written (CE / Medatech path — confirmed)
 
@@ -161,7 +161,7 @@ Titles are from the dictionary rows above. `PinComplete=true` after Simon confir
 | InstallLogTable | `dbo.INSTALLEDUPGRADES` |
 | InstallLogRevisionCol | `UPG` |
 | InstallLogDateCol | `STARTDATE` |
-| DbiMarker | `""` (unknown) |
+| DbiMarker | `DBI` (observed on DEV1 `.sh` files 2026-10-01) |
 | InstallErrorForm | `EXECUPGRERR` |
 | ExecTitleColumn | `TITLE` |
 | FormLimitedTable | `dbo.FORMLIMITED` (table name only; executable FK column not dictionary-pinned) |

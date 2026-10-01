@@ -13,7 +13,7 @@
   "InstallLogTable": "dbo.INSTALLEDUPGRADES",
   "InstallLogRevisionCol": "UPG",
   "InstallLogDateCol": "STARTDATE",
-  "DbiMarker": "",
+  "DbiMarker": "DBI",
   "InstallErrorForm": "EXECUPGRERR",
   "ExecTitleColumn": "TITLE",
   "ExecTable": "dbo.T$EXEC",

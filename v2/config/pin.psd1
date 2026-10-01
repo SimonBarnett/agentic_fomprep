@@ -3,7 +3,10 @@
 # Simon confirmed Medatech wrappers (ZEMG_TAKEUPGRADE / ZEMG_EXECUPGRADES)
 # on 2026-09-19 Europe/London. PinComplete is true. Stock TAKEUPGRADE /
 # EXECUPGRADES remain dictionary siblings, not the pinned path.
-# DbiMarker left empty (not observed; do not invent).
+# DbiMarker observed on CE-PRIORITY-DEV1 live shells (2026-10-01): DBI <<\EOF
+# in C:\Priority\system\upgrades\8369.sh / 8341.sh / 1000.sh. WcfFileStepWorks
+# stays null — install walk saw Parameter Input with empty EditField[] (no
+# file/path field proven); prepare walk ended with queue-empty messages.
 @{
     PinComplete           = $true
     PrepareUpgradeEname   = 'ZEMG_TAKEUPGRADE'
@@ -19,7 +22,7 @@
     InstallLogTable       = 'dbo.INSTALLEDUPGRADES'
     InstallLogRevisionCol = 'UPG'
     InstallLogDateCol     = 'STARTDATE'
-    DbiMarker             = ''
+    DbiMarker             = 'DBI'
     InstallErrorForm      = 'EXECUPGRERR'
     ExecTitleColumn       = 'TITLE'
     # SQL dictionary pins (CE DEV system DB; see docs/wp0-recon.md). v1 config/dev.psd1 matches Exec/Lock.

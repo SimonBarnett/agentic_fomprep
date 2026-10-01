@@ -1,0 +1,39 @@
+{
+  "ok": true,
+  "ended": true,
+  "reason": "walked",
+  "lastType": "end",
+  "fileStepSeen": false,
+  "fileStepFilled": false,
+  "revisionStepFilled": false,
+  "steps": [
+    {
+      "type": "inputFields",
+      "input": {
+        "title": "Parameter Input",
+        "EditField": []
+      },
+      "proc": {
+        "name": "ZEMG_EXECUPGRADES",
+        "title": "Medatech - Install Upgrade"
+      }
+    },
+    {
+      "type": "end",
+      "proc": {
+        "name": "ZEMG_EXECUPGRADES",
+        "title": "Medatech - Install Upgrade"
+      }
+    }
+  ],
+  "errors": [
+    {
+      "source": "sdk",
+      "severity": "Info",
+      "text": "EXECUPGRERR open failed: No such form exists."
+    }
+  ],
+  "ename": "ZEMG_EXECUPGRADES",
+  "type": "P",
+  "role": "install"
+}

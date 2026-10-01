@@ -1,0 +1,207 @@
+{
+    "instanceId":  "ce-priority-dev",
+    "when":  "2026-10-01T13:11:05.3982951Z",
+    "candidates":  [
+                       {
+                           "ename":  "REVISIONS",
+                           "title":  "BOM Revisions"
+                       },
+                       {
+                           "ename":  "UPGTYPES",
+                           "title":  "Revision Types"
+                       },
+                       {
+                           "ename":  "UPGNOTESA",
+                           "title":  "Revision Steps"
+                       },
+                       {
+                           "ename":  "UPGRADES",
+                           "title":  "Version Revisions"
+                       },
+                       {
+                           "ename":  "UPGNOTESTEXT",
+                           "title":  "Revision Steps - Remarks"
+                       },
+                       {
+                           "ename":  "UPGTEXT",
+                           "title":  "Revision Summary"
+                       },
+                       {
+                           "ename":  "UPGFILES",
+                           "title":  "Files for Version Revision"
+                       },
+                       {
+                           "ename":  "UPGREP",
+                           "title":  "Reports on Revisions"
+                       },
+                       {
+                           "ename":  "UPGNOTES",
+                           "title":  "Revision Steps"
+                       },
+                       {
+                           "ename":  "UPGNOTESTEXTA",
+                           "title":  "Revision Steps - Remarks"
+                       },
+                       {
+                           "ename":  "VERUPGRADES",
+                           "title":  "Version Revisions"
+                       },
+                       {
+                           "ename":  "TAKEUPGRADE",
+                           "title":  "Prepare the Revision"
+                       },
+                       {
+                           "ename":  "UPGDOCT",
+                           "title":  "Revision Description"
+                       },
+                       {
+                           "ename":  "CLEANUPGRADES",
+                           "title":  "Clear Revisions"
+                       },
+                       {
+                           "ename":  "UPGRADES",
+                           "title":  "Revisions"
+                       },
+                       {
+                           "ename":  "UPGTEXT",
+                           "title":  "Revision Summary"
+                       },
+                       {
+                           "ename":  "UPGRADES",
+                           "title":  "Revisions"
+                       },
+                       {
+                           "ename":  "UPGNOTESTEXT",
+                           "title":  "Details of the Revision"
+                       },
+                       {
+                           "ename":  "FNCTRANS_CHANGES",
+                           "title":  "Entry Revisions"
+                       },
+                       {
+                           "ename":  "FNCITEMS_CHANGES",
+                           "title":  "Itemised Revisions"
+                       },
+                       {
+                           "ename":  "FNCTRANSTEXT_CHANGES",
+                           "title":  "Entry Revisions - Remarks"
+                       },
+                       {
+                           "ename":  "FNC_CHANGE_LOG",
+                           "title":  "Revision Log"
+                       },
+                       {
+                           "ename":  "PAYMENT_CHANGES",
+                           "title":  "Revision of Cheques"
+                       },
+                       {
+                           "ename":  "PAYMENT2_CHANGES",
+                           "title":  "Revision of Credit Card Slips"
+                       },
+                       {
+                           "ename":  "UPGRADES",
+                           "title":  "Revision Messages"
+                       },
+                       {
+                           "ename":  "HELPNOTES",
+                           "title":  "Help Text Revisions"
+                       },
+                       {
+                           "ename":  "PORDERS_CHANGES",
+                           "title":  "Revisions for Authorised Orders"
+                       },
+                       {
+                           "ename":  "EXECUPGRADES",
+                           "title":  "Install Upgrade"
+                       },
+                       {
+                           "ename":  "CPROF_CHANGES",
+                           "title":  "Revisions for Final Price Quotes"
+                       },
+                       {
+                           "ename":  "REVISIONSINGLE",
+                           "title":  "BOM Revisions"
+                       },
+                       {
+                           "ename":  "REVISIONUSERLIST",
+                           "title":  "Revision Authorisers"
+                       },
+                       {
+                           "ename":  "REVISIONUSER",
+                           "title":  "Revision Authorisation"
+                       },
+                       {
+                           "ename":  "UPGDOCT",
+                           "title":  "Revision Description"
+                       },
+                       {
+                           "ename":  "REVISIONS",
+                           "title":  "Revisions"
+                       },
+                       {
+                           "ename":  "CIVDETAILS",
+                           "title":  "Invoice Revisions"
+                       },
+                       {
+                           "ename":  "TIVDETAILS",
+                           "title":  "Revision of Receipt Details"
+                       },
+                       {
+                           "ename":  "SUBVERSIONS",
+                           "title":  "Partial Upgrades"
+                       },
+                       {
+                           "ename":  "FOBPROF_CHANGES",
+                           "title":  "Revisions for Final Comm. Quotes"
+                       },
+                       {
+                           "ename":  "CHNGDOCUMENTS_D",
+                           "title":  "Revision of Final Shipping Doc."
+                       },
+                       {
+                           "ename":  "CHNGTRANSORDER_D",
+                           "title":  "Revision of Details"
+                       },
+                       {
+                           "ename":  "CHNGDOCUMENTS_N",
+                           "title":  "Revision of Final Return Doc."
+                       },
+                       {
+                           "ename":  "EXECUPGRERR",
+                           "title":  "Install Upgrade - Errors"
+                       },
+                       {
+                           "ename":  "DOCQ_CHANGES",
+                           "title":  "Revision of Closed Service Calls"
+                       },
+                       {
+                           "ename":  "FNCITEMS_CHANGES_ONE",
+                           "title":  "Entry Item Revisions"
+                       },
+                       {
+                           "ename":  "FNCTRANS_CHANGES",
+                           "title":  "Entry Revisions"
+                       },
+                       {
+                           "ename":  "PARTREV",
+                           "title":  "Part Revisions"
+                       },
+                       {
+                           "ename":  "PARTREVSINGLE",
+                           "title":  "Part Revisions"
+                       },
+                       {
+                           "ename":  "PARTREVUSER",
+                           "title":  "Revision Authorisation"
+                       },
+                       {
+                           "ename":  "ECOPARTREV",
+                           "title":  "Related Part Revisions"
+                       },
+                       {
+                           "ename":  "ECOREVISIONS",
+                           "title":  "Related BOM Revisions"
+                       }
+                   ],
+    "note":  "Does not overwrite docs/wp0-recon.md (human pin recon)."
+}

@@ -194,7 +194,10 @@ $result.path = $out.path
 $result.bytes = $bytes
 
 $hasBlocker = @($result.errors | Where-Object { $_.severity -eq 'Blocker' }).Count -gt 0
-if ($walk.ended -and -not $hasBlocker -and $item -and $bytes -gt 0) {
+# Require revision step fill so a pre-existing NN.sh cannot fake "compiled"
+# when WCF only printed queue-empty messages (live proof 2026-10-01).
+$revFilled = [bool]$walk.revisionStepFilled
+if ($walk.ended -and -not $hasBlocker -and $item -and $bytes -gt 0 -and $revFilled) {
     $result.ok = $true
     $result.reason = 'compiled'
     $result.errors = @($result.errors | Where-Object { $_.source -ne 'sdk' -or $_.severity -eq 'Blocker' })
@@ -204,6 +207,12 @@ if ($walk.ended -and -not $hasBlocker -and $item -and $bytes -gt 0) {
 if ($walk.ended -and (-not $item -or $bytes -lt 1)) {
     $result.reason = 'shell_not_created'
     Add-ShellError -Result $result -Source 'gate' -Severity 'Blocker' -Text ('procedure ended but shell missing or empty: ' + $out.path)
+    Emit-Compile $result 3 $pick
+}
+
+if ($walk.ended -and $item -and $bytes -gt 0 -and -not $revFilled) {
+    $result.reason = 'proc_failed'
+    Add-ShellError -Result $result -Source 'gate' -Severity 'Blocker' -Text 'compile WCF ended without filling revision step; existing shell not treated as compiled'
     Emit-Compile $result 3 $pick
 }
 

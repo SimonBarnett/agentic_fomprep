@@ -1,0 +1,53 @@
+{
+  "ok": true,
+  "ended": true,
+  "reason": "walked",
+  "lastType": "end",
+  "fileStepSeen": false,
+  "fileStepFilled": false,
+  "revisionStepFilled": false,
+  "steps": [
+    {
+      "type": "message",
+      "message": "No upgrades are available for preparation.",
+      "messagetype": "information",
+      "proc": {
+        "name": "ZEMG_TAKEUPGRADE",
+        "title": "Medatech - Prepare the Revision"
+      },
+      "hyperlinks": null
+    },
+    {
+      "type": "message",
+      "message": "Revision does not exist!",
+      "messagetype": "information",
+      "proc": {
+        "name": "ZEMG_TAKEUPGRADE",
+        "title": "Medatech - Prepare the Revision"
+      },
+      "hyperlinks": null
+    },
+    {
+      "type": "end",
+      "proc": {
+        "name": "ZEMG_TAKEUPGRADE",
+        "title": "Medatech - Prepare the Revision"
+      }
+    }
+  ],
+  "errors": [
+    {
+      "source": "sdk",
+      "severity": "Info",
+      "text": "No upgrades are available for preparation."
+    },
+    {
+      "source": "sdk",
+      "severity": "Info",
+      "text": "Revision does not exist!"
+    }
+  ],
+  "ename": "ZEMG_TAKEUPGRADE",
+  "type": "P",
+  "role": "compile"
+}

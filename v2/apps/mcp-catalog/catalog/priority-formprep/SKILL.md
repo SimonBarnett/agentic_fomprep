@@ -63,6 +63,10 @@ On **fail**, `errors[]` always includes `source=FORMPREPERRS` (rows `TYPE: MESSA
 
 Proc default `FORMPREPDRCT2` (Reprepare Form). Do not switch to `FORMPREPDRCT` unless the user pinned it; that proc can claim success without moving LASTPREPDATE.
 
+## Procedures / reports (TYPE=P / R)
+
+Named Form Prep does **not** prepare procedures. `EFORM` search returns form-not-found for `TYPE=P` (e.g. `ZCLA_BUILD`). Use **priority-procedure-prep** (`EXEC` → `REPPREPDIRECT2`, runner `src\Prepare-NamedProcedure.ps1`). Gate on `UPD=N` and `system\prep\d{T$EXEC}.prp` mtime — `LASTPREPDATE` may stay 0.
+
 ## WCF compile warnings (2026-09-28)
 
 SDK step `messagetype=error` with text:

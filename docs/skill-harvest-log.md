@@ -31,3 +31,11 @@ Expanded `VERSION_REVISION.md` + catalog `priority-version-revision-discipline` 
 ## 2026-09-30 - msg 154 nullable form columns + FORMTRIGTEXT 68
 
 Expanded `MSG154_OPTIMISTIC_LOCK.md`: Cause B = nullable origin columns painted on the form with NULL in existing rows (`NULL = NULL` → 0-row UPDATE); DEFAULT + backfill; resync hygiene (do not resync the column the user is editing); `FORMTRIGTEXT.TEXT` max ~68. Updated `PROCEDURE_STYLE.md`, catalog `priority-procedure-style` / `priority-form-engineering` (meta 1.1.0). Version Revision TAKE-steps harvest: merged PR #88.
+
+## 2026-10-01 - Prepare procedure (REPPREPDIRECT2)
+
+- New skill-source `docs/skill-sources/programming/PREPARE_PROCEDURE.md`.
+- Catalog `priority-procedure-prep` (meta 1.0.0) + runners `src/Prepare-NamedProcedure.ps1`, `src/sdk/run-repprep-via-exec.mjs`.
+- Path: `EXEC` → `activateStart(REPPREPDIRECT2)`. Bare `procStart` cannot fill FILE `PAR`.
+- Success: `EXECPREPLOCK.UPD=N` + `system/prep/d{T$EXEC}.prp` mtime advanced (`LASTPREPDATE` may stay 0).
+- Cross-link from `priority-formprep` (TYPE=P is not EFORM).

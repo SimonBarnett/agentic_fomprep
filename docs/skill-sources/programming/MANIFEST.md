@@ -20,3 +20,4 @@ FR: `docs/feature-request-eshbel-priority-programming-harvest-2026-09-24.md`
 | MSG154_OPTIMISTIC_LOCK.md | priority-form-engineering / procedure-style | msg 154: mid-edit :$1 race; nullable form cols; PRE-UPDATE resync hygiene; FORMTRIGTEXT 68-char lines |
 
 | EMPTY_NAMED_TRIGGER_STUB.md | Empty FORMTRIG named stub (0 FORMTRIGTEXT); restore from good instance |
+| PREPARE_PROCEDURE.md | priority-procedure-prep | TYPE=P/R via EXEC + REPPREPDIRECT2; gate UPD=N + d{T$EXEC}.prp mtime |

@@ -53,6 +53,7 @@ See `MANIFEST.md` in that folder. Eshbel owns hostile MRB after implement.
 | `priority-recalc-concurrency` | RECALC_CONCURRENCY.md |
 | `priority-version-revision-discipline` | VERSION_REVISION.md |
 | `priority-dictionary-sql` | `DICTIONARY_SQL.md` |
+| `priority-procedure-prep` | `PREPARE_PROCEDURE.md` (TYPE=P/R; EXEC + REPPREPDIRECT2) |
 
 Also expand existing: `priority-form-engineering`, `priority-odata-dev` (`T$EXEC` key), `priority-ht-delete-deadlock-triage` (rename ce-* smoke refs).
 

@@ -23,3 +23,7 @@ Added docs/skill-sources/programming/EMPTY_NAMED_TRIGGER_STUB.md.
 ## 2026-09-30 - WCF Projects hierarchy / retrieve window
 
 Expanded `priority-uat-wcf` skill-source + catalog (v1.1.0): parent `startSubForm` when `formStart` stays O11 after Form Prep; `DOCUMENTS_p` retrieve windows and sticky empty `DOCNO`/`DOC` filters; clearSearchFilter + reload before `setActiveRow`; plot vs element `PROJACT` keys; `Owner missing`; multi-project scan fallback; unique appname/devicename. Product runner stays in ce-dayworks.
+
+## 2026-09-30 - Version Revision TAKE steps (Eshbel shell files)
+
+Expanded `VERSION_REVISION.md` + catalog `priority-version-revision-discipline` v1.1.0 from Eshbel Installing Customizations: Revision Steps (`UPGNOTES`) must be flagged/added before Prepare; SQL `FORMTRIGTEXT` patches do not auto-create TAKE rows; empty steps = non-shippable shell; TAKETRIG shape; headless Prepare may still need a human click. CE proof: shell 8366 Price Log Fix.

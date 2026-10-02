@@ -39,3 +39,13 @@ Expanded `MSG154_OPTIMISTIC_LOCK.md`: Cause B = nullable origin columns painted 
 - Path: `EXEC` → `activateStart(REPPREPDIRECT2)`. Bare `procStart` cannot fill FILE `PAR`.
 - Success: `EXECPREPLOCK.UPD=N` + `system/prep/d{T$EXEC}.prp` mtime advanced (`LASTPREPDATE` may stay 0).
 - Cross-link from `priority-formprep` (TYPE=P is not EFORM).
+
+## 2026-10-02 - UAT WCF startSubForm parent confirm + name filters
+
+Expanded `priority-uat-wcf` (skill-source + catalog meta **1.2.0**) from CE Day Works WP1 WCF demo:
+
+- Confirm warning/info/error on the **parent** during `startSubForm` when the child handle is still null.
+- Prefer `PARTNAME` (string) filters; numeric `PART` filters often return Invalid filter.
+- Sibling sub-forms under one parent: open hard path before revise-text; soft-skip text locks.
+- WCF `getRows` may be empty after a successful open - SQL remains data authority.
+- ASCII-only punctuation in PowerShell 5.1 runner strings without UTF-8 BOM.

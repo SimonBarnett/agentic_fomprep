@@ -66,6 +66,39 @@ On project trees that nest element activities under plots:
 
 Opening a child with `startSubForm` while the parent has **no active row** (or zero rows) returns `Owner missing.` Activate a parent row that actually has children before probing required levels.
 
+### Warning / info during `startSubForm` (parent confirm)
+
+Priority can fire `warning` / `information` / `error` callbacks **before** the child form reference is assigned. Confirm on the **parent** form when the child handle is still null:
+
+```js
+function handler(ref, parent) {
+  return (sr) => {
+    const form = ref?.f || parent || null;
+    if (sr?.type === 'warning' && form?.warningConfirm) form.warningConfirm(1);
+    if (sr?.type === 'information' && form?.infoMsgConfirm) form.infoMsgConfirm();
+    if (sr?.type === 'error' && form?.errorConfirm) form.errorConfirm();
+  };
+}
+```
+
+Confirming only on `ref.f` hangs the walk when the warning arrives mid-`startSubForm`.
+
+### Name filters vs numeric id filters
+
+On Part Catalogue / Parts (and similar stock parents):
+
+- Prefer **string name** filters (`PARTNAME=…`). They usually work after the form is ready.
+- Numeric id filters (`PART=554`) often return **Invalid filter**.
+- A blank `getRows` **before** any filter can return zero rows even when data exists — apply the filter (or scan after a proper retrieve), then activate.
+
+### Sibling sub-forms under one parent
+
+Some History / text forms are **siblings** under the same parent (both open with `startSubForm` from PART / LOGPART), not nested parent→child. Close or skip one before opening the other when both hang off the same parent. Opening a revise-text HTML form first can lock the session and block History; open the hard-path sibling first, treat the text editor as soft.
+
+### `getRows` empty after a successful open
+
+WCF `getRows` on a just-opened History / revision child can return **0** even when SQL has rows. For smoke demos whose hard gate is “form opened”, treat open success as PASS and keep SQL / OData as the data authority.
+
 ### Multi-parent scan fallback
 
 When the preferred project is missing from the retrieve window, scan other retrieved projects: open Plots, probe the required child for `rowCount > 0`, then continue. Record which `DOCNO` / plot was used.
@@ -80,6 +113,10 @@ Product runners decide which children are exit-0 required. Shared practice:
 ## Evidence
 
 Write step dumps (`login`, open attempts, per-level probe) under a run-specific out dir. Keep passwords out of dumps.
+
+## PowerShell 5.1 runners (ASCII)
+
+Customer-facing `.ps1` wrappers that print banners must use **ASCII-only** punctuation in string literals (`--`, `->`, `...`) unless the file is saved UTF-8 with BOM. Em-dashes and arrows corrupt under the default Windows PowerShell 5.1 code page and break parsing.
 
 ## Do not
 

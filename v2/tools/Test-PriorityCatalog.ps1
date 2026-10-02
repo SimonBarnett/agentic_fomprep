@@ -659,6 +659,19 @@ Add-Gate 'CAT-T53' $wcfBodyOk $(if ($wcfBodyOk) { 'uat-wcf skill-source + catalo
 $wcfMirrorOk = (Test-Path -LiteralPath $wcfGrokPath) -and ((Get-FileHash -LiteralPath $wcfGrokPath -Algorithm SHA256).Hash -eq (Get-FileHash -LiteralPath $wcfSkillPath -Algorithm SHA256).Hash)
 Add-Gate 'CAT-T54' $wcfMirrorOk $(if ($wcfMirrorOk) { '.grok/skills/priority-uat-wcf mirrors catalog SKILL.md' } else { 'grok mirror missing or hash mismatch' })
 
+# FR #101: root VISION.md for MRB vision-first reviews
+$visionPath = Join-Path $repo 'VISION.md'
+$visionOk = $false
+$visionWhy = 'VISION.md missing'
+if (Test-Path -LiteralPath $visionPath) {
+    $visionText = Get-Content -LiteralPath $visionPath -Raw -Encoding UTF8
+    $vb = [IO.File]::ReadAllBytes($visionPath)
+    $visionBom = ($vb.Length -ge 3 -and $vb[0] -eq 0xEF -and $vb[1] -eq 0xBB -and $vb[2] -eq 0xBF)
+    $visionOk = (-not $visionBom) -and ($visionText -match 'UPD') -and ($visionText -match 'LASTPREPDATE') -and ($visionText -match 'DEV') -and ($visionText -match 'catalog')
+    $visionWhy = if ($visionOk) { 'root VISION.md present (Form Prep success + DEV + catalog)' } elseif ($visionBom) { 'VISION.md has UTF-8 BOM' } else { 'VISION.md missing required phrases' }
+}
+Add-Gate 'CAT-T55' $visionOk $visionWhy
+
 if ($failed -gt 0) {
     Write-Host "Test-PriorityCatalog FAIL ($failed)"
     exit 1

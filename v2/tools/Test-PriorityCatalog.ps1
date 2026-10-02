@@ -94,7 +94,7 @@ foreach ($n in $expected) {
 }
 Add-Gate 'CAT-T1' ($missing.Count -eq 0) $(if ($missing.Count -eq 0) { 'catalog meta.json + SKILL.md for A-D + programming' } else { $missing -join '; ' })
 
-# FR #51: Priority Cloud MCP skills â€” frontmatter + cloud-only + no secret assignments
+# FR #51: Priority Cloud MCP skills - frontmatter + cloud-only + no secret assignments
 $mcpIds = @(
     'priority-mcp-setup',
     'priority-mcp-discovery',
@@ -130,7 +130,7 @@ Get-ChildItem -LiteralPath $catalog -Directory -ErrorAction SilentlyContinue | W
 }
 Add-Gate 'CAT-T50' ($foundationMissing.Count -eq 0) $(if ($foundationMissing.Count -eq 0) { 'all priority-* leaflets have exactly one Foundation harvest line' } else { $foundationMissing -join '; ' })
 
-# FR #4: Priority-generic catalog Ã¢â‚¬â€ no ce-priority-* skill folders / skill ids.
+# FR #4: Priority-generic catalog - no ce-priority-* skill folders / skill ids.
 $ceDirs = @(Get-ChildItem -LiteralPath $catalog -Directory -ErrorAction SilentlyContinue |
         Where-Object { $_.Name -like 'ce-priority-*' } |
         ForEach-Object { $_.Name })
@@ -644,7 +644,7 @@ Get-ChildItem -LiteralPath $catalog -Directory -ErrorAction SilentlyContinue | F
 }
 Add-Gate 'CAT-T51' ($metaBomHits.Count -eq 0) $(if ($metaBomHits.Count -eq 0) { 'all catalog meta.json UTF-8 without BOM' } else { 'BOM: ' + ($metaBomHits -join ', ') })
 
-# MRB #99: priority-uat-wcf 1.2.0 harvest — parent warningConfirm + PARTNAME filters
+# MRB #99: priority-uat-wcf 1.2.0 harvest - parent warningConfirm + PARTNAME filters
 $wcfMetaPath = Join-Path $catalog 'priority-uat-wcf\meta.json'
 $wcfSkillPath = Join-Path $catalog 'priority-uat-wcf\SKILL.md'
 $wcfSrcPath = Join-Path $repo 'docs\skill-sources\uat\priority-uat-wcf.md'
@@ -661,7 +661,7 @@ Add-Gate 'CAT-T54' $wcfMirrorOk $(if ($wcfMirrorOk) { '.grok/skills/priority-uat
 
 # FR #101 / MRB #102: root VISION.md for MRB vision-first reviews
 # Lock the FR fix bullets: Priority-generic mission, UPD+LASTPREPDATE success gate,
-# DEV-only bounds, honesty-box harvest — plus no UTF-8 BOM.
+# DEV-only bounds, honesty-box harvest - plus no UTF-8 BOM.
 $visionPath = Join-Path $repo 'VISION.md'
 $visionOk = $false
 $visionWhy = 'VISION.md missing'
@@ -690,6 +690,24 @@ Add-Gate 'CAT-T55' $visionOk $visionWhy
 # MRB #102: refuse live/PRI must stay in vision Bounds / Non-goals
 $visionLiveOk = $visionOk -and ($visionText -match 'live/PRI|Live/PRI')
 Add-Gate 'CAT-T56' $visionLiveOk $(if ($visionLiveOk) { 'VISION.md refuses live/PRI' } else { 'VISION.md missing live/PRI refuse' })
+
+
+# FR #104: this runner's source must stay ASCII (no mojibake / smart dashes)
+$catalogPs1 = $PSCommandPath
+if (-not $catalogPs1) { $catalogPs1 = Join-Path $repo 'v2\tools\Test-PriorityCatalog.ps1' }
+$asciiHits = @()
+$ci = 0
+Get-Content -LiteralPath $catalogPs1 -Encoding UTF8 | ForEach-Object {
+    $ci++
+    $line = $_
+    foreach ($ch in $line.ToCharArray()) {
+        if ([int]$ch -gt 127) {
+            $asciiHits += ('L{0}:U+{1:X4}' -f $ci, [int]$ch)
+            break
+        }
+    }
+}
+Add-Gate 'CAT-T56' ($asciiHits.Count -eq 0) $(if ($asciiHits.Count -eq 0) { 'Test-PriorityCatalog.ps1 source ASCII-only' } else { 'non-ASCII: ' + ($asciiHits -join ', ') })
 
 if ($failed -gt 0) {
     Write-Host "Test-PriorityCatalog FAIL ($failed)"

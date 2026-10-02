@@ -691,8 +691,8 @@ Add-Gate 'CAT-T55' $visionOk $visionWhy
 $visionLiveOk = $visionOk -and ($visionText -match 'live/PRI|Live/PRI')
 Add-Gate 'CAT-T56' $visionLiveOk $(if ($visionLiveOk) { 'VISION.md refuses live/PRI' } else { 'VISION.md missing live/PRI refuse' })
 
-
-# FR #104 / CAT-T57: this runner's source must stay ASCII (no mojibake / smart dashes)
+# FR #104 / MRB #105: this runner's source must stay ASCII (no mojibake / smart dashes).
+# CAT-T56 is already VISION live/PRI (#103); ASCII gate is CAT-T57.
 $catalogPs1 = $PSCommandPath
 if (-not $catalogPs1) { $catalogPs1 = Join-Path $repo 'v2\tools\Test-PriorityCatalog.ps1' }
 $asciiHits = @()
@@ -708,6 +708,23 @@ Get-Content -LiteralPath $catalogPs1 -Encoding UTF8 | ForEach-Object {
     }
 }
 Add-Gate 'CAT-T57' ($asciiHits.Count -eq 0) $(if ($asciiHits.Count -eq 0) { 'Test-PriorityCatalog.ps1 source ASCII-only' } else { 'non-ASCII: ' + ($asciiHits -join ', ') })
+
+# MRB #105: Add-Gate ids must be unique (duplicate CAT-T56 would hide a fail in logs)
+$gateIdHits = @{}
+$gateDupes = @()
+$gi = 0
+Get-Content -LiteralPath $catalogPs1 -Encoding UTF8 | ForEach-Object {
+    $gi++
+    if ($_ -match "Add-Gate\s+'([^']+)'") {
+        $gid = $Matches[1]
+        if ($gateIdHits.ContainsKey($gid)) {
+            $gateDupes += ('{0}@{1}+{2}' -f $gid, $gateIdHits[$gid], $gi)
+        } else {
+            $gateIdHits[$gid] = $gi
+        }
+    }
+}
+Add-Gate 'CAT-T58' ($gateDupes.Count -eq 0) $(if ($gateDupes.Count -eq 0) { 'Add-Gate ids unique in Test-PriorityCatalog.ps1' } else { 'duplicate gates: ' + ($gateDupes -join ', ') })
 
 if ($failed -gt 0) {
     Write-Host "Test-PriorityCatalog FAIL ($failed)"

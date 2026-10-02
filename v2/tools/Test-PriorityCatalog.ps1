@@ -692,7 +692,7 @@ $visionLiveOk = $visionOk -and ($visionText -match 'live/PRI|Live/PRI')
 Add-Gate 'CAT-T56' $visionLiveOk $(if ($visionLiveOk) { 'VISION.md refuses live/PRI' } else { 'VISION.md missing live/PRI refuse' })
 
 
-# FR #104: this runner's source must stay ASCII (no mojibake / smart dashes)
+# FR #104 / CAT-T57: this runner's source must stay ASCII (no mojibake / smart dashes)
 $catalogPs1 = $PSCommandPath
 if (-not $catalogPs1) { $catalogPs1 = Join-Path $repo 'v2\tools\Test-PriorityCatalog.ps1' }
 $asciiHits = @()
@@ -707,7 +707,7 @@ Get-Content -LiteralPath $catalogPs1 -Encoding UTF8 | ForEach-Object {
         }
     }
 }
-Add-Gate 'CAT-T56' ($asciiHits.Count -eq 0) $(if ($asciiHits.Count -eq 0) { 'Test-PriorityCatalog.ps1 source ASCII-only' } else { 'non-ASCII: ' + ($asciiHits -join ', ') })
+Add-Gate 'CAT-T57' ($asciiHits.Count -eq 0) $(if ($asciiHits.Count -eq 0) { 'Test-PriorityCatalog.ps1 source ASCII-only' } else { 'non-ASCII: ' + ($asciiHits -join ', ') })
 
 if ($failed -gt 0) {
     Write-Host "Test-PriorityCatalog FAIL ($failed)"

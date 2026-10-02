@@ -475,7 +475,7 @@ foreach ($progId in $progIds) {
     if (-not (Test-Path -LiteralPath $metaPath)) { $progMissing += "$progId/meta.json"; continue }
     $meta = Get-Content -LiteralPath $metaPath -Raw -Encoding UTF8 | ConvertFrom-Json
     if ([string]$meta.name -ne $progId) { $progMissing += "$progId/meta.name" }
-    if ([string]$meta.version -ne '1.0.0') { $progMissing += "$progId/meta.version" }
+    if ([string]$meta.version -notmatch '^\d+\.\d+\.\d+$') { $progMissing += "$progId/meta.version" }
     if ($meta.PSObject.Properties.Name -notcontains 'title' -or $meta.PSObject.Properties.Name -notcontains 'description') {
         $progMissing += "$progId/meta.shape"
     }
@@ -494,7 +494,7 @@ foreach ($root in $progSecretRoots) {
         if ($text -and ($text -match '(?i)(password\s*=|XAI_API_KEY\s*=)')) { $progMissing += ("secret:" + $_.Name) }
     }
 }
-Add-Gate 'CAT-T41' ($progMissing.Count -eq 0) $(if ($progMissing.Count -eq 0) { 'programming skills meta version 1.0.0 + skill-sources' } else { $progMissing -join '; ' })
+Add-Gate 'CAT-T41' ($progMissing.Count -eq 0) $(if ($progMissing.Count -eq 0) { 'programming skills meta semver + skill-sources' } else { $progMissing -join '; ' })
 
 $engLinkMiss = @($progIds | Where-Object { $eng -notmatch [regex]::Escape($_) })
 Add-Gate 'CAT-T42' ($engLinkMiss.Count -eq 0) $(if ($engLinkMiss.Count -eq 0) { 'form-engineering links programming suite' } else { $engLinkMiss -join '; ' })
@@ -632,6 +632,32 @@ foreach ($rp in $runnerPairs) {
 }
 Add-Gate 'CAT-T40' ($runnerMismatch.Count -eq 0) $(if ($runnerMismatch.Count -eq 0) { 'plugin scripts/ runners byte-identical to catalog runner/ copies' } else { ('runner hash mismatch: ' + ($runnerMismatch -join ', ')) })
 
+# MRB #99: catalog meta.json must be UTF-8 without BOM (ConvertFrom-Json tolerates BOM; Node/MCP often does not)
+$metaBomHits = @()
+Get-ChildItem -LiteralPath $catalog -Directory -ErrorAction SilentlyContinue | ForEach-Object {
+    $metaPath = Join-Path $_.FullName 'meta.json'
+    if (-not (Test-Path -LiteralPath $metaPath)) { return }
+    $mb = [IO.File]::ReadAllBytes($metaPath)
+    if ($mb.Length -ge 3 -and $mb[0] -eq 0xEF -and $mb[1] -eq 0xBB -and $mb[2] -eq 0xBF) {
+        $metaBomHits += $_.Name
+    }
+}
+Add-Gate 'CAT-T51' ($metaBomHits.Count -eq 0) $(if ($metaBomHits.Count -eq 0) { 'all catalog meta.json UTF-8 without BOM' } else { 'BOM: ' + ($metaBomHits -join ', ') })
+
+# MRB #99: priority-uat-wcf 1.2.0 harvest — parent warningConfirm + PARTNAME filters
+$wcfMetaPath = Join-Path $catalog 'priority-uat-wcf\meta.json'
+$wcfSkillPath = Join-Path $catalog 'priority-uat-wcf\SKILL.md'
+$wcfSrcPath = Join-Path $repo 'docs\skill-sources\uat\priority-uat-wcf.md'
+$wcfGrokPath = Join-Path $repo '.grok\skills\priority-uat-wcf\SKILL.md'
+$wcfMeta = Get-Content -LiteralPath $wcfMetaPath -Raw -Encoding UTF8 | ConvertFrom-Json
+$wcfSkill = Get-Content -LiteralPath $wcfSkillPath -Raw -Encoding UTF8
+$wcfSrc = Get-Content -LiteralPath $wcfSrcPath -Raw -Encoding UTF8
+$wcfMetaOk = ([string]$wcfMeta.version -eq '1.2.0') -and ([string]$wcfMeta.description -match 'warningConfirm') -and ([string]$wcfMeta.description -match 'PARTNAME')
+Add-Gate 'CAT-T52' $wcfMetaOk $(if ($wcfMetaOk) { 'priority-uat-wcf meta 1.2.0 documents warningConfirm + PARTNAME' } else { "version=$($wcfMeta.version) desc=$($wcfMeta.description)" })
+$wcfBodyOk = ($wcfSrc -match 'warningConfirm') -and ($wcfSrc -match 'parent') -and ($wcfSrc -match 'PARTNAME') -and ($wcfSrc -match 'Invalid filter') -and ($wcfSrc -match 'sibling') -and ($wcfSkill -match 'warningConfirm') -and ($wcfSkill -match 'PARTNAME') -and ($wcfSkill -match 'sibling')
+Add-Gate 'CAT-T53' $wcfBodyOk $(if ($wcfBodyOk) { 'uat-wcf skill-source + catalog cover parent confirm, PARTNAME, siblings' } else { 'missing harvest phrases in source or catalog leaflet' })
+$wcfMirrorOk = (Test-Path -LiteralPath $wcfGrokPath) -and ((Get-FileHash -LiteralPath $wcfGrokPath -Algorithm SHA256).Hash -eq (Get-FileHash -LiteralPath $wcfSkillPath -Algorithm SHA256).Hash)
+Add-Gate 'CAT-T54' $wcfMirrorOk $(if ($wcfMirrorOk) { '.grok/skills/priority-uat-wcf mirrors catalog SKILL.md' } else { 'grok mirror missing or hash mismatch' })
 
 if ($failed -gt 0) {
     Write-Host "Test-PriorityCatalog FAIL ($failed)"

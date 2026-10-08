@@ -935,6 +935,21 @@ if (Test-Path -LiteralPath $harvestTool) {
 }
 Add-Gate 'CAT-T67' $t67Ok $t67Why
 
+# FR-010 / #118: DryRun fixture for intake tools default repo (offline; no live POST)
+$fr010 = Join-Path $repo 'v2\tests\test-fr010-intake-tools-dryrun-default-repo.ps1'
+$t69Ok = $false
+$t69Why = 'CAT-T69 missing v2/tests/test-fr010-intake-tools-dryrun-default-repo.ps1'
+if (Test-Path -LiteralPath $fr010) {
+    $p010 = Start-Process -FilePath powershell.exe -ArgumentList @('-NoProfile','-File',$fr010) -Wait -PassThru -NoNewWindow
+    if ($p010.ExitCode -eq 0) {
+        $t69Ok = $true
+        $t69Why = 'FR-010 DryRun Report+Harvest default repo SimonBarnett/agentic_fomprep offline PASS'
+    } else {
+        $t69Why = ('FR-010 DryRun fixture exit=' + $p010.ExitCode)
+    }
+}
+Add-Gate 'CAT-T69' $t69Ok $t69Why
+
 
 # FR #121 / hours webhook agent skills
 $hoursIds = @(

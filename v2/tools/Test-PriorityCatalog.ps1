@@ -827,6 +827,87 @@ if (Test-Path -LiteralPath $harvestSkill) {
 Add-Gate 'CAT-T61' $harvestOk $harvestWhy
 
 
+# FR #121 / hours webhook agent skills
+$hoursIds = @(
+    'hours-log-work-session',
+    'hours-classify',
+    'hours-describe',
+    'hours-evidence',
+    'hours-correct',
+    'hours-repo-metadata',
+    'hours-draft'
+)
+$hoursOk = $true
+$hoursWhyParts = New-Object System.Collections.Generic.List[string]
+$manifestPath = Join-Path $repo '.grok\skills\PRIORITY-AGENT-SKILLS.md'
+$manifestText = ''
+if (Test-Path -LiteralPath $manifestPath) {
+    $manifestText = Get-Content -LiteralPath $manifestPath -Raw -Encoding UTF8
+}
+foreach ($hid in $hoursIds) {
+    $hp = Join-Path $repo ('.grok\skills\' + $hid + '\SKILL.md')
+    if (-not (Test-Path -LiteralPath $hp)) {
+        $hoursOk = $false
+        [void]$hoursWhyParts.Add('missing:' + $hid)
+        continue
+    }
+    $ht = Get-Content -LiteralPath $hp -Raw -Encoding UTF8
+    $hb = [System.IO.File]::ReadAllBytes($hp)
+    if ($hb.Length -ge 3 -and $hb[0] -eq 0xEF -and $hb[1] -eq 0xBB -and $hb[2] -eq 0xBF) {
+        $hoursOk = $false
+        [void]$hoursWhyParts.Add('bom:' + $hid)
+    }
+    if ($ht -match '(?i)password\s*=\s*\S+' -or $ht -match '(?i)PRIORITY_ODATA_PASSWORD\s*=\s*\S+') {
+        $hoursOk = $false
+        [void]$hoursWhyParts.Add('secret:' + $hid)
+    }
+    if ($manifestText -and ($manifestText -notmatch [regex]::Escape($hid))) {
+        $hoursOk = $false
+        [void]$hoursWhyParts.Add('manifest:' + $hid)
+    }
+}
+$classifyPath = Join-Path $repo '.grok\skills\hours-classify\SKILL.md'
+if (Test-Path -LiteralPath $classifyPath) {
+    $ctext = Get-Content -LiteralPath $classifyPath -Raw -Encoding UTF8
+    if ($ctext -notmatch 'project\.md' -or $ctext -notmatch 'wbs-fallback-map') {
+        $hoursOk = $false
+        [void]$hoursWhyParts.Add('classify-order')
+    }
+}
+$describePath = Join-Path $repo '.grok\skills\hours-describe\SKILL.md'
+if (Test-Path -LiteralPath $describePath) {
+    $dtext = Get-Content -LiteralPath $describePath -Raw -Encoding UTF8
+    if ($dtext -notmatch '60' -or $dtext -notmatch 'WP') {
+        $hoursOk = $false
+        [void]$hoursWhyParts.Add('describe-pdes')
+    }
+}
+$draftPath = Join-Path $repo '.grok\skills\hours-draft\SKILL.md'
+if (Test-Path -LiteralPath $draftPath) {
+    $dr = Get-Content -LiteralPath $draftPath -Raw -Encoding UTF8
+    if ($dr -notmatch 'Never' -or $dr -notmatch 'approval' -or $dr -notmatch 'hours-repo-metadata') {
+        $hoursOk = $false
+        [void]$hoursWhyParts.Add('draft-gates')
+    }
+}
+$repoMeta = Join-Path $repo '.grok\skills\hours-repo-metadata\SKILL.md'
+if (Test-Path -LiteralPath $repoMeta) {
+    $rm = Get-Content -LiteralPath $repoMeta -Raw -Encoding UTF8
+    if ($rm -notmatch 'Never push to `main`' -and $rm -notmatch 'Never push to main') {
+        $hoursOk = $false
+        [void]$hoursWhyParts.Add('repo-meta-main')
+    }
+}
+$mapPath = Join-Path $repo 'docs\skill-sources\hours\wbs-fallback-map.md'
+if (-not (Test-Path -LiteralPath $mapPath)) {
+    $hoursOk = $false
+    [void]$hoursWhyParts.Add('missing-wbs-map')
+}
+$hoursWhy = if ($hoursOk) { 'seven hours-* skills + manifest + classify/describe/draft gates + no secrets' } else { ($hoursWhyParts -join ',') }
+Add-Gate 'CAT-T62' $hoursOk $hoursWhy
+
+
+
 
 
 if ($failed -gt 0) {

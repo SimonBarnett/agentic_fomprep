@@ -875,6 +875,35 @@ if (Test-Path -LiteralPath $prioHarvestSkill) {
 }
 Add-Gate 'CAT-T65' $t65Ok $t65Why
 
+# MRB #142 / FR-004: tools/Report-FomprepIntakeIssue.ps1 shipped with default repo
+$reportTool = Join-Path $repo 'tools\Report-FomprepIntakeIssue.ps1'
+$t66Ok = $false
+$t66Why = 'CAT-T66 Report-FomprepIntakeIssue.ps1 missing'
+if (Test-Path -LiteralPath $reportTool) {
+    $rt = Get-Content -LiteralPath $reportTool -Raw -Encoding UTF8
+    $hasDefault = $rt -match "Repo\s*=\s*'SimonBarnett/agentic_fomprep'" -or $rt -match 'defaultRepo\s*=\s*''SimonBarnett/agentic_fomprep'''
+    $hasUrl = $rt -match 'https://irc\.ntsa\.uk/bob/v1/intake'
+    $hasDry = $rt -match '\[switch\]\$DryRun'
+    $hasNoDel = $rt -match '\[switch\]\$NoDelegate'
+    $hasValidate = $rt -match "ValidateSet\('issue',\s*'fr',\s*'skill',\s*'harvest'\)"
+    $bom66 = $false
+    $b66 = [System.IO.File]::ReadAllBytes($reportTool)
+    if ($b66.Length -ge 3 -and $b66[0] -eq 0xEF -and $b66[1] -eq 0xBB -and $b66[2] -eq 0xBF) { $bom66 = $true }
+    $giPath = Join-Path $repo '.gitignore'
+    $giHasOutbox = $false
+    if (Test-Path -LiteralPath $giPath) {
+        $giRaw = Get-Content -LiteralPath $giPath -Raw -Encoding UTF8
+        $giHasOutbox = $giRaw -match '(?m)^report-outbox/'
+    }
+    if ($hasDefault -and $hasUrl -and $hasDry -and $hasNoDel -and $hasValidate -and $giHasOutbox -and -not $bom66) {
+        $t66Ok = $true
+        $t66Why = 'Report-FomprepIntakeIssue default repo + DryRun/NoDelegate + ValidateSet + report-outbox gitignore + no BOM'
+    } else {
+        $t66Why = "default=$hasDefault url=$hasUrl dry=$hasDry nodel=$hasNoDel validate=$hasValidate gitignore=$giHasOutbox bom=$bom66"
+    }
+}
+Add-Gate 'CAT-T66' $t66Ok $t66Why
+
 
 # FR #121 / hours webhook agent skills
 $hoursIds = @(

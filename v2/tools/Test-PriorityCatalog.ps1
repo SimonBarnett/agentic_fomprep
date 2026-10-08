@@ -973,6 +973,22 @@ if (Test-Path -LiteralPath $skillbookDoc) {
 }
 Add-Gate 'CAT-T68' $t68Ok $t68Why
 
+# FR-010 / #118 / #169: DryRun fixture for intake tools default repo (offline; no live POST)
+# CAT-T69 reserved on main for VISION honesty-box (#166); CAT-T70 for PRIORITY-AGENT-SKILLS (#171).
+$fr010 = Join-Path $repo 'v2\tests\test-fr010-intake-tools-dryrun-default-repo.ps1'
+$t71Ok = $false
+$t71Why = 'CAT-T71 missing v2/tests/test-fr010-intake-tools-dryrun-default-repo.ps1'
+if (Test-Path -LiteralPath $fr010) {
+    $p010 = Start-Process -FilePath powershell.exe -ArgumentList @('-NoProfile','-File',$fr010) -Wait -PassThru -NoNewWindow
+    if ($p010.ExitCode -eq 0) {
+        $t71Ok = $true
+        $t71Why = 'FR-010 DryRun Report+Harvest default repo SimonBarnett/agentic_fomprep offline PASS'
+    } else {
+        $t71Why = ('FR-010 DryRun fixture exit=' + $p010.ExitCode)
+    }
+}
+Add-Gate 'CAT-T71' $t71Ok $t71Why
+
 
 # FR #121 / hours webhook agent skills
 $hoursIds = @(
@@ -1100,6 +1116,68 @@ if (-not (Test-Path -LiteralPath $agentsPath)) {
     if ($at -match '(?i)default\s+-Repo\s+SimonBarnett/bobiverse') { $agentsIntakeOk = $false; $agentsIntakeWhy = 'defaults -Repo bobiverse' }
 }
 Add-Gate 'CAT-T63' $agentsIntakeOk $agentsIntakeWhy
+
+# MRB #161 / FR-008: VISION.md honesty-box Bobiverse intake bound
+$visionPath = Join-Path $repo 'VISION.md'
+$t69Ok = $false
+$t69Why = 'CAT-T69 VISION.md honesty-box intake missing'
+if (Test-Path -LiteralPath $visionPath) {
+    $vt = Get-Content -LiteralPath $visionPath -Raw -Encoding UTF8
+    $hasUrl = $vt -match 'https://irc\.ntsa\.uk/bob/v1/intake'
+    $hasRepo = $vt -match 'SimonBarnett/agentic_fomprep'
+    $hasSkillbook = $vt -match 'skillbook-referral' -or $vt -match '(?i)skillbook'
+    $hasExec = $vt -match 'EXECPREPLOCK'
+    $hasLast = $vt -match 'LASTPREPDATE'
+    $hasLive = $vt -match 'live/PRI' -or $vt -match 'Live/PRI'
+    $bom69 = $false
+    $b69 = [System.IO.File]::ReadAllBytes($visionPath)
+    if ($b69.Length -ge 3 -and $b69[0] -eq 0xEF -and $b69[1] -eq 0xBB -and $b69[2] -eq 0xBF) { $bom69 = $true }
+    $nonAscii = @()
+    $vli = 0
+    Get-Content -LiteralPath $visionPath -Encoding UTF8 | ForEach-Object {
+        $vli++
+        foreach ($ch in $_.ToCharArray()) {
+            if ([int]$ch -gt 127) {
+                $nonAscii += ('L{0}:U+{1:X4}' -f $vli, [int]$ch)
+                break
+            }
+        }
+    }
+    if ($hasUrl -and $hasRepo -and $hasSkillbook -and $hasExec -and $hasLast -and $hasLive -and ($nonAscii.Count -eq 0) -and -not $bom69) {
+        $t69Ok = $true
+        $t69Why = 'VISION honesty-box intake URL + home repo + skillbook dual-mode + EXECPREPLOCK/LASTPREPDATE + live/PRI + ASCII no BOM'
+    } else {
+        $t69Why = "url=$hasUrl repo=$hasRepo skillbook=$hasSkillbook exec=$hasExec last=$hasLast live=$hasLive ascii=$($nonAscii.Count) bom=$bom69"
+    }
+}
+Add-Gate 'CAT-T69' $t69Ok $t69Why
+
+# MRB #163 / FR-009: PRIORITY-AGENT-SKILLS index lists intake tools
+$pasPath = Join-Path $repo '.grok\skills\PRIORITY-AGENT-SKILLS.md'
+$syncPath = Join-Path $repo 'tools\Sync-PriorityGrokSkills.ps1'
+$t70Ok = $false
+$t70Why = 'CAT-T70 PRIORITY-AGENT-SKILLS intake helpers missing'
+if ((Test-Path -LiteralPath $pasPath) -and (Test-Path -LiteralPath $syncPath)) {
+    $pas = Get-Content -LiteralPath $pasPath -Raw -Encoding UTF8
+    $sync = Get-Content -LiteralPath $syncPath -Raw -Encoding UTF8
+    $hasReport = $pas -match 'Report-FomprepIntakeIssue\.ps1'
+    $hasInvoke = $pas -match 'Invoke-FomprepHarvest\.ps1'
+    $hasReferral = $pas -match 'skillbook-referral'
+    $hasSection = $pas -match 'Harvest intake helpers'
+    $genHas = ($sync -match 'Harvest intake helpers') -and ($sync -match 'Report-FomprepIntakeIssue') -and ($sync -match 'Invoke-FomprepHarvest')
+    $utf8NoBom = $sync -match 'UTF8Encoding\s+\$false' -or $sync -match 'New-Object System\.Text\.UTF8Encoding \$false'
+    $bom70 = $false
+    $b70 = [System.IO.File]::ReadAllBytes($pasPath)
+    if ($b70.Length -ge 3 -and $b70[0] -eq 0xEF -and $b70[1] -eq 0xBB -and $b70[2] -eq 0xBF) { $bom70 = $true }
+    if ($hasReport -and $hasInvoke -and $hasReferral -and $hasSection -and $genHas -and $utf8NoBom -and -not $bom70) {
+        $t70Ok = $true
+        $t70Why = 'PRIORITY-AGENT-SKILLS Harvest intake helpers + Sync generator + UTF8 no BOM'
+    } else {
+        $t70Why = "report=$hasReport invoke=$hasInvoke referral=$hasReferral section=$hasSection gen=$genHas utf8=$utf8NoBom bom=$bom70"
+    }
+}
+Add-Gate 'CAT-T70' $t70Ok $t70Why
+
 
 
 

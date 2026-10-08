@@ -96,3 +96,8 @@ powershell -NoProfile -ExecutionPolicy Bypass -File tools\Sync-PriorityGrokSkill
 ```
 
 Optional: `-IncludeDba` or `-IncludeCustomer` for non-default leaflets.
+
+Agents **not** started in this CWD (referred skillbook / Mode B) follow
+`docs/skillbook-referral.md`: load `harvest-priority-skills` /
+`harvest-agent-skills` plus needed `priority-*` leaflets, and still file to
+`SimonBarnett/agentic_fomprep` via Bobiverse intake.

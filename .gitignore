@@ -18,3 +18,6 @@ v2/apps/mcp-catalog/catalog/priority-shell-install/runner/node_modules/
 tests/.tmp/
 capture/
 
+
+# Offline Bobiverse intake queue (Report-FomprepIntakeIssue / Invoke-FomprepHarvest)
+report-outbox/

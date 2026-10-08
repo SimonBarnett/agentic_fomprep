@@ -898,12 +898,38 @@ if (Test-Path -LiteralPath $repoMeta) {
         [void]$hoursWhyParts.Add('repo-meta-main')
     }
 }
+
+# MRB #124 strengthen: log-work-session / evidence / correct contracts
+$logPath = Join-Path $repo '.grok\skills\hours-log-work-session\SKILL.md'
+if (Test-Path -LiteralPath $logPath) {
+    $lt = Get-Content -LiteralPath $logPath -Raw -Encoding UTF8
+    if ($lt -notmatch 'idempotency_key' -or $lt -notmatch 'heartbeat' -or ($lt -notmatch 'hours-start' -and $lt -notmatch 'create')) {
+        $hoursOk = $false
+        [void]$hoursWhyParts.Add('log-session-gates')
+    }
+}
+$evPath = Join-Path $repo '.grok\skills\hours-evidence\SKILL.md'
+if (Test-Path -LiteralPath $evPath) {
+    $et = Get-Content -LiteralPath $evPath -Raw -Encoding UTF8
+    if ($et -notmatch 'evidence' -or ($et -notmatch 'none' -and $et -notmatch 'no proof')) {
+        $hoursOk = $false
+        [void]$hoursWhyParts.Add('evidence-gates')
+    }
+}
+$corrPath = Join-Path $repo '.grok\skills\hours-correct\SKILL.md'
+if (Test-Path -LiteralPath $corrPath) {
+    $ct = Get-Content -LiteralPath $corrPath -Raw -Encoding UTF8
+    if ($ct -notmatch 'withdraw' -or ($ct -notmatch 'supersede' -and $ct -notmatch 'double')) {
+        $hoursOk = $false
+        [void]$hoursWhyParts.Add('correct-gates')
+    }
+}
 $mapPath = Join-Path $repo 'docs\skill-sources\hours\wbs-fallback-map.md'
 if (-not (Test-Path -LiteralPath $mapPath)) {
     $hoursOk = $false
     [void]$hoursWhyParts.Add('missing-wbs-map')
 }
-$hoursWhy = if ($hoursOk) { 'seven hours-* skills + manifest + classify/describe/draft gates + no secrets' } else { ($hoursWhyParts -join ',') }
+$hoursWhy = if ($hoursOk) { 'seven hours-* skills + manifest + classify/describe/draft/log/evidence/correct gates + no secrets' } else { ($hoursWhyParts -join ',') }
 Add-Gate 'CAT-T62' $hoursOk $hoursWhy
 
 

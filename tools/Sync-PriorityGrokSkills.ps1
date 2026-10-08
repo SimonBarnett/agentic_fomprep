@@ -29,7 +29,7 @@ $RepoRoot = Split-Path -Parent $PSScriptRoot
 $CatalogRoot = Join-Path $RepoRoot 'v2\apps\mcp-catalog\catalog'
 $DestRoot = Join-Path $RepoRoot '.grok\skills'
 
-# Customer / estate packs — not part of the default Priority Agent
+# Customer / estate packs - not part of the default Priority Agent
 $ExcludeCustomer = @(
     'priority-day-works-uat'
 )
@@ -119,7 +119,8 @@ else { foreach ($s in ($skipped | Sort-Object)) { [void]$sb.AppendLine("- $s") }
 foreach ($s in $PreserveAlways) { [void]$sb.AppendLine("- $s") }
 
 if (-not $WhatIf) {
-    Set-Content -LiteralPath $manifestPath -Value $sb.ToString() -Encoding UTF8
+    $utf8NoBom = New-Object System.Text.UTF8Encoding $false
+    [System.IO.File]::WriteAllText($manifestPath, $sb.ToString(), $utf8NoBom)
 }
 
 $result = [pscustomobject]@{

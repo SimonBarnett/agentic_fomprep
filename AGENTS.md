@@ -32,7 +32,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File tools\Sync-PriorityGrokSkill
 
 | Concern | Home repo |
 |---------|-----------|
-| Clarkson Evans Day Works **product** (WP1–WP4, gates, shells 8341/8346/8357/8358) | `SimonBarnett/ce-dayworks` |
+| Clarkson Evans Day Works **product** (WP1-WP4, gates, shells 8341/8346/8357/8358) | `SimonBarnett/ce-dayworks` |
 | CE instance / hardware / DBA / backup packs | `SimonBarnett/ce-priority` |
 | Fleet / Bob / IRC wire | `agentic_build` / `agentic_irc` |
 
@@ -51,7 +51,7 @@ until the user allowlists an instance for this session.
 4. **Tables**: unique indexes `WITH (IGNORE_DUP_KEY = ON)`; `COLUMNS.SIZE` never 0
    (CHAR/DATE `SIZE=WIDTH`; REAL/INT `SIZE=8`). Skill: `priority-create-table`.
 5. **Secrets**: CredMan / env only. Never commit passwords or log them.
-6. **Harvest**: new Priority-generic playbooks → branch + PR via
+6. **Harvest**: new Priority-generic playbooks -> branch + PR via
    `harvest-priority-skills` (never push `main` for harvest).
 
 ## Default tools in this repo

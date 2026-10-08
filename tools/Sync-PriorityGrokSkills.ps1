@@ -124,6 +124,16 @@ else { foreach ($s in ($skipped | Sort-Object)) { [void]$sb.AppendLine("- $s") }
 [void]$sb.AppendLine('## Always preserved under `.grok/skills` (not from catalog)')
 [void]$sb.AppendLine('')
 foreach ($s in $PreserveAlways) { [void]$sb.AppendLine("- $s") }
+[void]$sb.AppendLine('')
+[void]$sb.AppendLine('## Harvest intake helpers (repo tools)')
+[void]$sb.AppendLine('')
+[void]$sb.AppendLine('CWD agents file issue|fr|skill|harvest via Bobiverse intake with default')
+[void]$sb.AppendLine('`-Repo SimonBarnett/agentic_fomprep`:')
+[void]$sb.AppendLine('')
+[void]$sb.AppendLine('- `tools/Report-FomprepIntakeIssue.ps1`')
+[void]$sb.AppendLine('- `tools/Invoke-FomprepHarvest.ps1`')
+[void]$sb.AppendLine('')
+[void]$sb.AppendLine('Dual-mode CWD vs referred skillbook: `docs/skillbook-referral.md`.')
 
 if (-not $WhatIf) {
     $utf8NoBom = New-Object System.Text.UTF8Encoding $false

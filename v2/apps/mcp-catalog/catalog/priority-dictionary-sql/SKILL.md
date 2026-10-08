@@ -23,9 +23,10 @@ Grab from catalog MCP `https://mcp-priority.ntsa.uk/mcp` (`get_skill` with `name
 7. Avoid `Tee-Object` inside PowerShell functions that return ids.
 8. Physical unique indexes / PKs must use **`WITH (IGNORE_DUP_KEY = ON)`** or Tabula login fails (*Ignore Duplicate Values*; first company often reported as `system`). Same for `pritempdb` `T$$` shadows. Dedupe before CREATE if data already has duplicates.
 9. Child join columns need **FORMCLMNSA** expressions (`= :$$.COL`) or Form Prep can rewrite FORMJOINS and raise Unique Index / Origin Table warnings.
+10. **`COLUMNS.SIZE` must never be 0.** CHAR/DATE → `SIZE=WIDTH`; REAL/INT → `SIZE=8`. `SIZE=0` on CHAR → Form Generator *Table T is missing column C*. Full create playbook: **`priority-create-table`**.
 
 ## Related
 
-`priority-formprep`, `priority-formprep-shadow-tables`, `priority-version-revision-discipline`.
+`priority-create-table`, `priority-formprep`, `priority-formprep-shadow-tables`, `priority-version-revision-discipline`.
 
-Sources: `docs/skill-sources/programming/DICTIONARY_SQL.md`, `IGNORE_DUP_KEY.md`, `FORMCLMNSA_JOINS.md`.
+Sources: `docs/skill-sources/programming/DICTIONARY_SQL.md`, `CREATE_TABLE.md`, `IGNORE_DUP_KEY.md`, `FORMCLMNSA_JOINS.md`.

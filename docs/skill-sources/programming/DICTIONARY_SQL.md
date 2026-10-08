@@ -19,6 +19,18 @@ Insert without those columns; read `SCOPE_IDENTITY()`.
 - INDEXES: **`T$KEY`** (not T$INDEX); children in **INDCLMNS** `(T$KEY, T$COLUMN, PRIO)`
 - CATALOG live: `TNAME`, `T$TABLE`, `SIZE` only
 
+## COLUMNS.SIZE (CAST IRON — never 0)
+
+| TYPE | SIZE |
+|------|------|
+| CHAR / DATE / TIME / DAY | **equals WIDTH** |
+| REAL | **8** |
+| INT | **8** |
+
+`SIZE=0` on CHAR makes Form Generator report **Table T is missing column C**
+even when `CNAME` and the physical column exist. Full create path:
+`CREATE_TABLE.md` / skill `priority-create-table`.
+
 ## Form Prep bootstrap
 
 1. Physical table + `pritempdb` `T$$` shadow

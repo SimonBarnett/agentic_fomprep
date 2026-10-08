@@ -1098,6 +1098,33 @@ if (Test-Path -LiteralPath $visionPath) {
 }
 Add-Gate 'CAT-T69' $t69Ok $t69Why
 
+# MRB #163 / FR-009: PRIORITY-AGENT-SKILLS index lists intake tools
+$pasPath = Join-Path $repo '.grok\skills\PRIORITY-AGENT-SKILLS.md'
+$syncPath = Join-Path $repo 'tools\Sync-PriorityGrokSkills.ps1'
+$t70Ok = $false
+$t70Why = 'CAT-T70 PRIORITY-AGENT-SKILLS intake helpers missing'
+if ((Test-Path -LiteralPath $pasPath) -and (Test-Path -LiteralPath $syncPath)) {
+    $pas = Get-Content -LiteralPath $pasPath -Raw -Encoding UTF8
+    $sync = Get-Content -LiteralPath $syncPath -Raw -Encoding UTF8
+    $hasReport = $pas -match 'Report-FomprepIntakeIssue\.ps1'
+    $hasInvoke = $pas -match 'Invoke-FomprepHarvest\.ps1'
+    $hasReferral = $pas -match 'skillbook-referral'
+    $hasSection = $pas -match 'Harvest intake helpers'
+    $genHas = ($sync -match 'Harvest intake helpers') -and ($sync -match 'Report-FomprepIntakeIssue') -and ($sync -match 'Invoke-FomprepHarvest')
+    $utf8NoBom = $sync -match 'UTF8Encoding\s+\$false' -or $sync -match 'New-Object System\.Text\.UTF8Encoding \$false'
+    $bom70 = $false
+    $b70 = [System.IO.File]::ReadAllBytes($pasPath)
+    if ($b70.Length -ge 3 -and $b70[0] -eq 0xEF -and $b70[1] -eq 0xBB -and $b70[2] -eq 0xBF) { $bom70 = $true }
+    if ($hasReport -and $hasInvoke -and $hasReferral -and $hasSection -and $genHas -and $utf8NoBom -and -not $bom70) {
+        $t70Ok = $true
+        $t70Why = 'PRIORITY-AGENT-SKILLS Harvest intake helpers + Sync generator + UTF8 no BOM'
+    } else {
+        $t70Why = "report=$hasReport invoke=$hasInvoke referral=$hasReferral section=$hasSection gen=$genHas utf8=$utf8NoBom bom=$bom70"
+    }
+}
+Add-Gate 'CAT-T70' $t70Ok $t70Why
+
+
 
 
 

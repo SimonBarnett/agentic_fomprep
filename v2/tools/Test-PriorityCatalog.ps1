@@ -826,6 +826,29 @@ if (Test-Path -LiteralPath $harvestSkill) {
 }
 Add-Gate 'CAT-T61' $harvestOk $harvestWhy
 
+# MRB #134 / FR-002: durable CAST IRON Bobiverse intake subsection (not only Harvested lessons bullet)
+$agentsIntakeSkill = Join-Path $repo '.grok\skills\harvest-agent-skills\SKILL.md'
+$t64Ok = $false
+$t64Why = 'CAT-T64 harvest-agent-skills CAST IRON Bobiverse intake subsection missing'
+if (Test-Path -LiteralPath $agentsIntakeSkill) {
+    $t64 = Get-Content -LiteralPath $agentsIntakeSkill -Raw -Encoding UTF8
+    $hasHeading = $t64 -match 'CAST IRON - Bobiverse intake'
+    $hasUrl = $t64 -match 'https://irc\.ntsa\.uk/bob/v1/intake'
+    $hasRepo = $t64 -match 'SimonBarnett/agentic_fomprep'
+    $hasReport = $t64 -match 'Report-FomprepIntakeIssue'
+    $hasInvoke = $t64 -match 'Invoke-FomprepHarvest'
+    $bom64 = $false
+    $b64 = [System.IO.File]::ReadAllBytes($agentsIntakeSkill)
+    if ($b64.Length -ge 3 -and $b64[0] -eq 0xEF -and $b64[1] -eq 0xBB -and $b64[2] -eq 0xBF) { $bom64 = $true }
+    if ($hasHeading -and $hasUrl -and $hasRepo -and $hasReport -and $hasInvoke -and -not $bom64) {
+        $t64Ok = $true
+        $t64Why = 'CAST IRON Bobiverse intake subsection + URL + repo + Report/Invoke wrappers + no BOM'
+    } else {
+        $t64Why = "heading=$hasHeading url=$hasUrl repo=$hasRepo report=$hasReport invoke=$hasInvoke bom=$bom64"
+    }
+}
+Add-Gate 'CAT-T64' $t64Ok $t64Why
+
 
 # FR #121 / hours webhook agent skills
 $hoursIds = @(
@@ -931,6 +954,28 @@ if (-not (Test-Path -LiteralPath $mapPath)) {
 }
 $hoursWhy = if ($hoursOk) { 'seven hours-* skills + manifest + classify/describe/draft/log/evidence/correct gates + no secrets' } else { ($hoursWhyParts -join ',') }
 Add-Gate 'CAT-T62' $hoursOk $hoursWhy
+
+# MRB #132 / FR-001 hostile: AGENTS.md Bobiverse intake needles (FR-007 partial; tools/skills/referral gates remain #115)
+$agentsIntakeOk = $true
+$agentsIntakeWhy = 'AGENTS.md intake URL + SimonBarnett/agentic_fomprep + Report/Invoke-Fomprep wrappers + no bobiverse default'
+$agentsPath = Join-Path $repo 'AGENTS.md'
+if (-not (Test-Path -LiteralPath $agentsPath)) {
+    $agentsIntakeOk = $false
+    $agentsIntakeWhy = 'missing AGENTS.md'
+} else {
+    $at = Get-Content -LiteralPath $agentsPath -Raw -Encoding UTF8
+    $ab = [System.IO.File]::ReadAllBytes($agentsPath)
+    if ($ab.Length -ge 3 -and $ab[0] -eq 0xEF -and $ab[1] -eq 0xBB -and $ab[2] -eq 0xBF) {
+        $agentsIntakeOk = $false
+        $agentsIntakeWhy = 'AGENTS.md BOM'
+    }
+    if ($at -notmatch 'https://irc\.ntsa\.uk/bob/v1/intake') { $agentsIntakeOk = $false; $agentsIntakeWhy = 'missing intake URL' }
+    if ($at -notmatch 'SimonBarnett/agentic_fomprep') { $agentsIntakeOk = $false; $agentsIntakeWhy = 'missing home repo' }
+    if ($at -notmatch 'Report-FomprepIntakeIssue\.ps1') { $agentsIntakeOk = $false; $agentsIntakeWhy = 'missing Report-FomprepIntakeIssue' }
+    if ($at -notmatch 'Invoke-FomprepHarvest\.ps1') { $agentsIntakeOk = $false; $agentsIntakeWhy = 'missing Invoke-FomprepHarvest' }
+    if ($at -match '(?i)default\s+-Repo\s+SimonBarnett/bobiverse') { $agentsIntakeOk = $false; $agentsIntakeWhy = 'defaults -Repo bobiverse' }
+}
+Add-Gate 'CAT-T63' $agentsIntakeOk $agentsIntakeWhy
 
 
 

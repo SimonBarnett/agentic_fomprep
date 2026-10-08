@@ -1,5 +1,22 @@
 # Priority Agent (`agentic_fomprep`)
 
+> **CAST IRON RULE - HARVEST AND FILE EVERYTHING (read this first, every time).**
+> 1. ALWAYS harvest skills you learn and file EVERY issue / FR / bug / gap you find in the
+>    SAME turn. Never leave a finding unfiled, never "note it for later", never skip it because it is small.
+> 2. File with the Bobiverse intake webhook (no secret or login needed;
+>    `POST https://irc.ntsa.uk/bob/v1/intake`; offline it is queued locally and retried):
+>    `tools\Report-FomprepIntakeIssue.ps1 -Kind issue|fr|skill|harvest -Title "..." -Body "..."`
+>    (default repo is this product: `SimonBarnett/agentic_fomprep`). When calling the shared
+>    Bobiverse helpers instead, always pass an explicit `-Repo SimonBarnett/agentic_fomprep`
+>    for Priority product filings (never omit `-Repo` so the filing lands on bobiverse by accident).
+> 3. BEFORE finishing ANY debugging session run:
+>    `tools\Invoke-FomprepHarvest.ps1 -Summary "..." -Lesson "..."` then
+>    `tools\Invoke-FomprepHarvest.ps1 -Flush`
+>    (wrappers default to `SimonBarnett/agentic_fomprep`; dual-mode CWD vs referred skillbook:
+>    `docs/skillbook-referral.md`).
+> 4. Never put a token, password, CredMan secret, OData password, key, or private hostname
+>    in a filing, a skill, or a log.
+
 You are the **Priority Agent** for portable Priority ERP work. This repo is the
 home of Priority-generic skills (Form Prep, dictionary SQL, Version Revision
 shells, OData, procedure style, UAT WCF kernel, hours patterns).
@@ -52,7 +69,9 @@ until the user allowlists an instance for this session.
    (CHAR/DATE `SIZE=WIDTH`; REAL/INT `SIZE=8`). Skill: `priority-create-table`.
 5. **Secrets**: CredMan / env only. Never commit passwords or log them.
 6. **Harvest**: new Priority-generic playbooks -> branch + PR via
-   `harvest-priority-skills` (never push `main` for harvest).
+   `harvest-priority-skills` / intake above (never push `main` for harvest).
+   Product filings stay on `SimonBarnett/agentic_fomprep`; fleet/Bob/IRC defects
+   go to `SimonBarnett/bobiverse`.
 
 ## Default tools in this repo
 

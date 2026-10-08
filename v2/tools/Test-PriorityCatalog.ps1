@@ -1063,6 +1063,41 @@ if (-not (Test-Path -LiteralPath $agentsPath)) {
 }
 Add-Gate 'CAT-T63' $agentsIntakeOk $agentsIntakeWhy
 
+# MRB #161 / FR-008: VISION.md honesty-box Bobiverse intake bound
+$visionPath = Join-Path $repo 'VISION.md'
+$t69Ok = $false
+$t69Why = 'CAT-T69 VISION.md honesty-box intake missing'
+if (Test-Path -LiteralPath $visionPath) {
+    $vt = Get-Content -LiteralPath $visionPath -Raw -Encoding UTF8
+    $hasUrl = $vt -match 'https://irc\.ntsa\.uk/bob/v1/intake'
+    $hasRepo = $vt -match 'SimonBarnett/agentic_fomprep'
+    $hasSkillbook = $vt -match 'skillbook-referral' -or $vt -match '(?i)skillbook'
+    $hasExec = $vt -match 'EXECPREPLOCK'
+    $hasLast = $vt -match 'LASTPREPDATE'
+    $hasLive = $vt -match 'live/PRI' -or $vt -match 'Live/PRI'
+    $bom69 = $false
+    $b69 = [System.IO.File]::ReadAllBytes($visionPath)
+    if ($b69.Length -ge 3 -and $b69[0] -eq 0xEF -and $b69[1] -eq 0xBB -and $b69[2] -eq 0xBF) { $bom69 = $true }
+    $nonAscii = @()
+    $vli = 0
+    Get-Content -LiteralPath $visionPath -Encoding UTF8 | ForEach-Object {
+        $vli++
+        foreach ($ch in $_.ToCharArray()) {
+            if ([int]$ch -gt 127) {
+                $nonAscii += ('L{0}:U+{1:X4}' -f $vli, [int]$ch)
+                break
+            }
+        }
+    }
+    if ($hasUrl -and $hasRepo -and $hasSkillbook -and $hasExec -and $hasLast -and $hasLive -and ($nonAscii.Count -eq 0) -and -not $bom69) {
+        $t69Ok = $true
+        $t69Why = 'VISION honesty-box intake URL + home repo + skillbook dual-mode + EXECPREPLOCK/LASTPREPDATE + live/PRI + ASCII no BOM'
+    } else {
+        $t69Why = "url=$hasUrl repo=$hasRepo skillbook=$hasSkillbook exec=$hasExec last=$hasLast live=$hasLive ascii=$($nonAscii.Count) bom=$bom69"
+    }
+}
+Add-Gate 'CAT-T69' $t69Ok $t69Why
+
 
 
 

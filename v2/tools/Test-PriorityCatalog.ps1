@@ -932,6 +932,28 @@ if (-not (Test-Path -LiteralPath $mapPath)) {
 $hoursWhy = if ($hoursOk) { 'seven hours-* skills + manifest + classify/describe/draft/log/evidence/correct gates + no secrets' } else { ($hoursWhyParts -join ',') }
 Add-Gate 'CAT-T62' $hoursOk $hoursWhy
 
+# MRB #132 / FR-001 hostile: AGENTS.md Bobiverse intake needles (FR-007 partial; tools/skills/referral gates remain #115)
+$agentsIntakeOk = $true
+$agentsIntakeWhy = 'AGENTS.md intake URL + SimonBarnett/agentic_fomprep + Report/Invoke-Fomprep wrappers + no bobiverse default'
+$agentsPath = Join-Path $repo 'AGENTS.md'
+if (-not (Test-Path -LiteralPath $agentsPath)) {
+    $agentsIntakeOk = $false
+    $agentsIntakeWhy = 'missing AGENTS.md'
+} else {
+    $at = Get-Content -LiteralPath $agentsPath -Raw -Encoding UTF8
+    $ab = [System.IO.File]::ReadAllBytes($agentsPath)
+    if ($ab.Length -ge 3 -and $ab[0] -eq 0xEF -and $ab[1] -eq 0xBB -and $ab[2] -eq 0xBF) {
+        $agentsIntakeOk = $false
+        $agentsIntakeWhy = 'AGENTS.md BOM'
+    }
+    if ($at -notmatch 'https://irc\.ntsa\.uk/bob/v1/intake') { $agentsIntakeOk = $false; $agentsIntakeWhy = 'missing intake URL' }
+    if ($at -notmatch 'SimonBarnett/agentic_fomprep') { $agentsIntakeOk = $false; $agentsIntakeWhy = 'missing home repo' }
+    if ($at -notmatch 'Report-FomprepIntakeIssue\.ps1') { $agentsIntakeOk = $false; $agentsIntakeWhy = 'missing Report-FomprepIntakeIssue' }
+    if ($at -notmatch 'Invoke-FomprepHarvest\.ps1') { $agentsIntakeOk = $false; $agentsIntakeWhy = 'missing Invoke-FomprepHarvest' }
+    if ($at -match '(?i)default\s+-Repo\s+SimonBarnett/bobiverse') { $agentsIntakeOk = $false; $agentsIntakeWhy = 'defaults -Repo bobiverse' }
+}
+Add-Gate 'CAT-T63' $agentsIntakeOk $agentsIntakeWhy
+
 
 
 

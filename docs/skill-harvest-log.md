@@ -53,3 +53,6 @@ Expanded `priority-uat-wcf` (skill-source + catalog meta **1.2.0**) from CE Day 
 - Sibling sub-forms under one parent: open hard path before revise-text; soft-skip text locks.
 - WCF `getRows` may be empty after a successful open - SQL remains data authority.
 - ASCII-only punctuation in PowerShell 5.1 runner strings without UTF-8 BOM.
+## 2026-10-08 - Bobiverse intake dual-mode (moved from bobiverse#3349)
+
+- Harvested lesson on CAST IRON `-Repo SimonBarnett/agentic_fomprep` + Report/Invoke wrappers + skillbook-referral + CAT needles; anti-omnibus small FRs. Refs #109-#118 / docs #119. Moved from SimonBarnett/bobiverse#3349.

@@ -68,14 +68,37 @@ wrong skill, or invented a workaround: **harvest in the same turn** before
    request** against the home repo. Never `git push origin main` for harvest.
 2. **If the PR cannot be opened** (no permission, API fail, fork blocked) ->
    open a **GitHub issue** on the home repo titled `harvest:` or `FR:` and
-   paste the intended PR title, branch name, file list, and full body.
-   On Bob fleet seats without `gh` push: also drop the same payload via
-   **Bob intake** / shop outbox so ionos (or a push-capable seat) can land the PR.
+   paste the intended PR title, branch name, file list, and full body, **and**
+   POST the same payload via Bobiverse intake (below) so a push-capable seat
+   can land the PR.
 3. **Bugs / feature requests without a ready patch** -> GitHub **issue** or
-   **FR** on the home repo.
+   **FR** on the home repo (or intake below when `gh` is unavailable).
 4. Empty harvest (nothing new, nothing broken): **no commit, no empty PR**.
 
 Prefer `gh` / existing harvest scripts over free-form reasoning.
+
+### CAST IRON - Bobiverse intake (same-turn file path)
+
+When `gh` push/PR is blocked, or when filing issue|fr|skill|harvest gaps without
+a ready patch, POST to Bobiverse intake in the **same turn** (no GitHub account
+required; offline payloads queue and retry):
+
+`POST https://irc.ntsa.uk/bob/v1/intake` with payload `repo=SimonBarnett/agentic_fomprep`
+(and `kind` = `issue` | `fr` | `skill` | `harvest`).
+
+Repo-local wrappers (default repo this product; scripts land in FR-004/FR-005):
+
+```powershell
+tools\Report-FomprepIntakeIssue.ps1 -Kind issue|fr|skill|harvest -Title "..." -Body "..."
+tools\Invoke-FomprepHarvest.ps1 -Summary "..." -Lesson "..."
+tools\Invoke-FomprepHarvest.ps1 -Flush
+```
+
+Branch + PR remains the **preferred** path for playbook landings. Intake is
+**mandatory** when a PR cannot open and for issue/FR gaps. Never omit the product
+`repo` / `-Repo SimonBarnett/agentic_fomprep` (shared Bobiverse helpers default to
+bobiverse if `-Repo` is missing). Dual-mode CWD vs referred skillbook:
+`docs/skillbook-referral.md`. Never put secrets in filings.
 
 ## Token efficiency (non-negotiable)
 

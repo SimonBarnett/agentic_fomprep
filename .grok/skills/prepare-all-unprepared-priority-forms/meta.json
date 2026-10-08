@@ -1,0 +1,6 @@
+{
+  "name": "prepare-all-unprepared-priority-forms",
+  "title": "Prepare unprepared Priority forms",
+  "description": "Web Form Preparation batch on CE DEV. Named list preferred. CLI AllUnprepared is not implemented. SQL-gated success.",
+  "version": "1.0.0"
+}

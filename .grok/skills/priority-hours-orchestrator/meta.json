@@ -1,0 +1,6 @@
+{
+  "name": "priority-hours-orchestrator",
+  "title": "Priority hours orchestrator",
+  "description": "Standing rules for Priority timesheets: 8h weekdays, Recording Hours, WBS map, draft-then-confirm, overflow, agent-hour scrutiny. CE/Medatech codes are examples.",
+  "version": "1.0.0"
+}

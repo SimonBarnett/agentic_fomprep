@@ -1,0 +1,6 @@
+{
+  "name": "priority-create-table",
+  "title": "Priority create table (Tabula-safe)",
+  "description": "Physical CREATE + UNIQUE IGNORE_DUP_KEY=ON; COLUMNS.SIZE never 0 (CHAR=WIDTH, REAL/INT=8). Fixes Form Generator missing column and Ignore Duplicate Values on SQL-bootstrapped tables.",
+  "version": "1.0.0"
+}

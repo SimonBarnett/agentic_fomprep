@@ -1,0 +1,6 @@
+{
+  "name": "priority-procedure-prep",
+  "title": "Priority named-procedure prep",
+  "description": "Prepare one Priority procedure/report (TYPE=P/R) via EXEC + REPPREPDIRECT2. Gate on EXECPREPLOCK.UPD=N and system/prep/d{T$EXEC}.prp mtime. User allowlists instances.",
+  "version": "1.0.0"
+}

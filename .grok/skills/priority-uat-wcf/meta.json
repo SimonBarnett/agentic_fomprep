@@ -1,0 +1,6 @@
+{
+  "name": "priority-uat-wcf",
+  "title": "Priority UAT WCF walker",
+  "description": "Shared WCF/web-sdk notes: formStart vs startSubForm, parent warningConfirm, PARTNAME filters, sibling sub-forms, retrieve windows, sticky filters, Owner missing.",
+  "version": "1.2.0"
+}

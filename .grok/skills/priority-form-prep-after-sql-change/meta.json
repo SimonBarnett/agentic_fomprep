@@ -1,0 +1,6 @@
+{
+  "name": "priority-form-prep-after-sql-change",
+  "title": "Form Prep gate after SQL dictionary change",
+  "description": "Required Form Prep pass after FORMTRIGTEXT or trigger SQL edits before UAT retry. Links prepare-all-unprepared-priority-forms.",
+  "version": "1.0.0"
+}

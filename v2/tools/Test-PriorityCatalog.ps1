@@ -764,6 +764,44 @@ if ((Test-Path -LiteralPath $createSkill) -and (Test-Path -LiteralPath $createMe
 }
 Add-Gate 'CAT-T59' $createOk $createWhy
 
+# MRB #108: Priority Agent home - AGENTS.md + Sync-PriorityGrokSkills default set
+$agentsMd = Join-Path $repo 'AGENTS.md'
+$syncPs1 = Join-Path $repo 'tools\Sync-PriorityGrokSkills.ps1'
+$agentHomeOk = $false
+$agentHomeWhy = 'Priority Agent home missing'
+if ((Test-Path -LiteralPath $agentsMd) -and (Test-Path -LiteralPath $syncPs1)) {
+    $agentsText = Get-Content -LiteralPath $agentsMd -Raw -Encoding UTF8
+    $syncText = Get-Content -LiteralPath $syncPs1 -Raw -Encoding UTF8
+    $hasPriorityAgent = $agentsText -match 'Priority Agent'
+    $hasNotOwn = ($agentsText -match 'ce-dayworks') -and ($agentsText -match 'ce-priority')
+    $hasSyncMentions = ($agentsText -match 'Sync-PriorityGrokSkills') -and ($syncText -match 'ExcludeCustomer') -and ($syncText -match 'priority-day-works-uat') -and ($syncText -match 'ExcludeDba')
+    $agentsAscii = @()
+    $ai = 0
+    Get-Content -LiteralPath $agentsMd -Encoding UTF8 | ForEach-Object {
+        $ai++
+        foreach ($ch in $_.ToCharArray()) {
+            if ([int]$ch -gt 127) { $agentsAscii += ('L{0}:U+{1:X4}' -f $ai, [int]$ch); break }
+        }
+    }
+    $syncAscii = @()
+    $si = 0
+    Get-Content -LiteralPath $syncPs1 -Encoding UTF8 | ForEach-Object {
+        $si++
+        foreach ($ch in $_.ToCharArray()) {
+            if ([int]$ch -gt 127) { $syncAscii += ('L{0}:U+{1:X4}' -f $si, [int]$ch); break }
+        }
+    }
+    $writerNoBom = $syncText -match 'UTF8Encoding\s+\$false' -or $syncText -match 'UTF8Encoding \$false'
+    if ($hasPriorityAgent -and $hasNotOwn -and $hasSyncMentions -and ($agentsAscii.Count -eq 0) -and ($syncAscii.Count -eq 0) -and $writerNoBom) {
+        $agentHomeOk = $true
+        $agentHomeWhy = 'AGENTS.md Priority Agent + sync excludes customer/DBA + ASCII + manifest no-BOM writer'
+    } else {
+        $agentHomeWhy = "agent=$hasPriorityAgent notOwn=$hasNotOwn syncMentions=$hasSyncMentions agentsAscii=$($agentsAscii.Count) syncAscii=$($syncAscii.Count) writerNoBom=$writerNoBom"
+    }
+}
+Add-Gate 'CAT-T60' $agentHomeOk $agentHomeWhy
+
+
 
 if ($failed -gt 0) {
     Write-Host "Test-PriorityCatalog FAIL ($failed)"

@@ -1,0 +1,86 @@
+---
+name: priority-formprep
+description: >
+  Prepare one Priority form by internal name (ENAME) via Web SDK (EFORM + FORMPREPDRCT2).
+  SQL-gate on EXECPREPLOCK.UPD=N and LASTPREPDATE advanced. Return FORMPREPERRS on fail.
+  Use when the user says prepare a form, form prep, FORMPREP, compile a Priority form,
+  or /priority-formprep. User allowlists instances; never invent a WCF URL.
+---
+
+# Priority named-form prep
+
+Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
+
+Grab this skill from catalog MCP `https://mcp-priority.ntsa.uk/mcp` (`get_skill`). Compile **locally** against an instance the **user** listed. This catalog does not call SQL or WCF.
+
+The CE DEV1 pack at repo-root `src\Prepare-NamedForm.ps1` is a separate in-flight agent path. Do not change it.
+
+## Hard rules
+
+1. Never report prepared unless `ok=true` **and** `UPD='N'` **and** bigint `LASTPREPDATE` increased on **that instance**.
+2. Never `UPDATE … SET UPD='N'` to fake success.
+3. Never invent `webBaseUrl`, SQL instance, or company. Only ids from the user’s allowlist.
+4. Never log the web password. CredMan only.
+5. One name per call. SDK “successfully completed” is not success.
+6. If `instances.json` is missing or empty: **stop** and tell the user to fill it. Do not recon-guess live.
+
+## Allowlist (user fills this)
+
+`%USERPROFILE%\.priority-formprep\instances.json`  
+Override: env `PRIORITY_FORMPREP_INSTANCES`.
+
+Copy `instances.example.json` from `get_runner_files`. Many instances are allowed. Passwords stay in CredMan (`credentialTarget`). `allowLive` defaults false.
+
+## Loop
+
+1. `list_instances` (local plugin) or read the JSON (no secrets in stdout besides ids/titles).
+2. If more than one instance and the user did not name an id, ask.
+3. Prepare:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts\Prepare-NamedForm.ps1 -InstanceId <id> -Name <ENAME>
+```
+
+Or local MCP tool `prepare_form` `{ instance_id, name }`.
+
+4. Report `ok`, `reason`, lastprep before→after, upd before→after, every `errors[]` line.
+5. `no_cred` → stop; human sets CredMan for that row’s `credentialTarget`.
+6. `ok=false` → return FORMPREPERRS lines. Do not SQL-flip. Do not re-prep in a loop without a form change.
+
+## Success / errors
+
+| `ok` | `reason` | Meaning |
+|------|----------|---------|
+| true | prepared | UPD=N and lastPrep advanced |
+| false | still_unprepared | Still UPD=Y (also when Form Generator has not painted FCLMN ÔÇö SDK/FORMPREPERRS empty) |
+| false | lastprep_unchanged | UPD=N but date did not move |
+| false | name_missing | ENAME missing from `T$EXEC` **or** no `EXECPREPLOCK` row (Prepare-NamedForm INNER JOINs lock ÔÇö seed UPD=Y LASTPREPDATE=0 before first prep) |
+| false | no_cred | CredMan missing |
+| false | instance_unknown | id not in allowlist |
+| false | live_refused | Looks live/PRI and allowLive is false |
+
+On **fail**, `errors[]` always includes `source=FORMPREPERRS` (rows `TYPE: MESSAGE/CMESSAGE`, or “returned no rows after failed prep”). On **success**, FORMPREPERRS is omitted (clean compile leaves that form empty).
+
+Proc default `FORMPREPDRCT2` (Reprepare Form). Do not switch to `FORMPREPDRCT` unless the user pinned it; that proc can claim success without moving LASTPREPDATE.
+
+## Procedures / reports (TYPE=P / R)
+
+Named Form Prep does **not** prepare procedures. `EFORM` search returns form-not-found for `TYPE=P` (e.g. `ZCLA_BUILD`). Use **priority-procedure-prep** (`EXEC` → `REPPREPDIRECT2`, runner `src\Prepare-NamedProcedure.ps1`). Gate on `UPD=N` and `system\prep\d{T$EXEC}.prp` mtime — `LASTPREPDATE` may stay 0.
+
+## WCF compile warnings (2026-09-28)
+
+SDK step `messagetype=error` with text:
+
+`Variable with two different types : SORT`
+
+is a **trigger :VAR type clash** (see **priority-procedure-style**). Fix the trigger, then re-prep. Prep may still print “successfully completed” after the error — **do not trust that toast**; require UPD=N + LASTPREPDATE↑ and a clean errors list.
+
+### `formStart` still “unprepared” after SQL gate
+
+`EXECPREPLOCK.UPD=N` + advanced `LASTPREPDATE` does **not** always make `priority.formStart('ZCLA_…')` succeed. On CE DEV, stock forms (`PART`, `LOGPART`) open; many `ZCLA_*` still return *unprepared* on **direct** `formStart`.
+
+**Workaround for UAT/smoke:** open the **parent** that works (`PART`) then `startSubForm('ZCLA_PARTLONGDESC')` / `ZCLA_PARTLONGDREV` / child `ZCLA_PARTLONGDHIST`. See **priority-uat-wcf**.
+
+## Not this catalog
+
+Do not call `prepare_form` on `mcp-priority.ntsa.uk`. That host has no ERP SQL. Write runner files from `get_runner_files` (or use the Grok plugin) and run them where WCF and dictionary SQL are reachable.

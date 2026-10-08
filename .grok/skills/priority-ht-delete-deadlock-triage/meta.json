@@ -1,0 +1,6 @@
+{
+  "name": "priority-ht-delete-deadlock-triage",
+  "title": "Priority HT delete deadlock triage",
+  "description": "SQL 1205 on house-type delete: deadlock graph, FORMTRIGTEXT compare, index checks. Evidence only — no auto ALTER.",
+  "version": "1.0.0"
+}

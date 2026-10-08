@@ -1,6 +1,25 @@
-# agentic_fomprep (Priority Form Prep; spelling: formprep)
+# agentic_fomprep (Priority Agent home; spelling: formprep)
 
-Supervised desktop Form Prep for Clarkson Evans **DEV only** (headed Playwright on an unlocked DEV1 session). Not an overnight unattended agent until session-0 / headless proof exists.
+**Priority-generic** skills and runners for Priority ERP (Form Prep, dictionary SQL,
+Version Revision shells, OData, procedure style, UAT WCF kernel). Not a customer
+product repo.
+
+| Start here | |
+|------------|--|
+| **Grok / agent CWD** | Repo root + `AGENTS.md` (Priority Agent) |
+| **Skills on disk** | `.grok/skills/` — sync with `tools\Sync-PriorityGrokSkills.ps1` |
+| **Catalog / MCP** | `v2/apps/mcp-catalog/catalog/` |
+| **Playbooks** | `docs/skill-sources/` |
+
+Customer product work (e.g. Clarkson Evans Day Works) lives in **ce-dayworks**.
+CE instance/DBA packs live in **ce-priority**. Hosts in example pins are
+allowlist examples, not hard-wired production targets.
+
+### Form Prep pack (also in this repo)
+
+Supervised desktop Form Prep was the original ship target (headed Playwright on an
+unlocked DEV session). Named-form Web SDK path is preferred. Not an overnight
+unattended agent until session-0 / headless proof exists.
 
 Build plan (v1.0): `CE_Priority_Autonomous_Form_Prep_Build_Plan.pdf`.
 

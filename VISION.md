@@ -1,13 +1,18 @@
 # Vision — agentic_fomprep
 
-Priority-generic **Form Prep** and MCP catalog for Clarkson Evans **DEV only**.
-This file is the vision-first source for hostile MRB (quote it; do not invent product intent).
+Priority-generic **agent home**: Form Prep runners, MCP catalog, and
+`.grok/skills` so an agent started at the **repo root** has portable Priority
+skills without customer product packs. Example pins may use a DEV estate;
+execution still requires a user allowlist. This file is the vision-first source
+for hostile MRB (quote it; do not invent product intent).
 
 ## Mission
 
 - Ship a supervised desktop / Web SDK Form Prep pack and a Priority-generic skills catalog (`v2/apps/mcp-catalog`) that agents can harvest and run without embedding secrets.
-- Prefer Priority-generic naming over customer-specific `ce-priority-*` ids in the catalog.
+- Keep **Priority Agent** entry at repo root (`AGENTS.md` + synced `.grok/skills`).
+- Prefer Priority-generic naming over customer-specific `ce-*-*` ids in the default agent skill set.
 - Honesty-box harvest: learned playbooks return as skills / intake issues; catalog leaflets stay ASCII-safe for Windows PowerShell 5.1 where required.
+- After catalog harvests, re-run `tools/Sync-PriorityGrokSkills.ps1` so Grok CWD discovery stays current.
 
 ## Success (Form Prep)
 
@@ -28,10 +33,11 @@ Never report success from Playwright finish, winrun exit 0, or SQL flips of `UPD
 
 - Catalog `meta.json` files are UTF-8 **without BOM** (Node/MCP consumers break on `U+FEFF`).
 - `Test-PriorityCatalog.ps1` is the merge gate for catalog and harvest regressions (including priority-uat-wcf).
-- Skill-sources under `docs/skill-sources/` feed leaflets; `.grok/skills` mirrors stay in sync when the catalog says so.
+- Skill-sources under `docs/skill-sources/` feed leaflets; `.grok/skills` mirrors via `Sync-PriorityGrokSkills.ps1` (default set excludes Day Works product and DBA/backup leaflets).
 
 ## Non-goals
 
 - Overnight unattended Form Prep on locked session-0 without proof.
-- Live/PRI execution from this pack.
+- Live/PRI execution without an explicit user allowlist.
+- Owning CE Day Works product delivery (`ce-dayworks`) or CE DBA estate packs (`ce-priority`).
 - Replacing human judgment on Ignore Duplicate / AllUnprepared / cookie recapture stops.

@@ -802,6 +802,32 @@ if ((Test-Path -LiteralPath $agentsMd) -and (Test-Path -LiteralPath $syncPs1)) {
 Add-Gate 'CAT-T60' $agentHomeOk $agentHomeWhy
 
 
+# MRB #120: harvest-agent-skills Bobiverse intake dual-mode lesson (moved from bobiverse#3349)
+$harvestSkill = Join-Path $repo '.grok\skills\harvest-agent-skills\SKILL.md'
+$harvestOk = $false
+$harvestWhy = 'harvest-agent-skills intake lesson missing'
+if (Test-Path -LiteralPath $harvestSkill) {
+    $hs = Get-Content -LiteralPath $harvestSkill -Raw -Encoding UTF8
+    $hasSection = $hs -match 'Harvested lessons \(intake\)'
+    $hasRepo = $hs -match 'SimonBarnett/agentic_fomprep'
+    $hasReport = $hs -match 'Report-FomprepIntakeIssue'
+    $hasInvoke = $hs -match 'Invoke-FomprepHarvest'
+    $hasReferral = $hs -match 'skillbook-referral'
+    $hasBacklog = ($hs -match '#109') -and ($hs -match '#118')
+    $bom = $false
+    $bytes = [System.IO.File]::ReadAllBytes($harvestSkill)
+    if ($bytes.Length -ge 3 -and $bytes[0] -eq 0xEF -and $bytes[1] -eq 0xBB -and $bytes[2] -eq 0xBF) { $bom = $true }
+    if ($hasSection -and $hasRepo -and $hasReport -and $hasInvoke -and $hasReferral -and $hasBacklog -and -not $bom) {
+        $harvestOk = $true
+        $harvestWhy = 'harvest-agent-skills CAST IRON intake lesson + wrappers + referral + #109-#118 + no BOM'
+    } else {
+        $harvestWhy = "section=$hasSection repo=$hasRepo report=$hasReport invoke=$hasInvoke referral=$hasReferral backlog=$hasBacklog bom=$bom"
+    }
+}
+Add-Gate 'CAT-T61' $harvestOk $harvestWhy
+
+
+
 
 if ($failed -gt 0) {
     Write-Host "Test-PriorityCatalog FAIL ($failed)"

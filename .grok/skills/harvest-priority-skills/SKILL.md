@@ -45,9 +45,29 @@ procedure (trigger, owner skill, hard rule), write or edit:
 Commit on a **branch** and open a **PR**. Do not `git push origin main` for a
 skill harvest. Empty harvest: **no git commit**.
 
-If push/PR fails: open a `harvest:` / `FR:` issue with the patch description;
-on Bob seats without git push, use Bob intake/outbox so a push-capable seat
-lands the PR (same as DEV1 -> ionos path for issue #58).
+### CAST IRON - Bobiverse intake (same-turn file path)
+
+When push/PR fails, or when filing issue|fr|skill|harvest gaps without a ready
+patch, POST to Bobiverse intake in the **same turn** before idle (no GitHub
+account required; offline payloads queue and retry):
+
+`POST https://irc.ntsa.uk/bob/v1/intake` with payload
+`repo=SimonBarnett/agentic_fomprep` (and `kind` = `issue` | `fr` | `skill` |
+`harvest`). Always pass an explicit `-Repo SimonBarnett/agentic_fomprep` when
+using shared Bobiverse helpers (never omit `-Repo` so the filing lands on
+bobiverse by accident).
+
+Repo-local wrappers (default repo this product; scripts land in FR-004/FR-005):
+
+```powershell
+tools\Report-FomprepIntakeIssue.ps1 -Kind issue|fr|skill|harvest -Title "..." -Body "..."
+tools\Invoke-FomprepHarvest.ps1 -Summary "..." -Lesson "..."
+tools\Invoke-FomprepHarvest.ps1 -Flush
+```
+
+Branch + PR remains preferred for playbook landings. Intake is **mandatory**
+when a PR cannot open and for Priority-generic issue/FR gaps. Never put secrets
+in filings. Dual-mode CWD vs referred skillbook: `docs/skillbook-referral.md`.
 
 ## Scan
 
@@ -66,7 +86,7 @@ lands the PR (same as DEV1 -> ionos path for issue #58).
 - Do not invent ENAMEs or edit v1 Form Prep runners unless the FR says so.
 - Keep hours handoff (`priority-hours-handoff-haitch`) distinct from timesheet
   skills (`priority-hours-*` entry/search/OData).
-- CE DBA / hardware / install scripts → `ce-priority` (`docs/dba/`), never
+- CE DBA / hardware / install scripts -> `ce-priority` (`docs/dba/`), never
   re-land under `docs/skill-sources/dba/` here (pointer README only).
 
 ## Do not

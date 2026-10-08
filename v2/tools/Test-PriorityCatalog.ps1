@@ -826,6 +826,55 @@ if (Test-Path -LiteralPath $harvestSkill) {
 }
 Add-Gate 'CAT-T61' $harvestOk $harvestWhy
 
+# MRB #134 / FR-002: durable CAST IRON Bobiverse intake subsection (not only Harvested lessons bullet)
+$agentsIntakeSkill = Join-Path $repo '.grok\skills\harvest-agent-skills\SKILL.md'
+$t64Ok = $false
+$t64Why = 'CAT-T64 harvest-agent-skills CAST IRON Bobiverse intake subsection missing'
+if (Test-Path -LiteralPath $agentsIntakeSkill) {
+    $t64 = Get-Content -LiteralPath $agentsIntakeSkill -Raw -Encoding UTF8
+    $hasHeading = $t64 -match 'CAST IRON - Bobiverse intake'
+    $hasUrl = $t64 -match 'https://irc\.ntsa\.uk/bob/v1/intake'
+    $hasRepo = $t64 -match 'SimonBarnett/agentic_fomprep'
+    $hasReport = $t64 -match 'Report-FomprepIntakeIssue'
+    $hasInvoke = $t64 -match 'Invoke-FomprepHarvest'
+    $bom64 = $false
+    $b64 = [System.IO.File]::ReadAllBytes($agentsIntakeSkill)
+    if ($b64.Length -ge 3 -and $b64[0] -eq 0xEF -and $b64[1] -eq 0xBB -and $b64[2] -eq 0xBF) { $bom64 = $true }
+    if ($hasHeading -and $hasUrl -and $hasRepo -and $hasReport -and $hasInvoke -and -not $bom64) {
+        $t64Ok = $true
+        $t64Why = 'CAST IRON Bobiverse intake subsection + URL + repo + Report/Invoke wrappers + no BOM'
+    } else {
+        $t64Why = "heading=$hasHeading url=$hasUrl repo=$hasRepo report=$hasReport invoke=$hasInvoke bom=$bom64"
+    }
+}
+Add-Gate 'CAT-T64' $t64Ok $t64Why
+
+# MRB #137 / FR-003: harvest-priority-skills CAST IRON Bobiverse intake subsection
+$prioHarvestSkill = Join-Path $repo '.grok\skills\harvest-priority-skills\SKILL.md'
+$t65Ok = $false
+$t65Why = 'CAT-T65 harvest-priority-skills CAST IRON Bobiverse intake subsection missing'
+if (Test-Path -LiteralPath $prioHarvestSkill) {
+    $t65 = Get-Content -LiteralPath $prioHarvestSkill -Raw -Encoding UTF8
+    $hasHeading = $t65 -match 'CAST IRON - Bobiverse intake'
+    $hasUrl = $t65 -match 'https://irc\.ntsa\.uk/bob/v1/intake'
+    $hasRepo = $t65 -match 'SimonBarnett/agentic_fomprep'
+    $hasReport = $t65 -match 'Report-FomprepIntakeIssue'
+    $hasInvoke = $t65 -match 'Invoke-FomprepHarvest'
+    $hasCeDay = $t65 -match 'ce-dayworks'
+    $hasCePri = $t65 -match 'ce-priority'
+    $hasSync = $t65 -match 'Sync-PriorityGrokSkills\.ps1'
+    $bom65 = $false
+    $b65 = [System.IO.File]::ReadAllBytes($prioHarvestSkill)
+    if ($b65.Length -ge 3 -and $b65[0] -eq 0xEF -and $b65[1] -eq 0xBB -and $b65[2] -eq 0xBF) { $bom65 = $true }
+    if ($hasHeading -and $hasUrl -and $hasRepo -and $hasReport -and $hasInvoke -and $hasCeDay -and $hasCePri -and $hasSync -and -not $bom65) {
+        $t65Ok = $true
+        $t65Why = 'CAST IRON Bobiverse intake + wrappers + ce-dayworks/ce-priority routing + Sync-PriorityGrokSkills + no BOM'
+    } else {
+        $t65Why = "heading=$hasHeading url=$hasUrl repo=$hasRepo report=$hasReport invoke=$hasInvoke day=$hasCeDay pri=$hasCePri sync=$hasSync bom=$bom65"
+    }
+}
+Add-Gate 'CAT-T65' $t65Ok $t65Why
+
 
 # FR #121 / hours webhook agent skills
 $hoursIds = @(

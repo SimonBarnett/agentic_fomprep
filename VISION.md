@@ -1,4 +1,4 @@
-# Vision — agentic_fomprep
+# Vision - agentic_fomprep
 
 Priority-generic **agent home**: Form Prep runners, MCP catalog, and
 `.grok/skills` so an agent started at the **repo root** has portable Priority
@@ -12,6 +12,10 @@ for hostile MRB (quote it; do not invent product intent).
 - Keep **Priority Agent** entry at repo root (`AGENTS.md` + synced `.grok/skills`).
 - Prefer Priority-generic naming over customer-specific `ce-*-*` ids in the default agent skill set.
 - Honesty-box harvest: learned playbooks return as skills / intake issues; catalog leaflets stay ASCII-safe for Windows PowerShell 5.1 where required.
+- Honesty-box filings for this product use Bobiverse intake
+  (`POST https://irc.ntsa.uk/bob/v1/intake`) with
+  `repo=SimonBarnett/agentic_fomprep` (never omit the product repo). Dual-mode:
+  CWD agent at repo root **or** referred skillbook (`docs/skillbook-referral.md`).
 - After catalog harvests, re-run `tools/Sync-PriorityGrokSkills.ps1` so Grok CWD discovery stays current.
 
 ## Success (Form Prep)
@@ -28,6 +32,9 @@ Never report success from Playwright finish, winrun exit 0, or SQL flips of `UPD
 - **DEV only:** environment `DEV`, SQL instance and web host pinned to the DEV stack; refuse live/PRI.
 - Headed Playwright needs an unlocked DEV1 session until session-0 / headless proof exists.
 - Autonomous named-form path (`Prepare-NamedForm.ps1` / FORMPREPDRCT2) is the preferred non-UI success path when available.
+- Product issue / FR / skill / harvest filings bound to Bobiverse intake
+  `repo=SimonBarnett/agentic_fomprep` whether the agent CWD is this repo or a
+  referred skillbook session (see Mission honesty-box intake bullet).
 
 ## Catalog / MCP
 

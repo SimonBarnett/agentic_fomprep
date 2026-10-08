@@ -935,6 +935,44 @@ if (Test-Path -LiteralPath $harvestTool) {
 }
 Add-Gate 'CAT-T67' $t67Ok $t67Why
 
+# FR #115 / FR-007: docs/skillbook-referral.md Mode A/B intake needles
+# (S1 AGENTS=CAT-T63, S2 harvest skills=CAT-T64/T65, S3 tools=CAT-T66/T67, S4 this gate)
+$skillbookDoc = Join-Path $repo 'docs\skillbook-referral.md'
+$t68Ok = $false
+$t68Why = 'CAT-T68 docs/skillbook-referral.md missing'
+if (Test-Path -LiteralPath $skillbookDoc) {
+    $sb = Get-Content -LiteralPath $skillbookDoc -Raw -Encoding UTF8
+    $hasUrl = $sb -match 'https://irc\.ntsa\.uk/bob/v1/intake'
+    $hasRepo = $sb -match 'SimonBarnett/agentic_fomprep'
+    $hasModeA = $sb -match 'Mode A'
+    $hasModeB = $sb -match 'Mode B'
+    $hasReport = $sb -match 'Report-FomprepIntakeIssue'
+    $hasInvoke = $sb -match 'Invoke-FomprepHarvest'
+    $hasCeDay = $sb -match 'ce-dayworks'
+    $hasCePri = $sb -match 'ce-priority'
+    $bom68 = $false
+    $b68 = [System.IO.File]::ReadAllBytes($skillbookDoc)
+    if ($b68.Length -ge 3 -and $b68[0] -eq 0xEF -and $b68[1] -eq 0xBB -and $b68[2] -eq 0xBF) { $bom68 = $true }
+    $sbAscii = @()
+    $sbi = 0
+    Get-Content -LiteralPath $skillbookDoc -Encoding UTF8 | ForEach-Object {
+        $sbi++
+        foreach ($ch in $_.ToCharArray()) {
+            if ([int]$ch -gt 127) {
+                $sbAscii += ('L{0}:U+{1:X4}' -f $sbi, [int]$ch)
+                break
+            }
+        }
+    }
+    if ($hasUrl -and $hasRepo -and $hasModeA -and $hasModeB -and $hasReport -and $hasInvoke -and $hasCeDay -and $hasCePri -and ($sbAscii.Count -eq 0) -and -not $bom68) {
+        $t68Ok = $true
+        $t68Why = 'skillbook-referral Mode A/B + intake URL + home repo + Report/Invoke + ce wrong-book + ASCII no BOM'
+    } else {
+        $t68Why = "url=$hasUrl repo=$hasRepo A=$hasModeA B=$hasModeB report=$hasReport invoke=$hasInvoke day=$hasCeDay pri=$hasCePri ascii=$($sbAscii.Count) bom=$bom68"
+    }
+}
+Add-Gate 'CAT-T68' $t68Ok $t68Why
+
 # FR-010 / #118 / #169: DryRun fixture for intake tools default repo (offline; no live POST)
 # CAT-T69 reserved on main for VISION honesty-box (#166); CAT-T70 for PRIORITY-AGENT-SKILLS (#171).
 $fr010 = Join-Path $repo 'v2\tests\test-fr010-intake-tools-dryrun-default-repo.ps1'

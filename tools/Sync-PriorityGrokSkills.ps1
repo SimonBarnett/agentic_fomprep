@@ -8,7 +8,7 @@
   Destination:     .grok/skills/<id>/SKILL.md
 
   Default set = Priority Agent skills (programming, formprep, shells, OData, UAT kernel,
-  hours entry patterns, MCP leaflets). Excludes CE Day Works product, CE DBA/backup,
+  hours entry patterns, Bob Fleet hours webhook skills, MCP leaflets). Excludes CE Day Works product, CE DBA/backup,
   and named-person handoff skills.
 
   Use -IncludeDba to also sync backup/health DBA leaflets.
@@ -46,7 +46,14 @@ $ExcludeDba = @(
 # Always keep harvest foundation skills (authored under .grok/skills, not catalog)
 $PreserveAlways = @(
     'harvest-agent-skills',
-    'harvest-priority-skills'
+    'harvest-priority-skills',
+    'hours-log-work-session',
+    'hours-classify',
+    'hours-describe',
+    'hours-evidence',
+    'hours-correct',
+    'hours-repo-metadata',
+    'hours-draft'
 )
 
 if (-not (Test-Path -LiteralPath $CatalogRoot)) {

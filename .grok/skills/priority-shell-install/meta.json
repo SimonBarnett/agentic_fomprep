@@ -1,0 +1,6 @@
+{
+  "name": "priority-shell-install",
+  "title": "Priority shell install",
+  "description": "Install one caller-supplied Priority upgrade shell onto a user-allowlisted instance. Parse and path-allowlist before WCF. Catalog does not install.",
+  "version": "0.1.0"
+}

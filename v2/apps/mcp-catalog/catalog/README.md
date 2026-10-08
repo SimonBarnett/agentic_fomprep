@@ -2,6 +2,14 @@
 
 Drop a folder here. The Amplify MCP lists every directory that contains `meta.json`. No catalog code change required.
 
+After adding or editing a **Priority Agent** leaflet (`priority-*` / `prepare-all-*`), sync Grok discovery:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File ..\..\..\..\tools\Sync-PriorityGrokSkills.ps1
+```
+
+That copies `SKILL.md` into repo-root `.grok/skills/<id>/` (default set skips Day Works product and DBA/backup). See root `AGENTS.md`.
+
 ```
 catalog/<skill-name>/
   meta.json              # required: name, title, description, version

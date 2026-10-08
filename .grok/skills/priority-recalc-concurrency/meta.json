@@ -1,0 +1,6 @@
+{
+  "name": "priority-recalc-concurrency",
+  "title": "Recalc concurrency",
+  "description": "Edit delete/recalc paths under live Stack: ELEMENT sign for checkpoint deletes, RECALC clear, SWP pre-purge, stale-price consumers.",
+  "version": "1.0.0"
+}

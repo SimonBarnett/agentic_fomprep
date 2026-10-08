@@ -1,0 +1,6 @@
+{
+  "name": "priority-version-revision-discipline",
+  "title": "Version Revision discipline",
+  "description": "Flag/add Revision Steps (TAKE*) before Prepare; TAKETRIG shape; refuse empty UPGNOTES; verify INSTALLEDUPGTRIG after install.",
+  "version": "1.1.0"
+}

@@ -1,0 +1,6 @@
+{
+  "name": "priority-hours-enter-line",
+  "title": "Priority hours enter line",
+  "description": "UI entry on Reports of Project Hrs/Expenses: complete every column, WBS via F6, Ctrl+Enter for a new blank row; never overwrite.",
+  "version": "1.0.0"
+}

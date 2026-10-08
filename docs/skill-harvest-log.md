@@ -1,5 +1,7 @@
 # Skill harvest log
 
+- 2026-10-08: Priority Agent home cleanup — repo-root `AGENTS.md`, `tools/Sync-PriorityGrokSkills.ps1` syncs portable `priority-*` catalog leaflets into `.grok/skills` (excludes Day Works product + DBA/backup by default). README/VISION point at generic Priority Agent; CE DEV1 stays example pin in `agent_readme.md`.
+
 - 2026-10-08 (DEV1 / Day Works WP4): New skill `priority-create-table` + `CREATE_TABLE.md`. Form Generator *Table ZCLA_ELEDITDW is missing column GUID* was CHAR `COLUMNS.SIZE=0`; Tabula *Ignore Duplicate Values* was bare `PK_*` with `IGNORE_DUP_KEY=OFF`. Rules: unique index `[T#1#COL…] WITH (IGNORE_DUP_KEY=ON)`; CHAR/DATE SIZE=WIDTH; REAL/INT SIZE=8. Updated `DICTIONARY_SQL.md` + catalog `priority-dictionary-sql` v1.1.0.
 
 - 2026-09-24: Added foundation honesty-box skill at `.grok/skills/harvest-agent-skills/SKILL.md` (home `https://github.com/SimonBarnett/agentic_fomprep`). Table row: Formprep / MSSQL fleet playbooks -> `SimonBarnett/agentic_fomprep`. Product playbooks remain under `v2/plugins/*/skills/` and `v2/apps/mcp-catalog/catalog/`.

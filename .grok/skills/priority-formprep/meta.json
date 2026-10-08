@@ -1,0 +1,6 @@
+{
+  "name": "priority-formprep",
+  "title": "Priority named-form prep",
+  "description": "Prepare one Priority form by internal ENAME via Web SDK. SQL-gate EXECPREPLOCK. Return FORMPREPERRS on fail. User allowlists instances; this catalog does not compile.",
+  "version": "1.0.0"
+}

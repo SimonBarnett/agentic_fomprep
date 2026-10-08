@@ -1,8 +1,10 @@
-# Agent handover — prepare one Priority form (DEV)
+# Agent handover — prepare one Priority form (DEV example)
 
-This is the method. Read this file first. Do not invent a second executor.
+**Priority Agent entry is `AGENTS.md` at the repo root** (portable skills in
+`.grok/skills`). This file is the **CE DEV1 example pin** for Named Form Prep —
+hosts and CredMan targets here are allowlist examples, not the product identity.
 
-You run on **CE-PRIORITY-DEV1** (NetBIOS `CE-PRIORITY-DEV`) against Clarkson Evans **DEV only**. Repo: `M:\py\agentic_fomprep` (`\\10.220.0.5\dev\py\agentic_fomprep`). HEAD at handover: `17a23ed` plus this file.
+You run on **CE-PRIORITY-DEV1** (NetBIOS `CE-PRIORITY-DEV`) against Clarkson Evans **DEV only** when that instance is allowlisted. Repo: `M:\py\agentic_fomprep` (`\\10.220.0.5\dev\py\agentic_fomprep`) or `C:\ai\agentic_fomprep`.
 
 Entry point: **`src\Prepare-NamedForm.ps1`**. Headless Web SDK (`EFORM` → `FORMPREPDRCT2` over WCF). No Chrome. No Playwright. No park. Password from CredMan, never from git.
 

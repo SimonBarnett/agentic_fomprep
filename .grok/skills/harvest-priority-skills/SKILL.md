@@ -39,7 +39,7 @@ procedure (trigger, owner skill, hard rule), write or edit:
 1. `docs/skill-sources/<area>/` - authoritative procedure body (Priority-generic).
 2. `v2/apps/mcp-catalog/catalog/<skill-id>/SKILL.md` + `meta.json` - catalog leaflet.
 3. Dated note under `docs/*-skill-harvest-YYYY-MM-DD.md` when the batch is material.
-4. Optional `.grok/skills/<name>/SKILL.md` for Grok-local install mirrors.
+4. Run `tools/Sync-PriorityGrokSkills.ps1` so repo-root `.grok/skills` matches the catalog (Priority Agent CWD discovery).
 5. Append `docs/skill-harvest-log.md`.
 
 Commit on a **branch** and open a **PR**. Do not `git push origin main` for a

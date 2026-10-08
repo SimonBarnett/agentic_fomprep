@@ -21,3 +21,4 @@ capture/
 
 # Offline Bobiverse intake queue (Report-FomprepIntakeIssue / Invoke-FomprepHarvest)
 report-outbox/
+harvest-outbox/

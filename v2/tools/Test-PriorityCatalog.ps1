@@ -904,6 +904,37 @@ if (Test-Path -LiteralPath $reportTool) {
 }
 Add-Gate 'CAT-T66' $t66Ok $t66Why
 
+# MRB #150 / FR-005: tools/Invoke-FomprepHarvest.ps1 session harvest
+$harvestTool = Join-Path $repo 'tools\Invoke-FomprepHarvest.ps1'
+$t67Ok = $false
+$t67Why = 'CAT-T67 Invoke-FomprepHarvest.ps1 missing'
+if (Test-Path -LiteralPath $harvestTool) {
+    $ht = Get-Content -LiteralPath $harvestTool -Raw -Encoding UTF8
+    $hasDefault = $ht -match "Repo\s*=\s*'SimonBarnett/agentic_fomprep'" -or $ht -match 'defaultRepo\s*=\s*''SimonBarnett/agentic_fomprep'''
+    $hasUrl = $ht -match 'https://irc\.ntsa\.uk/bob/v1/intake'
+    $hasFlush = $ht -match '\[switch\]\$Flush'
+    $hasDry = $ht -match '\[switch\]\$DryRun'
+    $hasNoDel = $ht -match '\[switch\]\$NoDelegate'
+    $hasKind = $ht -match "kind\s*=\s*'harvest'" -or $ht -match 'kind\s*=\s*"harvest"'
+    $hasReportRel = $ht -match 'Report-FomprepIntakeIssue'
+    $bom67 = $false
+    $b67 = [System.IO.File]::ReadAllBytes($harvestTool)
+    if ($b67.Length -ge 3 -and $b67[0] -eq 0xEF -and $b67[1] -eq 0xBB -and $b67[2] -eq 0xBF) { $bom67 = $true }
+    $giPath = Join-Path $repo '.gitignore'
+    $giHasHarvest = $false
+    if (Test-Path -LiteralPath $giPath) {
+        $giRaw = Get-Content -LiteralPath $giPath -Raw -Encoding UTF8
+        $giHasHarvest = $giRaw -match '(?m)^harvest-outbox/'
+    }
+    if ($hasDefault -and $hasUrl -and $hasFlush -and $hasDry -and $hasNoDel -and $hasKind -and $hasReportRel -and $giHasHarvest -and -not $bom67) {
+        $t67Ok = $true
+        $t67Why = 'Invoke-FomprepHarvest default repo + Flush/DryRun/NoDelegate + kind=harvest + Report sibling + harvest-outbox gitignore + no BOM'
+    } else {
+        $t67Why = "default=$hasDefault url=$hasUrl flush=$hasFlush dry=$hasDry nodel=$hasNoDel kind=$hasKind report=$hasReportRel gitignore=$giHasHarvest bom=$bom67"
+    }
+}
+Add-Gate 'CAT-T67' $t67Ok $t67Why
+
 
 # FR #121 / hours webhook agent skills
 $hoursIds = @(

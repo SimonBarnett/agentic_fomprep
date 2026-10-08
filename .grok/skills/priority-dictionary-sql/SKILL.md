@@ -23,23 +23,23 @@ Foundation: harvest-priority-skills -> report back to https://github.com/SimonBa
 5. `CATALOG` live columns are `TNAME`, `T$TABLE`, `SIZE` only (no TITLE/EDES
    on CE DEV).
 6. PowerShell helpers must not pipeline-log (`Tee-Object`) inside functions
-   that `return` ids — logging pollutes the return as `Object[]`.
+   that `return` ids - logging pollutes the return as `Object[]`.
 7. Physical unique indexes / PKs: **`WITH (IGNORE_DUP_KEY = ON)`** (Tabula).
    Same for `T$$` shadows. Dedupe before CREATE if needed.
 8. Child joins need **FORMCLMNSA** `= :$$.COL` or Form Prep rewrites FORMJOINS.
 
 ## Minimal form bootstrap (after physical table + T$$)
 
-1. `INSERT CATALOG (TNAME, SIZE) ÔÇª; SELECT SCOPE_IDENTITY()`
-2. `INSERT COLUMNS (T$TABLE, POS, CNAME, TYPE, WIDTH, SIZE, TITLE) ÔÇª`
-3. `INSERT INDEXES (T$TABLE, TYPE, PRIO) ÔÇª` then `INDCLMNS`
-4. `INSERT T$EXEC (ENAME, TITLE, T$TABLE, TYPE, EDES, ÔÇª) ÔÇª` TYPE=`F`
-5. `INSERT EXECMODULE (T$EXEC, MODULE)` ÔÇö CE Day Works forms use **MODULE=1**
-6. `INSERT EXECPREPLOCK (ÔÇª) UPD='Y', LASTPREPDATE=0` ÔÇö required before
-   Named Form Prep (`Prepare-NamedForm` INNER JOINs lock; missing ÔåÆ
+1. `INSERT CATALOG (TNAME, SIZE) ...; SELECT SCOPE_IDENTITY()`
+2. `INSERT COLUMNS (T$TABLE, POS, CNAME, TYPE, WIDTH, SIZE, TITLE) ...`
+3. `INSERT INDEXES (T$TABLE, TYPE, PRIO) ...` then `INDCLMNS`
+4. `INSERT T$EXEC (ENAME, TITLE, T$TABLE, TYPE, EDES, ...) ...` TYPE=`F`
+5. `INSERT EXECMODULE (T$EXEC, MODULE)` - CE Day Works forms use **MODULE=1**
+6. `INSERT EXECPREPLOCK (...) UPD='Y', LASTPREPDATE=0` - required before
+   Named Form Prep (`Prepare-NamedForm` INNER JOINs lock; missing ->
    `reason=name_missing`)
 7. FORMLINKS / FORMJOINS as needed
-8. Form Generator FCLMN paint, then Named Form Prep ÔåÆ UPD=N + LASTPREPDATEÔåæ
+8. Form Generator FCLMN paint, then Named Form Prep -> UPD=N + LASTPREPDATE->
 
 ## Related
 

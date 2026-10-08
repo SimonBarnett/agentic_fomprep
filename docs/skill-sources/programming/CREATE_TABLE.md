@@ -21,7 +21,7 @@ CREATE UNIQUE CLUSTERED INDEX [ZCLA_EXAMPLE#1#EDITID#GUID]
   WITH (IGNORE_DUP_KEY = ON);
 ```
 
-Name pattern: `TABLE#1#COL1#COL2…` (Tabula style). Same rule for
+Name pattern: `TABLE#1#COL1#COL2...` (Tabula style). Same rule for
 `pritempdb` `T$$` shadows when they have unique keys.
 
 Symptom if wrong: Tabula reports *You have defined tables with unique
@@ -50,10 +50,10 @@ See `DICTIONARY_SQL.md`. Short path:
 
 1. Physical table + unique index (`IGNORE_DUP_KEY=ON`)
 2. `T$$` shadow in `pritempdb`
-3. `CATALOG` → `COLUMNS` (correct SIZE) → `INDEXES` / `INDCLMNS`
-4. `T$EXEC` TYPE=F → `EXECMODULE` → `EXECPREPLOCK`
+3. `CATALOG` -> `COLUMNS` (correct SIZE) -> `INDEXES` / `INDCLMNS`
+4. `T$EXEC` TYPE=F -> `EXECMODULE` -> `EXECPREPLOCK`
 5. FORMLINKS / FORMJOINS / FORMCLMNSA as needed
-6. Form Generator FCLMN paint → Named Form Prep → `UPD=N`
+6. Form Generator FCLMN paint -> Named Form Prep -> `UPD=N`
 
 ### 4. Prefer shell DBI `CREATE TABLE` + Prepare Upgrade
 
@@ -65,8 +65,8 @@ Prepare-emitted DBI when possible (`VERSION_REVISION.md`).
 ```sql
 -- Physical
 ALTER TABLE dbo.T DROP CONSTRAINT PK_T;  -- if bare PK
-CREATE UNIQUE CLUSTERED INDEX [T#1#COL…]
-  ON dbo.T (…) WITH (IGNORE_DUP_KEY = ON);
+CREATE UNIQUE CLUSTERED INDEX [T#1#COL...]
+  ON dbo.T (...) WITH (IGNORE_DUP_KEY = ON);
 
 -- Dictionary SIZE
 UPDATE COLUMNS SET SIZE = CASE

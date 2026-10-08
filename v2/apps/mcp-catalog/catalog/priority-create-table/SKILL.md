@@ -16,16 +16,16 @@ Grab from catalog MCP `https://mcp-priority.ntsa.uk/mcp` (`get_skill` with `name
 
 ## Hard rules
 
-1. **Do not** use bare `CONSTRAINT … PRIMARY KEY` / unique indexes with
+1. **Do not** use bare `CONSTRAINT ... PRIMARY KEY` / unique indexes with
    `IGNORE_DUP_KEY` off. Use:
-   `CREATE UNIQUE CLUSTERED INDEX [T#1#COL…] ON dbo.T (…) WITH (IGNORE_DUP_KEY = ON)`.
+   `CREATE UNIQUE CLUSTERED INDEX [T#1#COL...] ON dbo.T (...) WITH (IGNORE_DUP_KEY = ON)`.
 2. **`COLUMNS.SIZE` must never be 0.**
-   - CHAR / DATE / TIME / DAY → `SIZE = WIDTH`
-   - REAL → `SIZE = 8`
-   - INT → `SIZE = 8`
+   - CHAR / DATE / TIME / DAY -> `SIZE = WIDTH`
+   - REAL -> `SIZE = 8`
+   - INT -> `SIZE = 8`
 3. Form Generator **"Table T is missing column C"** with a visible `COLUMNS`
-   row almost always means CHAR `SIZE=0` (or client cache — log out/in after heal).
-4. Tabula **"Ignore Duplicate Values"** naming table T → that table's unique
+   row almost always means CHAR `SIZE=0` (or client cache - log out/in after heal).
+4. Tabula **"Ignore Duplicate Values"** naming table T -> that table's unique
    index has `ignore_dup_key=0`. Rebuild with ON.
 5. Dictionary inserts stay IDENTITY-safe (`priority-dictionary-sql`).
 6. After physical+dict: Form Generator FCLMN paint, then Named Form Prep

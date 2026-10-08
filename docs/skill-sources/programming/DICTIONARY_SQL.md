@@ -19,7 +19,7 @@ Insert without those columns; read `SCOPE_IDENTITY()`.
 - INDEXES: **`T$KEY`** (not T$INDEX); children in **INDCLMNS** `(T$KEY, T$COLUMN, PRIO)`
 - CATALOG live: `TNAME`, `T$TABLE`, `SIZE` only
 
-## COLUMNS.SIZE (CAST IRON — never 0)
+## COLUMNS.SIZE (CAST IRON - never 0)
 
 | TYPE | SIZE |
 |------|------|
@@ -36,9 +36,9 @@ even when `CNAME` and the physical column exist. Full create path:
 1. Physical table + `pritempdb` `T$$` shadow
 2. CATALOG + COLUMNS + INDEXES/INDCLMNS
 3. T$EXEC TYPE=F + EXECMODULE (MODULE=1 for CE Internal Development)
-4. **EXECPREPLOCK** row (UPD=Y, LASTPREPDATE=0) ÔÇö without it Prepare-NamedForm returns `name_missing`
+4. **EXECPREPLOCK** row (UPD=Y, LASTPREPDATE=0) - without it Prepare-NamedForm returns `name_missing`
 5. Form Generator FCLMN paint
-6. Named Form Prep ÔåÆ UPD=N and LASTPREPDATE advanced
+6. Named Form Prep -> UPD=N and LASTPREPDATE advanced
 
 ## Physical unique indexes (SQL Server)
 
@@ -50,7 +50,7 @@ ON dbo.TNAME (COL)
 WITH (IGNORE_DUP_KEY = ON);
 ```
 
-Bare SSMS PKs (option OFF) cause Tabula login: *Ignore Duplicate Values* — first company often reported as `system`. See `IGNORE_DUP_KEY.md`.
+Bare SSMS PKs (option OFF) cause Tabula login: *Ignore Duplicate Values* - first company often reported as `system`. See `IGNORE_DUP_KEY.md`.
 
 ## Child form joins
 

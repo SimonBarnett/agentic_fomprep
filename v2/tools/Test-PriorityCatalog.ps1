@@ -726,6 +726,45 @@ Get-Content -LiteralPath $catalogPs1 -Encoding UTF8 | ForEach-Object {
 }
 Add-Gate 'CAT-T58' ($gateDupes.Count -eq 0) $(if ($gateDupes.Count -eq 0) { 'Add-Gate ids unique in Test-PriorityCatalog.ps1' } else { 'duplicate gates: ' + ($gateDupes -join ', ') })
 
+# MRB #107: priority-create-table harvest (IGNORE_DUP_KEY + COLUMNS.SIZE never 0)
+$createSkill = Join-Path $catalog 'priority-create-table\SKILL.md'
+$createMeta = Join-Path $catalog 'priority-create-table\meta.json'
+$createSrc = Join-Path $repo 'docs\skill-sources\programming\CREATE_TABLE.md'
+$createGrok = Join-Path $repo '.grok\skills\priority-create-table\SKILL.md'
+$createOk = $false
+$createWhy = 'priority-create-table missing'
+if ((Test-Path -LiteralPath $createSkill) -and (Test-Path -LiteralPath $createMeta) -and (Test-Path -LiteralPath $createSrc)) {
+    $createBody = (Get-Content -LiteralPath $createSkill -Raw -Encoding UTF8) + "`n" + (Get-Content -LiteralPath $createSrc -Raw -Encoding UTF8)
+    if (Test-Path -LiteralPath $createGrok) { $createBody += "`n" + (Get-Content -LiteralPath $createGrok -Raw -Encoding UTF8) }
+    $hasIgnore = $createBody -match 'IGNORE_DUP_KEY\s*=\s*ON'
+    $hasSize = ($createBody -match 'SIZE\s+never\s+0|never\s+be\s+0') -and ($createBody -match 'SIZE\s*=\s*WIDTH|SIZE = WIDTH') -and ($createBody -match 'SIZE\s*=\s*8|SIZE = 8')
+    $createAsciiHits = @()
+    foreach ($cf in @($createSkill, $createSrc, $createGrok)) {
+        if (-not (Test-Path -LiteralPath $cf)) { continue }
+        $ci2 = 0
+        Get-Content -LiteralPath $cf -Encoding UTF8 | ForEach-Object {
+            $ci2++
+            foreach ($ch in $_.ToCharArray()) {
+                if ([int]$ch -gt 127) {
+                    $createAsciiHits += ('{0}:L{1}:U+{2:X4}' -f (Split-Path $cf -Leaf), $ci2, [int]$ch)
+                    break
+                }
+            }
+        }
+    }
+    $metaRaw = [System.IO.File]::ReadAllBytes((Resolve-Path -LiteralPath $createMeta))
+    $metaBom = ($metaRaw.Length -ge 3 -and $metaRaw[0] -eq 0xEF -and $metaRaw[1] -eq 0xBB -and $metaRaw[2] -eq 0xBF)
+    if ($hasIgnore -and $hasSize -and ($createAsciiHits.Count -eq 0) -and (-not $metaBom)) {
+        $createOk = $true
+        $createWhy = 'priority-create-table IGNORE_DUP_KEY + SIZE + ASCII + meta no BOM'
+    } else {
+        $createWhy = "ignore=$hasIgnore size=$hasSize asciiHits=$($createAsciiHits.Count) metaBom=$metaBom"
+        if ($createAsciiHits.Count -gt 0) { $createWhy += ' ' + ($createAsciiHits -join ',') }
+    }
+}
+Add-Gate 'CAT-T59' $createOk $createWhy
+
+
 if ($failed -gt 0) {
     Write-Host "Test-PriorityCatalog FAIL ($failed)"
     exit 1

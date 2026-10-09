@@ -46,5 +46,5 @@ Never report success from Playwright finish, winrun exit 0, or SQL flips of `UPD
 
 - Overnight unattended Form Prep on locked session-0 without proof.
 - Live/PRI execution without an explicit user allowlist.
-- Owning CE Day Works product delivery (`ce-dayworks`) or CE DBA estate packs (`ce-priority`).
+- Owning CE Day Works product delivery (`ce-priority/dayworks`, formerly `ce-dayworks`) or CE DBA estate packs (`ce-priority`).
 - Replacing human judgment on Ignore Duplicate / AllUnprepared / cookie recapture stops.

@@ -28,7 +28,7 @@ learned a repeatable Priority procedure or hit a wrong skill.
 |----------|------|----------------|
 | Priority-**generic** catalog, formprep, hours, UAT, OData, shell, Priority MCP (no CE install required) | `SimonBarnett/agentic_fomprep` | `harvest-priority-skills` (this file) |
 | Clarkson Evans Priority instance / hardware / DBA / CE customisations | `SimonBarnett/ce-priority` | `.grok/skills/harvest-agent-skills` |
-| CE Day Works **product** only | `SimonBarnett/ce-dayworks` | `.grok/skills/harvest-agent-skills` |
+| CE Day Works **product** only | `SimonBarnett/ce-priority`, folder `dayworks/` (was `SimonBarnett/ce-dayworks`) | `dayworks/.grok/skills/harvest-agent-skills` |
 | Fleet / build / MRB / Bob jobs | `SimonBarnett/agentic_build` | `harvest-agent-skills` |
 | IRC wire, talk seats, SEAL, moot, file, dumb, invite-airc, Ergo, Watch-Bobiverse, Halloy | `SimonBarnett/agentic_irc` | harvest into that repo's `.grok/skills/` |
 | Other skill products | that public repo | `.grok/skills/harvest-agent-skills/SKILL.md` |

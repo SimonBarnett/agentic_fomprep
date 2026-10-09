@@ -72,6 +72,13 @@ until the user allowlists an instance for this session.
    `harvest-priority-skills` / intake above (never push `main` for harvest).
    Product filings stay on `SimonBarnett/agentic_fomprep`; fleet/Bob/IRC defects
    go to `SimonBarnett/bobiverse`.
+7. **Project work log (billing evidence):** whenever you record hours (Bob
+   webhook open/close or closed-in-one-POST, or Priority timesheet draft/post),
+   append a summary of **actual work done** to `{customer}/{project}/log.md`
+   (in a customer repo whose project lives at the root, use `{project}/log.md`).
+   **Create the file if missing.** Dated entries with enough detail for a later
+   billing query (what shipped, PRs/issues, hours day, Bob hours entry id).
+   Never put secrets in `log.md`. Skill: `hours-log-work-session`.
 
 ## Default tools in this repo
 

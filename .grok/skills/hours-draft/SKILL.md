@@ -41,6 +41,7 @@ auto-post to Priority.
 - Auto-post without human approval.
 - Print or store OData passwords or other secrets.
 - Guess WBS when unclassified.
+- Skip `{customer}/{project}/log.md` (or `{project}/log.md`) when hours were recorded — CAST IRON billing evidence (`hours-log-work-session`).
 
 ## Done
 

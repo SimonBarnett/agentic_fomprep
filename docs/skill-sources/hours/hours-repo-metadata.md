@@ -26,6 +26,9 @@ confirmed by the drafter or human.
 - `/customer/project/project.md` - that project's WBS code (example:
   `ce-priority/dayworks/project.md` -> `5`). Until Day Works moves, use
   `ce-dayworks/project.md` for the Day Works WBS.
+- `/customer/project/log.md` (customer-repo layout: `/project/log.md`) —
+  CAST IRON work log for billing evidence; create if missing when hours are
+  recorded (`hours-log-work-session`).
 
 ## Steps
 

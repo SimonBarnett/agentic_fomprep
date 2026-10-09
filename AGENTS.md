@@ -49,7 +49,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File tools\Sync-PriorityGrokSkill
 
 | Concern | Home repo |
 |---------|-----------|
-| Clarkson Evans Day Works **product** (WP1-WP4, gates, shells 8341/8346/8357/8358) | `SimonBarnett/ce-dayworks` |
+| Clarkson Evans Day Works **product** (WP1-WP4, gates, shells 8341/8346/8357/8358) | `SimonBarnett/ce-priority`, folder `dayworks/` (was `SimonBarnett/ce-dayworks`) |
 | CE instance / hardware / DBA / backup packs | `SimonBarnett/ce-priority` |
 | Fleet / Bob / IRC wire | `agentic_build` / `agentic_irc` |
 

@@ -72,7 +72,7 @@ skills.
 | Fleet / Bob / Airc / Jeeves / MSI / digest wire | `SimonBarnett/bobiverse` |
 | IRC moot / talk seats / Ergo client skills | `SimonBarnett/agentic_irc` |
 | Fleet build / TipForm / older agentic_build books | `SimonBarnett/agentic_build` |
-| CE Day Works **product** only | `SimonBarnett/ce-dayworks` |
+| CE Day Works **product** only | `SimonBarnett/ce-priority`, folder `dayworks/` (was `SimonBarnett/ce-dayworks`) |
 | CE instance / hardware / DBA / backup packs | `SimonBarnett/ce-priority` |
 
 Priority-generic Form Prep, dictionary SQL, OData, UAT WCF kernel, hours

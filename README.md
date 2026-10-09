@@ -11,7 +11,8 @@ product repo.
 | **Catalog / MCP** | `v2/apps/mcp-catalog/catalog/` |
 | **Playbooks** | `docs/skill-sources/` |
 
-Customer product work (e.g. Clarkson Evans Day Works) lives in **ce-dayworks**.
+Customer product work lives in customer repos laid out `/{customer}/{project}`
+(e.g. Clarkson Evans Day Works in **ce-priority** `dayworks/`, formerly ce-dayworks).
 CE instance/DBA packs live in **ce-priority**. Hosts in example pins are
 allowlist examples, not hard-wired production targets.
 

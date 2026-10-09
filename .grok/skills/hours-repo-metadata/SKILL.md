@@ -8,7 +8,7 @@ description: >-
 # Hours repo metadata (project.md)
 
 Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
-Harvest routing: generic Priority / fleet-hours lessons stay in this repo; customer-level lessons go to the customer repo (e.g. SimonBarnett/ce-priority); project-level lessons go to the project repo (e.g. ce-priority/dayworks or SimonBarnett/ce-dayworks until Day Works moves).
+Harvest routing: generic Priority / fleet-hours lessons stay in this repo; customer-level lessons go to the customer repo (e.g. SimonBarnett/ce-priority); project-level lessons go to the project repo (e.g. SimonBarnett/ce-priority `dayworks/`; Day Works moved there from SimonBarnett/ce-dayworks on 2026-10-09).
 
 Webhook (SimonBarnett/bobiverse#3450): `POST https://irc.ntsa.uk/bob/v1/hours` create; `POST .../hours/{id}/heartbeat|close|withdraw`; `GET .../hours` list/summary/export. Europe/London day boundaries. Idempotency via `idempotency_key`. Reject credential fields. Never log bodies or print secrets (including Priority OData passwords).
 
@@ -31,8 +31,7 @@ confirmed by the drafter or human.
 - `/customer/project.md` - Priority customer/project record reports are made
   against (example: `ce-priority/project.md` -> PR230001).
 - `/customer/project/project.md` - that project's WBS code (example:
-  `ce-priority/dayworks/project.md` -> `5`). Until Day Works moves, use
-  `ce-dayworks/project.md` for the Day Works WBS.
+  `ce-priority/dayworks/project.md` -> `5`).
 - `/customer/project/log.md` (customer-repo layout: `/project/log.md`) —
   CAST IRON work log for billing evidence; create if missing when hours are
   recorded (`hours-log-work-session`).

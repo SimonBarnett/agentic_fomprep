@@ -1,0 +1,6 @@
+﻿{
+    "title":  "Priority report packs",
+    "description":  "Medatech-network topic skill for reports. Uses priority-skill-dag lazy load.",
+    "name":  "priority-ops-reports",
+    "version":  "1.0.0"
+}

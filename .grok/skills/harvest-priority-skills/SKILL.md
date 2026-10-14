@@ -1,4 +1,4 @@
----
+﻿---
 name: harvest-priority-skills
 description: >
   Promote repeatable Priority-generic formprep / hours / UAT / Priority MCP
@@ -97,3 +97,8 @@ in filings. Dual-mode CWD vs referred skillbook: `docs/skillbook-referral.md`.
 - Claim ready for human UAT.
 - Route IRC playbooks into this repo - those go to `agentic_irc`.
 - Land content that **requires** a Clarkson Evans Priority installation.
+## Medatech network corpus
+
+Ops/SOP/install lessons live under docs/skill-sources/medatech-network/.
+Agents must lazy-load via **priority-skill-dag** (	ools/priority-skill-dag/Resolve-SkillDag.ps1).
+When harvesting a new ops procedure from that corpus, add/extend the matching priority-ops-* catalog skill and rebuild the DAG.

@@ -1,0 +1,11 @@
+﻿# Round_Down_Up
+
+- **Source:** `Round_Down_Up.txt`
+
+~~~
+:TEST = 0.0;
+SELECT 1.49999999 INTO :TEST FROM DUMMY;
+SELECT ROUNDR(:TEST * 100 - 0.5) / 100  FROM DUMMY FORMAT;
+SELECT ROUNDR(:TEST * 100 - 0.5) / 100 + 0.01  FROM DUMMY FORMAT;
+
+~~~

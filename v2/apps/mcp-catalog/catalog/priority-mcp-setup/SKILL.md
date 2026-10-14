@@ -105,3 +105,11 @@ Client lists Priority MCP tools without 401/404. Tenant and host match the user'
 
 - Discovery tools: `priority-mcp-discovery`
 - Forms / procedures / search / help: sibling `priority-mcp-*` skills
+
+## Related Medatech lessons (lazy)
+
+For install/SSL/bin_95/ops prose from the Medatech network dump, resolve via **priority-skill-dag** (do not load the whole corpus):
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File tools\priority-skill-dag\Resolve-SkillDag.ps1 -Query "<intent>"
+```

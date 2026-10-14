@@ -75,3 +75,14 @@ These are catalog leaflets (no local execute plugin). Cloud tenant credentials s
 ## UAT fast path (issue #53)
 
 Standard smokes use the fastest assert path (WCF preferred). Video/human packs live in SimonBarnett/bob-design-uat `uat-video-pack`. Catalog: `priority-uat-orchestrator`, `priority-uat-wcf`, plus project-create / day-works / ht-delete smokes.
+
+## Medatech network ops corpus (2026-10-14)
+
+Full Medatech internal docs dump converted to markdown lessons under
+`docs/skill-sources/medatech-network/`. **Lazy-load only** via catalog skill
+`priority-skill-dag` and `tools/priority-skill-dag/Resolve-SkillDag.ps1`.
+
+Topic catalog skills: `priority-ops-*`, `priority-help-wizards`.
+
+Customer-specific packs are excluded. CAST IRON harvest still applies to any
+new hard rule learned from these lessons.

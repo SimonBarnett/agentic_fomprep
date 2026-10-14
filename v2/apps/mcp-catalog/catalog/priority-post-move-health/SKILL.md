@@ -39,3 +39,11 @@ Delete archived F: or I: trees from this skill. No SQL passwords in git.
 ## Offline
 
 Exit 2 if config or harvest script missing; skip live SQL in catalog CI.
+
+## Related Medatech lessons (lazy)
+
+For install/SSL/bin_95/ops prose from the Medatech network dump, resolve via **priority-skill-dag** (do not load the whole corpus):
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File tools\priority-skill-dag\Resolve-SkillDag.ps1 -Query "<intent>"
+```

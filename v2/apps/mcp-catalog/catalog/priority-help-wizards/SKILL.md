@@ -20,7 +20,7 @@ Foundation: harvest-priority-skills -> report back to https://github.com/SimonBa
 ## Load
 
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File tools\priority-skill-dag\Resolve-SkillDag.ps1 -Query "forms-code <detail>" -MaxLessons 10
+powershell -NoProfile -ExecutionPolicy Bypass -File tools\priority-skill-dag\Resolve-SkillDag.ps1 -Query "WIZ3 <detail>" -MaxLessons 8 -MaxBytes 24000
 ```
 
 Lesson root: `docs/skill-sources/medatech-network/forms-code/`

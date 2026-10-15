@@ -150,3 +150,4 @@ books use `harvest-agent-skills` pointing at their home.)
 ## Harvested lessons (intake)
 
 - Priority Agent home (this repo) needs a-search-style CAST IRON Bobiverse intake: always pass `-Repo SimonBarnett/agentic_fomprep` (or the matching intake payload `repo`), ship repo-local `Report-FomprepIntakeIssue.ps1` / `Invoke-FomprepHarvest.ps1` wrappers, document dual-mode CWD vs referred skillbook in `docs/skillbook-referral.md`, and pin CAT needles for the intake default-repo path. File many small Goal/Deliverables/Testable FRs (not one omnibus). Backlog: issues #109-#118; docs park PR #119.
+- MRB hours skills vs bobiverse webhooks.md: pin accepted start/customer/project and rejected started_at/customer_slug/project_slug; CAT-T51/T65 BOM fails on main are separate FRs not product FAIL for an unrelated tip.

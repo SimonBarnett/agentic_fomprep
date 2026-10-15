@@ -1,4 +1,4 @@
-﻿{
+{
     "title":  "Priority financials / VAT / COGS",
     "description":  "Medatech-network topic skill for financials. Uses priority-skill-dag lazy load.",
     "name":  "priority-ops-financials",

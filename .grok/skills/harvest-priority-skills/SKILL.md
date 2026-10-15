@@ -1,4 +1,4 @@
-﻿---
+---
 name: harvest-priority-skills
 description: >
   Promote repeatable Priority-generic formprep / hours / UAT / Priority MCP

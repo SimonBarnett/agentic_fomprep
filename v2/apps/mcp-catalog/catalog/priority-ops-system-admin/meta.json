@@ -1,4 +1,4 @@
-﻿{
+{
     "title":  "Priority system admin / troubleshooting",
     "description":  "Medatech-network topic skill for system-admin. Uses priority-skill-dag lazy load.",
     "name":  "priority-ops-system-admin",

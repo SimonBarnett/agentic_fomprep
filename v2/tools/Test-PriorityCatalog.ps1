@@ -1004,6 +1004,21 @@ if (Test-Path -LiteralPath $fr177) {
 }
 Add-Gate 'CAT-T72' $t72Ok $t72Why
 
+# FR #182 / #183: CAT-T51 ops meta.json + help-wizards/harvest-priority SKILL no BOM
+$fr182 = Join-Path $repo 'v2\tests\test-fr182-cat-t51-meta-no-bom.ps1'
+$t73Ok = $false
+$t73Why = 'CAT-T73 missing v2/tests/test-fr182-cat-t51-meta-no-bom.ps1'
+if (Test-Path -LiteralPath $fr182) {
+    $p182 = Start-Process -FilePath powershell.exe -ArgumentList @('-NoProfile','-File',$fr182) -Wait -PassThru -NoNewWindow
+    if ($p182.ExitCode -eq 0) {
+        $t73Ok = $true
+        $t73Why = 'FR-182 CAT-T51 meta.json + help-wizards/harvest-priority SKILL no BOM PASS'
+    } else {
+        $t73Why = ('FR-182 no-BOM fixture exit=' + $p182.ExitCode)
+    }
+}
+Add-Gate 'CAT-T73' $t73Ok $t73Why
+
 
 # FR #121 / hours webhook agent skills
 $hoursIds = @(

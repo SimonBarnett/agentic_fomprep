@@ -1,4 +1,4 @@
-﻿---
+---
 name: priority-help-wizards
 description: >
   Priority Help Wizards (WIZ3 English). Lazy-load markdown lessons from

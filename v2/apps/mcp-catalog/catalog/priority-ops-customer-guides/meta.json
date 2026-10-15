@@ -1,4 +1,4 @@
-﻿{
+{
     "title":  "Priority customer-ready guides",
     "description":  "Medatech-network topic skill for customer-guides. Uses priority-skill-dag lazy load.",
     "name":  "priority-ops-customer-guides",

@@ -1,4 +1,4 @@
-﻿{
+{
     "title":  "Priority procedure packs",
     "description":  "Medatech-network topic skill for procedures. Uses priority-skill-dag lazy load.",
     "name":  "priority-ops-procedures",

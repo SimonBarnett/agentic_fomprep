@@ -1,4 +1,4 @@
-﻿{
+{
     "title":  "Priority training / work instructions",
     "description":  "Medatech-network topic skill for training. Uses priority-skill-dag lazy load.",
     "name":  "priority-ops-training",

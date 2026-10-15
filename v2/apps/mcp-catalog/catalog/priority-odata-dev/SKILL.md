@@ -20,22 +20,28 @@ Reading or writing Priority dictionary or business data via OData instead of UI-
 
 ## Hard rules
 
-1. Never log passwords. CredMan only (`credentialTarget` on the allowlist row). Username is case-sensitive (`Si` on CE DEV).
+1. Never log passwords or REST tokens. CredMan only (`credentialTarget` on the allowlist row). Username is case-sensitive (`Si` on CE DEV).
 2. Never invent `webBaseUrl`, SQL instance, or company. Only ids from the user's allowlist.
 3. If `instances.json` is missing or empty: **stop** and tell the user to fill it.
 4. Never run when `allowLive` is false and the row looks live/PRI.
 5. Prefer OData EPROG dumps for procedure archaeology; write dumps under the instance work dir.
 6. SQL on `system`/`base` is allowed for EXECPREPLOCK / FORMTRIGTEXT / structural asserts. OData does not replace Form Prep success gates (`ok=true` AND UPD=N AND LASTPREPDATE advanced).
-7. Company/DNAME: UI title is not the SQL DB name (TEST `base` = "T - Clarkson Evans Live - 20251031"; `test` = "Test"). Check USERENV.DNAME. OData path uses the allowlist `company` (DNAME), not the UI title.
+7. Company/DNAME: UI title is not the SQL DB name (TEST `base` = "T - Clarkson Evans Live - 20251031"; `test` = "Test"). Check USERENV.DNAME. OData path uses the allowlist `company` (DNAME), not the UI title. Path segment `LIVE` is **not** a substitute for DNAME (can HTTP 500).
+8. Cloud REST PAT (when issued): HTTP Basic username=`<token>`, password=`PAT` (literal). Prefer when WCF SOAP returns 403.
+9. Form trigger **source text**: use `EFORM` → `FTRIG_SUBFORM` → `FTRIGTEXT_SUBFORM`. Do not expect bodies from `FORMTRIG` alone. Full notes: `docs/skill-sources/programming/ODATA_REST_CLOUD.md`.
 
 ## FORMLIMITED / RESTFLAG (critical)
 
+- Entity in `$metadata` / service root ≠ readable. `RESTFLAG` null often yields HTTP **400** on GET.
+- Audit first: `FORMLIMITED?$filter=ENAME eq '…'&$select=ENAME,RESTFLAG,LIMITFLAG`.
 - `RESTFLAG=Y` on FORMLIMITED can expose forms to OData **but** with LIMITFLAG blank + Si can **hide** the same forms from web sibling-tab strips (seen on PART long-desc tabs 2026-09-15).
 - Do **not** leave RESTFLAG-only FORMLIMITED on UI-tested forms until the LIMITFLAG/RESTFLAG pattern for "OData without hiding UI" is confirmed.
 - Deleting bad FORMLIMITED rows restored UI tabs.
 - `formlimited_audit` flags `restflag_without_limitflag` when RESTFLAG=Y and LIMITFLAG is not Y.
 - Dictionary key is **`[T$EXEC]`** (join via ENAME as needed). **`FORMLIMITED.FORM` does not exist** — querying it yields `sql_failed` (issue #7 / MRB `80d8ce4`).
 - CATALOG OData may return "API cannot be run"; register CATALOG/COLUMNS/INDEXES/INDCLMNS/CATALOGA via SQL first (`TNAME` max 20).
+- Typed DOCSTATS: table `DOCSTATS` may appear as `ZDOCSTATS` / `DDOCSTATS` / … — query the typed form for that document family.
+- Extended custom tables may have **no** EFORM/OData entity; read via parent form or SQL.
 
 ## Allowlist (user fills this)
 

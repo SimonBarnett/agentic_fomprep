@@ -150,3 +150,4 @@ books use `harvest-agent-skills` pointing at their home.)
 ## Harvested lessons (intake)
 
 - Priority Agent home (this repo) needs a-search-style CAST IRON Bobiverse intake: always pass `-Repo SimonBarnett/agentic_fomprep` (or the matching intake payload `repo`), ship repo-local `Report-FomprepIntakeIssue.ps1` / `Invoke-FomprepHarvest.ps1` wrappers, document dual-mode CWD vs referred skillbook in `docs/skillbook-referral.md`, and pin CAT needles for the intake default-repo path. File many small Goal/Deliverables/Testable FRs (not one omnibus). Backlog: issues #109-#118; docs park PR #119.
+- agentic_fomprep CAT-T51 gates catalog/*/meta.json for EF BB BF (issue text may say SKILL.md); strip meta + related SKILL; allocate next free CAT-Tn (T73 after T72); Test-PriorityCatalog before merge.

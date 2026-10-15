@@ -150,3 +150,4 @@ books use `harvest-agent-skills` pointing at their home.)
 ## Harvested lessons (intake)
 
 - Priority Agent home (this repo) needs a-search-style CAST IRON Bobiverse intake: always pass `-Repo SimonBarnett/agentic_fomprep` (or the matching intake payload `repo`), ship repo-local `Report-FomprepIntakeIssue.ps1` / `Invoke-FomprepHarvest.ps1` wrappers, document dual-mode CWD vs referred skillbook in `docs/skillbook-referral.md`, and pin CAT needles for the intake default-repo path. File many small Goal/Deliverables/Testable FRs (not one omnibus). Backlog: issues #109-#118; docs park PR #119.
+- hours webhook agent skills must use start/customer/project from jeeves/docs/webhooks.md; never started_at/customer_slug/project_slug; pin with CAT gate + fixture; ExistingPrUrl tip-loop

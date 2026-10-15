@@ -16,8 +16,8 @@ does not need the fallback table.
 
 ## Inputs
 
-Customer and project slugs, repo URL, Priority customer/project record and WBS
-confirmed by the drafter or human.
+Webhook `customer` / `project` (not `customer_slug` / `project_slug`), repo URL,
+Priority customer/project record and WBS confirmed by the drafter or human.
 
 ## Layout (Si convention)
 
@@ -25,7 +25,7 @@ confirmed by the drafter or human.
   against (example: `ce-priority/project.md` -> PR230001).
 - `/customer/project/project.md` - that project's WBS code (example:
   `ce-priority/dayworks/project.md` -> `5`).
-- `/customer/project/log.md` (customer-repo layout: `/project/log.md`) —
+- `/customer/project/log.md` (customer-repo layout: `/project/log.md`) -
   CAST IRON work log for billing evidence; create if missing when hours are
   recorded (`hours-log-work-session`).
 

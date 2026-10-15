@@ -15,7 +15,7 @@ Open a time entry when a task starts and close it when it ends so the hours
 drafter has source material. Entries are **not** posted to Priority by this
 skill.
 
-## CAST IRON — project work log (billing evidence)
+## CAST IRON - project work log (billing evidence)
 
 Whenever you record hours (open/close **or** closed-in-one-POST), also append a
 human-readable summary of **actual work done** to the project work log:
@@ -29,29 +29,42 @@ human-readable summary of **actual work done** to the project work log:
 billing query (what shipped, PRs/issues, hours day, Bob hours entry id if known).
 Never put secrets in `log.md`.
 
-This is mandatory alongside the webhook — the webhook alone is not billing
+This is mandatory alongside the webhook - the webhook alone is not billing
 evidence.
 
-## Live JSON field names (do not invent aliases)
+## Inputs (canonical POST body fields)
 
-| JSON field | Meaning |
-|------------|---------|
+Source of truth: SimonBarnett/bobiverse `jeeves/docs/webhooks.md` (Agent field
+map; FR #3450 / FR #3673).
+
+| Field | Meaning |
+|-------|---------|
 | `idempotency_key` | Stable key; reuse on retry (required) |
-| `agent` | Agent nick (required) — **not** `agent_nick` |
+| `agent` | Agent nick (required); do not send `agent_nick` |
 | `on_behalf_of` | Priority USERLOGIN (example: `SimonB`) |
-| `start` | ISO-8601 start with offset (Europe/London) — **not** `started_at` |
+| `start` | ISO-8601 start with offset (Europe/London) |
 | `end` | ISO-8601 end; omit while open; include with `start` for closed-in-one-POST |
-| `customer` | Customer slug (example: `trutex`) — **not** `customer_slug` |
-| `project` | Project slug (example: `deposco`) — **not** `project_slug` |
+| `customer` | Customer id (example: `trutex`) |
+| `project` | Project id (example: `deposco`) |
 | `repo_url` | GitHub URL for the work |
 | `description` | Short human description |
 | `tickets` | Optional array of issue/PR refs |
 | `source` | Seat / machine (example: `marchhare`) |
 | `billable_hint` | Optional `Y` / `N` |
 
-Wrong field names often return opaque `{"error":"bad_start"}` (see
-SimonBarnett/bobiverse#3673). Prefer the examples in bobiverse
-`jeeves/docs/webhooks.md`.
+### Rejected aliases (do not send)
+
+| Accepted | Rejected aliases |
+|----------|------------------|
+| `start` | `started_at`, `start_at`, `started`, `from` |
+| `end` | `ended_at`, `finish` |
+| `customer` | `customer_slug` |
+| `project` | `project_slug` |
+
+Missing/empty `start` (including when only an alias was sent) returns
+`{"error":"missing_start","hint":"expected: start"}` plus `rejected_aliases`
+when an alias was present (bobiverse FR #3673). Unparseable `start` returns
+`bad_start`. Prefer the curl examples in bobiverse `jeeves/docs/webhooks.md`.
 
 ## Steps (hours-start)
 

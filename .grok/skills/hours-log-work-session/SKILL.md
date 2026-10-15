@@ -23,18 +23,45 @@ Open a time entry when a task starts and close it when it ends so the hours
 drafter has source material. Entries are **not** posted to Priority by this
 skill.
 
-## CAST IRON — project work log
+## CAST IRON - project work log
 
 Always append actual work done to `{customer}/{project}/log.md` (customer-repo
-layout: `{project}/log.md`). **Create if missing.** Billing evidence — not
+layout: `{project}/log.md`). **Create if missing.** Billing evidence - not
 optional. No secrets.
 
-## Live JSON fields (required names)
+## Inputs (canonical POST body fields)
 
-`idempotency_key`, `agent`, `on_behalf_of`, `start` (**not** `started_at`),
-optional `end`, `customer` (**not** `customer_slug`), `project` (**not**
-`project_slug`), `repo_url`, `description`, `tickets`, `source`,
-`billable_hint`.
+Source of truth for accepted vs rejected names:
+SimonBarnett/bobiverse `jeeves/docs/webhooks.md` (Agent field map; FR #3673).
+Authoritative examples also live in `docs/skill-sources/hours/hours-log-work-session.md`.
+
+| Field | Meaning |
+|-------|---------|
+| `idempotency_key` | Stable key; reuse on retry (required) |
+| `agent` | IRC / seat nick (required) |
+| `on_behalf_of` | Priority USERLOGIN (example: `SimonB`) |
+| `start` | ISO-8601 datetime when the entry opens (required on create) |
+| `end` | ISO-8601; omit while open; include with `start` for closed-in-one-POST |
+| `customer` | e.g. `ce-priority` / `trutex` |
+| `project` | e.g. `dayworks` / `deposco` |
+| `repo_url` | GitHub URL for the work |
+| `description` | Short human description |
+| `tickets` | Optional array of issue/PR refs |
+| `source` | Seat / machine (example: `marchhare`) |
+| `billable_hint` | Optional `Y` / `N` |
+
+### Rejected aliases (do not send)
+
+| Accepted | Rejected aliases |
+|----------|------------------|
+| `start` | `started_at`, `start_at`, `started`, `from` |
+| `end` | `ended_at`, `finish` |
+| `customer` | `customer_slug` |
+| `project` | `project_slug` |
+
+Missing/empty `start` (including when only an alias was sent) returns
+`missing_start` with `rejected_aliases` (bobiverse FR #3673). Unparseable
+`start` returns `bad_start`.
 
 Closed-in-one-POST: send `start` + `end` together; expect `status:closed` and
 `duration_minutes`.

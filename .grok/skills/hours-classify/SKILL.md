@@ -26,11 +26,13 @@ Repo path and URL, ticket, meeting/thread, customer cues.
 
 ## Steps
 
-1. Resolve customer and project slugs from the repo path convention
+1. Resolve webhook fields `customer` and `project` from the repo path convention
    `/{customer}/{project}` (generic Priority stays in agentic_fomprep).
-   Example: customer `ce-priority`, project `dayworks` (repo
+   Example: `customer`=`ce-priority`, `project`=`dayworks` (repo
    `SimonBarnett/ce-priority`, folder `dayworks/`; it replaces
-   `SimonBarnett/ce-dayworks`). Another example: `trutex`, project `deposco`.
+   `SimonBarnett/ce-dayworks`). Another example: `trutex` / `deposco`.
+   Do not POST `customer_slug` / `project_slug` (bobiverse
+   `jeeves/docs/webhooks.md` Agent field map).
 2. Read Priority customer/project record from `/customer/project.md` and WBS from
    `/customer/project/project.md`. **These files come first.**
    Example: `ce-priority/project.md` -> Clarkson Evans record `PR230001`;
@@ -44,6 +46,7 @@ Repo path and URL, ticket, meeting/thread, customer cues.
 
 ## Done
 
-Every entry has customer/project slugs and either a resolved Priority record/WBS
-(noting `project.md` vs fallback table) or an explicit unclassified note.
+Every entry has webhook `customer` / `project` and either a resolved Priority
+record/WBS (noting `project.md` vs fallback table) or an explicit unclassified
+note.
 

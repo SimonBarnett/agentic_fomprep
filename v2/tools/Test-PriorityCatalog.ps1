@@ -989,6 +989,21 @@ if (Test-Path -LiteralPath $fr010) {
 }
 Add-Gate 'CAT-T71' $t71Ok $t71Why
 
+# FR #177: hours-log-work-session Inputs match bobiverse Agent field map
+$fr177 = Join-Path $repo 'v2\tests\test-fr177-hours-webhook-field-names.ps1'
+$t72Ok = $false
+$t72Why = 'CAT-T72 missing v2/tests/test-fr177-hours-webhook-field-names.ps1'
+if (Test-Path -LiteralPath $fr177) {
+    $p177 = Start-Process -FilePath powershell.exe -ArgumentList @('-NoProfile','-File',$fr177) -Wait -PassThru -NoNewWindow
+    if ($p177.ExitCode -eq 0) {
+        $t72Ok = $true
+        $t72Why = 'FR-177 hours Inputs start/customer/project + rejected aliases + webhooks.md SoT PASS'
+    } else {
+        $t72Why = ('FR-177 field-names fixture exit=' + $p177.ExitCode)
+    }
+}
+Add-Gate 'CAT-T72' $t72Ok $t72Why
+
 
 # FR #121 / hours webhook agent skills
 $hoursIds = @(
@@ -1063,12 +1078,25 @@ if (Test-Path -LiteralPath $repoMeta) {
 }
 
 # MRB #124 strengthen: log-work-session / evidence / correct contracts
+# FR #177: also require canonical start/customer/project + rejected-alias callouts
 $logPath = Join-Path $repo '.grok\skills\hours-log-work-session\SKILL.md'
 if (Test-Path -LiteralPath $logPath) {
     $lt = Get-Content -LiteralPath $logPath -Raw -Encoding UTF8
     if ($lt -notmatch 'idempotency_key' -or $lt -notmatch 'heartbeat' -or ($lt -notmatch 'hours-start' -and $lt -notmatch 'create')) {
         $hoursOk = $false
         [void]$hoursWhyParts.Add('log-session-gates')
+    }
+    if ($lt -notmatch '`start`' -or $lt -notmatch '`customer`' -or $lt -notmatch '`project`') {
+        $hoursOk = $false
+        [void]$hoursWhyParts.Add('log-session-canonical-fields')
+    }
+    if ($lt -notmatch 'started_at' -or $lt -notmatch 'customer_slug' -or $lt -notmatch 'project_slug') {
+        $hoursOk = $false
+        [void]$hoursWhyParts.Add('log-session-rejected-aliases')
+    }
+    if ($lt -notmatch 'jeeves/docs/webhooks\.md') {
+        $hoursOk = $false
+        [void]$hoursWhyParts.Add('log-session-webhooks-sot')
     }
 }
 $evPath = Join-Path $repo '.grok\skills\hours-evidence\SKILL.md'

@@ -80,6 +80,43 @@ dictionary/SQL where licensed — do not invent an entity name.
   with HTTP 400; fall back to full expand then project client-side.
 - Rate limits: HTTP 429 — back off between probes.
 
+## PATCH writes (when explicitly approved)
+
+Read `$metadata` **EntityType Key** before PATCH. Composite keys use:
+
+```text
+PATCH {Entity}(Key1='value',Key2='value')
+Content-Type: application/json
+Prefer: return=representation
+
+{"FieldName":"Y"}
+```
+
+Example shape (status form): `ZDOCSTATS(STATDES='Draft',TYPE='Z')`.
+Example shape (shipment): `DOCUMENTS_D(DOCNO='SH…',TYPE='D')`.
+
+- Prefer `Prefer: return=representation` and confirm the returned entity.
+- Re-GET with `$filter` after write (do not trust cache).
+- **Live / customer tenants:** only after an explicit human approval of the exact write.
+- `allowLive=false` on the allowlist row still means stop unless the operator overrides for that one approved change.
+
+### Re-firing POST-UPDATE via a field touch
+
+When a form’s `POST-UPDATE` (or `#INCLUDE` BUF) must run again on an
+existing row, a small OData PATCH on an updatable string column (e.g.
+`DETAILS`) can fire that trigger path. Proven useful to re-run a create
+interface after a config fix when INSERT will not happen again.
+
+Hard rules:
+
+1. Read the live `POST-UPDATE` / BUF text first (`EFORM` → `FTRIG` →
+   `FTRIGTEXT`). Know every side effect.
+2. Prefer a harmless additive change (append a short marker) over clearing
+   business fields.
+3. Verify outcome with a follow-up GET (child docs, status flags, lines).
+4. Do not use this as a substitute for a proper UI/process re-open unless the
+   operator approved that exact approach.
+
 ## Investigation checklist (read-only)
 
 1. Confirm allowlist `webBaseUrl` / `tabulaini` / `company` (DNAME).
@@ -88,3 +125,9 @@ dictionary/SQL where licensed — do not invent an entity name.
 4. `FORMLIMITED` RESTFLAG for target ENAMEs.
 5. Business GETs with `$filter` + `$top`.
 6. Dictionary: `EFORM`/`EPROG` expand for code archaeology.
+
+## Write checklist (approved only)
+
+1. Exact entity + key + fields named in the approval.
+2. Read before / patch / read after; keep JSON evidence outside secrets stores.
+3. If the goal is trigger re-fire, confirm POST-UPDATE text and post-condition GETs.

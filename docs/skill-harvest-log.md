@@ -1,5 +1,7 @@
 # Skill harvest log
 
+- 2026-10-16: OData PATCH patterns — composite EntityType keys, `Prefer: return=representation`, approved Live writes only; field-touch re-fire of `POST-UPDATE` / BUF includes after reading trigger text. Extended `ODATA_REST_CLOUD.md`; catalog `priority-odata-dev` v1.2.0 hard rule 10. Source: Priority cloud approved config + document re-raise (generic lessons only).
+
 - 2026-10-15: Cloud OData REST patterns — PAT Basic (`token`/`PAT`), DNAME≠LIVE, FORMLIMITED RESTFLAG null → HTTP 400, form trigger text via EFORM→FTRIG→FTRIGTEXT (not FORMTRIG alone), typed *DOCSTATS entities, extended tables without EFORM. New `docs/skill-sources/programming/ODATA_REST_CLOUD.md`; catalog `priority-odata-dev` hard rules 7–9 + RESTFLAG/typed-status notes. Source: Priority cloud read-only investigation (generic lessons only).
 
 - 2026-10-09: Hours recording CAST IRON — `{customer}/{project}/log.md` (or `{project}/log.md`) must be created/updated with actual work done whenever hours are logged (billing evidence). Corrected live Bob hours JSON field names (`start`/`customer`/`project`, not `started_at`/`customer_slug`); closed-in-one-POST with `start`+`end`. Updated `hours-log-work-session` skill-source + `.grok` leaflet, `AGENTS.md` CAST IRON #7, `hours-draft` pointer. Bobiverse API opacity filed as SimonBarnett/bobiverse#3673.

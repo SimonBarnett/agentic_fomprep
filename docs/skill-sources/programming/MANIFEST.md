@@ -15,6 +15,7 @@ FR: `docs/feature-request-eshbel-priority-programming-harvest-2026-09-24.md`
 
 | DICTIONARY_SQL.md | priority-dictionary-sql | IDENTITY-safe dictionary inserts; EXECPREPLOCK / name_missing |
 | CREATE_TABLE.md | priority-create-table | Physical CREATE + IGNORE_DUP_KEY; COLUMNS.SIZE never 0 |
+| ODATA_REST_CLOUD.md | priority-odata-dev | Cloud REST PAT, DNAME, RESTFLAG→400, EFORM FTRIG text, typed DOCSTATS |
 | IGNORE_DUP_KEY.md | priority-dictionary-sql / priority-create-table | Tabula unique indexes must use IGNORE_DUP_KEY=ON |
 | FORMCLMNSA_JOINS.md | priority-dictionary-sql / priority-formprep | Child FORMCLMNSA `= :$$.COL`; joins survive Form Prep |
 | INDEXES_TYPE_A_IDENTITY.md | priority-dictionary-sql | IDENTITY columns keep INDEXES TYPE=A (8102 if U) |

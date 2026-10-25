@@ -29,7 +29,9 @@ If that skill also **executes** locally, add `v2/plugins/<name>/` and list it in
 2. ntsa.uk DNS: CNAME `mcp-priority` → the Amplify default hostname (`*.amplifyapp.com`).
 3. Amplify console → custom domain `mcp-priority.ntsa.uk`.
 
-MCP URL: `https://mcp-priority.ntsa.uk/mcp` (JSON-RPC POST). Tools: `list_catalog`, `get_skill`, `get_instance_schema`, `get_runner_files`. There is **no** `prepare_form` on Amplify.
+**Local stdio (recommended):** `grok mcp add priority-catalog -- node <clone>/v2/apps/mcp-catalog/stdio.mjs`. It is zero-dependency (no npm install), serves `catalog/` from the clone and has the same tools. The Priority Agent launcher registers it automatically.
+
+Hosted MCP URL (not live: the DNS name doesn't resolve): `https://mcp-priority.ntsa.uk/mcp` (JSON-RPC POST). Tools: `list_catalog`, `get_skill`, `get_instance_schema`, `get_runner_files`. There is **no** `prepare_form` on Amplify.
 
 ## Local execute (after grab)
 

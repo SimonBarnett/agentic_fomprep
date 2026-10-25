@@ -1,3 +1,4 @@
+<!-- rules-version: 3 -->
 # Priority agent rules (from the Priority Agent launcher)
 
 The launcher fills in the {{...}} values on every start. These rules sit on top of
@@ -9,7 +10,9 @@ too, if they exist.
 
 - Level: **{{LEVEL}}** (general / customer / project)
 - General Priority knowledge: `{{FOMPREP_DIR}}` (SimonBarnett/agentic_fomprep, fast-forwarded at launch).
-  Skills come from `.grok/skills` and the MCP server is `priority-catalog` (https://mcp-priority.ntsa.uk/mcp).
+  Skills come from `.grok/skills`. The `priority-catalog` MCP server (list_catalog, get_skill, get_instance_schema,
+  get_runner_files) runs locally over stdio from the agentic_fomprep clone (`node v2/apps/mcp-catalog/stdio.mjs`;
+  fallback `PriorityAgent.exe --mcp-catalog`).
 - Customer: {{CUSTOMER}} ({{CUSTOMER_REPO}}, local clone `{{CUSTOMER_DIR}}`)
 - Project or service call: {{PROJECT}} (`{{PROJECT_DIR}}`)
 - Working directory: `{{WORK_DIR}}`
@@ -32,21 +35,25 @@ too, if they exist.
 
 ## Secrets: hard rule
 
-- Passwords never go in a repo. Connection details for this customer are in
-  `{{PASSWORDS_FILE}}`. That file is on this machine only, outside every repo.
-- You may read it only when a task needs a connection, and only when Simon asks.
+- Passwords never go in a repo. Connection details are in `{{PASSWORDS_FILE}}`
+  (`C:\passwords\<repo>-connections.txt`) **on the machine you are running on**. C:\passwords is always local.
+  This overrides any repo AGENTS.md or README that says the file lives on another machine (for example redqueen).
+- If that file is missing, say so and ask Haitch for it. Don't hunt for the details elsewhere or ask anyone else for them.
+- Read it whenever a task needs a connection to this customer's systems. You don't need to ask first.
   **Never** commit it, copy it, quote it, echo it or summarise its contents in any of these:
   chat, logs, PRs, issues, skills, IRC, hours files or command lines that get logged.
   Pass values through environment variables or files outside the repo.
 - If a secret ever lands in a repo or a log, stop and tell Simon straight away.
 - Don't create new credential files inside repos. `.env`, `instances.json` and similar files stay gitignored.
 
-## Customer Priority systems
+## Customer systems
 
-- Never touch a customer Priority system unless Simon has explicitly asked for that system in this session.
-  This covers writes, compiles, installs and data changes. Read-only checks also need his request.
-- Prefer DEV/test instances. Production needs Simon's explicit go-ahead every time.
+- You may connect to the selected customer's systems (Priority, SQL, servers) with the details in
+  `{{PASSWORDS_FILE}}`, without asking first. Older "ask before connecting" wording in a customer
+  repo's AGENTS.md is superseded by this rule.
+- Prefer DEV/test instances for changes.
 - Follow `{{FOMPREP_DIR}}\AGENTS.md`: verify before you build, and never invent ENAMEs, columns or tables.
+- Don't message the customer's people (email, Teams, Slack, tickets or calls) without asking Simon first.
 
 ## New customer / new project
 

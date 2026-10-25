@@ -19,7 +19,6 @@ static class Program
     const string FomprepRepo = "agentic_fomprep";
     const string Topic = "priority-customer";
     const string McpName = "priority-catalog";
-    const string McpUrl = "https://mcp-priority.ntsa.uk/mcp";
     const string FuelUrl = "https://irc.ntsa.uk/bob/v1/report";
 
     static bool DryRun, ListOnly, Smoke, General, NoPause, NoFuel;
@@ -38,6 +37,13 @@ static class Program
 
     static int Run(string[] args)
     {
+        // MCP stdio server mode: stdout carries JSON-RPC only - nothing else may print.
+        int mi = Array.FindIndex(args, a => a.Equals("--mcp-catalog", StringComparison.OrdinalIgnoreCase));
+        if (mi >= 0)
+        {
+            string? dir = mi + 1 < args.Length && !args[mi + 1].StartsWith("--") ? args[mi + 1] : null;
+            return CatalogMcp.Serve(dir ?? Environment.GetEnvironmentVariable("PRIORITY_CATALOG_DIR") ?? FindCatalogDir());
+        }
         for (int i = 0; i < args.Length; i++)
         {
             string a = args[i].ToLowerInvariant();
@@ -155,7 +161,7 @@ static class Program
         // ---- 4. grok: register MCP + skills, build brief, launch ----------------------
         Header("[4] Agent (Grok)");
         if (grok == null) { Err("grok CLI not found (expected %USERPROFILE%\\.grok\\bin\\grok.exe)."); Pause(); return 1; }
-        EnsureGrokMcp(grok);
+        EnsureGrokMcp(grok, fomprep);
         EnsureGrokSkillsPath(skillsDir);
         if (!NoFuel) FuelCheck();
 
@@ -180,7 +186,7 @@ static class Program
         string rules = LoadRules(fomprep, out string rulesSrc);
         foreach (var kv in vars) rules = rules.Replace("{{" + kv.Key + "}}", kv.Value);
         Info($"rules: {rulesSrc} ({rules.Length} chars)");
-        if (cust != null) Check(File.Exists(pwFile), $"connections file for {cust.Name} {(File.Exists(pwFile) ? "exists" : "MISSING")}: {pwFile} (contents not read)");
+        if (cust != null) Check(File.Exists(pwFile), $"connections file for {cust.Name} {(File.Exists(pwFile) ? "exists" : "MISSING - ask Haitch for it")}: {pwFile} (contents not read)");
         Info($"hours: {hoursRepo} branch 'hours' -> hours/{launchedAt:yyyy-MM-dd}.md, tag session:{sessShort} (mandatory; checked on exit)");
 
         var brief = new StringBuilder();
@@ -194,11 +200,11 @@ static class Program
         if (projectDir != null) readFirst.AddRange(new[] { Path.Combine(projectDir, "README.md"), Path.Combine(projectDir, "log.md") });
         brief.AppendLine("Read first (those that exist): " + string.Join("; ", readFirst));
         brief.Append(Smoke
-            ? "SMOKE TEST: do not run tools, do not read or change any file, do not contact any system. Reply in at most 5 lines: the context level, customer, project, and whether the priority-catalog MCP and Priority skills are visible to you. Then stop."
+            ? "SMOKE TEST: do not read or change any file and do not contact any customer system. You may call the priority-catalog tool list_catalog once (read-only, local). Reply in at most 8 lines: the context level, customer, project; the priority-catalog tools you have and whether that server is connected (with the skill count list_catalog returned); whether Priority skills are visible; and what your launcher rules say about connecting to this customer's systems. Then stop."
             : $"Follow the launcher rules (harvest rule, secrets, MANDATORY hours with tag session:{sessShort} on the hours branch of {hoursRepo}). Then briefly confirm the context and ask Simon what to work on.");
 
         var gargs = new List<string> { "--cwd", workDir, "--session-id", sessionId, "--trust", "--rules", rules };
-        if (Smoke) gargs.AddRange(new[] { "--max-turns", "2", "-p" });
+        if (Smoke) gargs.AddRange(new[] { "--max-turns", "4", "-p" });
         gargs.Add(brief.ToString());
 
         string sessDir = Path.Combine(Path.GetDirectoryName(logDir)!, "sessions");
@@ -209,7 +215,7 @@ static class Program
         { sessionId, level, customer = cust?.FullName, project, workDir, fomprep, grok, dryRun = DryRun, smoke = Smoke, at = DateTime.Now }, new JsonSerializerOptions { WriteIndented = true }));
 
         string display = Quote(grok) + " " + string.Join(' ', gargs.Select(a => a == rules ? $"<rules: {rulesFile}>" : Quote(a)));
-        Console.WriteLine("\nLaunch command:\n  " + display.Replace("\n", "\\n"));
+        Console.WriteLine("\nLaunch command:\n  " + display.Replace("\r\n", "\\n").Replace("\n", "\\n"));
         Log("launch: " + display);
         Check(Directory.Exists(workDir), $"working directory exists: {workDir}");
 
@@ -372,13 +378,78 @@ static class Program
     }
 
     // ------------------------------------------------------------------ grok config
-    static void EnsureGrokMcp(string grok)
+    // priority-catalog runs locally over stdio from the agentic_fomprep clone:
+    //   node <clone>\v2\apps\mcp-catalog\stdio.mjs   (the repo's own stdio entry point, no npm install needed)
+    // Fallback while the clone lacks stdio.mjs or node is missing: this exe's built-in port (--mcp-catalog),
+    // which serves the same <clone>\v2\apps\mcp-catalog\catalog. Any other registration (e.g. a remote URL) is replaced.
+    static void EnsureGrokMcp(string grok, string fomprep)
     {
+        string script = Path.Combine(fomprep, "v2", "apps", "mcp-catalog", "stdio.mjs");
+        string exe = Environment.ProcessPath ?? Path.Combine(AppContext.BaseDirectory, "PriorityAgent.exe");
+        string seen = "";
+        string? node = File.Exists(script) ? FindNode(out seen) : null;
+        string[] cmd;
+        if (node != null) cmd = new[] { node, script };
+        else
+        {
+            cmd = new[] { exe, "--mcp-catalog" };   // grok mcp add priority-catalog -- exe --mcp-catalog
+            Warn(!File.Exists(script) ? $"{script} not in the clone; using PriorityAgent.exe --mcp-catalog for priority-catalog"
+                                      : $"no node >= 18 found ({seen}); using PriorityAgent.exe --mcp-catalog for priority-catalog");
+        }
+        string want = string.Join(' ', cmd);
         var (rc, outp, _) = Capture(grok, null, "mcp", "list");
-        if (rc == 0 && Regex.IsMatch(outp, @"\b" + Regex.Escape(McpName) + @"\b")) { Check(true, $"MCP '{McpName}' registered"); return; }
-        if (DryRun) { Info($"would run: grok mcp add {McpName} {McpUrl}"); return; }
-        int arc = RunTo(grok, null, "mcp", "add", McpName, McpUrl);
-        Check(arc == 0, $"registered MCP '{McpName}' -> {McpUrl}");
+        string line = outp.Split('\n').Select(l => l.Trim()).FirstOrDefault(l => l.StartsWith(McpName + ":", StringComparison.OrdinalIgnoreCase)) ?? "";
+        string current = line == "" ? "" : line[(McpName.Length + 1)..].Trim();
+        bool good = current.Equals(want, StringComparison.OrdinalIgnoreCase);
+        if (good) Check(true, $"MCP '{McpName}' registered (stdio): {current}");
+        else if (DryRun) { Info($"would run: grok mcp add {McpName} -- {want}   (currently: {(current == "" ? "not registered" : current)})"); return; }
+        else
+        {
+            var a = new List<string> { "mcp", "add", McpName, "--" }; a.AddRange(cmd);
+            int arc = RunTo(grok, null, a.ToArray());
+            Check(arc == 0, $"registered MCP '{McpName}' (stdio) -> {want}{(current == "" ? "" : $" (replaced: {current})")}");
+        }
+        if (DryRun && !good) return;
+        var (drc, dout, derr) = Capture(grok, null, "mcp", "doctor", McpName);
+        string d = (dout + derr).Trim();
+        int sec = d.IndexOf(McpName + " (", StringComparison.OrdinalIgnoreCase);
+        if (sec >= 0) d = d[sec..];
+        bool ok = drc == 0 && d.Contains("handshake OK", StringComparison.OrdinalIgnoreCase) && !d.Contains("handshake failed", StringComparison.OrdinalIgnoreCase);
+        Check(ok, $"grok mcp doctor {McpName}: " + Trunc(Regex.Replace(d, @"\s+", " "), 300));
+    }
+
+    // stdio.mjs needs Node 18+ (ES modules, node: imports). MarchHare's PATH node is v8, so check versions.
+    static string? FindNode(out string seen)
+    {
+        var cands = new List<string>();
+        string? env = Environment.GetEnvironmentVariable("PRIORITY_AGENT_NODE");
+        if (!string.IsNullOrEmpty(env)) cands.Add(env);
+        foreach (var root in new[] { @"D:\tools\node", @"C:\tools\node" })
+            try { if (Directory.Exists(root)) cands.AddRange(Directory.EnumerateFiles(root, "node.exe", new EnumerationOptions { RecurseSubdirectories = true, MaxRecursionDepth = 2 })); } catch { }
+        foreach (var d in (Environment.GetEnvironmentVariable("PATH") ?? "").Split(Path.PathSeparator))
+            try { string f = Path.Combine(d.Trim('"'), "node.exe"); if (File.Exists(f)) cands.Add(f); } catch { }
+        cands.Add(@"C:\Program Files\nodejs\node.exe"); cands.Add(@"D:\Program Files\nodejs\node.exe");
+        var notes = new List<string>();
+        foreach (var c in cands.Distinct(StringComparer.OrdinalIgnoreCase))
+        {
+            if (!File.Exists(c)) continue;
+            string v = "";
+            try { v = Capture(c, null, "--version").Item2.Trim(); } catch { }
+            notes.Add($"{c} {v}");
+            if (v.StartsWith("v") && int.TryParse(v[1..].Split('.')[0], out int major) && major >= 18) { seen = string.Join("; ", notes); return c; }
+        }
+        seen = notes.Count == 0 ? "none" : string.Join("; ", notes);
+        return null;
+    }
+
+    static string FindCatalogDir()
+    {
+        foreach (var root in SearchRoots.Prepend(CloneRoot).Distinct(StringComparer.OrdinalIgnoreCase))
+        {
+            string c = Path.Combine(root, FomprepRepo, "v2", "apps", "mcp-catalog", "catalog");
+            if (Directory.Exists(c)) return c;
+        }
+        return Path.Combine(CloneRoot, FomprepRepo, "v2", "apps", "mcp-catalog", "catalog");
     }
 
     static void EnsureGrokSkillsPath(string skillsDir)
@@ -446,13 +517,26 @@ static class Program
             throw new Exception("stopped: no grok fuel");
     }
 
+    static int RulesVersion(string text)
+    {
+        var m = Regex.Match(text, @"rules-version:\s*(\d+)");
+        return m.Success ? int.Parse(m.Groups[1].Value) : 1;
+    }
+
+    // Use launcher/agent-rules.md from the clone when it is at least as new as the embedded copy.
     static string LoadRules(string fomprep, out string src)
     {
-        string f = Path.Combine(fomprep, "launcher", "agent-rules.md");
-        if (File.Exists(f)) { src = f; return File.ReadAllText(f); }
-        src = "embedded agent-rules.md";
         using var s = Assembly.GetExecutingAssembly().GetManifestResourceStream("agent-rules.md")!;
-        return new StreamReader(s).ReadToEnd();
+        string embedded = new StreamReader(s).ReadToEnd();
+        string f = Path.Combine(fomprep, "launcher", "agent-rules.md");
+        if (File.Exists(f))
+        {
+            string clone = File.ReadAllText(f);
+            if (RulesVersion(clone) >= RulesVersion(embedded)) { src = $"{f} (v{RulesVersion(clone)})"; return clone; }
+            Warn($"{f} is v{RulesVersion(clone)}, older than the embedded v{RulesVersion(embedded)}; using embedded rules.");
+        }
+        src = $"embedded agent-rules.md (v{RulesVersion(embedded)})";
+        return embedded;
     }
 
     // ------------------------------------------------------------------ Haitch handoff

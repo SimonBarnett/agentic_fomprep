@@ -1,0 +1,6 @@
+{
+  "name": "priority-price-quotation-create",
+  "title": "Priority price quotation (PQ) create via OData",
+  "description": "Create a Price Quotation (CPROF) from a step estimate: header copied from recent PQs, one CONS-HR-MED line per step posted in reverse, qty = 2x internal, no price (triggers set it), per-line remarks, draft-first and read back.",
+  "version": "1.0.0"
+}

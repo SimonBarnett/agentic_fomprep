@@ -16,12 +16,15 @@ Harvested 2026-10-15 from Priority cloud tenant work (company DNAME examples onl
 
 ## Auth variants
 
-| Mode | HTTP Basic | Notes |
-|------|------------|-------|
-| User/password | `username:password` | Works when licensed; some cloud SOAP/WCF paths return 403 |
-| REST Interface Access Token (PAT) | `username=<token>`, `password=PAT` (literal) | Prefer for cloud REST when WCF SOAP is blocked |
+| Mode | HTTP Basic / Bearer | Notes |
+|------|---------------------|-------|
+| User/password | `username:password` | Works when licensed; on many SaaS tenants OData stays **401** even when WebUI login works |
+| REST Interface Access Token (PAT) | `username=<token>`, `password=PAT` (literal) | Prefer for unattended cloud REST when WCF SOAP is blocked |
+| OIDC Bearer (WebUI) | `Authorization: Bearer <access_token>` | Interactive SaaS login + MFA — see `SAAS_OIDC_LOGIN.md` / `priority-saas-oidc-login` |
 
 Never log tokens or passwords. CredMan / local password files outside git only.
+
+Discover `_tabulaini=` via `POST /webui/<tenant>` before guessing `tabula.ini` on SaaS.
 
 ## FORMLIMITED / RESTFLAG
 

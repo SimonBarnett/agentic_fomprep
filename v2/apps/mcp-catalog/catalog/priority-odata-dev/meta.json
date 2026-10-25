@@ -1,6 +1,1 @@
-{
-  "name": "priority-odata-dev",
-  "title": "Priority OData (DEV dictionary / data)",
-  "description": "Read Priority dictionary or business data via OData (and FORMLIMITED RESTFLAG audit). Catalog grab-only; execute locally with CredMan. Does not replace Form Prep gates.",
-  "version": "1.2.0"
-}
+﻿{"name":"priority-odata-dev","title":"Priority OData (DEV dictionary / data)","description":"Read Priority dictionary or business data via OData (and FORMLIMITED RESTFLAG audit). Catalog grab-only; execute locally with CredMan. Does not replace Form Prep gates.","version":"1.2.1"}

@@ -1,5 +1,7 @@
 # Skill harvest log
 
+- 2026-10-25: Priority SaaS / Cloud interactive login — tenant `POST /webui/<tenant>` exposes `_tabulaini=tab….ini`; OIDC `priority-web` + PKCE; Accounts `login/checkPassword` then `mfa/checkotp` (single-use); consent redirect; `/auth/oauth2/token`; Bearer for tenant POST. New `docs/skill-sources/programming/SAAS_OIDC_LOGIN.md` + catalog `priority-saas-oidc-login` v1.0.0; pointers in `ODATA_REST_CLOUD.md` and `priority-mcp-setup`. Source: generic SaaS connectivity (customer names stripped).
+
 - 2026-10-16: OData PATCH patterns — composite EntityType keys, `Prefer: return=representation`, approved Live writes only; field-touch re-fire of `POST-UPDATE` / BUF includes after reading trigger text. Extended `ODATA_REST_CLOUD.md`; catalog `priority-odata-dev` v1.2.0 hard rule 10. Source: Priority cloud approved config + document re-raise (generic lessons only).
 
 - 2026-10-15: Cloud OData REST patterns — PAT Basic (`token`/`PAT`), DNAME≠LIVE, FORMLIMITED RESTFLAG null → HTTP 400, form trigger text via EFORM→FTRIG→FTRIGTEXT (not FORMTRIG alone), typed *DOCSTATS entities, extended tables without EFORM. New `docs/skill-sources/programming/ODATA_REST_CLOUD.md`; catalog `priority-odata-dev` hard rules 7–9 + RESTFLAG/typed-status notes. Source: Priority cloud read-only investigation (generic lessons only).

@@ -105,6 +105,7 @@ Client lists Priority MCP tools without 401/404. Tenant and host match the user'
 
 - Discovery tools: `priority-mcp-discovery`
 - Forms / procedures / search / help: sibling `priority-mcp-*` skills
+- Interactive SaaS WebUI login (Tabula user + email MFA → Bearer): `priority-saas-oidc-login` (different client: `priority-web`)
 
 ## Related Medatech lessons (lazy)
 

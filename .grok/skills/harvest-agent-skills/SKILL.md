@@ -156,3 +156,4 @@ books use `harvest-agent-skills` pointing at their home.)
 - Use priority-saas-oidc-login for Cloud WebUI Bearer; tabulaini from POST /webui/<tenant>; OTP single-use; prefer PAT for unattended OData
 - Never rewrite catalog meta.json with a UTF-8 BOM (CAT-T51 / Node MCP); bump version as UTF-8 no BOM pretty JSON.
 - When intake files a catalog-skill FR after the harvest already landed, add the missing hostile pin (OTP single-use, prefer PAT, no secret literals) and Closes the FR; do not duplicate the skill folder.
+- priority-customer repos need root VISION.md for hostile MRB: customer-specific harvest here not agentic_fomprep; project logs in service-call folders; hours on hours branch; secrets only in C:\passwords\<repo>-connections.txt never in git

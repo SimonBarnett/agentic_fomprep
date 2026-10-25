@@ -159,3 +159,4 @@ books use `harvest-agent-skills` pointing at their home.)
 - priority-customer repos need root VISION.md for hostile MRB: customer-specific harvest here not agentic_fomprep; project logs in service-call folders; hours on hours branch; secrets only in C:\passwords\<repo>-connections.txt never in git
 - When a live-fix evidence PR CONFLICTS with a prior docs next-step tip, keep-both fold prefers the completed-write tip narrative; verify OData evidence JSON for the write
 - fomprep catalog harvest: CAT-T51 no BOM on new meta.json; CAT-T41 password-equals fail on ODATA_REST_CLOUD.md is pre-existing on main -- confirm on origin/main before FAIL.
+- fomprep CAT-T41: do not treat documented PAT Basic (password field is PAT) as a secret; require password-equals plus a quote, or reword the skill-source.

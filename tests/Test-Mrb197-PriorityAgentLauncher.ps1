@@ -28,7 +28,7 @@ Gate 'hours-session-tag' ($src -match 'session:' -and $src -match 'HoursCheck') 
 Gate 'hours-dev-test' ($src -match 'dev' -and $src -match 'test' -and $rl -match 'MANDATORY') 'dev+test hours lines'
 Gate 'harvest-general' ($rl -match 'SimonBarnett/agentic_fomprep') 'general harvest to fomprep PR'
 Gate 'harvest-customer' ($rl -match 'customer repo') 'customer harvest to customer repo'
-Gate 'no-touch-priority' ($rl -match 'Never touch a customer Priority system') 'customer systems need Simon ask'
+Gate 'no-touch-priority' ($rl -match 'without asking first' -and $rl -match "Don't message the customer's people") 'rules v2 connect no-ask; still ask before messaging people'
 Gate 'vision-agent-entry' ((Test-Path (Join-Path $repo 'VISION.md'))) 'VISION.md present for quote'
 Gate 'readme-topic' ($rd -match 'priority-customer') 'README documents topic list'
 if ($failed -gt 0) { Write-Host "Test-Mrb197-PriorityAgentLauncher FAIL ($failed)"; exit 1 }

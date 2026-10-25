@@ -2,9 +2,13 @@
 
 Priority-generic **agent home**: Form Prep runners, MCP catalog, and
 `.grok/skills` so an agent started at the **repo root** has portable Priority
-skills without customer product packs. Example pins may use a DEV estate;
-execution still requires a user allowlist. This file is the vision-first source
-for hostile MRB (quote it; do not invent product intent).
+skills without customer product packs. Example pins may use a DEV estate.
+**Priority Agent rules v2 (PR #200):** a launched agent may connect to the
+selected customer's systems using the machine-local
+`C:\passwords\<repo>-connections.txt` **without asking first**; prefer DEV/test
+for changes; still **never** commit or echo secrets; still **ask Simon before
+messaging** the customer's people. This file is the vision-first source for
+hostile MRB (quote it; do not invent product intent).
 
 ## Mission
 
@@ -29,7 +33,9 @@ Never report success from Playwright finish, winrun exit 0, or SQL flips of `UPD
 
 ## Bounds
 
-- **DEV only:** environment `DEV`, SQL instance and web host pinned to the DEV stack; refuse live/PRI.
+- **Prefer DEV:** Form Prep pins and default changes target environment `DEV` (SQL instance and web host on the DEV stack). Live/PRI connections for the selected customer are allowed via the machine-local passwords file **without asking first** (rules v2); prefer DEV/test for writes and Form Prep runs when a DEV estate exists.
+- Still **never** commit, copy, quote, echo or summarise secrets from that file (or any credential store) into chat, logs, PRs, issues, skills, IRC or hours.
+- Still **ask Simon before messaging** the customer's people (email, Teams, Slack, tickets or calls).
 - Headed Playwright needs an unlocked DEV1 session until session-0 / headless proof exists.
 - Autonomous named-form path (`Prepare-NamedForm.ps1` / FORMPREPDRCT2) is the preferred non-UI success path when available.
 - Product issue / FR / skill / harvest filings bound to Bobiverse intake
@@ -45,6 +51,6 @@ Never report success from Playwright finish, winrun exit 0, or SQL flips of `UPD
 ## Non-goals
 
 - Overnight unattended Form Prep on locked session-0 without proof.
-- Live/PRI execution without an explicit user allowlist.
+- Messaging the customer's people, or committing/echoing secrets, without the rules-v2 gates above.
 - Owning CE Day Works product delivery (`ce-priority/dayworks`, formerly `ce-dayworks`) or CE DBA estate packs (`ce-priority`).
 - Replacing human judgment on Ignore Duplicate / AllUnprepared / cookie recapture stops.

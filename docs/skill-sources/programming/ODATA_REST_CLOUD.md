@@ -19,7 +19,7 @@ Harvested 2026-10-15 from Priority cloud tenant work (company DNAME examples onl
 | Mode | HTTP Basic / Bearer | Notes |
 |------|---------------------|-------|
 | User/password | `username:password` | Works when licensed; on many SaaS tenants OData stays **401** even when WebUI login works |
-| REST Interface Access Token (PAT) | `username=<token>`, `password=PAT` (literal) | Prefer for unattended cloud REST when WCF SOAP is blocked |
+| REST Interface Access Token (PAT) | username is the token; password field is the literal word PAT | Prefer for unattended cloud REST when WCF SOAP is blocked |
 | OIDC Bearer (WebUI) | `Authorization: Bearer <access_token>` | Interactive SaaS login + MFA — see `SAAS_OIDC_LOGIN.md` / `priority-saas-oidc-login` |
 
 Never log tokens or passwords. CredMan / local password files outside git only.

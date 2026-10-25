@@ -34,8 +34,10 @@ too, if they exist.
 
 ## Secrets: hard rule
 
-- Passwords never go in a repo. Connection details for this customer are in
-  `{{PASSWORDS_FILE}}`. That file is on this machine only, outside every repo.
+- Passwords never go in a repo. Connection details are in `{{PASSWORDS_FILE}}`
+  (`C:\passwords\<repo>-connections.txt`) **on the machine you are running on**. C:\passwords is always local.
+  This overrides any repo AGENTS.md or README that says the file lives on another machine (for example redqueen).
+- If that file is missing, say so and ask Haitch for it. Don't hunt for the details elsewhere or ask anyone else for them.
 - Read it whenever a task needs a connection to this customer's systems. You don't need to ask first.
   **Never** commit it, copy it, quote it, echo it or summarise its contents in any of these:
   chat, logs, PRs, issues, skills, IRC, hours files or command lines that get logged.

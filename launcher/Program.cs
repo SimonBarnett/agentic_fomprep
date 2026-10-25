@@ -161,7 +161,7 @@ static class Program
         // ---- 4. grok: register MCP + skills, build brief, launch ----------------------
         Header("[4] Agent (Grok)");
         if (grok == null) { Err("grok CLI not found (expected %USERPROFILE%\\.grok\\bin\\grok.exe)."); Pause(); return 1; }
-        EnsureGrokMcp(grok);
+        EnsureGrokMcp(grok, fomprep);
         EnsureGrokSkillsPath(skillsDir);
         if (!NoFuel) FuelCheck();
 
@@ -186,7 +186,7 @@ static class Program
         string rules = LoadRules(fomprep, out string rulesSrc);
         foreach (var kv in vars) rules = rules.Replace("{{" + kv.Key + "}}", kv.Value);
         Info($"rules: {rulesSrc} ({rules.Length} chars)");
-        if (cust != null) Check(File.Exists(pwFile), $"connections file for {cust.Name} {(File.Exists(pwFile) ? "exists" : "MISSING")}: {pwFile} (contents not read)");
+        if (cust != null) Check(File.Exists(pwFile), $"connections file for {cust.Name} {(File.Exists(pwFile) ? "exists" : "MISSING - ask Haitch for it")}: {pwFile} (contents not read)");
         Info($"hours: {hoursRepo} branch 'hours' -> hours/{launchedAt:yyyy-MM-dd}.md, tag session:{sessShort} (mandatory; checked on exit)");
 
         var brief = new StringBuilder();
@@ -378,20 +378,32 @@ static class Program
     }
 
     // ------------------------------------------------------------------ grok config
-    // priority-catalog runs locally over stdio from this exe, serving <agentic_fomprep>\v2\apps\mcp-catalog\catalog.
-    // (The hosted https://mcp-priority.ntsa.uk/mcp has no DNS record, so an http registration always fails the handshake.)
-    static void EnsureGrokMcp(string grok)
+    // priority-catalog runs locally over stdio from the agentic_fomprep clone:
+    //   node <clone>\v2\apps\mcp-catalog\stdio.mjs   (the repo's own stdio entry point, no npm install needed)
+    // Fallback while the clone lacks stdio.mjs or node is missing: this exe's built-in port (--mcp-catalog),
+    // which serves the same <clone>\v2\apps\mcp-catalog\catalog. Any other registration (e.g. a remote URL) is replaced.
+    static void EnsureGrokMcp(string grok, string fomprep)
     {
-        string exe = Environment.ProcessPath ?? Path.Combine(AppContext.BaseDirectory, "PriorityAgent.exe");
+        string script = Path.Combine(fomprep, "v2", "apps", "mcp-catalog", "stdio.mjs");
+        string? node = Which("node.exe", @"D:\tools\node\node.exe", @"C:\Program Files\nodejs\node.exe");
+        string[] cmd = File.Exists(script) && node != null
+            ? new[] { node, script }
+            : new[] { Environment.ProcessPath ?? Path.Combine(AppContext.BaseDirectory, "PriorityAgent.exe"), "--mcp-catalog" };
+        if (cmd[1] == "--mcp-catalog")
+            Warn(node == null ? "node not found; using PriorityAgent.exe --mcp-catalog for priority-catalog"
+                              : $"{script} not in the clone yet; using PriorityAgent.exe --mcp-catalog for priority-catalog");
+        string want = string.Join(' ', cmd);
         var (rc, outp, _) = Capture(grok, null, "mcp", "list");
         string line = outp.Split('\n').Select(l => l.Trim()).FirstOrDefault(l => l.StartsWith(McpName + ":", StringComparison.OrdinalIgnoreCase)) ?? "";
-        bool good = line.Contains(exe, StringComparison.OrdinalIgnoreCase) && line.Contains("--mcp-catalog", StringComparison.OrdinalIgnoreCase);
-        if (good) Check(true, $"MCP '{McpName}' registered: {line[(McpName.Length + 1)..].Trim()}");
-        else if (DryRun) { Info($"would run: grok mcp add {McpName} -- \"{exe}\" --mcp-catalog   (currently: {(line == "" ? "not registered" : line)})"); return; }
+        string current = line == "" ? "" : line[(McpName.Length + 1)..].Trim();
+        bool good = current.Equals(want, StringComparison.OrdinalIgnoreCase);
+        if (good) Check(true, $"MCP '{McpName}' registered (stdio): {current}");
+        else if (DryRun) { Info($"would run: grok mcp add {McpName} -- {want}   (currently: {(current == "" ? "not registered" : current)})"); return; }
         else
         {
-            int arc = RunTo(grok, null, "mcp", "add", McpName, "--", exe, "--mcp-catalog");
-            Check(arc == 0, $"registered MCP '{McpName}' (stdio) -> \"{exe}\" --mcp-catalog{(line == "" ? "" : $" (replaced: {line})")}");
+            var a = new List<string> { "mcp", "add", McpName, "--" }; a.AddRange(cmd);
+            int arc = RunTo(grok, null, a.ToArray());
+            Check(arc == 0, $"registered MCP '{McpName}' (stdio) -> {want}{(current == "" ? "" : $" (replaced: {current})")}");
         }
         if (DryRun && !good) return;
         var (drc, dout, derr) = Capture(grok, null, "mcp", "doctor", McpName);

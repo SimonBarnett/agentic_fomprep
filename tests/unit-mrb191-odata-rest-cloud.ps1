@@ -30,7 +30,7 @@ foreach ($pin in $skillPins) {
 }
 
 $srcPins = @(
-  'password=PAT',
+  'password field is the literal word PAT',
   'Priority **DNAME**',
   '**HTTP 400**',
   'FTRIGTEXT_SUBFORM.TEXT',

@@ -78,6 +78,7 @@ $expected = @(
     'priority-version-revision-discipline',
     'priority-dictionary-sql',
     'priority-mcp-setup',
+    'priority-saas-oidc-login',
     'priority-mcp-discovery',
     'priority-mcp-forms',
     'priority-mcp-procedures',

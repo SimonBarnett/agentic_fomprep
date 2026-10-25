@@ -27,7 +27,7 @@ Reading or writing Priority dictionary or business data via OData instead of UI-
 5. Prefer OData EPROG dumps for procedure archaeology; write dumps under the instance work dir.
 6. SQL on `system`/`base` is allowed for EXECPREPLOCK / FORMTRIGTEXT / structural asserts. OData does not replace Form Prep success gates (`ok=true` AND UPD=N AND LASTPREPDATE advanced).
 7. Company/DNAME: UI title is not the SQL DB name (TEST `base` = "T - Clarkson Evans Live - 20251031"; `test` = "Test"). Check USERENV.DNAME. OData path uses the allowlist `company` (DNAME), not the UI title. Path segment `LIVE` is **not** a substitute for DNAME (can HTTP 500).
-8. Cloud REST PAT (when issued): HTTP Basic username=`<token>`, password=`PAT` (literal). Prefer when WCF SOAP returns 403.
+8. Cloud REST PAT (when issued): HTTP Basic username=`<token>`, password=`PAT` (literal). Prefer when WCF SOAP returns 403. SaaS Tabula password Basic often stays 401 — use PAT or OIDC Bearer from `priority-saas-oidc-login`; discover `_tabulaini` via `POST /webui/<tenant>`.
 9. Form trigger **source text**: use `EFORM` → `FTRIG_SUBFORM` → `FTRIGTEXT_SUBFORM`. Do not expect bodies from `FORMTRIG` alone. Full notes: `docs/skill-sources/programming/ODATA_REST_CLOUD.md`.
 10. **PATCH / writes:** only when the operator approves the exact change. Read EntityType keys from `$metadata` (composite keys as `Entity(K1='…',K2='…')`). Prefer `Prefer: return=representation` + follow-up GET. A field touch can re-fire `POST-UPDATE` — read trigger text first; see `ODATA_REST_CLOUD.md`.
 

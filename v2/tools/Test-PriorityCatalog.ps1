@@ -492,7 +492,8 @@ foreach ($root in $progSecretRoots) {
     if (-not (Test-Path -LiteralPath $root)) { continue }
     Get-ChildItem -Path $root -Recurse -File -ErrorAction SilentlyContinue | ForEach-Object {
         $text = Get-Content -LiteralPath $_.FullName -Raw -Encoding UTF8 -ErrorAction SilentlyContinue
-        if ($text -and ($text -match '(?i)(password\s*=|XAI_API_KEY\s*=)')) { $progMissing += ("secret:" + $_.Name) }
+        # FR #219: require quoted assignment so PAT docs (password field is PAT) do not trip CAT-T41
+        if ($text -and ($text -match '(?i)(password\s*=\s*[''"]|XAI_API_KEY\s*=\s*[''"])')) { $progMissing += ("secret:" + $_.Name) }
     }
 }
 Add-Gate 'CAT-T41' ($progMissing.Count -eq 0) $(if ($progMissing.Count -eq 0) { 'programming skills meta semver + skill-sources' } else { $progMissing -join '; ' })

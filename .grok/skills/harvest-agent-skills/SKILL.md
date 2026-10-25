@@ -155,3 +155,4 @@ books use `harvest-agent-skills` pointing at their home.)
 - When rules v2 lands connect-without-ask, update VISION.md in a separate FR (do not edit VISION inside the product PR); prefer DEV; never commit/echo secrets; ask before messaging people; refresh hostile pins that still require Never-touch/allowlist
 - Use priority-saas-oidc-login for Cloud WebUI Bearer; tabulaini from POST /webui/<tenant>; OTP single-use; prefer PAT for unattended OData
 - Never rewrite catalog meta.json with a UTF-8 BOM (CAT-T51 / Node MCP); bump version as UTF-8 no BOM pretty JSON.
+- When intake files a catalog-skill FR after the harvest already landed, add the missing hostile pin (OTP single-use, prefer PAT, no secret literals) and Closes the FR; do not duplicate the skill folder.

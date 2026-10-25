@@ -50,7 +50,8 @@ Logs go to `%LOCALAPPDATA%\PriorityAgent\logs`. Per-session `launch.json` and th
   - Customer-installation skills and insights go to the **customer repo**.
   - Project and service-call specifics go to **that project folder** (including `log.md`).
 - **Secrets**:
-  - Connection details live in `C:\passwords\<customer>-connections.txt` on the machine.
+  - Connection details live in `C:\passwords\<repo>-connections.txt` on the machine, where `<repo>` is the GitHub repo name in lowercase
+    (for example `rees-connections.txt` or `ce-priority-connections.txt`).
     Configure with `--passwords-dir` or the `PRIORITY_AGENT_PASSWORDS` env var.
   - The agent may read the file only when Simon asks, and must **never commit, echo, quote or summarise** it.
   - The launcher only checks that the file exists. It never reads it.

@@ -167,7 +167,7 @@ static class Program
         string hoursRepoDir = custDir ?? fomprep;
         string hoursRepo = cust?.FullName ?? $"{Owner}/{FomprepRepo}";
         string hoursWt = Path.Combine(Path.GetDirectoryName(hoursRepoDir)!, Path.GetFileName(hoursRepoDir) + "-hours");
-        string pwFile = cust != null ? Path.Combine(PasswordsDir, $"{cust.Name}-connections.txt") : Path.Combine(PasswordsDir, "<customer>-connections.txt");
+        string pwFile = cust != null ? Path.Combine(PasswordsDir, $"{cust.Name.ToLowerInvariant()}-connections.txt") : Path.Combine(PasswordsDir, "<repo>-connections.txt");
         var vars = new Dictionary<string, string>
         {
             ["LEVEL"] = level, ["FOMPREP_DIR"] = fomprep, ["WORK_DIR"] = workDir,
@@ -563,7 +563,7 @@ PriorityAgent.exe [options]
   --root <dir>          clone root for repos new to this machine (default D:\ai, env PRIORITY_AGENT_ROOT)
   --no-fuel-check       skip the Bob fuel report check
   --no-pause            don't wait for Enter before closing
-  --passwords-dir <dir> where <customer>-connections.txt lives (default C:\passwords, env PRIORITY_AGENT_PASSWORDS);
+  --passwords-dir <dir> where <repo>-connections.txt lives (<repo> = GitHub repo name, lowercase) (default C:\passwords, env PRIORITY_AGENT_PASSWORDS);
                         the launcher only checks the file exists, never reads it
   --check-hours <repo> --session <id>
                         only run the mandatory hours check for a session against <repo>'s origin/hours

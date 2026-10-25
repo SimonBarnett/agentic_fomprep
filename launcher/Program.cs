@@ -19,7 +19,6 @@ static class Program
     const string FomprepRepo = "agentic_fomprep";
     const string Topic = "priority-customer";
     const string McpName = "priority-catalog";
-    const string McpUrl = "https://mcp-priority.ntsa.uk/mcp";
     const string FuelUrl = "https://irc.ntsa.uk/bob/v1/report";
 
     static bool DryRun, ListOnly, Smoke, General, NoPause, NoFuel;
@@ -38,6 +37,13 @@ static class Program
 
     static int Run(string[] args)
     {
+        // MCP stdio server mode: stdout carries JSON-RPC only - nothing else may print.
+        int mi = Array.FindIndex(args, a => a.Equals("--mcp-catalog", StringComparison.OrdinalIgnoreCase));
+        if (mi >= 0)
+        {
+            string? dir = mi + 1 < args.Length && !args[mi + 1].StartsWith("--") ? args[mi + 1] : null;
+            return CatalogMcp.Serve(dir ?? Environment.GetEnvironmentVariable("PRIORITY_CATALOG_DIR") ?? FindCatalogDir());
+        }
         for (int i = 0; i < args.Length; i++)
         {
             string a = args[i].ToLowerInvariant();
@@ -194,11 +200,11 @@ static class Program
         if (projectDir != null) readFirst.AddRange(new[] { Path.Combine(projectDir, "README.md"), Path.Combine(projectDir, "log.md") });
         brief.AppendLine("Read first (those that exist): " + string.Join("; ", readFirst));
         brief.Append(Smoke
-            ? "SMOKE TEST: do not run tools, do not read or change any file, do not contact any system. Reply in at most 5 lines: the context level, customer, project, and whether the priority-catalog MCP and Priority skills are visible to you. Then stop."
+            ? "SMOKE TEST: do not read or change any file and do not contact any customer system. You may call the priority-catalog tool list_catalog once (read-only, local). Reply in at most 8 lines: the context level, customer, project; the priority-catalog tools you have and whether that server is connected (with the skill count list_catalog returned); whether Priority skills are visible; and what your launcher rules say about connecting to this customer's systems. Then stop."
             : $"Follow the launcher rules (harvest rule, secrets, MANDATORY hours with tag session:{sessShort} on the hours branch of {hoursRepo}). Then briefly confirm the context and ask Simon what to work on.");
 
         var gargs = new List<string> { "--cwd", workDir, "--session-id", sessionId, "--trust", "--rules", rules };
-        if (Smoke) gargs.AddRange(new[] { "--max-turns", "2", "-p" });
+        if (Smoke) gargs.AddRange(new[] { "--max-turns", "4", "-p" });
         gargs.Add(brief.ToString());
 
         string sessDir = Path.Combine(Path.GetDirectoryName(logDir)!, "sessions");
@@ -209,7 +215,7 @@ static class Program
         { sessionId, level, customer = cust?.FullName, project, workDir, fomprep, grok, dryRun = DryRun, smoke = Smoke, at = DateTime.Now }, new JsonSerializerOptions { WriteIndented = true }));
 
         string display = Quote(grok) + " " + string.Join(' ', gargs.Select(a => a == rules ? $"<rules: {rulesFile}>" : Quote(a)));
-        Console.WriteLine("\nLaunch command:\n  " + display.Replace("\n", "\\n"));
+        Console.WriteLine("\nLaunch command:\n  " + display.Replace("\r\n", "\\n").Replace("\n", "\\n"));
         Log("launch: " + display);
         Check(Directory.Exists(workDir), $"working directory exists: {workDir}");
 
@@ -372,13 +378,38 @@ static class Program
     }
 
     // ------------------------------------------------------------------ grok config
+    // priority-catalog runs locally over stdio from this exe, serving <agentic_fomprep>\v2\apps\mcp-catalog\catalog.
+    // (The hosted https://mcp-priority.ntsa.uk/mcp has no DNS record, so an http registration always fails the handshake.)
     static void EnsureGrokMcp(string grok)
     {
+        string exe = Environment.ProcessPath ?? Path.Combine(AppContext.BaseDirectory, "PriorityAgent.exe");
         var (rc, outp, _) = Capture(grok, null, "mcp", "list");
-        if (rc == 0 && Regex.IsMatch(outp, @"\b" + Regex.Escape(McpName) + @"\b")) { Check(true, $"MCP '{McpName}' registered"); return; }
-        if (DryRun) { Info($"would run: grok mcp add {McpName} {McpUrl}"); return; }
-        int arc = RunTo(grok, null, "mcp", "add", McpName, McpUrl);
-        Check(arc == 0, $"registered MCP '{McpName}' -> {McpUrl}");
+        string line = outp.Split('\n').Select(l => l.Trim()).FirstOrDefault(l => l.StartsWith(McpName + ":", StringComparison.OrdinalIgnoreCase)) ?? "";
+        bool good = line.Contains(exe, StringComparison.OrdinalIgnoreCase) && line.Contains("--mcp-catalog", StringComparison.OrdinalIgnoreCase);
+        if (good) Check(true, $"MCP '{McpName}' registered: {line[(McpName.Length + 1)..].Trim()}");
+        else if (DryRun) { Info($"would run: grok mcp add {McpName} -- \"{exe}\" --mcp-catalog   (currently: {(line == "" ? "not registered" : line)})"); return; }
+        else
+        {
+            int arc = RunTo(grok, null, "mcp", "add", McpName, "--", exe, "--mcp-catalog");
+            Check(arc == 0, $"registered MCP '{McpName}' (stdio) -> \"{exe}\" --mcp-catalog{(line == "" ? "" : $" (replaced: {line})")}");
+        }
+        if (DryRun && !good) return;
+        var (drc, dout, derr) = Capture(grok, null, "mcp", "doctor", McpName);
+        string d = (dout + derr).Trim();
+        int sec = d.IndexOf(McpName + " (", StringComparison.OrdinalIgnoreCase);
+        if (sec >= 0) d = d[sec..];
+        bool ok = drc == 0 && d.Contains("handshake OK", StringComparison.OrdinalIgnoreCase) && !d.Contains("handshake failed", StringComparison.OrdinalIgnoreCase);
+        Check(ok, $"grok mcp doctor {McpName}: " + Trunc(Regex.Replace(d, @"\s+", " "), 300));
+    }
+
+    static string FindCatalogDir()
+    {
+        foreach (var root in SearchRoots.Prepend(CloneRoot).Distinct(StringComparer.OrdinalIgnoreCase))
+        {
+            string c = Path.Combine(root, FomprepRepo, "v2", "apps", "mcp-catalog", "catalog");
+            if (Directory.Exists(c)) return c;
+        }
+        return Path.Combine(CloneRoot, FomprepRepo, "v2", "apps", "mcp-catalog", "catalog");
     }
 
     static void EnsureGrokSkillsPath(string skillsDir)
@@ -446,13 +477,26 @@ static class Program
             throw new Exception("stopped: no grok fuel");
     }
 
+    static int RulesVersion(string text)
+    {
+        var m = Regex.Match(text, @"rules-version:\s*(\d+)");
+        return m.Success ? int.Parse(m.Groups[1].Value) : 1;
+    }
+
+    // Use launcher/agent-rules.md from the clone when it is at least as new as the embedded copy.
     static string LoadRules(string fomprep, out string src)
     {
-        string f = Path.Combine(fomprep, "launcher", "agent-rules.md");
-        if (File.Exists(f)) { src = f; return File.ReadAllText(f); }
-        src = "embedded agent-rules.md";
         using var s = Assembly.GetExecutingAssembly().GetManifestResourceStream("agent-rules.md")!;
-        return new StreamReader(s).ReadToEnd();
+        string embedded = new StreamReader(s).ReadToEnd();
+        string f = Path.Combine(fomprep, "launcher", "agent-rules.md");
+        if (File.Exists(f))
+        {
+            string clone = File.ReadAllText(f);
+            if (RulesVersion(clone) >= RulesVersion(embedded)) { src = $"{f} (v{RulesVersion(clone)})"; return clone; }
+            Warn($"{f} is v{RulesVersion(clone)}, older than the embedded v{RulesVersion(embedded)}; using embedded rules.");
+        }
+        src = $"embedded agent-rules.md (v{RulesVersion(embedded)})";
+        return embedded;
     }
 
     // ------------------------------------------------------------------ Haitch handoff

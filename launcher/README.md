@@ -10,7 +10,13 @@ with the right context.
    - It does `fetch --prune`, then `merge --ff-only`, but only when the clone is on `main` and clean.
      A dirty clone is skipped or reported, never reset.
 2. It **loads the Priority MCP and skills** for every context. The registration is idempotent and user level:
-   - `grok mcp add priority-catalog https://mcp-priority.ntsa.uk/mcp`, if it isn't registered yet.
+   - It registers the **`priority-catalog`** MCP as a **local stdio server**:
+     `grok mcp add priority-catalog -- "<path>\PriorityAgent.exe" --mcp-catalog`.
+     The exe itself serves `list_catalog`, `get_skill`, `get_instance_schema` and `get_runner_files` from
+     `<agentic_fomprep>\v2\apps\mcp-catalog\catalog`. It is a port of `v2/apps/mcp-catalog/lib/mcp.ts`, so it's
+     always as current as the fast-forwarded clone. An old registration (for example the hosted
+     `https://mcp-priority.ntsa.uk/mcp`, which has no DNS record) is replaced automatically.
+     Then it runs `grok mcp doctor priority-catalog`.
    - It adds `<agentic_fomprep>/.grok/skills` to `[skills] paths` in `%USERPROFILE%\.grok\config.toml`.
      A timestamped `.bak-priorityagent-*` backup is written before any change.
    - This is needed because Grok only reads project skills from the cwd's own repo, and a
@@ -31,8 +37,8 @@ with the right context.
    - It never handles keys.
 7. It **starts Grok** in the same console:
    `grok --cwd <context> --session-id <new uuid> --trust --rules <agent rules> "<context brief>"`.
-   - The rules come from `launcher/agent-rules.md` in the agentic_fomprep clone, falling back to the copy
-     embedded in the exe. The `{{...}}` placeholders are filled in.
+   - The rules come from `launcher/agent-rules.md` in the agentic_fomprep clone when its `rules-version` is at
+     least the embedded copy's; otherwise the copy embedded in the exe is used. The `{{...}}` placeholders are filled in.
    - The brief names the customer, project, paths and the files to read first.
 8. **Hours are mandatory.** When the agent exits, the launcher fetches `origin/hours` from the customer repo
    (agentic_fomprep for a general session). It checks that `hours/<today>.md` has a `dev` line **and** a `test`
@@ -53,9 +59,10 @@ Logs go to `%LOCALAPPDATA%\PriorityAgent\logs`. Per-session `launch.json` and th
   - Connection details live in `C:\passwords\<repo>-connections.txt` on the machine, where `<repo>` is the GitHub repo name in lowercase
     (for example `rees-connections.txt` or `ce-priority-connections.txt`).
     Configure with `--passwords-dir` or the `PRIORITY_AGENT_PASSWORDS` env var.
-  - The agent may read the file only when Simon asks, and must **never commit, echo, quote or summarise** it.
+  - The agent reads the file when it needs a connection and must **never commit, echo, quote or summarise** it.
   - The launcher only checks that the file exists. It never reads it.
-- **Never touch a customer Priority system** unless Simon explicitly asked for that system in the session.
+- **Customer systems**: agents may connect to the selected customer's systems with the connections file **without asking first**.
+  They must not message the customer's people without asking Simon.
 - **Hours (mandatory)**: the format comes from ce-dayworks.
   - Lines go in `hours/YYYY-MM-DD.md` on the customer repo's **`hours` branch**, from `hours/_template.md`.
     If the repo has none, copy `launcher/hours-template.md`, which is the ce-dayworks template.
@@ -75,6 +82,7 @@ PriorityAgent.exe --general
 PriorityAgent.exe --dry-run --customer rees --project SC263182   show everything, change nothing, print the grok command
 PriorityAgent.exe --smoke --customer rees --project SC263182     real setup + one brief no-tools single-turn launch
 PriorityAgent.exe --check-hours D:\ai\rees --session <uuid>      run only the hours check
+PriorityAgent.exe --mcp-catalog [<catalog dir>]                 stdio MCP server (what grok runs; env PRIORITY_CATALOG_DIR)
 ```
 
 Other options: `--root <dir>` (clone root, default `D:\ai`, env `PRIORITY_AGENT_ROOT`),

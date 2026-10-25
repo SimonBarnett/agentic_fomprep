@@ -1,4 +1,4 @@
-<!-- rules-version: 2 -->
+<!-- rules-version: 3 -->
 # Priority agent rules (from the Priority Agent launcher)
 
 The launcher fills in the {{...}} values on every start. These rules sit on top of
@@ -11,7 +11,8 @@ too, if they exist.
 - Level: **{{LEVEL}}** (general / customer / project)
 - General Priority knowledge: `{{FOMPREP_DIR}}` (SimonBarnett/agentic_fomprep, fast-forwarded at launch).
   Skills come from `.grok/skills`. The `priority-catalog` MCP server (list_catalog, get_skill, get_instance_schema,
-  get_runner_files) runs locally from the agentic_fomprep clone (`PriorityAgent.exe --mcp-catalog`).
+  get_runner_files) runs locally over stdio from the agentic_fomprep clone (`node v2/apps/mcp-catalog/stdio.mjs`;
+  fallback `PriorityAgent.exe --mcp-catalog`).
 - Customer: {{CUSTOMER}} ({{CUSTOMER_REPO}}, local clone `{{CUSTOMER_DIR}}`)
 - Project or service call: {{PROJECT}} (`{{PROJECT_DIR}}`)
 - Working directory: `{{WORK_DIR}}`
@@ -34,8 +35,10 @@ too, if they exist.
 
 ## Secrets: hard rule
 
-- Passwords never go in a repo. Connection details for this customer are in
-  `{{PASSWORDS_FILE}}`. That file is on this machine only, outside every repo.
+- Passwords never go in a repo. Connection details are in `{{PASSWORDS_FILE}}`
+  (`C:\passwords\<repo>-connections.txt`) **on the machine you are running on**. C:\passwords is always local.
+  This overrides any repo AGENTS.md or README that says the file lives on another machine (for example redqueen).
+- If that file is missing, say so and ask Haitch for it. Don't hunt for the details elsewhere or ask anyone else for them.
 - Read it whenever a task needs a connection to this customer's systems. You don't need to ask first.
   **Never** commit it, copy it, quote it, echo it or summarise its contents in any of these:
   chat, logs, PRs, issues, skills, IRC, hours files or command lines that get logged.

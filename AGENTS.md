@@ -36,6 +36,7 @@ Start with CWD at the **repo root**. Project skills load from `.grok/skills/`
 | OData / MCP | `priority-odata-dev`, `priority-mcp-*` |
 | UAT kernel | `priority-uat-orchestrator`, `priority-uat-wcf` |
 | Hours (generic) | `priority-hours-*` (except named handoffs) |
+| Quotes | `priority-price-quotation-create` |
 | Harvest | `harvest-priority-skills`, `harvest-agent-skills` |
 
 Authoritative long-form playbooks: `docs/skill-sources/`. Catalog leaflets:

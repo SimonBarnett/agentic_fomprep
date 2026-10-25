@@ -64,3 +64,10 @@ Expanded `priority-uat-wcf` (skill-source + catalog meta **1.2.0**) from CE Day 
 ## 2026-10-08 - Bobiverse intake dual-mode (moved from bobiverse#3349)
 
 - Harvested lesson on CAST IRON `-Repo SimonBarnett/agentic_fomprep` + Report/Invoke wrappers + skillbook-referral + CAT needles; anti-omnibus small FRs. Refs #109-#118 / docs #119. Moved from SimonBarnett/bobiverse#3349.
+
+## 2026-10-25 - Price quotation (PQ) create via OData
+
+- New skill-source `docs/skill-sources/quotes/priority-price-quotation-create.md` (+ folder README).
+- New catalog `priority-price-quotation-create` (meta 1.0.0), synced to `.grok/skills/`.
+- Rules: draft-first approval for live writes; header copied from recent PQs (expiry +30d, REFERENCE max 12); one `CONS-HR-MED` line per step, qty = 2x internal, `ZEMG_INTQUANT` = internal, prep time spread; never send PRICE (triggers set it, read it back); lines inserted at LINE 1 and LINE not settable -> post in reverse; per-line remarks (Outcome / Forms/columns, `[new]` columns, no template headings, replace not append, plain apostrophes not `&#x27;`); quote Note + standard terms; duplicate checks; full read-back of lines and totals.
+- Source session anonymised (customer, request and project replaced).

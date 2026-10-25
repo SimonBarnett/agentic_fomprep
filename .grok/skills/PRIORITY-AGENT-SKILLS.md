@@ -42,6 +42,7 @@ IncludeDba=False IncludeCustomer=False
 - priority-ops-support-desk
 - priority-ops-system-admin
 - priority-ops-training
+- priority-price-quotation-create
 - priority-procedure-prep
 - priority-procedure-style
 - priority-project-create-smoke

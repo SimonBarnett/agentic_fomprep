@@ -86,3 +86,11 @@ Topic catalog skills: `priority-ops-*`, `priority-help-wizards`.
 
 Customer-specific packs are excluded. CAST IRON harvest still applies to any
 new hard rule learned from these lessons.
+
+## Price quotations (2026-10-25)
+
+Source: `docs/skill-sources/quotes/` (see that folder's README).
+
+| Catalog folder | Focus |
+|----------------|-------|
+| `priority-price-quotation-create` | PQ (`CPROF`) via OData: header from recent PQs, one `CONS-HR-MED` line per step posted in reverse, qty = 2x internal, no price (triggers), per-line remarks, draft-first approval, read-back |

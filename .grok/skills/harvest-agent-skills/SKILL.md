@@ -157,3 +157,4 @@ books use `harvest-agent-skills` pointing at their home.)
 - Never rewrite catalog meta.json with a UTF-8 BOM (CAT-T51 / Node MCP); bump version as UTF-8 no BOM pretty JSON.
 - When intake files a catalog-skill FR after the harvest already landed, add the missing hostile pin (OTP single-use, prefer PAT, no secret literals) and Closes the FR; do not duplicate the skill folder.
 - priority-customer repos need root VISION.md for hostile MRB: customer-specific harvest here not agentic_fomprep; project logs in service-call folders; hours on hours branch; secrets only in C:\passwords\<repo>-connections.txt never in git
+- When a live-fix evidence PR CONFLICTS with a prior docs next-step tip, keep-both fold prefers the completed-write tip narrative; verify OData evidence JSON for the write

@@ -150,3 +150,4 @@ books use `harvest-agent-skills` pointing at their home.)
 ## Harvested lessons (intake)
 
 - Priority Agent home (this repo) needs a-search-style CAST IRON Bobiverse intake: always pass `-Repo SimonBarnett/agentic_fomprep` (or the matching intake payload `repo`), ship repo-local `Report-FomprepIntakeIssue.ps1` / `Invoke-FomprepHarvest.ps1` wrappers, document dual-mode CWD vs referred skillbook in `docs/skillbook-referral.md`, and pin CAT needles for the intake default-repo path. File many small Goal/Deliverables/Testable FRs (not one omnibus). Backlog: issues #109-#118; docs park PR #119.
+- Priority Agent lists customers from GitHub topic priority-customer; ff-only clean main for fomprep; new customer/project is Ask Haitch only; secrets stay in C:\passwords\<repo>-connections.txt unread by the launcher.

@@ -21,6 +21,13 @@ Gate 'catalog-skill' (Test-Path $catSkill) $catSkill
 Gate 'catalog-meta' (Test-Path $catMeta) $catMeta
 Gate 'grok-sync' (Test-Path $grok) $grok
 Gate 'saas-meta-no-bom' (-not (HasBom $catMeta)) 'saas meta.json no BOM'
+$grokMeta = Join-Path $repo '.grok\skills\priority-saas-oidc-login\meta.json'
+Gate 'grok-meta-no-bom' ((Test-Path $grokMeta) -and -not (HasBom $grokMeta)) 'grok meta.json no BOM'
+$blobSkill = [IO.File]::ReadAllText($catSkill) + [IO.File]::ReadAllText($grok)
+Gate 'v11-allow-auto-redirect' ($blobSkill -match 'AllowAutoRedirect') 'v1.1 HttpClient AllowAutoRedirect'
+Gate 'v11-odata-500' ($blobSkill -match '500' -and ($blobSkill -match 'DNAME' -or $blobSkill -match 'guess')) 'v1.1 empty OData 500 / DNAME'
+Gate 'v11-formstart-404' ($blobSkill -match 'formStart' -and $blobSkill -match '404') 'v1.1 formStart 404 gotcha'
+
 Gate 'odata-meta-no-bom' (-not (HasBom $odataMeta)) 'odata-dev meta.json no BOM (CAT-T51)'
 $blob = [IO.File]::ReadAllText($src) + [IO.File]::ReadAllText($catSkill)
 Gate 'no-password-eq' ($blob -notmatch '(?i)password\s*=') 'no password= hunter literal'

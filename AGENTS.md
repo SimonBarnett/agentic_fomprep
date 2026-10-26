@@ -24,6 +24,10 @@ shells, OData, procedure style, UAT WCF kernel, hours patterns).
 Start with CWD at the **repo root**. Project skills load from `.grok/skills/`
 (folder must be trusted: `grok --trust` or an interactive grant).
 
+## Clone path (Priority Agent launcher)
+
+The launcher prefers `D:\ai\agentic_fomprep`, then also searches `C:\ai`, `D:\repos`, and `C:\repos` (override with `--root` / `PRIORITY_AGENT_ROOT`). Only a real git clone (`.git` present, origin `SimonBarnett/agentic_fomprep`) counts. An **empty stub** at `D:\ai\agentic_fomprep` (directory exists, no `.git`) is skipped; use the resolved `FOMPREP_DIR` / session cwd for `git pull`, or reclone / point `--root` at the working tree (often `C:\ai\agentic_fomprep`). Details: `launcher/README.md`.
+
 ## What this agent owns
 
 | Area | Skills (see `.grok/skills/PRIORITY-AGENT-SKILLS.md`) |

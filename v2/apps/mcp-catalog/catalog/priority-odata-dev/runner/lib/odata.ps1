@@ -329,3 +329,89 @@ function Invoke-ODataHttp {
         }
     }
 }
+# FR #226: refuse inventing OData company/DNAME after repeated empty HTTP 500.
+$script:ODataEmpty500ProbeCount = 0
+
+function Get-ODataEmpty500Max {
+    $raw = ($env:PRIORITY_ODATA_EMPTY_500_MAX)
+    if ([string]::IsNullOrWhiteSpace($raw)) { return 2 }
+    $n = 0
+    if (-not [int]::TryParse($raw.Trim(), [ref]$n) -or $n -lt 1) { return 2 }
+    return [Math]::Min(10, $n)
+}
+
+function Reset-ODataEmpty500Probe {
+    $script:ODataEmpty500ProbeCount = 0
+}
+
+function Test-ODataEmpty500Body {
+    param(
+        $StatusCode,
+        [string]$Body
+    )
+    if ([int]$StatusCode -ne 500) { return $false }
+    $t = if ($null -eq $Body) { '' } else { [string]$Body }
+    $trim = $t.Trim()
+    if ([string]::IsNullOrWhiteSpace($trim)) { return $true }
+    if ($trim -eq '{}' -or $trim -eq 'null' -or $trim -eq '[]') { return $true }
+    return $false
+}
+
+function Register-ODataEmpty500Probe {
+    <#
+    .SYNOPSIS
+      Record an empty HTTP 500 from an OData company/DNAME probe (FR #226).
+    .OUTPUTS
+      Hashtable: ok, count, max, refuse, reason, text
+    #>
+    param(
+        $StatusCode,
+        [string]$Body,
+        [string]$CompanyGuess
+    )
+    if (-not (Test-ODataEmpty500Body -StatusCode $StatusCode -Body $Body)) {
+        return @{
+            ok     = $true
+            count  = [int]$script:ODataEmpty500ProbeCount
+            max    = (Get-ODataEmpty500Max)
+            refuse = $false
+            reason = 'not_empty_500'
+            text   = ''
+        }
+    }
+    $script:ODataEmpty500ProbeCount = [int]$script:ODataEmpty500ProbeCount + 1
+    $max = Get-ODataEmpty500Max
+    $count = [int]$script:ODataEmpty500ProbeCount
+    $guess = if ([string]::IsNullOrWhiteSpace($CompanyGuess)) { '' } else { [string]$CompanyGuess }
+    if ($count -ge $max) {
+        return @{
+            ok     = $false
+            count  = $count
+            max    = $max
+            refuse = $true
+            reason = 'odata_company_probe_refused'
+            text   = ("Stop inventing OData company/DNAME after {0} empty HTTP 500 responses (last guess '{1}'). Confirm DNAME and API licence or PAT with the operator (FR #226)." -f $max, $guess)
+        }
+    }
+    return @{
+        ok     = $true
+        count  = $count
+        max    = $max
+        refuse = $false
+        reason = 'empty_500_counted'
+        text   = ("empty HTTP 500 count={0}/{1} for company guess '{2}'" -f $count, $max, $guess)
+    }
+}
+
+function Assert-ODataCompanyProbeAllowed {
+    param(
+        $StatusCode,
+        [string]$Body,
+        [string]$CompanyGuess
+    )
+    $r = Register-ODataEmpty500Probe -StatusCode $StatusCode -Body $Body -CompanyGuess $CompanyGuess
+    if ($r.refuse) {
+        throw $r.text
+    }
+    return $r
+}

@@ -13,6 +13,11 @@ Harvested 2026-10-15 from Priority cloud tenant work (company DNAME examples onl
   generic label like `LIVE`. Wrong DNAME can return HTTP 500.
 - Cloud tenants often use `tab{tenant}.ini` (e.g. `tabc9bda.ini`), not
   on-prem `tabula.ini`.
+- **FR #226:** Empty HTTP **500** (blank / `{}` / `null` body) on guessed
+  company segments means stop probing after N hits (default 2;
+  `PRIORITY_ODATA_EMPTY_500_MAX`). Confirm DNAME + API licence or PAT.
+  Do not invent further company names. Runner helper:
+  `Assert-ODataCompanyProbeAllowed` in `lib/odata.ps1`.
 
 ## Auth variants
 

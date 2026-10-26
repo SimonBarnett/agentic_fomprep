@@ -161,3 +161,4 @@ books use `harvest-agent-skills` pointing at their home.)
 - fomprep catalog harvest: CAT-T51 no BOM on new meta.json; CAT-T41 password-equals fail on ODATA_REST_CLOUD.md is pre-existing on main -- confirm on origin/main before FAIL.
 - fomprep CAT-T41: do not treat documented PAT Basic (password field is PAT) as a secret; require password-equals plus a quote, or reword the skill-source.
 - priority-saas-oidc-login v1.1: PowerShell & join; HttpClient no-auto-redirect; OData Bearer empty 500 means stop guessing DNAME; prefer PAT
+- Priority SaaS OData: after N empty HTTP 500 on guessed company/DNAME (default 2; PRIORITY_ODATA_EMPTY_500_MAX), stop inventing names and confirm DNAME/API licence or PAT --- Assert-ODataCompanyProbeAllowed in odata.ps1 (FR #226).

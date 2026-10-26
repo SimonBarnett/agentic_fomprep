@@ -1,4 +1,4 @@
-# Priority OData — cloud REST patterns (generic)
+﻿# Priority OData â€” cloud REST patterns (generic)
 
 Authoritative companion to catalog skill `priority-odata-dev`.
 Harvested 2026-10-15 from Priority cloud tenant work (company DNAME examples only).
@@ -20,9 +20,11 @@ Harvested 2026-10-15 from Priority cloud tenant work (company DNAME examples onl
 |------|---------------------|-------|
 | User/password | `username:password` | Works when licensed; on many SaaS tenants OData stays **401** even when WebUI login works |
 | REST Interface Access Token (PAT) | username is the token; password field is the literal word PAT | Prefer for unattended cloud REST when WCF SOAP is blocked |
-| OIDC Bearer (WebUI) | `Authorization: Bearer <access_token>` | Interactive SaaS login + MFA — see `SAAS_OIDC_LOGIN.md` / `priority-saas-oidc-login` |
+| OIDC Bearer (WebUI) | `Authorization: Bearer <access_token>` | Interactive SaaS login + MFA â€” see `SAAS_OIDC_LOGIN.md` / `priority-saas-oidc-login` |
 
 Never log tokens or passwords. CredMan / local password files outside git only.
+
+If Bearer OData returns **HTTP 500 with an empty JSON body** across several guessed company segments, stop inventing DNAMEs - confirm company DNAME and API licence/PAT (see `SAAS_OIDC_LOGIN.md`).
 
 Discover `_tabulaini=` via `POST /webui/<tenant>` before guessing `tabula.ini` on SaaS.
 
@@ -38,7 +40,7 @@ FORMLIMITED?$filter=ENAME eq 'DOCUMENTS_D'&$select=ENAME,RESTFLAG,LIMITFLAG,TITL
 ```
 
 - Setting `RESTFLAG=Y` can expose the form to OData. See existing hard rule:
-  RESTFLAG without LIMITFLAG can hide UI sibling tabs — confirm pattern before
+  RESTFLAG without LIMITFLAG can hide UI sibling tabs â€” confirm pattern before
   leaving RESTFLAG on production UI-tested forms.
 
 ## Form trigger source text
@@ -51,17 +53,17 @@ Do **not** expect usable trigger bodies from `FORMTRIG` alone.
 EFORM?$filter=ENAME eq '<FORM>'&$expand=FTRIG_SUBFORM($expand=FTRIGTEXT_SUBFORM)
 ```
 
-`FTRIGTEXT_SUBFORM.TEXT` holds the trigger source (`#INCLUDE`, SQL, WRNMSG, …).
+`FTRIGTEXT_SUBFORM.TEXT` holds the trigger source (`#INCLUDE`, SQL, WRNMSG, â€¦).
 
-Procedures: prefer `EPROG` → `PROG_SUBFORM` → `PROGTEXT_SUBFORM` (existing skill).
+Procedures: prefer `EPROG` â†’ `PROG_SUBFORM` â†’ `PROGTEXT_SUBFORM` (existing skill).
 
 ## Typed status forms (DOCSTATS family)
 
 Physical table `DOCSTATS` is often **not** a single OData entity set. Cloud
 metadata exposes typed forms such as:
 
-- `ZDOCSTATS` — Statuses for Service Contracts (`TYPE='Z'`)
-- `DDOCSTATS`, `NDOCSTATS`, `PDOCSTATS`, …
+- `ZDOCSTATS` â€” Statuses for Service Contracts (`TYPE='Z'`)
+- `DDOCSTATS`, `NDOCSTATS`, `PDOCSTATS`, â€¦
 
 Query the typed form that matches the document family. Custom columns
 (e.g. `ZLYN_AUTOSTAT`) appear on that entity when RESTFLAG allows.
@@ -71,17 +73,17 @@ Query the typed form that matches the document family. Custom columns
 A custom table referenced in triggers (e.g. `ZLYN_USERS`) may have **no**
 `EFORM` row and **no** OData entity. Maintenance is often via a parent form
 trigger that INSERTs/UPDATEs the extended table from painted columns
-(e.g. `USERS.ZLYN_SERVICECONTACT` → `ZLYN_USERS.SERVICE_CONTACT`).
+(e.g. `USERS.ZLYN_SERVICECONTACT` â†’ `ZLYN_USERS.SERVICE_CONTACT`).
 
 To read such data over OData, expose the **parent** form (`USERS`) or use
-dictionary/SQL where licensed — do not invent an entity name.
+dictionary/SQL where licensed â€” do not invent an entity name.
 
 ## Filter hygiene
 
-- Prefer equality on document numbers (`DOCNO eq 'SH…'`).
+- Prefer equality on document numbers (`DOCNO eq 'SHâ€¦'`).
 - Some forms reject empty `$filter` or overly nested `$select` inside `$expand`
   with HTTP 400; fall back to full expand then project client-side.
-- Rate limits: HTTP 429 — back off between probes.
+- Rate limits: HTTP 429 â€” back off between probes.
 
 ## PATCH writes (when explicitly approved)
 
@@ -96,7 +98,7 @@ Prefer: return=representation
 ```
 
 Example shape (status form): `ZDOCSTATS(STATDES='Draft',TYPE='Z')`.
-Example shape (shipment): `DOCUMENTS_D(DOCNO='SH…',TYPE='D')`.
+Example shape (shipment): `DOCUMENTS_D(DOCNO='SHâ€¦',TYPE='D')`.
 
 - Prefer `Prefer: return=representation` and confirm the returned entity.
 - Re-GET with `$filter` after write (do not trust cache).
@@ -105,14 +107,14 @@ Example shape (shipment): `DOCUMENTS_D(DOCNO='SH…',TYPE='D')`.
 
 ### Re-firing POST-UPDATE via a field touch
 
-When a form’s `POST-UPDATE` (or `#INCLUDE` BUF) must run again on an
+When a formâ€™s `POST-UPDATE` (or `#INCLUDE` BUF) must run again on an
 existing row, a small OData PATCH on an updatable string column (e.g.
 `DETAILS`) can fire that trigger path. Proven useful to re-run a create
 interface after a config fix when INSERT will not happen again.
 
 Hard rules:
 
-1. Read the live `POST-UPDATE` / BUF text first (`EFORM` → `FTRIG` →
+1. Read the live `POST-UPDATE` / BUF text first (`EFORM` â†’ `FTRIG` â†’
    `FTRIGTEXT`). Know every side effect.
 2. Prefer a harmless additive change (append a short marker) over clearing
    business fields.
@@ -123,7 +125,7 @@ Hard rules:
 ## Investigation checklist (read-only)
 
 1. Confirm allowlist `webBaseUrl` / `tabulaini` / `company` (DNAME).
-2. Auth: PAT or CredMan user — never invent.
+2. Auth: PAT or CredMan user â€” never invent.
 3. `$metadata` + service root.
 4. `FORMLIMITED` RESTFLAG for target ENAMEs.
 5. Business GETs with `$filter` + `$top`.
@@ -134,3 +136,4 @@ Hard rules:
 1. Exact entity + key + fields named in the approval.
 2. Read before / patch / read after; keep JSON evidence outside secrets stores.
 3. If the goal is trigger re-fire, confirm POST-UPDATE text and post-condition GETs.
+

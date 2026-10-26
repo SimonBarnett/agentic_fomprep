@@ -1,14 +1,13 @@
-# Priority SaaS / Cloud — OIDC + Accounts MFA login (generic)
+﻿# Priority SaaS / Cloud - OIDC + Accounts MFA login (generic)
 
 Authoritative companion to catalog skill `priority-saas-oidc-login`.
-Harvested 2026-10-25 from Priority Cloud (AWS) WebUI OIDC work. Customer
-tenants and emails are **examples only** — never commit passwords, OTPs, or
-tokens.
+Harvested 2026-10-25; extended 2026-10-26. Customer tenants and emails are
+**examples only** - never commit passwords, OTPs, or tokens.
 
 Use this when an agent must obtain a **Bearer access token** for Priority
 SaaS WebUI / WCF / cloud APIs and only Tabula user + password (often with
 email MFA) is available. Prefer a **PAT** (`token` / `PAT`) for OData when
-one exists — see `ODATA_REST_CLOUD.md`.
+one exists - see `ODATA_REST_CLOUD.md`.
 
 ## Discover the tenant (no auth)
 
@@ -24,12 +23,12 @@ JSON fields that matter:
 
 | Field | Meaning |
 |-------|---------|
-| `wcf` | WCF service URL (e.g. `…/wcf/service.svc`) |
+| `wcf` | WCF service URL (e.g. `.../wcf/service.svc`) |
 | `server` | Cloud fabric label (e.g. `AWS_PROD`) |
 | `h5client` | Static client CDN base |
 | `admode` | Auth mode (OIDC when non-zero / interactive) |
 | `authority` | OIDC issuer (usually `https://<host>/auth/`) |
-| `priorityParams` | Query bag; includes `_tabulaini=tab….ini` |
+| `priorityParams` | Query bag; includes `_tabulaini=tab....ini` |
 
 **Tabula ini on SaaS is often `tab<tenant>.ini`**, not on-prem `tabula.ini`.
 Parse `_tabulaini=` from `priorityParams` before calling OData.
@@ -50,18 +49,35 @@ From WebUI bootstrap (`bootstrapWebUISys.js`):
 
 Discovery: `GET https://<host>/auth/.well-known/openid-configuration`
 
-Build the authorize URL with **proper `&` separators** (PowerShell array
-stringification with spaces breaks Hydra and yields `invalid_client` /
-`invalid_request`).
+### PowerShell: join query params with `&`
+
+PowerShell can stringify arrays with **spaces** if `-join` binds wrong.
+Build with an ordered map, then join:
+
+```powershell
+$params = [ordered]@{
+  client_id = 'priority-web'
+  redirect_uri = "https://$host/webui"
+  response_type = 'code'
+  scope = 'openid wcf_api'
+  # ... state, nonce, code_challenge, code_challenge_method, audience, prompt, ssoTenant
+}
+$q = ($params.GetEnumerator() | ForEach-Object {
+  '{0}={1}' -f $_.Key, [uri]::EscapeDataString([string]$_.Value)
+}) -join '&'
+$authUrl = "https://$host/auth/oauth2/auth?$q"
+```
+
+Spaces instead of `&` yield Hydra `invalid_client` / `invalid_request`.
 
 ## Accounts login + MFA
 
-1. `GET` authorize URL → 302/200 to  
-   `https://<host>/accounts/login?login_challenge=…`
+1. `GET` authorize URL -> 302/200 to
+   `https://<host>/accounts/login?login_challenge=...`
 2. HTML meta tags on the SPA shell:
    - `csrf-token` (may be literal `Deprecated`)
    - `challenge` (login challenge blob)
-3. Accounts XHR client base: `https://<host>/accounts/`  
+3. Accounts XHR client base: `https://<host>/accounts/`
    Default headers: `Content-Type: application/json`, `csrf-token`, `challenge`.
 4. Password step:
 
@@ -85,22 +101,26 @@ Headers: csrf-token, challenge, lang: 3
 Body: {"totp":"<digits>"}
 ```
 
-Success returns JSON `{"redirect":"https://<host>/auth/oauth2/auth?…login_verifier=…"}`.
+Success returns JSON `{"redirect":"https://<host>/auth/oauth2/auth?...login_verifier=..."}`.
 
-**Save the full `redirect` string immediately** (long URL). Truncating it
-loses the login and the OTP cannot be replayed (HTTP **435** /
-Unauthorized-style Accounts codes).
+**Save the full `redirect` string to disk immediately** (long URL). Truncating
+it in logs loses the login; OTP cannot be replayed (HTTP **435**).
 
 ## Finish OAuth (consent + code)
 
-Follow redirects with **`AllowAutoRedirect = false`** and a normal browser
-`User-Agent`. CloudFront may return **403** without one.
+Do **not** rely on `Invoke-WebRequest -MaximumRedirection 0` alone - it can
+still throw `MaximumRedirectExceeded` without a usable Location. Prefer
+`HttpClientHandler { AllowAutoRedirect = $false }` and read `Location` yourself.
+
+Always send a normal browser `User-Agent`. CloudFront may return **403**
+("Request blocked") without one.
 
 Typical path:
 
-1. `login_verifier` authorize URL → 302 `/accounts/consent?consent_challenge=…`
-2. Consent GET often 302 back into `/auth/oauth2/auth?…`
-3. Final 303/302 to `https://<host>/webui?code=ory_ac_…&scope=…&state=…`
+1. `login_verifier` authorize URL -> 302 `/accounts/consent?consent_challenge=...`
+2. Consent **GET** with browser UA often **302**s back into `/auth/oauth2/auth?...`
+   (no separate accept API required in the observed path)
+3. Final 303/302 to `https://<host>/webui?code=ory_ac_...&scope=...&state=...`
 
 Exchange:
 
@@ -127,16 +147,31 @@ POST https://<host>/webui/<tenant>
 Authorization: Bearer <access_token>
 ```
 
-Same Bearer for cloud APIs that accept OIDC. For OData, try:
+### OData after OIDC
+
+Try:
 
 ```text
 https://<host>/odata/Priority/<tabulaini>/$metadata
 Authorization: Bearer <access_token>
 ```
 
-Company segment is still **DNAME** when calling entity sets
-(`…/<tabulaini>/<DNAME>/…`). Tabula user/password Basic often stays **401**
-on SaaS even when OIDC works — use Bearer or PAT.
+Company segment is still **DNAME** (`.../<tabulaini>/<DNAME>/...`).
+
+| Result | Meaning |
+|--------|---------|
+| 401 with Tabula Basic | Common on SaaS; use Bearer or PAT |
+| **500 empty JSON body** with Bearer on guessed DNAMEs | Often **wrong DNAME** and/or **API module / licence** - stop guessing; get DNAME from operator or USERENV; prefer PAT |
+| 200 `$metadata` | Proceed; still audit FORMLIMITED RESTFLAG |
+
+Unauthenticated `.../<tabulaini>/$metadata` returning **401** only proves the
+OData front door exists.
+
+### WCF note
+
+`POST .../wcf/service.svc/formStart` style REST paths may return **404** on
+SaaS even when tenant JSON lists that `wcf` URL. Do not treat that as proof
+WCF is down - transport/shape may differ from on-prem web-sdk examples.
 
 ## Connectivity checklist (before login)
 
@@ -145,7 +180,7 @@ on SaaS even when OIDC works — use Bearer or PAT.
 | DNS / TCP 443 to host | OK |
 | `GET /webui/<tenant>` | 200 HTML shell |
 | `POST /webui/<tenant>` | 200 JSON with `wcf` + `_tabulaini` |
-| `GET …/odata/Priority/<guess>/$metadata` unauthenticated | 401 (endpoint exists) |
+| `GET .../odata/Priority/<tabulaini>/$metadata` unauthenticated | 401 (endpoint exists) |
 
 ## Hard rules
 
@@ -154,9 +189,10 @@ on SaaS even when OIDC works — use Bearer or PAT.
 3. OTP is single-use; complete redirect + token exchange in the **same** script.
 4. Prefer DEV / test SaaS hosts for writes; Live only with explicit approval.
 5. Prefer PAT for unattended OData; OIDC+MFA is for interactive agent sessions.
+6. Do not invent OData company DNAMEs after repeated empty HTTP 500s.
 
 ## Related
 
-- `ODATA_REST_CLOUD.md` / `priority-odata-dev` — OData base, PAT, RESTFLAG
-- `priority-mcp-setup` — MCP PAT / OAuth public clients (different client ids)
-- `priority-uat-wcf` — WCF form walking after you have a session
+- `ODATA_REST_CLOUD.md` / `priority-odata-dev` - OData base, PAT, RESTFLAG
+- `priority-mcp-setup` - MCP PAT / OAuth public clients (different client ids)
+- `priority-uat-wcf` - WCF form walking after you have a session

@@ -161,3 +161,4 @@ books use `harvest-agent-skills` pointing at their home.)
 - fomprep catalog harvest: CAT-T51 no BOM on new meta.json; CAT-T41 password-equals fail on ODATA_REST_CLOUD.md is pre-existing on main -- confirm on origin/main before FAIL.
 - fomprep CAT-T41: do not treat documented PAT Basic (password field is PAT) as a secret; require password-equals plus a quote, or reword the skill-source.
 - priority-saas-oidc-login v1.1: PowerShell & join; HttpClient no-auto-redirect; OData Bearer empty 500 means stop guessing DNAME; prefer PAT
+- Priority Agent clone path: only dirs with .git count; empty D:\ai\agentic_fomprep stub is skipped for C:\ai; agents use FOMPREP_DIR not hardcoded D:\ai; operators reclone or PRIORITY_AGENT_ROOT/--root

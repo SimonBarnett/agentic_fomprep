@@ -312,7 +312,12 @@ static class Program
         foreach (var root in SearchRoots.Prepend(CloneRoot).Distinct(StringComparer.OrdinalIgnoreCase))
         {
             string d = Path.Combine(root, name);
-            if (!Directory.Exists(Path.Combine(d, ".git"))) continue;
+            if (!Directory.Exists(d)) continue;
+            if (!Directory.Exists(Path.Combine(d, ".git")))
+            {
+                Warn($"{d} exists but is not a git clone (no .git) - empty stub skipped");
+                continue;
+            }
             string url = GitOut(d, "remote", "get-url", "origin");
             if (url.Contains(fullName, StringComparison.OrdinalIgnoreCase)) return d;
         }
@@ -326,7 +331,12 @@ static class Program
         foreach (var root in SearchRoots.Prepend(CloneRoot).Distinct(StringComparer.OrdinalIgnoreCase))
         {
             string d = Path.Combine(root, name);
-            if (!Directory.Exists(Path.Combine(d, ".git"))) continue;
+            if (!Directory.Exists(d)) continue;
+            if (!Directory.Exists(Path.Combine(d, ".git")))
+            {
+                Warn($"{d} exists but is not a git clone (no .git) - empty stub skipped");
+                continue;
+            }
             if (!GitOut(d, "remote", "get-url", "origin").Contains(fullName, StringComparison.OrdinalIgnoreCase)) continue;
             if (preferClean && GitOut(d, "status", "--porcelain").Length > 0) { Warn($"skipping dirty clone {d}"); continue; }
             dir = d; break;
@@ -335,7 +345,10 @@ static class Program
         {
             dir = Path.Combine(CloneRoot, name);
             if (Directory.Exists(dir) && Directory.EnumerateFileSystemEntries(dir).Any())
-            { Err($"{dir} exists but is not a clone of {fullName}; not touching it."); return null; }
+            {
+                Err($"{dir} exists but is not a git clone of {fullName} (empty stub or wrong tree). Rename/remove it, reclone there, or use --root / PRIORITY_AGENT_ROOT pointing at a real clone (e.g. C:\\ai).");
+                return null;
+            }
             if (DryRun && !alwaysPull) { Info($"would clone {fullName} -> {dir}"); return null; }
             Info($"cloning {fullName} -> {dir}");
             Directory.CreateDirectory(CloneRoot);

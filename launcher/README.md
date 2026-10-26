@@ -6,7 +6,10 @@ with the right context.
 ## What it does on every start
 
 1. It **fast-forwards SimonBarnett/agentic_fomprep**.
-   - Default clone: `D:\ai\agentic_fomprep`. It also finds clean clones in `C:\ai` and `D:\repos`.
+   - Default preferred path: `D:\ai\agentic_fomprep` (`--root` / `PRIORITY_AGENT_ROOT`, default `D:\ai`).
+     Search order after that: `C:\ai`, `D:\repos`, `C:\repos`. A directory counts as a clone only when it has a `.git` folder and `origin` matches `SimonBarnett/agentic_fomprep`.
+   - **Empty stub:** if `D:\ai\agentic_fomprep` exists but is **not** a git clone (for example only a `.grok` folder, no `.git`), the launcher skips it and uses another clean clone such as `C:\ai\agentic_fomprep`. Agents must use the resolved `{{FOMPREP_DIR}}` / session cwd for `git pull` --- never hardcode `D:\ai\agentic_fomprep`.
+   - Operator choices when the preferred path is a stub: (1) rename/remove the stub and `gh repo clone SimonBarnett/agentic_fomprep D:\ai\agentic_fomprep`, or (2) set `PRIORITY_AGENT_ROOT=C:\ai` / `--root C:\ai` and keep the real clone under `C:\ai\agentic_fomprep`.
    - It does `fetch --prune`, then `merge --ff-only`, but only when the clone is on `main` and clean.
      A dirty clone is skipped or reported, never reset.
 2. It **loads the Priority MCP and skills** for every context. The registration is idempotent and user level:

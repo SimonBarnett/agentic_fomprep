@@ -189,7 +189,12 @@ WCF is down - transport/shape may differ from on-prem web-sdk examples.
 3. OTP is single-use; complete redirect + token exchange in the **same** script.
 4. Prefer DEV / test SaaS hosts for writes; Live only with explicit approval.
 5. Prefer PAT for unattended OData; OIDC+MFA is for interactive agent sessions.
-6. Do not invent OData company DNAMEs after repeated empty HTTP 500s.
+6. **FR #226:** After **N** empty HTTP **500** bodies on
+   `/odata/Priority/<tabulaini>/<guessed-company>/...` (default N=2,
+   env `PRIORITY_ODATA_EMPTY_500_MAX`), **stop inventing DNAMEs**. Confirm
+   company DNAME and API licence or PAT with the operator. Helper:
+   `Register-ODataEmpty500Probe` / `Assert-ODataCompanyProbeAllowed` in
+   `priority-odata-dev` runner `lib/odata.ps1`.
 
 ## Related
 

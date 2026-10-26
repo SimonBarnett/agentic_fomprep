@@ -1,4 +1,4 @@
----
+﻿---
 name: priority-saas-oidc-login
 description: >
   Log into Priority Cloud / SaaS WebUI with OIDC (priority-web PKCE) and Accounts
@@ -18,38 +18,39 @@ Grab from catalog MCP `https://mcp-priority.ntsa.uk/mcp`
 
 Need a **Bearer access token** for Priority SaaS (`p.priority-connect.online` /
 regional hosts) and only a Tabula user + password (email MFA) is available.
-Applies to **any** SaaS tenant — not one customer.
+Applies to **any** SaaS tenant - not one customer.
 
 ## Hard rules
 
 1. Never invent host or tenant. Operator allowlists / local connections file only.
 2. Never commit or log passwords, OTPs, cookies, or tokens. Store under
    `C:\passwords\` (or CredMan), outside git.
-3. OTP (`POST …/mfa/checkotp`) is **single-use**. Save the full JSON `redirect`
+3. OTP (`POST .../mfa/checkotp`) is **single-use**. Save the full JSON `redirect`
    and finish consent + `/auth/oauth2/token` in the same script.
 4. Prefer PAT Basic (`token`/`PAT`) for unattended OData (`priority-odata-dev`).
 5. Live writes only with explicit operator approval of the exact change.
+6. Empty OData HTTP **500** on guessed DNAMEs: stop inventing company segments.
 
 ## Loop
 
-1. **Tenant probe (no auth):** `POST https://<host>/webui/<tenant>` → read
+1. **Tenant probe (no auth):** `POST https://<host>/webui/<tenant>` -> read
    `wcf`, `authority`, `_tabulaini=` inside `priorityParams` (often
    `tab<tenant>.ini`, not `tabula.ini`).
 2. **Authorize (PKCE S256):** `client_id=priority-web`,
    `redirect_uri=https://<host>/webui`, `scope=openid wcf_api`,
    `audience=wcf_api`, `prompt=login`, `ssoTenant=<tenant>`.
-   Join query params with `&` (spaces break Hydra).
+   Join query params with `&` via ordered map (spaces break Hydra).
 3. **Password:** on `/accounts/login`, POST
    `/accounts/login/checkPassword` with headers `csrf-token` + `challenge`
    from HTML meta; body `{"email","password"}`; header `lang: 3`.
 4. **MFA:** when `step=verify_email`, wait for operator OTP; POST
    `/accounts/mfa/checkotp` with `{"totp":"<code>"}`.
-5. **Redirects:** follow with browser `User-Agent` and no auto-redirect;
-   pass `/accounts/consent`; capture `code` on `/webui?code=…`.
+5. **Redirects:** `HttpClient` with `AllowAutoRedirect=false` + browser
+   `User-Agent`; consent GET often 302s through; capture `code` on `/webui?code=...`.
 6. **Token:** `POST /auth/oauth2/token` with `authorization_code` +
    `code_verifier`. Persist tokens outside the repo.
-7. **Smoke:** `POST /webui/<tenant>` with `Authorization: Bearer …` returns
-   tenant JSON; then OData/WCF as licensed.
+7. **Smoke:** `POST /webui/<tenant>` with Bearer returns tenant JSON; then
+   OData/WCF only with known DNAME / PAT / licence.
 
 ## Gotchas
 
@@ -58,9 +59,12 @@ Applies to **any** SaaS tenant — not one customer.
 | `invalid_client` on authorize | Malformed query (spaces instead of `&`) or wrong client |
 | `redirect_uri` mismatch | Must be exactly `https://<host>/webui` for `priority-web` |
 | OData Basic 401 with Tabula password | Normal on many SaaS tenants; use Bearer or PAT |
+| OData Bearer **500** empty body | Wrong DNAME and/or API licence - do not keep guessing |
 | checkotp HTTP 435 | OTP already used or session stale; re-run checkPassword |
 | CloudFront 403 on consent | Send a normal browser User-Agent |
+| `MaximumRedirectExceeded` | Use HttpClient AllowAutoRedirect=false |
 | Truncated redirect URL | Loses login_verifier; cannot continue without new OTP |
+| `service.svc/formStart` 404 | SaaS WCF shape may differ; not proof auth failed |
 
 ## Success
 

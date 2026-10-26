@@ -1,16 +1,17 @@
-# Skill harvest log
+﻿# Skill harvest log
 
-- 2026-10-25: Priority SaaS / Cloud interactive login — tenant `POST /webui/<tenant>` exposes `_tabulaini=tab….ini`; OIDC `priority-web` + PKCE; Accounts `login/checkPassword` then `mfa/checkotp` (single-use); consent redirect; `/auth/oauth2/token`; Bearer for tenant POST. New `docs/skill-sources/programming/SAAS_OIDC_LOGIN.md` + catalog `priority-saas-oidc-login` v1.0.0; pointers in `ODATA_REST_CLOUD.md` and `priority-mcp-setup`. Source: generic SaaS connectivity (customer names stripped).
+- 2026-10-26: SaaS OIDC login residuals - PowerShell ordered-map `&` join; HttpClient no-auto-redirect; consent GET+UA; OData Bearer empty HTTP 500 = DNAME/API gap (stop guessing); WCF formStart REST may 404 on SaaS. `SAAS_OIDC_LOGIN.md` + catalog `priority-saas-oidc-login` v1.1.0.
+- 2026-10-25: Priority SaaS / Cloud interactive login â€” tenant `POST /webui/<tenant>` exposes `_tabulaini=tabâ€¦.ini`; OIDC `priority-web` + PKCE; Accounts `login/checkPassword` then `mfa/checkotp` (single-use); consent redirect; `/auth/oauth2/token`; Bearer for tenant POST. New `docs/skill-sources/programming/SAAS_OIDC_LOGIN.md` + catalog `priority-saas-oidc-login` v1.0.0; pointers in `ODATA_REST_CLOUD.md` and `priority-mcp-setup`. Source: generic SaaS connectivity (customer names stripped).
 
-- 2026-10-16: OData PATCH patterns — composite EntityType keys, `Prefer: return=representation`, approved Live writes only; field-touch re-fire of `POST-UPDATE` / BUF includes after reading trigger text. Extended `ODATA_REST_CLOUD.md`; catalog `priority-odata-dev` v1.2.0 hard rule 10. Source: Priority cloud approved config + document re-raise (generic lessons only).
+- 2026-10-16: OData PATCH patterns â€” composite EntityType keys, `Prefer: return=representation`, approved Live writes only; field-touch re-fire of `POST-UPDATE` / BUF includes after reading trigger text. Extended `ODATA_REST_CLOUD.md`; catalog `priority-odata-dev` v1.2.0 hard rule 10. Source: Priority cloud approved config + document re-raise (generic lessons only).
 
-- 2026-10-15: Cloud OData REST patterns — PAT Basic (`token`/`PAT`), DNAME≠LIVE, FORMLIMITED RESTFLAG null → HTTP 400, form trigger text via EFORM→FTRIG→FTRIGTEXT (not FORMTRIG alone), typed *DOCSTATS entities, extended tables without EFORM. New `docs/skill-sources/programming/ODATA_REST_CLOUD.md`; catalog `priority-odata-dev` hard rules 7–9 + RESTFLAG/typed-status notes. Source: Priority cloud read-only investigation (generic lessons only).
+- 2026-10-15: Cloud OData REST patterns â€” PAT Basic (`token`/`PAT`), DNAMEâ‰ LIVE, FORMLIMITED RESTFLAG null â†’ HTTP 400, form trigger text via EFORMâ†’FTRIGâ†’FTRIGTEXT (not FORMTRIG alone), typed *DOCSTATS entities, extended tables without EFORM. New `docs/skill-sources/programming/ODATA_REST_CLOUD.md`; catalog `priority-odata-dev` hard rules 7â€“9 + RESTFLAG/typed-status notes. Source: Priority cloud read-only investigation (generic lessons only).
 
-- 2026-10-09: Hours recording CAST IRON — `{customer}/{project}/log.md` (or `{project}/log.md`) must be created/updated with actual work done whenever hours are logged (billing evidence). Corrected live Bob hours JSON field names (`start`/`customer`/`project`, not `started_at`/`customer_slug`); closed-in-one-POST with `start`+`end`. Updated `hours-log-work-session` skill-source + `.grok` leaflet, `AGENTS.md` CAST IRON #7, `hours-draft` pointer. Bobiverse API opacity filed as SimonBarnett/bobiverse#3673.
+- 2026-10-09: Hours recording CAST IRON â€” `{customer}/{project}/log.md` (or `{project}/log.md`) must be created/updated with actual work done whenever hours are logged (billing evidence). Corrected live Bob hours JSON field names (`start`/`customer`/`project`, not `started_at`/`customer_slug`); closed-in-one-POST with `start`+`end`. Updated `hours-log-work-session` skill-source + `.grok` leaflet, `AGENTS.md` CAST IRON #7, `hours-draft` pointer. Bobiverse API opacity filed as SimonBarnett/bobiverse#3673.
 
-- 2026-10-08: Priority Agent home cleanup — repo-root `AGENTS.md`, `tools/Sync-PriorityGrokSkills.ps1` syncs portable `priority-*` catalog leaflets into `.grok/skills` (excludes Day Works product + DBA/backup by default). README/VISION point at generic Priority Agent; CE DEV1 stays example pin in `agent_readme.md`.
+- 2026-10-08: Priority Agent home cleanup â€” repo-root `AGENTS.md`, `tools/Sync-PriorityGrokSkills.ps1` syncs portable `priority-*` catalog leaflets into `.grok/skills` (excludes Day Works product + DBA/backup by default). README/VISION point at generic Priority Agent; CE DEV1 stays example pin in `agent_readme.md`.
 
-- 2026-10-08 (DEV1 / Day Works WP4): New skill `priority-create-table` + `CREATE_TABLE.md`. Form Generator *Table ZCLA_ELEDITDW is missing column GUID* was CHAR `COLUMNS.SIZE=0`; Tabula *Ignore Duplicate Values* was bare `PK_*` with `IGNORE_DUP_KEY=OFF`. Rules: unique index `[T#1#COL…] WITH (IGNORE_DUP_KEY=ON)`; CHAR/DATE SIZE=WIDTH; REAL/INT SIZE=8. Updated `DICTIONARY_SQL.md` + catalog `priority-dictionary-sql` v1.1.0.
+- 2026-10-08 (DEV1 / Day Works WP4): New skill `priority-create-table` + `CREATE_TABLE.md`. Form Generator *Table ZCLA_ELEDITDW is missing column GUID* was CHAR `COLUMNS.SIZE=0`; Tabula *Ignore Duplicate Values* was bare `PK_*` with `IGNORE_DUP_KEY=OFF`. Rules: unique index `[T#1#COLâ€¦] WITH (IGNORE_DUP_KEY=ON)`; CHAR/DATE SIZE=WIDTH; REAL/INT SIZE=8. Updated `DICTIONARY_SQL.md` + catalog `priority-dictionary-sql` v1.1.0.
 
 - 2026-09-24: Added foundation honesty-box skill at `.grok/skills/harvest-agent-skills/SKILL.md` (home `https://github.com/SimonBarnett/agentic_fomprep`). Table row: Formprep / MSSQL fleet playbooks -> `SimonBarnett/agentic_fomprep`. Product playbooks remain under `v2/plugins/*/skills/` and `v2/apps/mcp-catalog/catalog/`.
 
@@ -20,7 +21,7 @@
 
 - 2026-09-28 (DEV1): Tabula *Ignore Duplicate Values* + Unique Index/Origin. Harvested `IGNORE_DUP_KEY.md` + `FORMCLMNSA_JOINS.md`; updated `DICTIONARY_SQL.md`, `FORMPREP_SHADOW_TABLES.md`, catalog `priority-dictionary-sql` / `priority-formprep-shadow-tables`. Physical unique indexes need `IGNORE_DUP_KEY=ON` (company often reported as `system`); child joins need FORMCLMNSA `= :$$.COL`.
 
-- 2026-09-28 (DEV1): Form Prep `Variable with two different types : SORT` ï¿½ `:VAR` type clash (`ZCLA_ELEDITSPLIT` `:SORT = ''` vs numeric `:SORT`). Harvested into `PROCEDURE_STYLE.md`, `FORMTRIG_VAR_TYPES.md`, catalog `priority-procedure-style`, `priority-formprep` (WCF warnings + formStart vs SQL gate), `priority-uat-wcf` (`startSubForm` when direct `formStart` says unprepared). Fix applied on DEV as `:DWFIXSORT`.
+- 2026-09-28 (DEV1): Form Prep `Variable with two different types : SORT` Ã¯Â¿Â½ `:VAR` type clash (`ZCLA_ELEDITSPLIT` `:SORT = ''` vs numeric `:SORT`). Harvested into `PROCEDURE_STYLE.md`, `FORMTRIG_VAR_TYPES.md`, catalog `priority-procedure-style`, `priority-formprep` (WCF warnings + formStart vs SQL gate), `priority-uat-wcf` (`startSubForm` when direct `formStart` says unprepared). Fix applied on DEV as `:DWFIXSORT`.
 
 ## 2026-09-29 - ce-priority split + leave-line generics
 
@@ -42,13 +43,13 @@ Expanded `VERSION_REVISION.md` + catalog `priority-version-revision-discipline` 
 
 ## 2026-09-30 - msg 154 nullable form columns + FORMTRIGTEXT 68
 
-Expanded `MSG154_OPTIMISTIC_LOCK.md`: Cause B = nullable origin columns painted on the form with NULL in existing rows (`NULL = NULL` → 0-row UPDATE); DEFAULT + backfill; resync hygiene (do not resync the column the user is editing); `FORMTRIGTEXT.TEXT` max ~68. Updated `PROCEDURE_STYLE.md`, catalog `priority-procedure-style` / `priority-form-engineering` (meta 1.1.0). Version Revision TAKE-steps harvest: merged PR #88.
+Expanded `MSG154_OPTIMISTIC_LOCK.md`: Cause B = nullable origin columns painted on the form with NULL in existing rows (`NULL = NULL` â†’ 0-row UPDATE); DEFAULT + backfill; resync hygiene (do not resync the column the user is editing); `FORMTRIGTEXT.TEXT` max ~68. Updated `PROCEDURE_STYLE.md`, catalog `priority-procedure-style` / `priority-form-engineering` (meta 1.1.0). Version Revision TAKE-steps harvest: merged PR #88.
 
 ## 2026-10-01 - Prepare procedure (REPPREPDIRECT2)
 
 - New skill-source `docs/skill-sources/programming/PREPARE_PROCEDURE.md`.
 - Catalog `priority-procedure-prep` (meta 1.0.0) + runners `src/Prepare-NamedProcedure.ps1`, `src/sdk/run-repprep-via-exec.mjs`.
-- Path: `EXEC` → `activateStart(REPPREPDIRECT2)`. Bare `procStart` cannot fill FILE `PAR`.
+- Path: `EXEC` â†’ `activateStart(REPPREPDIRECT2)`. Bare `procStart` cannot fill FILE `PAR`.
 - Success: `EXECPREPLOCK.UPD=N` + `system/prep/d{T$EXEC}.prp` mtime advanced (`LASTPREPDATE` may stay 0).
 - Cross-link from `priority-formprep` (TYPE=P is not EFORM).
 
@@ -71,3 +72,4 @@ Expanded `priority-uat-wcf` (skill-source + catalog meta **1.2.0**) from CE Day 
 - New catalog `priority-price-quotation-create` (meta 1.0.0), synced to `.grok/skills/`.
 - Rules: draft-first approval for live writes; header copied from recent PQs (expiry +30d, REFERENCE max 12); one `CONS-HR-MED` line per step, qty = 2x internal, `ZEMG_INTQUANT` = internal, prep time spread; never send PRICE (triggers set it, read it back); lines inserted at LINE 1 and LINE not settable -> post in reverse; per-line remarks (Outcome / Forms/columns, `[new]` columns, no template headings, replace not append, plain apostrophes not `&#x27;`); quote Note + standard terms; duplicate checks; full read-back of lines and totals.
 - Source session anonymised (customer, request and project replaced).
+

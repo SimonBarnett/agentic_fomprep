@@ -1,4 +1,4 @@
-﻿---
+---
 name: priority-saas-oidc-login
 description: >
   Log into Priority Cloud / SaaS WebUI with OIDC (priority-web PKCE) and Accounts

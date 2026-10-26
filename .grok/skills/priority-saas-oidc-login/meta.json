@@ -1,4 +1,4 @@
-﻿{
+{
   "name": "priority-saas-oidc-login",
   "title": "Priority SaaS OIDC + Accounts MFA login",
   "description": "Interactive Priority Cloud/SaaS WebUI login: tenant discovery, priority-web PKCE, checkPassword, email MFA checkotp, consent redirect, token exchange. Tokens outside git.",

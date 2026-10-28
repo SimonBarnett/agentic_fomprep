@@ -164,3 +164,4 @@ books use `harvest-agent-skills` pointing at their home.)
 - Priority SaaS OData: after N empty HTTP 500 on guessed company/DNAME (default 2; PRIORITY_ODATA_EMPTY_500_MAX), stop inventing names and confirm DNAME/API licence or PAT --- Assert-ODataCompanyProbeAllowed in odata.ps1 (FR #226).
 - Priority Agent clone path: only dirs with .git count; empty D:\ai\agentic_fomprep stub is skipped for C:\ai; agents use FOMPREP_DIR not hardcoded D:\ai; operators reclone or PRIORITY_AGENT_ROOT/--root
 - Do not create a new GitHub repo from an FR that says Simon must confirm owner and name first; GIVEUP owner-confirm and leave the issue open.
+- priority-branding FR #233: after owner-confirm SimonBarnett/priority-branding, still GIVEUP needs_human if M:\ce-priority-extension is unmapped — never invent rules.json affiliate IDs

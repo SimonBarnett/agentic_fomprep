@@ -165,3 +165,4 @@ books use `harvest-agent-skills` pointing at their home.)
 - Priority Agent clone path: only dirs with .git count; empty D:\ai\agentic_fomprep stub is skipped for C:\ai; agents use FOMPREP_DIR not hardcoded D:\ai; operators reclone or PRIORITY_AGENT_ROOT/--root
 - Do not create a new GitHub repo from an FR that says Simon must confirm owner and name first; GIVEUP owner-confirm and leave the issue open.
 - priority-branding FR #233: after owner-confirm SimonBarnett/priority-branding, still GIVEUP needs_human if M:\ce-priority-extension is unmapped — never invent rules.json affiliate IDs
+- Greenfield product FR that needs a new repo: create the confirmed repo, seed verbatim first commit, then land generic changes on a fr-N branch PR with Closes owner/origin-repo#N; cross-repo closingIssuesReferences may stay empty until merge — comment the PR on the origin issue and note MRB confirm-close.

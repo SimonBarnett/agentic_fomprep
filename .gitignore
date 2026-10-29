@@ -22,3 +22,7 @@ capture/
 # Offline Bobiverse intake queue (Report-FomprepIntakeIssue / Invoke-FomprepHarvest)
 report-outbox/
 harvest-outbox/
+
+# Launcher test build output
+launcher.Tests/bin/
+launcher.Tests/obj/

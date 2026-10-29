@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="../launcher/AircSupport.cs" Link="AircSupport.cs" />
+    <None Include="fixtures/**/*" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../launcher/agent-rules.md" Link="fixtures/agent-rules.md" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../launcher/airc-dcc.md" Link="fixtures/airc-dcc.md" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+</Project>

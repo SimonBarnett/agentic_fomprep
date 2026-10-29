@@ -1,6 +1,6 @@
 // Priority Agent launcher - starts a Grok coding agent for Priority ERP work.
 // Always fast-forwards SimonBarnett/agentic_fomprep and loads its MCP + skills,
-// then lets you pick general / customer / project context.
+// then lets you pick general / customer / project context and optional airc support.
 // It never creates customer repos or project folders (Haitch does) and never reads credential files.
 using System.Diagnostics;
 using System.Net.Http;
@@ -22,7 +22,9 @@ static class Program
     const string FuelUrl = "https://irc.ntsa.uk/bob/v1/report";
 
     static bool DryRun, ListOnly, Smoke, General, NoPause, NoFuel;
+    static bool? AircArg;
     static string? CustomerArg, ProjectArg, CheckHoursDir, SessionArg;
+    static string? AircConsoleArg;
     static string CloneRoot = Environment.GetEnvironmentVariable("PRIORITY_AGENT_ROOT") ?? @"D:\ai";
     static string PasswordsDir = Environment.GetEnvironmentVariable("PRIORITY_AGENT_PASSWORDS") ?? @"C:\passwords";
     static readonly string[] SearchRoots = { @"D:\ai", @"C:\ai", @"D:\repos", @"C:\repos" };
@@ -59,6 +61,9 @@ static class Program
                 case "--root": CloneRoot = Next(); break;
                 case "--no-pause": NoPause = true; break;
                 case "--no-fuel-check": NoFuel = true; break;
+                case "--airc": AircArg = true; break;
+                case "--no-airc": AircArg = false; break;
+                case "--airc-console": AircConsoleArg = Next(); break;
                 case "--passwords-dir": PasswordsDir = Next(); break;
                 case "--check-hours": CheckHoursDir = Next(); break;
                 case "--session": SessionArg = Next(); break;
@@ -66,6 +71,8 @@ static class Program
                 default: Err($"Unknown argument: {args[i]}"); Help(); return 2;
             }
         }
+        if (AircArg.HasValue && AircConsoleArg != null && !AircArg.Value)
+        { Err("--airc-console cannot be combined with --no-airc."); return 2; }
         if (ListOnly || DryRun || Smoke || CustomerArg != null || General) NoPause |= Console.IsInputRedirected;
 
         string logDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "PriorityAgent", "logs");
@@ -75,7 +82,9 @@ static class Program
 
         Header($"Priority Agent launcher {Assembly.GetExecutingAssembly().GetName().Version}  " +
                (DryRun ? "[DRY RUN] " : "") + (ListOnly ? "[LIST] " : "") + (Smoke ? "[SMOKE] " : ""));
-        Log($"=== start args: {string.Join(' ', args)}");
+        string logArgs = string.Join(' ', args);
+        if (AircConsoleArg != null) logArgs = logArgs.Replace(AircConsoleArg, "<airc-console>", StringComparison.OrdinalIgnoreCase);
+        Log($"=== start args: {logArgs}");
 
         string? git = Which("git.exe", @"C:\Program Files\Git\cmd\git.exe", @"D:\Program Files\Git\cmd\git.exe");
         string? gh = Which("gh.exe", @"C:\Program Files\GitHub CLI\gh.exe", @"D:\Program Files\GitHub CLI\gh.exe");
@@ -158,12 +167,73 @@ static class Program
         }
         if (ListOnly) { Summary(); Pause(); return Fails == 0 ? 0 : 1; }
 
+        // ---- 3b. optional airc context -----------------------------------------------
+        AircConfig aircConfig = AircSupport.LoadConfig(projectDir, custDir);
+        bool interactiveAirc = !Console.IsInputRedirected && !Smoke;
+        bool airc = AircSupport.ResolveEnabled(AircArg, AircConsoleArg != null, aircConfig.Enabled,
+            interactiveAirc, configured =>
+            {
+                bool defaultValue = configured ?? false;
+                string suffix = defaultValue ? " [Y/n]: " : " [y/N]: ";
+                string answer = Ask("Does this session need airc?" + suffix);
+                return answer == "" ? defaultValue : answer.StartsWith("y", StringComparison.OrdinalIgnoreCase);
+            });
+        string aircDecisionSource = AircConsoleArg != null ? "--airc-console"
+            : AircArg.HasValue ? (AircArg.Value ? "--airc" : "--no-airc")
+            : aircConfig.EnabledSource ?? (interactiveAirc ? "prompt" : "default");
+        Console.WriteLine($"airc: {(airc ? "yes" : "no")} (from {aircDecisionSource})");
+        Log($"airc decision: {(airc ? "yes" : "no")} (from {aircDecisionSource})");
+        string? aircConsole = null;
+        if (airc)
+        {
+            List<string> connected = DiscoverConnectedAircConsoles(out string discoveryError);
+            if (connected.Count == 0)
+            {
+                Warn("airc: no *_console connected on irc.ntsa.uk" + (discoveryError == "" ? "" : $" ({discoveryError})"));
+                if (!ContinueWithoutAirc(interactiveAirc)) { Pause(); return 1; }
+                airc = false;
+                Console.WriteLine("airc: no (continuing without airc)");
+            }
+            else
+            {
+                aircConsole = AircSupport.ChooseConsole(connected, aircConfig.Console, AircConsoleArg,
+                    interactiveAirc, AskAircConsole);
+                if (aircConsole == null)
+                {
+                    if (AircConsoleArg != null)
+                        Warn($"airc: requested console is not connected; {connected.Count} connected console(s) were found");
+                    else
+                        Warn("airc: no console selected");
+                    if (!ContinueWithoutAirc(interactiveAirc)) { Pause(); return 1; }
+                    airc = false;
+                    Console.WriteLine("airc: no (continuing without airc)");
+                }
+                else Console.WriteLine($"airc: using {aircConsole}");
+            }
+        }
+
         // ---- 4. grok: register MCP + skills, build brief, launch ----------------------
         Header("[4] Agent (Grok)");
         if (grok == null) { Err("grok CLI not found (expected %USERPROFILE%\\.grok\\bin\\grok.exe)."); Pause(); return 1; }
         EnsureGrokMcp(grok, fomprep);
         EnsureGrokSkillsPath(skillsDir);
+        WarnIfGlobalAircSkillsPath();
         if (!NoFuel) FuelCheck();
+
+        string aircSkills = "";
+        string aircSource = "";
+        if (airc && aircConsole != null)
+        {
+            try { (aircSkills, aircSource) = LoadAircSkills(gh); }
+            catch (Exception ex)
+            {
+                Warn("airc skills unavailable (" + ex.Message + ")");
+                if (!ContinueWithoutAirc(interactiveAirc)) { Pause(); return 1; }
+                airc = false;
+                aircConsole = null;
+                Console.WriteLine("airc: no (continuing without airc)");
+            }
+        }
 
         string level = projectDir != null ? "project" : cust != null ? "customer" : "general";
         string workDir = projectDir ?? custDir ?? fomprep;
@@ -184,15 +254,23 @@ static class Program
             ["TODAY"] = launchedAt.ToString("yyyy-MM-dd"),
         };
         string rules = LoadRules(fomprep, out string rulesSrc);
+        rules = AircSupport.RenderSessionRules(rules, airc && aircConsole != null, aircConsole,
+            aircSource, aircSkills, airc ? ReadResource("airc-dcc.md") : "");
         foreach (var kv in vars) rules = rules.Replace("{{" + kv.Key + "}}", kv.Value);
         Info($"rules: {rulesSrc} ({rules.Length} chars)");
-        if (cust != null) Check(File.Exists(pwFile), $"connections file for {cust.Name} {(File.Exists(pwFile) ? "exists" : "MISSING - ask Haitch for it")}: {pwFile} (contents not read)");
+        if (cust != null)
+        {
+            bool connectionsExist = AircSupport.ConnectionFileExists(pwFile);
+            Check(connectionsExist, $"connections file for {cust.Name} {(connectionsExist ? "exists" : "MISSING - ask Haitch for it")}: {pwFile} (contents not read)");
+        }
         Info($"hours: {hoursRepo} branch 'hours' -> hours/{launchedAt:yyyy-MM-dd}.md, tag session:{sessShort} (mandatory; checked on exit)");
 
         var brief = new StringBuilder();
         brief.AppendLine($"Priority agent session {sessionId} (launched {DateTime.Now:yyyy-MM-dd HH:mm} on {Environment.MachineName}).");
         brief.AppendLine($"Context level: {level}. Working directory: {workDir}.");
         brief.AppendLine($"General Priority repo: {fomprep} (SimonBarnett/agentic_fomprep @ {GitOut(fomprep, "rev-parse", "--short", "HEAD")}); MCP server '{McpName}' and its .grok/skills are loaded.");
+        if (airc && aircConsole != null)
+            brief.AppendLine($"Airc target: {aircConsole} in #{AircSupport.MachineFromConsole(aircConsole)}. Send remote shell commands only to this selected console; use the loaded airc and DCC guidance.");
         if (cust != null) brief.AppendLine($"Customer: {cust.Name} = {cust.FullName}, clone {custDir}. Connection secrets (never commit/echo): {pwFile}.");
         if (project != null) brief.AppendLine($"Project / service call: {project} at {projectDir}.");
         var readFirst = new List<string> { Path.Combine(fomprep, "AGENTS.md") };
@@ -216,7 +294,14 @@ static class Program
 
         string display = Quote(grok) + " " + string.Join(' ', gargs.Select(a => a == rules ? $"<rules: {rulesFile}>" : Quote(a)));
         Console.WriteLine("\nLaunch command:\n  " + display.Replace("\r\n", "\\n").Replace("\n", "\\n"));
-        Log("launch: " + display);
+        string logDisplay = display;
+        if (aircConsole != null)
+        {
+            logDisplay = logDisplay.Replace(aircConsole, "<airc-console>", StringComparison.OrdinalIgnoreCase);
+            string? machine = AircSupport.MachineFromConsole(aircConsole);
+            if (machine != null) logDisplay = logDisplay.Replace("#" + machine, "<airc-channel>", StringComparison.OrdinalIgnoreCase);
+        }
+        Log("launch: " + logDisplay);
         Check(Directory.Exists(workDir), $"working directory exists: {workDir}");
 
         string hoursPrompt = $"HOURS NOT REPORTED. Priority agents MUST report their hours. Before anything else, write and push the hours lines for session {sessionId} now, " +
@@ -388,6 +473,98 @@ static class Program
             .Where(f => f.Length >= 3)
             .Select(f => new Customer(f[0], f[1], f[2], f.Length > 3 ? f[3] : ""))
             .OrderBy(c => c.Name, StringComparer.OrdinalIgnoreCase).ToList();
+    }
+
+    static List<string> DiscoverConnectedAircConsoles(out string error)
+    {
+        var (consoles, detail) = AircConsoleDiscovery.Discover();
+        error = detail;
+        if (consoles.Count == 0) Log("airc console discovery: no connected console found");
+        else Log($"airc console discovery: found {consoles.Count} connected console(s)");
+        return consoles;
+    }
+
+    static bool ContinueWithoutAirc(bool interactive) =>
+        !interactive || !Ask("Continue without airc? [Y/n]: ").StartsWith("n", StringComparison.OrdinalIgnoreCase);
+
+    static string? AskAircConsole(IReadOnlyList<string> consoles, string? preferred)
+    {
+        for (int i = 0; i < consoles.Count; i++)
+            Console.WriteLine($"  {i + 1,2}. {consoles[i]}{(consoles[i].Equals(preferred, StringComparison.OrdinalIgnoreCase) ? " (configured)" : "")}");
+        string? defaultNick = preferred ?? (consoles.Count == 1 ? consoles[0] : null);
+        string defaultText = defaultNick == null ? "" : $" (Enter={defaultNick})";
+        string answer = Ask($"Pick airc console [1-{consoles.Count}]{defaultText}: ");
+        if (answer == "" && defaultNick != null) return defaultNick;
+        if (int.TryParse(answer, out int index) && index >= 1 && index <= consoles.Count) return consoles[index - 1];
+        return consoles.FirstOrDefault(x => x.Equals(answer, StringComparison.OrdinalIgnoreCase));
+    }
+
+    const string AircSkillsCommit = "7372500933ba10c725219334a33e4bba41f1eca8";
+    static readonly string[] AircSkillPaths =
+    {
+        "airc/.grok/skills/bobiverse-airc-commands/SKILL.md",
+        "airc/.grok/skills/bobiverse-airc/SKILL.md",
+    };
+
+    static (string Content, string Source) LoadAircSkills(string gh)
+    {
+        string? clone = FindAircClone();
+        string sha;
+        string[] contents;
+        if (clone != null)
+        {
+            sha = GitOut(clone, "rev-parse", "HEAD");
+            contents = AircSkillPaths.Select(p => File.ReadAllText(Path.Combine(clone, p.Replace('/', Path.DirectorySeparatorChar)))).ToArray();
+            Info($"Airc skills source: local SimonBarnett/bobiverse @ {sha}");
+        }
+        else
+        {
+            sha = AircSkillsCommit;
+            contents = AircSkillPaths.Select(p => FetchAircSkill(gh, p, sha)).ToArray();
+            Info($"Airc skills source: GitHub SimonBarnett/bobiverse @ {sha}");
+        }
+        if (contents.Any(string.IsNullOrWhiteSpace))
+            throw new InvalidDataException("Airc skill content is empty");
+        return (string.Join(Environment.NewLine + Environment.NewLine, contents),
+            clone == null ? $"GitHub @ {sha}" : $"local @ {sha}");
+    }
+
+    static string? FindAircClone()
+    {
+        foreach (string root in SearchRoots.Prepend(CloneRoot).Distinct(StringComparer.OrdinalIgnoreCase))
+        {
+            string path = Path.Combine(root, "bobiverse");
+            if (!Directory.Exists(Path.Combine(path, ".git"))) continue;
+            if (GitOut(path, "remote", "get-url", "origin").Contains("SimonBarnett/bobiverse", StringComparison.OrdinalIgnoreCase))
+                return path;
+        }
+        return null;
+    }
+
+    static string FetchAircSkill(string gh, string path, string sha)
+    {
+        string endpoint = $"repos/SimonBarnett/bobiverse/contents/{path}?ref={sha}";
+        var (rc, encoded, _) = Capture(gh, null, "api", endpoint, "--jq", ".content");
+        if (rc != 0 || string.IsNullOrWhiteSpace(encoded))
+            throw new IOException("GitHub read-only airc skill fetch failed");
+        try { return Encoding.UTF8.GetString(Convert.FromBase64String(Regex.Replace(encoded, @"\s", ""))); }
+        catch (FormatException) { throw new IOException("GitHub airc skill response was invalid"); }
+    }
+
+    static string ReadResource(string name)
+    {
+        using Stream? stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(name);
+        if (stream == null) throw new InvalidOperationException($"Embedded resource {name} is missing");
+        return new StreamReader(stream).ReadToEnd();
+    }
+
+    static void WarnIfGlobalAircSkillsPath()
+    {
+        string cfg = Path.Combine(Home, ".grok", "config.toml");
+        if (!File.Exists(cfg)) return;
+        string text = File.ReadAllText(cfg).Replace('\\', '/');
+        if (Regex.IsMatch(text, @"bobiverse/airc/\.grok/skills", RegexOptions.IgnoreCase))
+            Warn($"global Grok config already lists a bobiverse airc skills path ({cfg}); launcher leaves it unchanged");
     }
 
     // ------------------------------------------------------------------ grok config
@@ -654,6 +831,9 @@ PriorityAgent.exe [options]
   --general             general Priority context (no customer)
   --customer <repo>     pick customer non-interactively (e.g. rees)
   --project <folder>    pick project / service-call folder (needs --customer)
+  --airc                enable airc for this session (overrides repo config)
+  --no-airc             disable airc for this session (overrides repo config)
+  --airc-console <nick> enable airc and select a connected *_console (overrides prompt/config)
   --dry-run             do everything except change grok config / customer clones and start the agent;
                         prints the exact grok command line
   --smoke               real setup + one brief single-turn Grok launch that makes no changes

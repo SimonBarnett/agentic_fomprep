@@ -1,4 +1,4 @@
-<!-- rules-version: 3 -->
+<!-- rules-version: 4 -->
 # Priority agent rules (from the Priority Agent launcher)
 
 The launcher fills in the {{...}} values on every start. These rules sit on top of
@@ -17,6 +17,8 @@ too, if they exist.
 - Project or service call: {{PROJECT}} (`{{PROJECT_DIR}}`)
 - Working directory: `{{WORK_DIR}}`
 - Session: `{{SESSION}}` (hours tag `session:{{SESSION_SHORT}}`)
+
+{{AIRC_SECTION}}
 
 ## Harvest rule (where knowledge goes)
 

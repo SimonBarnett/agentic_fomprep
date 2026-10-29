@@ -37,7 +37,7 @@ static void TestConfigPrecedence()
         Assert(config.EnabledSource == Path.Combine(project, ".priority-agent.json"), "wrong airc config source");
         Assert(config.ConsoleSource == Path.Combine(customer, ".priority-agent.json"), "wrong console config source");
     }
-    finally { Directory.Delete(root, true); }
+    finally { DeleteTempDirectory(root); }
 }
 
 static void TestDecisionOverrides()
@@ -108,7 +108,7 @@ static void TestAircContext()
         Assert(!rendered.Contains("Fixture troubleshooting content"), "troubleshooting content should not be loaded");
         Assert(rendered.Contains("bobiverse-airc-troubleshooting/SKILL.md"), "troubleshooting path reference missing");
     }
-    finally { Directory.Delete(root, true); }
+    finally { DeleteTempDirectory(root); }
 }
 
 static void TestCommandLineSize()
@@ -136,7 +136,7 @@ static void TestCommandLineSize()
         Assert(File.ReadAllText(files.CommandsSkill).Length + File.ReadAllText(files.ArchitectureSkill).Length >= 23_000,
             "large skill files were not written in full");
     }
-    finally { Directory.Delete(root, true); }
+    finally { DeleteTempDirectory(root); }
 }
 
 static void TestLauncherDryRuns()
@@ -206,7 +206,7 @@ static void TestLauncherDryRuns()
             && !fetchFailure.SessionRules[0].Contains("bobiverse-airc", StringComparison.OrdinalIgnoreCase),
             "failed airc skill fetch left airc instructions in session rules");
     }
-    finally { Directory.Delete(root, true); }
+    finally { DeleteTempDirectory(root); }
 }
 
 static void TestDiscoveryFailure()
@@ -256,7 +256,7 @@ static void TestDiscoveryFailure()
                 "no-console fallback left airc instructions enabled");
         }
     }
-    finally { Directory.Delete(root, true); }
+    finally { DeleteTempDirectory(root); }
     Assert(!AircSupport.TrySelectListedConsole(true, AircConsoleDiscoveryResult.Unavailable("listing unavailable"),
         "bad nick", null, false, null, out _, out _), "invalid configured nick was trusted");
     Assert(!AircSupport.IsValidConsole("name_console PRIVMSG #channel"), "strict console validation accepted an injected suffix");
@@ -421,6 +421,29 @@ static string NewTemp()
     string path = Path.Combine(Path.GetTempPath(), "priority-agent-tests-" + Guid.NewGuid().ToString("N"));
     Directory.CreateDirectory(path);
     return path;
+}
+
+static void DeleteTempDirectory(string path)
+{
+    try
+    {
+        if (!Directory.Exists(path)) return;
+        foreach (string file in Directory.EnumerateFiles(path, "*", SearchOption.AllDirectories))
+        {
+            try { File.SetAttributes(file, File.GetAttributes(file) & ~FileAttributes.ReadOnly); }
+            catch (Exception ex) { Console.Error.WriteLine($"WARN cleanup attributes for {file}: {ex.Message}"); }
+        }
+        foreach (string directory in Directory.EnumerateDirectories(path, "*", SearchOption.AllDirectories))
+        {
+            try { File.SetAttributes(directory, File.GetAttributes(directory) & ~FileAttributes.ReadOnly); }
+            catch (Exception ex) { Console.Error.WriteLine($"WARN cleanup attributes for {directory}: {ex.Message}"); }
+        }
+        Directory.Delete(path, true);
+    }
+    catch (Exception ex)
+    {
+        Console.Error.WriteLine($"WARN cleanup {path}: {ex.Message}");
+    }
 }
 
 static void Assert(bool condition, string message)

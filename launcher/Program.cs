@@ -108,7 +108,7 @@ static class Program
 
         // ---- 1. agentic_fomprep: always fast-forward --------------------------------
         Header("[1] General Priority skills: SimonBarnett/agentic_fomprep");
-        string fomprep = EnsureClone(FomprepRepo, $"{Owner}/{FomprepRepo}", "main", alwaysPull: true, preferClean: true)
+        string fomprep = EnsureClone(FomprepRepo, $"{Owner}/{FomprepRepo}", "main", alwaysPull: true, preferClean: false)
                          ?? throw new Exception("agentic_fomprep clone unavailable");
         string skillsDir = Path.Combine(fomprep, ".grok", "skills");
         int skillCount = Directory.Exists(skillsDir) ? Directory.GetDirectories(skillsDir).Count(d => File.Exists(Path.Combine(d, "SKILL.md"))) : 0;
@@ -415,47 +415,61 @@ static class Program
 
     static string? EnsureClone(string name, string fullName, string branch, bool alwaysPull, bool preferClean)
     {
-        // Prefer the configured root's clone; for agentic_fomprep skip dirty clones elsewhere.
-        string? dir = null;
+        // FR #240: a valid clone with uncommitted changes is usable (warn, skip pull).
+        // preferClean is unused for selection: dirty must never be skipped.
+        _ = preferClean;
+        var sightings = new List<CloneSighting>();
         foreach (var root in SearchRoots.Prepend(CloneRoot).Distinct(StringComparer.OrdinalIgnoreCase))
         {
             string d = Path.Combine(root, name);
-            if (!Directory.Exists(d)) continue;
+            if (!Directory.Exists(d))
+            {
+                sightings.Add(new CloneSighting(d, CloneKind.Missing));
+                continue;
+            }
             if (!Directory.Exists(Path.Combine(d, ".git")))
             {
                 Warn($"{d} exists but is not a git clone (no .git) - empty stub skipped");
+                sightings.Add(new CloneSighting(d, CloneKind.Stub));
                 continue;
             }
-            if (!GitOut(d, "remote", "get-url", "origin").Contains(fullName, StringComparison.OrdinalIgnoreCase)) continue;
-            if (preferClean && GitOut(d, "status", "--porcelain").Length > 0) { Warn($"skipping dirty clone {d}"); continue; }
-            dir = d; break;
+            if (!GitOut(d, "remote", "get-url", "origin").Contains(fullName, StringComparison.OrdinalIgnoreCase))
+            {
+                sightings.Add(new CloneSighting(d, CloneKind.WrongOrigin));
+                continue;
+            }
+            bool dirty = GitOut(d, "status", "--porcelain").Length > 0;
+            sightings.Add(new CloneSighting(d, dirty ? CloneKind.Dirty : CloneKind.Clean));
         }
+        string? dir = CloneResolve.SelectUsable(sightings, out string? pickReason);
         if (dir == null)
         {
-            dir = Path.Combine(CloneRoot, name);
-            if (Directory.Exists(dir) && Directory.EnumerateFileSystemEntries(dir).Any())
+            string preferred = Path.Combine(CloneRoot, name);
+            bool preferredVacant = !Directory.Exists(preferred) || !Directory.EnumerateFileSystemEntries(preferred).Any();
+            if (preferredVacant)
             {
-                Err($"{dir} exists but is not a git clone of {fullName} (empty stub or wrong tree). Rename/remove it, reclone there, or use --root / PRIORITY_AGENT_ROOT pointing at a real clone (e.g. C:\\ai).");
-                return null;
+                if (DryRun && !alwaysPull) { Info($"would clone {fullName} -> {preferred}"); return null; }
+                Info($"cloning {fullName} -> {preferred}");
+                Directory.CreateDirectory(CloneRoot);
+                int rc = RunTo(Gh, CloneRoot, "repo", "clone", fullName, preferred);
+                Check(rc == 0, $"cloned {fullName}");
+                return rc == 0 ? preferred : null;
             }
-            if (DryRun && !alwaysPull) { Info($"would clone {fullName} -> {dir}"); return null; }
-            Info($"cloning {fullName} -> {dir}");
-            Directory.CreateDirectory(CloneRoot);
-            int rc = RunTo(Gh, CloneRoot, "repo", "clone", fullName, dir);
-            Check(rc == 0, $"cloned {fullName}");
-            return rc == 0 ? dir : null;
+            Err(CloneResolve.FatalUnavailable(fullName, sightings));
+            return null;
         }
+        if (pickReason != null && pickReason.Contains("dirty", StringComparison.OrdinalIgnoreCase))
+            Warn($"{dir} has uncommitted changes: using it and skipping pull");
         Info($"clone: {dir}");
         string before = GitOut(dir, "rev-parse", "--short", "HEAD");
         string cur = GitOut(dir, "rev-parse", "--abbrev-ref", "HEAD");
         int frc = RunTo(Git, dir, "fetch", "--prune", "--quiet", "origin");
         if (frc != 0) { Warn("git fetch failed (offline?) - using local copy"); return dir; }
         string behind = GitOut(dir, "rev-list", "--count", $"HEAD..origin/{branch}");
-        bool dirty = GitOut(dir, "status", "--porcelain").Length > 0;
-        if (cur != branch || dirty)
+        bool dirtyNow = GitOut(dir, "status", "--porcelain").Length > 0;
+        if (cur != branch || dirtyNow)
         {
-            Warn($"on '{cur}'{(dirty ? ", uncommitted changes" : "")}: not fast-forwarding ({behind} commit(s) behind origin/{branch}).");
-            if (name == FomprepRepo) Check(false, $"agentic_fomprep fast-forward (left at {before})");
+            Warn($"on '{cur}'{(dirtyNow ? ", uncommitted changes" : "")}: not fast-forwarding ({behind} commit(s) behind origin/{branch}).");
             return dir;
         }
         if (!alwaysPull) { Info($"{behind} commit(s) behind origin/{branch}; dry run - not fast-forwarding."); return dir; }

@@ -12,6 +12,7 @@ var checks = new List<(string Name, Action Run)>
     ("airc=yes writes session-only skills and DCC", TestAircContext),
     ("realistic airc skills stay off the command line", TestCommandLineSize),
     ("published launcher dry runs preserve config and protect connection canaries", TestLauncherDryRuns),
+    ("README documents unverified-console fallback, not live NAMES", TestReadmeAircDiscovery),
 };
 
 int failures = 0;
@@ -207,6 +208,15 @@ static void TestLauncherDryRuns()
             "failed airc skill fetch left airc instructions in session rules");
     }
     finally { DeleteTempDirectory(root); }
+}
+
+static void TestReadmeAircDiscovery()
+{
+    string readme = File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "fixtures", "launcher-README.md"));
+    Assert(readme.Contains("console not verified", StringComparison.Ordinal),
+        "README must document the unverified configured-console fallback");
+    Assert(!readme.Contains("then uses a read-only IRC `NAMES` lookup", StringComparison.Ordinal),
+        "README numbered flow still claims a live NAMES picker that Discover() cannot perform");
 }
 
 static void TestDiscoveryFailure()

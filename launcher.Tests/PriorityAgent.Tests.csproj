@@ -12,5 +12,6 @@
     <None Include="fixtures/**/*" CopyToOutputDirectory="PreserveNewest" />
     <None Include="../launcher/agent-rules.md" Link="fixtures/agent-rules.md" CopyToOutputDirectory="PreserveNewest" />
     <None Include="../launcher/airc-dcc.md" Link="fixtures/airc-dcc.md" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../launcher/README.md" Link="fixtures/launcher-README.md" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 </Project>

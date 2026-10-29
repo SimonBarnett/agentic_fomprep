@@ -393,7 +393,8 @@ static class Program
 
     // ------------------------------------------------------------------ git / gh
     static string Git = "git", Gh = "gh";
-    static string Home => Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+    static string Home => Environment.GetEnvironmentVariable("USERPROFILE")
+        ?? Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
 
     static string? FindClone(string name, string fullName)
     {

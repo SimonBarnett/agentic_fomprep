@@ -5,9 +5,12 @@ var checks = new List<(string Name, Action Run)>
     ("project config overrides customer config", TestConfigPrecedence),
     ("CLI decisions override config", TestDecisionOverrides),
     ("console discovery filters and selects", TestConsoleSelection),
+    ("unavailable or empty discovery safely disables airc context", TestDiscoveryFailure),
     ("airc=no renders no airc context", TestNoAircContext),
-    ("airc=yes renders skills and DCC", TestAircContext),
-    ("password file check does not disclose contents", TestPasswordCanary),
+    ("airc=yes writes session-only skills and DCC", TestAircContext),
+    ("realistic airc skills stay off the command line", TestCommandLineSize),
+    ("airc session setup does not mutate Grok config", TestGlobalConfigUnchanged),
+    ("password canary stays out of launch artifacts", TestPasswordCanary),
 };
 
 int failures = 0;
@@ -74,7 +77,7 @@ static void TestConsoleSelection()
 static void TestNoAircContext()
 {
     string template = File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "fixtures", "agent-rules.md"));
-    string rendered = AircSupport.RenderSessionRules(template, false, null, "", "", "");
+    string rendered = AircSupport.RenderSessionRules(template, false, null, "", null);
     Assert(rendered.Contains("Priority agent rules") && rendered.Contains("Harvest rule"), "non-airc template content missing");
     Assert(!rendered.Contains("bobiverse-airc", StringComparison.OrdinalIgnoreCase), "airc skills appeared when disabled");
     Assert(!rendered.Contains("_console", StringComparison.OrdinalIgnoreCase), "console instructions appeared when disabled");
@@ -83,20 +86,110 @@ static void TestNoAircContext()
 
 static void TestAircContext()
 {
-    string fixtureRoot = Path.Combine(AppContext.BaseDirectory, "fixtures");
-    string commands = File.ReadAllText(Path.Combine(fixtureRoot, "bobiverse-airc-commands", "SKILL.md"));
-    string architecture = File.ReadAllText(Path.Combine(fixtureRoot, "bobiverse-airc", "SKILL.md"));
-    string dcc = File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "fixtures", "airc-dcc.md"));
-    string rendered = AircSupport.RenderSessionRules("{{AIRC_SECTION}}", true, "testbox_console", "GitHub @ test-sha",
-        commands + Environment.NewLine + architecture, dcc);
-    Assert(rendered.Contains(commands) && rendered.Contains(architecture), "both airc skill fixtures were not loaded");
-    Assert(rendered.Contains("testbox_console") && rendered.Contains("#testbox"), "chosen console placeholders were not rendered");
-    Assert(rendered.Contains("bobiverse-airc-troubleshooting/SKILL.md"), "troubleshooting path reference missing");
-    Assert(!rendered.Contains("Fixture troubleshooting content"), "troubleshooting content should not be loaded");
-    Assert(rendered.Contains("DCCLISTEN") && rendered.Contains("tls=1") && rendered.Contains("via=dcc")
-        && rendered.Contains("Test-AircDccDoneSha256") && rendered.Contains("falling back to IRC"), "DCC instructions missing");
-    Assert(rendered.Contains("DCCLISTEN") && rendered.Contains("testbox_console") && !rendered.Contains("{{AIRC_CONSOLE}}"),
-        "DCC instructions were not targeted to the selected console");
+    string root = NewTemp();
+    try
+    {
+        string fixtureRoot = Path.Combine(AppContext.BaseDirectory, "fixtures");
+        string commands = File.ReadAllText(Path.Combine(fixtureRoot, "bobiverse-airc-commands", "SKILL.md"));
+        string architecture = File.ReadAllText(Path.Combine(fixtureRoot, "bobiverse-airc", "SKILL.md"));
+        string dcc = File.ReadAllText(Path.Combine(fixtureRoot, "airc-dcc.md"));
+        AircSessionFiles files = AircSupport.WriteSessionFiles(root, new[] { commands, architecture }, dcc, "testbox_console");
+        string rendered = AircSupport.RenderSessionRules("{{AIRC_SECTION}}", true, "testbox_console", "GitHub @ test-sha", files);
+        Assert(File.ReadAllText(files.CommandsSkill) == commands && File.ReadAllText(files.ArchitectureSkill) == architecture,
+            "both airc skill files were not written");
+        Assert(rendered.Contains(files.CommandsSkill) && rendered.Contains(files.ArchitectureSkill)
+            && rendered.Contains(files.DccGuide), "session rule paths were not included");
+        string renderedDcc = File.ReadAllText(files.DccGuide);
+        Assert(renderedDcc.Contains("DCCLISTEN") && renderedDcc.Contains("testbox_console"), "DCC guidance was not targeted");
+        Assert(!rendered.Contains("Fixture troubleshooting content"), "troubleshooting content should not be loaded");
+        Assert(rendered.Contains("bobiverse-airc-troubleshooting/SKILL.md"), "troubleshooting path reference missing");
+    }
+    finally { Directory.Delete(root, true); }
+}
+
+static void TestCommandLineSize()
+{
+    string root = NewTemp();
+    try
+    {
+        string commands = "# bobiverse-airc-commands\n" + string.Concat(Enumerable.Repeat("Remote command protocol and safe diagnostics. ", 260));
+        string architecture = "# bobiverse-airc\n" + string.Concat(Enumerable.Repeat("Console architecture and channel operations. ", 260));
+        Assert(commands.Length + architecture.Length >= 23_000, "large skill fixtures must total at least 23 KB");
+        string dcc = File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "fixtures", "airc-dcc.md"));
+        AircSessionFiles files = AircSupport.WriteSessionFiles(root, new[] { commands, architecture }, dcc, "testbox_console");
+        string rules = AircSupport.RenderSessionRules(
+            File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "fixtures", "agent-rules.md")),
+            true, "testbox_console", "GitHub @ test-sha", files);
+        var args = AircSupport.BuildGrokArguments(root, Guid.NewGuid().ToString(), rules,
+            "Priority session with airc context " + new string('x', 500), false);
+        int length = AircSupport.WindowsCommandLineLength("C:\\Program Files\\Grok\\grok.exe", args);
+        Assert(length < 32_000, $"assembled command line is {length} characters");
+        bool rejectedOversize = false;
+        try { AircSupport.ValidateWindowsCommandLine("grok.exe", new[] { new string('x', 32_001) }, "test launch"); }
+        catch (InvalidOperationException ex) { rejectedOversize = ex.Message.Contains("test launch command line", StringComparison.Ordinal); }
+        Assert(rejectedOversize, "oversized command line did not fail clearly");
+        Assert(!args.Contains(commands) && !args.Contains(architecture), "large airc skill text was passed on argv");
+        Assert(File.ReadAllText(files.CommandsSkill).Length + File.ReadAllText(files.ArchitectureSkill).Length >= 23_000,
+            "large skill files were not written in full");
+    }
+    finally { Directory.Delete(root, true); }
+}
+
+static void TestGlobalConfigUnchanged()
+{
+    string root = NewTemp();
+    string? oldHome = Environment.GetEnvironmentVariable("HOME");
+    string? oldUserProfile = Environment.GetEnvironmentVariable("USERPROFILE");
+    try
+    {
+        string home = Path.Combine(root, "home");
+        Directory.CreateDirectory(Path.Combine(home, ".grok"));
+        Environment.SetEnvironmentVariable("HOME", home);
+        Environment.SetEnvironmentVariable("USERPROFILE", home);
+        string config = Path.Combine(home, ".grok", "config.toml");
+        const string original = "[skills]\npaths = [\"C:/existing/skills\"]\n";
+        File.WriteAllText(config, original);
+        string fixtureRoot = Path.Combine(AppContext.BaseDirectory, "fixtures");
+        string commands = File.ReadAllText(Path.Combine(fixtureRoot, "bobiverse-airc-commands", "SKILL.md"));
+        string architecture = File.ReadAllText(Path.Combine(fixtureRoot, "bobiverse-airc", "SKILL.md"));
+        string dcc = File.ReadAllText(Path.Combine(fixtureRoot, "airc-dcc.md"));
+        string template = File.ReadAllText(Path.Combine(fixtureRoot, "agent-rules.md"));
+        _ = AircSupport.RenderSessionRules(template, false, null, "", null);
+        AircSessionFiles files = AircSupport.WriteSessionFiles(Path.Combine(root, "airc-yes"),
+            new[] { commands, architecture }, dcc, "testbox_console");
+        _ = AircSupport.RenderSessionRules(template, true, "testbox_console", "GitHub @ sha", files);
+        Assert(File.ReadAllText(config) == original, "airc session generation changed global config.toml");
+    }
+    finally
+    {
+        Environment.SetEnvironmentVariable("HOME", oldHome);
+        Environment.SetEnvironmentVariable("USERPROFILE", oldUserProfile);
+        Directory.Delete(root, true);
+    }
+}
+
+static void TestDiscoveryFailure()
+{
+    foreach (var discovery in new[]
+    {
+        AircConsoleDiscoveryResult.AvailableWith(Array.Empty<string>()),
+        AircConsoleDiscoveryResult.Unavailable("IRC server requires authentication")
+    })
+    {
+        bool selected = AircSupport.TrySelectListedConsole(true, discovery, "configured_console", "explicit_console",
+            false, null, out string? console, out string reason);
+        Assert(!selected && console == null, "unlisted explicit/configured console was accepted");
+        Assert(!string.IsNullOrWhiteSpace(reason), "discovery failure reason was omitted");
+        string rules = AircSupport.RenderSessionRules(
+            File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "fixtures", "agent-rules.md")),
+            false, null, "", null);
+        Assert(!rules.Contains("bobiverse-airc", StringComparison.OrdinalIgnoreCase)
+            && !rules.Contains("_console", StringComparison.OrdinalIgnoreCase)
+            && !rules.Contains("DCCLISTEN", StringComparison.Ordinal), "failed discovery left airc instructions enabled");
+    }
+    var unavailable = AircConsoleDiscovery.Discover();
+    Assert(!unavailable.Available && unavailable.Error.Contains("requires authentication", StringComparison.OrdinalIgnoreCase),
+        "real discovery should explain why anonymous NAMES is unavailable");
 }
 
 static void TestPasswordCanary()
@@ -107,17 +200,35 @@ static void TestPasswordCanary()
         string path = Path.Combine(root, "customer-connections.txt");
         const string canary = "do-not-read-or-print-this-canary";
         File.WriteAllText(path, canary);
-        var old = Console.Out;
-        using var output = new StringWriter();
-        bool exists;
+        var stdout = new StringWriter();
+        var stderr = new StringWriter();
+        var oldOut = Console.Out;
+        var oldError = Console.Error;
+        string rules = AircSupport.RenderSessionRules(
+            File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "fixtures", "agent-rules.md")),
+            false, null, "", null);
+        string sessionDirectory = Path.Combine(root, "sessions", Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(sessionDirectory);
+        string rulesPath = Path.Combine(sessionDirectory, "rules.md");
+        string launchPath = Path.Combine(sessionDirectory, "launch.json");
+        string logPath = Path.Combine(root, "launcher.log");
         try
         {
-            Console.SetOut(output);
-            exists = AircSupport.ConnectionFileExists(path);
+            using var locked = new FileStream(path, FileMode.Open, FileAccess.ReadWrite, FileShare.None);
+            Console.SetOut(stdout);
+            Console.SetError(stderr);
+            bool exists = AircSupport.ConnectionFileExists(path);
+            Assert(exists, "connection file existence check failed");
+            string status = AircSupport.ConnectionFileStatus("customer", path, exists);
+            Console.WriteLine(status);
+            AircSupport.WriteSessionMetadata(sessionDirectory, rules, new { connectionFile = path, airc = false });
+            File.WriteAllText(logPath, stdout.ToString());
         }
-        finally { Console.SetOut(old); }
-        Assert(exists, "connection file existence check failed");
-        Assert(!output.ToString().Contains(canary, StringComparison.Ordinal), "connection file content was disclosed");
+        finally { Console.SetOut(oldOut); Console.SetError(oldError); }
+        var artifacts = new[] { stdout.ToString(), stderr.ToString(), File.ReadAllText(rulesPath),
+            File.ReadAllText(launchPath), File.ReadAllText(logPath) };
+        Assert(artifacts.All(x => !x.Contains(canary, StringComparison.Ordinal)),
+            "connection canary appeared in output or launch artifacts");
     }
     finally { Directory.Delete(root, true); }
 }

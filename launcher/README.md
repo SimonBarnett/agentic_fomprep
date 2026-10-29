@@ -78,11 +78,16 @@ the user can still choose either answer. Non-interactive and smoke runs use the 
 and smoke runs use the config value or no; they never prompt. `--airc` and `--no-airc` override the config,
 and `--airc-console <nick>` enables airc and selects that connected console.
 
-When enabled, only `bobiverse-airc-commands` and `bobiverse-airc` are appended to that session's rendered rules.
-The airc skills path is never added to global Grok config (the existing Priority skills path is unchanged).
-DCC reverse bulk instructions are included in the same
-session context; troubleshooting is referenced by path and is not preloaded. If a bobiverse airc skills path
-is already in the global Grok config, the launcher warns without editing it.
+When enabled, the launcher writes only `bobiverse-airc-commands`, `bobiverse-airc`, and DCC guidance into
+`%LOCALAPPDATA%\PriorityAgent\sessions\<session>\airc\`. Rendered rules point to those files so their contents
+stay off the Windows command line. The airc skills path is never added to global Grok config (the existing
+Priority skills path is unchanged). Troubleshooting is referenced by path and is not preloaded. If a bobiverse
+airc skills path is already in the global Grok config, the launcher warns without editing it.
+
+The current IRC server requires authentication, and the Bob report does not list connected customer consoles.
+Until a credential-free listing source exists, airc discovery reports unavailable and defaults to continuing
+without airc; unverified configured/CLI nick handling is pending Simon's direction. A Bobiverse FR for a
+read-only connected-console listing is needed before live console selection is available.
 
 ## Agent rules (summary; full text in `agent-rules.md`)
 
@@ -141,6 +146,8 @@ Requires the .NET 8 SDK. It builds on Windows or Linux; the icon is embedded eit
 # From the repository root:
 dotnet publish launcher/PriorityAgent.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -o launcher/out
 # -> launcher/out/PriorityAgent.exe (self-contained, single file, ~35 MB)
+dotnet run --project launcher.Tests/PriorityAgent.Tests.csproj -c Release
+# The launcher acceptance checks are a console harness (dotnet test does not discover tests).
 cd launcher
 .\build.ps1 -Install                                      # Windows: build + copy to D:\tools\PriorityAgent + desktop shortcut
 ```

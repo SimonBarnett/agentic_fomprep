@@ -188,30 +188,18 @@ static class Program
         string? aircConsole = null;
         if (airc)
         {
-            List<string> connected = DiscoverConnectedAircConsoles(out string discoveryError);
-            if (connected.Count == 0)
+            AircConsoleDiscoveryResult discovery = DiscoverConnectedAircConsoles();
+            if (!AircSupport.TrySelectListedConsole(airc, discovery, aircConfig.Console, AircConsoleArg,
+                interactiveAirc, AskAircConsole, out aircConsole, out string discoveryError))
             {
-                Warn("airc: no *_console connected on irc.ntsa.uk" + (discoveryError == "" ? "" : $" ({discoveryError})"));
+                Warn(discovery.Available
+                    ? $"airc: {discoveryError}"
+                    : $"airc console listing unavailable: {discoveryError}");
                 if (!ContinueWithoutAirc(interactiveAirc)) { Pause(); return 1; }
                 airc = false;
                 Console.WriteLine("airc: no (continuing without airc)");
             }
-            else
-            {
-                aircConsole = AircSupport.ChooseConsole(connected, aircConfig.Console, AircConsoleArg,
-                    interactiveAirc, AskAircConsole);
-                if (aircConsole == null)
-                {
-                    if (AircConsoleArg != null)
-                        Warn($"airc: requested console is not connected; {connected.Count} connected console(s) were found");
-                    else
-                        Warn("airc: no console selected");
-                    if (!ContinueWithoutAirc(interactiveAirc)) { Pause(); return 1; }
-                    airc = false;
-                    Console.WriteLine("airc: no (continuing without airc)");
-                }
-                else Console.WriteLine($"airc: using {aircConsole}");
-            }
+            else Console.WriteLine($"airc: using {aircConsole}");
         }
 
         // ---- 4. grok: register MCP + skills, build brief, launch ----------------------
@@ -222,7 +210,7 @@ static class Program
         WarnIfGlobalAircSkillsPath();
         if (!NoFuel) FuelCheck();
 
-        string aircSkills = "";
+        string[] aircSkills = Array.Empty<string>();
         string aircSource = "";
         if (airc && aircConsole != null)
         {
@@ -256,14 +244,20 @@ static class Program
             ["TODAY"] = launchedAt.ToString("yyyy-MM-dd"),
         };
         string rules = LoadRules(fomprep, out string rulesSrc);
+        string sessDir = Path.Combine(Path.GetDirectoryName(logDir)!, "sessions");
+        string sessionDir = Path.Combine(sessDir, sessionId);
+        Directory.CreateDirectory(sessionDir);
+        AircSessionFiles? aircFiles = null;
+        if (airc && aircConsole != null)
+            aircFiles = AircSupport.WriteSessionFiles(sessionDir, aircSkills, ReadResource("airc-dcc.md"), aircConsole);
         rules = AircSupport.RenderSessionRules(rules, airc && aircConsole != null, aircConsole,
-            aircSource, aircSkills, airc ? ReadResource("airc-dcc.md") : "");
+            aircSource, aircFiles);
         foreach (var kv in vars) rules = rules.Replace("{{" + kv.Key + "}}", kv.Value);
         Info($"rules: {rulesSrc} ({rules.Length} chars)");
         if (cust != null)
         {
             bool connectionsExist = AircSupport.ConnectionFileExists(pwFile);
-            Check(connectionsExist, $"connections file for {cust.Name} {(connectionsExist ? "exists" : "MISSING - ask Haitch for it")}: {pwFile} (contents not read)");
+            Check(connectionsExist, AircSupport.ConnectionFileStatus(cust.Name, pwFile, connectionsExist));
         }
         Info($"hours: {hoursRepo} branch 'hours' -> hours/{launchedAt:yyyy-MM-dd}.md, tag session:{sessShort} (mandatory; checked on exit)");
 
@@ -283,17 +277,17 @@ static class Program
             ? "SMOKE TEST: do not read or change any file and do not contact any customer system. You may call the priority-catalog tool list_catalog once (read-only, local). Reply in at most 8 lines: the context level, customer, project; the priority-catalog tools you have and whether that server is connected (with the skill count list_catalog returned); whether Priority skills are visible; and what your launcher rules say about connecting to this customer's systems. Then stop."
             : $"Follow the launcher rules (harvest rule, secrets, MANDATORY hours with tag session:{sessShort} on the hours branch of {hoursRepo}). Then briefly confirm the context and ask Simon what to work on.");
 
-        var gargs = new List<string> { "--cwd", workDir, "--session-id", sessionId, "--trust", "--rules", rules };
-        if (Smoke) gargs.AddRange(new[] { "--max-turns", "4", "-p" });
-        gargs.Add(brief.ToString());
+        string rulesFile = Path.Combine(sessionDir, "rules.md");
+        AircSupport.WriteSessionMetadata(sessionDir, rules, new
+        { sessionId, level, customer = cust?.FullName, project, workDir, fomprep, grok, airc, aircConsole, dryRun = DryRun, smoke = Smoke, at = DateTime.Now });
 
-        string sessDir = Path.Combine(Path.GetDirectoryName(logDir)!, "sessions");
-        Directory.CreateDirectory(sessDir);
-        string rulesFile = Path.Combine(sessDir, $"{sessionId}.rules.md");
-        File.WriteAllText(rulesFile, rules);
-        File.WriteAllText(Path.Combine(sessDir, $"{sessionId}.launch.json"), JsonSerializer.Serialize(new
-        { sessionId, level, customer = cust?.FullName, project, workDir, fomprep, grok, dryRun = DryRun, smoke = Smoke, at = DateTime.Now }, new JsonSerializerOptions { WriteIndented = true }));
-
+        string hoursPrompt = $"HOURS NOT REPORTED. Priority agents MUST report their hours. Before anything else, write and push the hours lines for session {sessionId} now, " +
+            $"following the launcher rules: at least one dev line and one test line (human-equivalent, each with an evidence link ending session:{sessShort}), appended to hours/YYYY-MM-DD.md " +
+            $"on the 'hours' branch of {hoursRepo} (worktree {hoursWt}), from hours/_template.md. Push to origin hours, confirm, then stop.";
+        var gargs = AircSupport.BuildGrokArguments(workDir, sessionId, rules, brief.ToString(), Smoke);
+        var resumeArgs = new List<string> { "--cwd", workDir, "--resume", sessionId, "--trust", "--rules", rules, hoursPrompt };
+        EnsureCommandLineSize(grok, gargs, "Grok launch");
+        EnsureCommandLineSize(grok, resumeArgs, "Grok hours relaunch");
         string display = Quote(grok) + " " + string.Join(' ', gargs.Select(a => a == rules ? $"<rules: {rulesFile}>" : Quote(a)));
         Console.WriteLine("\nLaunch command:\n  " + display.Replace("\r\n", "\\n").Replace("\n", "\\n"));
         string logDisplay = display;
@@ -305,11 +299,6 @@ static class Program
         }
         Log("launch: " + logDisplay);
         Check(Directory.Exists(workDir), $"working directory exists: {workDir}");
-
-        string hoursPrompt = $"HOURS NOT REPORTED. Priority agents MUST report their hours. Before anything else, write and push the hours lines for session {sessionId} now, " +
-            $"following the launcher rules: at least one dev line and one test line (human-equivalent, each with an evidence link ending session:{sessShort}), appended to hours/YYYY-MM-DD.md " +
-            $"on the 'hours' branch of {hoursRepo} (worktree {hoursWt}), from hours/_template.md. Push to origin hours, confirm, then stop.";
-        var resumeArgs = new List<string> { "--cwd", workDir, "--resume", sessionId, "--trust", "--rules", rules, hoursPrompt };
         Console.WriteLine("Hours relaunch command (only if hours are missing on exit):\n  " + Quote(grok) + " " +
             string.Join(' ', resumeArgs.Select(a => a == rules ? $"<rules: {rulesFile}>" : Quote(a))));
 
@@ -477,13 +466,13 @@ static class Program
             .OrderBy(c => c.Name, StringComparer.OrdinalIgnoreCase).ToList();
     }
 
-    static List<string> DiscoverConnectedAircConsoles(out string error)
+    static AircConsoleDiscoveryResult DiscoverConnectedAircConsoles()
     {
-        var (consoles, detail) = AircConsoleDiscovery.Discover();
-        error = detail;
-        if (consoles.Count == 0) Log("airc console discovery: no connected console found");
-        else Log($"airc console discovery: found {consoles.Count} connected console(s)");
-        return consoles;
+        var result = AircConsoleDiscovery.Discover();
+        Log(result.Available
+            ? $"airc console listing returned {result.Consoles.Count} console(s)"
+            : "airc console listing unavailable: " + result.Error);
+        return result;
     }
 
     static bool ContinueWithoutAirc(bool interactive) =>
@@ -508,7 +497,7 @@ static class Program
         "airc/.grok/skills/bobiverse-airc/SKILL.md",
     };
 
-    static (string Content, string Source) LoadAircSkills(string gh)
+    static (string[] Content, string Source) LoadAircSkills(string gh)
     {
         string? clone = FindAircClone();
         string sha;
@@ -527,8 +516,7 @@ static class Program
         }
         if (contents.Any(string.IsNullOrWhiteSpace))
             throw new InvalidDataException("Airc skill content is empty");
-        return (string.Join(Environment.NewLine + Environment.NewLine, contents),
-            clone == null ? $"GitHub @ {sha}" : $"local @ {sha}");
+        return (contents, clone == null ? $"GitHub @ {sha}" : $"local @ {sha}");
     }
 
     static string? FindAircClone()
@@ -788,6 +776,11 @@ static class Program
 
     static string Quote(string a) => a.Length > 0 && !a.Any(c => char.IsWhiteSpace(c) || c == '"') ? a : "\"" + a.Replace("\"", "\\\"") + "\"";
     static string Trunc(string s, int n) => s.Length <= n ? s : s[..(n - 1)] + "…";
+
+    static void EnsureCommandLineSize(string executable, IEnumerable<string> args, string operation)
+    {
+        AircSupport.ValidateWindowsCommandLine(executable, args, operation);
+    }
 
     static string Ask(string prompt)
     {

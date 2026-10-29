@@ -75,7 +75,9 @@ static class Program
         { Err("--airc-console cannot be combined with --no-airc."); return 2; }
         if (ListOnly || DryRun || Smoke || CustomerArg != null || General) NoPause |= Console.IsInputRedirected;
 
-        string logDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "PriorityAgent", "logs");
+        string localAppData = Environment.GetEnvironmentVariable("LOCALAPPDATA")
+            ?? Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+        string logDir = Path.Combine(localAppData, "PriorityAgent", "logs");
         Directory.CreateDirectory(logDir);
         LogFile = Path.Combine(logDir, $"launcher-{DateTime.Now:yyyyMMdd}.log");
         try { Console.Title = "Priority Agent"; } catch { }

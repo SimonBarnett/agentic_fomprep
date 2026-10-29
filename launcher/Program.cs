@@ -170,16 +170,18 @@ static class Program
         // ---- 3b. optional airc context -----------------------------------------------
         AircConfig aircConfig = AircSupport.LoadConfig(projectDir, custDir);
         bool interactiveAirc = !Console.IsInputRedirected && !Smoke;
+        string? aircPromptAnswer = null;
         bool airc = AircSupport.ResolveEnabled(AircArg, AircConsoleArg != null, aircConfig.Enabled,
             interactiveAirc, configured =>
             {
                 bool defaultValue = configured ?? false;
                 string suffix = defaultValue ? " [Y/n]: " : " [y/N]: ";
-                string answer = Ask("Does this session need airc?" + suffix);
-                return answer == "" ? defaultValue : answer.StartsWith("y", StringComparison.OrdinalIgnoreCase);
+                aircPromptAnswer = Ask("Does this session need airc?" + suffix);
+                return aircPromptAnswer == "" ? defaultValue : aircPromptAnswer.StartsWith("y", StringComparison.OrdinalIgnoreCase);
             });
         string aircDecisionSource = AircConsoleArg != null ? "--airc-console"
             : AircArg.HasValue ? (AircArg.Value ? "--airc" : "--no-airc")
+            : interactiveAirc && !string.IsNullOrEmpty(aircPromptAnswer) ? "prompt"
             : aircConfig.EnabledSource ?? (interactiveAirc ? "prompt" : "default");
         Console.WriteLine($"airc: {(airc ? "yes" : "no")} (from {aircDecisionSource})");
         Log($"airc decision: {(airc ? "yes" : "no")} (from {aircDecisionSource})");

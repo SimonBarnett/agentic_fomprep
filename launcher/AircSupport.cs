@@ -64,6 +64,9 @@ public static class AircSupport
             .OrderBy(x => x, StringComparer.OrdinalIgnoreCase)
             .ToList();
 
+    public static bool IsValidConsole(string? console) =>
+        !string.IsNullOrWhiteSpace(console) && ConsoleNick.IsMatch(console.Trim());
+
     public static string? ChooseConsole(
         IEnumerable<string> candidates,
         string? preferred,
@@ -138,14 +141,28 @@ public static class AircSupport
     {
         console = null;
         if (!enabled) { reason = "airc disabled"; return false; }
+        string? preferred = !string.IsNullOrWhiteSpace(requested) ? requested.Trim()
+            : !string.IsNullOrWhiteSpace(configured) ? configured.Trim() : null;
         if (!discovery.Available)
         {
-            reason = discovery.Error;
+            if (preferred != null && IsValidConsole(preferred))
+            {
+                console = preferred;
+                reason = "console not verified: " + discovery.Error;
+                return true;
+            }
+            reason = preferred == null ? discovery.Error : "invalid configured airc console nick";
             return false;
         }
         if (discovery.Consoles.Count == 0)
         {
-            reason = "no *_console connected on irc.ntsa.uk";
+            if (preferred != null && IsValidConsole(preferred))
+            {
+                console = preferred;
+                reason = "console not verified: no *_console connected on irc.ntsa.uk";
+                return true;
+            }
+            reason = preferred == null ? "no *_console connected on irc.ntsa.uk" : "invalid configured airc console nick";
             return false;
         }
         console = ChooseConsole(discovery.Consoles, configured, requested, interactive, ask);

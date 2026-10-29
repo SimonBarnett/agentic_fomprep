@@ -192,13 +192,13 @@ static class Program
             if (!AircSupport.TrySelectListedConsole(airc, discovery, aircConfig.Console, AircConsoleArg,
                 interactiveAirc, AskAircConsole, out aircConsole, out string discoveryError))
             {
-                Warn(discovery.Available
-                    ? $"airc: {discoveryError}"
-                    : $"airc console listing unavailable: {discoveryError}");
+                Warn($"airc: {discoveryError}");
                 if (!ContinueWithoutAirc(interactiveAirc)) { Pause(); return 1; }
                 airc = false;
                 Console.WriteLine("airc: no (continuing without airc)");
             }
+            else if (discoveryError.StartsWith("console not verified:", StringComparison.Ordinal))
+                Info($"airc: using {aircConsole} ({discoveryError})");
             else Console.WriteLine($"airc: using {aircConsole}");
         }
 

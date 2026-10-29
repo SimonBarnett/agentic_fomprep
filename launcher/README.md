@@ -85,9 +85,10 @@ Priority skills path is unchanged). Troubleshooting is referenced by path and is
 airc skills path is already in the global Grok config, the launcher warns without editing it.
 
 The current IRC server requires authentication, and the Bob report does not list connected customer consoles.
-Until a credential-free listing source exists, airc discovery reports unavailable and defaults to continuing
-without airc; unverified configured/CLI nick handling is pending Simon's direction. A Bobiverse FR for a
-read-only connected-console listing is needed before live console selection is available.
+Until a credential-free listing source exists, a valid configured or `--airc-console` nick is trusted for the
+session with a visible "console not verified" note. Without a configured nick, unavailable or empty discovery
+warns and offers to continue without airc. A Bobiverse FR for a read-only connected-console listing is needed
+before the launcher can verify live presence.
 
 ## Agent rules (summary; full text in `agent-rules.md`)
 

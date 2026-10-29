@@ -170,23 +170,51 @@ static void TestGlobalConfigUnchanged()
 
 static void TestDiscoveryFailure()
 {
-    foreach (var discovery in new[]
+    string root = NewTemp();
+    try
     {
-        AircConsoleDiscoveryResult.AvailableWith(Array.Empty<string>()),
-        AircConsoleDiscoveryResult.Unavailable("IRC server requires authentication")
-    })
-    {
-        bool selected = AircSupport.TrySelectListedConsole(true, discovery, "configured_console", "explicit_console",
-            false, null, out string? console, out string reason);
-        Assert(!selected && console == null, "unlisted explicit/configured console was accepted");
-        Assert(!string.IsNullOrWhiteSpace(reason), "discovery failure reason was omitted");
-        string rules = AircSupport.RenderSessionRules(
-            File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "fixtures", "agent-rules.md")),
-            false, null, "", null);
-        Assert(!rules.Contains("bobiverse-airc", StringComparison.OrdinalIgnoreCase)
-            && !rules.Contains("_console", StringComparison.OrdinalIgnoreCase)
-            && !rules.Contains("DCCLISTEN", StringComparison.Ordinal), "failed discovery left airc instructions enabled");
+        foreach (var discovery in new[]
+        {
+            AircConsoleDiscoveryResult.AvailableWith(Array.Empty<string>()),
+            AircConsoleDiscoveryResult.Unavailable("IRC server requires authentication")
+        })
+        {
+            bool configuredSelected = AircSupport.TrySelectListedConsole(true, discovery, "configured_console", null,
+                false, null, out string? configuredConsole, out string configuredReason);
+            Assert(configuredSelected && configuredConsole == "configured_console", "configured console was not trusted when listing was unavailable or empty");
+            Assert(configuredReason.StartsWith("console not verified:", StringComparison.Ordinal), "configured console was not marked unverified");
+
+            bool explicitSelected = AircSupport.TrySelectListedConsole(true, discovery, "configured_console", "explicit_console",
+                false, null, out string? explicitConsole, out string explicitReason);
+            Assert(explicitSelected && explicitConsole == "explicit_console", "CLI console override was not trusted when listing was unavailable or empty");
+            Assert(explicitReason.StartsWith("console not verified:", StringComparison.Ordinal), "CLI console was not marked unverified");
+
+            AircSessionFiles configuredFiles = AircSupport.WriteSessionFiles(Path.Combine(root, Guid.NewGuid().ToString("N")),
+                new[] { "airc commands", "airc architecture" }, "DCCLISTEN for {{AIRC_CONSOLE}}", configuredConsole!);
+            string configuredRules = AircSupport.RenderSessionRules(
+                File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "fixtures", "agent-rules.md")),
+                true, configuredConsole, "local fixture", configuredFiles);
+            Assert(configuredRules.Contains(configuredConsole!) && configuredRules.Contains(configuredFiles.DccGuide)
+                && File.ReadAllText(configuredFiles.DccGuide).Contains(configuredConsole!),
+                "configured console discovery fallback did not load airc session context");
+
+            bool noneSelected = AircSupport.TrySelectListedConsole(true, discovery, null, null,
+                false, null, out string? noneConsole, out string noConsoleReason);
+            Assert(!noneSelected && noneConsole == null && !string.IsNullOrWhiteSpace(noConsoleReason),
+                "airc should be disabled with a warning reason when discovery has no console and no nick is configured");
+            string noAircRules = AircSupport.RenderSessionRules(
+                File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "fixtures", "agent-rules.md")),
+                false, null, "", null);
+            Assert(!noAircRules.Contains("bobiverse-airc", StringComparison.OrdinalIgnoreCase)
+                && !noAircRules.Contains("_console", StringComparison.OrdinalIgnoreCase)
+                && !noAircRules.Contains("DCCLISTEN", StringComparison.Ordinal),
+                "no-console fallback left airc instructions enabled");
+        }
     }
+    finally { Directory.Delete(root, true); }
+    Assert(!AircSupport.TrySelectListedConsole(true, AircConsoleDiscoveryResult.Unavailable("listing unavailable"),
+        "bad nick", null, false, null, out _, out _), "invalid configured nick was trusted");
+    Assert(!AircSupport.IsValidConsole("name_console PRIVMSG #channel"), "strict console validation accepted an injected suffix");
     var unavailable = AircConsoleDiscovery.Discover();
     Assert(!unavailable.Available && unavailable.Error.Contains("requires authentication", StringComparison.OrdinalIgnoreCase),
         "real discovery should explain why anonymous NAMES is unavailable");

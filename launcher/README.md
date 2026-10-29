@@ -36,18 +36,22 @@ with the right context.
      an existing clone in `D:\ai`, `C:\ai` or `D:\repos` is reused.
    - **Project / service call**: one of the customer repo's top-level folders, skipping dot-folders.
      cwd is that folder.
-5. **New customer / new project** never creates anything. It prints `Ask Haitch: new customer repo for X`
+5. It asks whether this session needs airc, then uses a read-only IRC `NAMES` lookup on `#wonderland`
+   and the reported machine shop channels to list currently connected `*_console` nicks. A configured
+   `airc_console` is preselected when connected. The launcher never sends a PRIVMSG during discovery.
+   If no console can be found, it offers to continue without airc.
+6. **New customer / new project** never creates anything. It prints `Ask Haitch: new customer repo for X`
    or `Ask Haitch: new project folder Y in <repo>`, copies the line to the clipboard and exits. Haitch creates it.
-6. It checks fuel like `ce-dayworks/scripts/Start-DayWorks.ps1`.
+7. It checks fuel like `ce-dayworks/scripts/Start-DayWorks.ps1`.
    - Source: the Bob report `machines.<machine>.pcent["grok-chat"]`.
    - Above 0 means the pool is used. 0 or unknown gives a warning and asks before continuing.
    - It never handles keys.
-7. It **starts Grok** in the same console:
+8. It **starts Grok** in the same console:
    `grok --cwd <context> --session-id <new uuid> --trust --rules <agent rules> "<context brief>"`.
    - The rules come from `launcher/agent-rules.md` in the agentic_fomprep clone when its `rules-version` is at
      least the embedded copy's; otherwise the copy embedded in the exe is used. The `{{...}}` placeholders are filled in.
    - The brief names the customer, project, paths and the files to read first.
-8. **Hours are mandatory.** When the agent exits, the launcher fetches `origin/hours` from the customer repo
+9. **Hours are mandatory.** When the agent exits, the launcher fetches `origin/hours` from the customer repo
    (agentic_fomprep for a general session). It checks that `hours/<today>.md` has a `dev` line **and** a `test`
    line, each with evidence and tagged `session:<first 8 hex of session id>`.
    - If they are missing, it shows a loud red warning.
@@ -55,6 +59,36 @@ with the right context.
    - It repeats until the lines are there. Typing `SKIP` overrides this, and the override is logged.
 
 Logs go to `%LOCALAPPDATA%\PriorityAgent\logs`. Per-session `launch.json` and the rendered rules go to `...\sessions`.
+
+## airc configuration and session skills
+
+The launcher prompts `Does this session need airc? [y/N]` after the customer/project context is selected.
+Project settings override customer settings; the project file is `<project>/.priority-agent.json`,
+falling back to `<customer>/.priority-agent.json`. The `airc` value is the interactive prompt's default;
+the user can still choose either answer. Non-interactive and smoke runs use the configured value:
+
+```json
+{
+  "airc": true,
+  "airc_console": "flamingo_console"
+}
+```
+
+`airc` is optional and defaults to no. `airc_console` is an optional preferred connected nick. Non-interactive
+and smoke runs use the config value or no; they never prompt. `--airc` and `--no-airc` override the config,
+and `--airc-console <nick>` enables airc and selects that connected console.
+
+When enabled, the launcher writes only `bobiverse-airc-commands`, `bobiverse-airc`, and DCC guidance into
+`%LOCALAPPDATA%\PriorityAgent\sessions\<session>\airc\`. Rendered rules point to those files so their contents
+stay off the Windows command line. The airc skills path is never added to global Grok config (the existing
+Priority skills path is unchanged). Troubleshooting is referenced by path and is not preloaded. If a bobiverse
+airc skills path is already in the global Grok config, the launcher warns without editing it.
+
+The current IRC server requires authentication, and the Bob report does not list connected customer consoles.
+Until a credential-free listing source exists, a valid configured or `--airc-console` nick is trusted for the
+session with a visible "console not verified" note. Without a configured nick, unavailable or empty discovery
+warns and offers to continue without airc. A Bobiverse FR for a read-only connected-console listing is needed
+before the launcher can verify live presence.
 
 ## Agent rules (summary; full text in `agent-rules.md`)
 
@@ -88,6 +122,9 @@ PriorityAgent.exe --list                           customers (topic priority-cus
 PriorityAgent.exe --list --customer rees           + its project folders
 PriorityAgent.exe --customer rees --project SC263182
 PriorityAgent.exe --general
+PriorityAgent.exe --customer rees --project SC263182 --airc
+PriorityAgent.exe --customer rees --project SC263182 --airc-console flamingo_console
+PriorityAgent.exe --customer rees --project SC263182 --no-airc
 PriorityAgent.exe --dry-run --customer rees --project SC263182   show everything, change nothing, print the grok command
 PriorityAgent.exe --smoke --customer rees --project SC263182     real setup + one brief no-tools single-turn launch
 PriorityAgent.exe --check-hours D:\ai\rees --session <uuid>      run only the hours check
@@ -107,10 +144,22 @@ Optional execute plugins (formprep, compile, install, odata) need node and `inst
 Requires the .NET 8 SDK. It builds on Windows or Linux; the icon is embedded either way.
 
 ```
+# From the repository root:
+dotnet publish launcher/PriorityAgent.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -o launcher/out
+# -> launcher/out/PriorityAgent.exe (self-contained, single file, ~35 MB)
+dotnet run --project launcher.Tests/PriorityAgent.Tests.csproj -c Release
+# The launcher acceptance checks are a console harness (dotnet test does not discover tests).
 cd launcher
-dotnet publish PriorityAgent.csproj -c Release -o out     # -> out\PriorityAgent.exe (self-contained, single file, ~35 MB)
 .\build.ps1 -Install                                      # Windows: build + copy to D:\tools\PriorityAgent + desktop shortcut
 ```
+
+The Windows workflow also runs the published executable through dry-run integration scenarios with isolated
+profiles and fake GitHub/Grok CLIs, checking config preservation, session-only airc files, and connection-file
+canary handling. The `Launcher release` workflow runs on launcher pull requests and `main` pushes for validation;
+it publishes a GitHub **pre-release** with `PriorityAgent.exe` and its `.sha256` file for `launcher-v*` tags or a
+manual dispatch from `main`. Download
+it from [GitHub Releases](https://github.com/SimonBarnett/agentic_fomprep/releases) and verify the checksum
+before use. Releases remain pre-release until separately approved.
 
 ## Icon
 

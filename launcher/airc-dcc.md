@@ -1,0 +1,8 @@
+### Reverse DCC for large replies (bobiverse FR #5003 / #5008)
+
+Source: `SimonBarnett/bobiverse` commit `7372500933ba10c725219334a33e4bba41f1eca8`, `airc/docs/airc-remote-control.md`.
+
+- Keep IRC as the control plane. For a large command reply, use `New-AircDccToken` and `New-AircDccListenOffer` from `airc/scripts/Invoke-AircRemote.ps1`, then send `DCCLISTEN id=<job> host=<ip> port=<n> token=<hex> tls=1` to `{{AIRC_CONSOLE}}` before or with the shell command using the same job id. Use `relay=<host:port>` when both sides are behind NAT.
+- `New-AircDccListenOffer` only formats the offer. The caller must open a listener on the advertised host and port before sending it, accept the console's outbound TLS connection, and read the complete frame: `token\n`, a 4-byte unsigned big-endian body length, exactly that many body bytes, then `sha256\n`. TLS is on by default and the console uses an ephemeral self-signed certificate. Check the received token, length, and body digest; then verify the matching `DONE ... via=dcc` reply with `Test-AircDccDoneSha256`. Keep the ephemeral token local; never print it into logs or share it.
+- If DCC fails or is blocked, accept `dcc failed ...; falling back to IRC` and continue with `CONT` / `RESUME` paging. Do not retry-loop DCC.
+- DCC is console-to-caller bulk output only; it does not upload files to the console. Uploading files via DCC is a separate bobiverse feature request (#5194). Until it ships, use `PUT` chunks over IRC for uploads. For downloads, use `GET <path> fetch=chunk` followed by `GETCHUNK`; use allowlisted HTTPS or a share when appropriate. Never dump multi-KB base64 over PRIVMSG.

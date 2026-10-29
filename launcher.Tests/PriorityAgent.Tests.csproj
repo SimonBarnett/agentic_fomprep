@@ -6,6 +6,7 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Remove="FakeCli/**/*.cs" />
     <Compile Include="../launcher/AircSupport.cs" Link="AircSupport.cs" />
     <Compile Include="../launcher/AircConsoleDiscovery.cs" Link="AircConsoleDiscovery.cs" />
     <None Include="fixtures/**/*" CopyToOutputDirectory="PreserveNewest" />

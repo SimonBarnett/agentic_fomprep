@@ -1,16 +1,17 @@
 using PriorityAgent;
+using System.Diagnostics;
+using System.Text;
 
 var checks = new List<(string Name, Action Run)>
 {
     ("project config overrides customer config", TestConfigPrecedence),
     ("CLI decisions override config", TestDecisionOverrides),
     ("console discovery filters and selects", TestConsoleSelection),
-    ("unavailable or empty discovery safely disables airc context", TestDiscoveryFailure),
+    ("unverified configured consoles retain airc; absent console disables it", TestDiscoveryFailure),
     ("airc=no renders no airc context", TestNoAircContext),
     ("airc=yes writes session-only skills and DCC", TestAircContext),
     ("realistic airc skills stay off the command line", TestCommandLineSize),
-    ("airc session setup does not mutate Grok config", TestGlobalConfigUnchanged),
-    ("password canary stays out of launch artifacts", TestPasswordCanary),
+    ("published launcher dry runs preserve config and protect connection canaries", TestLauncherDryRuns),
 };
 
 int failures = 0;
@@ -66,6 +67,9 @@ static void TestConsoleSelection()
     Assert(AircSupport.MachineFromConsole("flamingo_console") == "flamingo", "machine id extraction failed");
     Assert(AircSupport.MachineChannelsFromReport("""{"machines":{"flamingo":{},"bad/name":{},"win-mpre8vi4u6u":{}}}""")
         .SequenceEqual(new[] { "#flamingo", "#win-mpre8vi4u6u" }), "report machine channels were not validated");
+    Assert(AircSupport.MachineFromConsole("name_console\n") == null, "console regex accepted a trailing newline");
+    Assert(!AircSupport.MachineChannelsFromReport("""{"machines":{"name\n":{}}}""").Any(),
+        "machine validation accepted a trailing newline");
     var names = AircSupport.ConsolesFromNames(new[]
     {
         ":irc 353 test = #wonderland :@flamingo_console +visitor",
@@ -135,37 +139,74 @@ static void TestCommandLineSize()
     finally { Directory.Delete(root, true); }
 }
 
-static void TestGlobalConfigUnchanged()
+static void TestLauncherDryRuns()
 {
+    string? launcherExe = Environment.GetEnvironmentVariable("PRIORITY_AGENT_TEST_EXE");
+    string? fakeCli = Environment.GetEnvironmentVariable("PRIORITY_AGENT_TEST_CLI_DIR");
+    if (string.IsNullOrWhiteSpace(launcherExe) || string.IsNullOrWhiteSpace(fakeCli))
+    {
+        Console.WriteLine("SKIP launcher integration tests (set PRIORITY_AGENT_TEST_EXE and PRIORITY_AGENT_TEST_CLI_DIR)");
+        return;
+    }
+
     string root = NewTemp();
-    string? oldHome = Environment.GetEnvironmentVariable("HOME");
-    string? oldUserProfile = Environment.GetEnvironmentVariable("USERPROFILE");
     try
     {
-        string home = Path.Combine(root, "home");
-        Directory.CreateDirectory(Path.Combine(home, ".grok"));
-        Environment.SetEnvironmentVariable("HOME", home);
-        Environment.SetEnvironmentVariable("USERPROFILE", home);
-        string config = Path.Combine(home, ".grok", "config.toml");
-        const string original = "[skills]\npaths = [\"C:/existing/skills\"]\n";
-        File.WriteAllText(config, original);
-        string fixtureRoot = Path.Combine(AppContext.BaseDirectory, "fixtures");
-        string commands = File.ReadAllText(Path.Combine(fixtureRoot, "bobiverse-airc-commands", "SKILL.md"));
-        string architecture = File.ReadAllText(Path.Combine(fixtureRoot, "bobiverse-airc", "SKILL.md"));
-        string dcc = File.ReadAllText(Path.Combine(fixtureRoot, "airc-dcc.md"));
-        string template = File.ReadAllText(Path.Combine(fixtureRoot, "agent-rules.md"));
-        _ = AircSupport.RenderSessionRules(template, false, null, "", null);
-        AircSessionFiles files = AircSupport.WriteSessionFiles(Path.Combine(root, "airc-yes"),
-            new[] { commands, architecture }, dcc, "testbox_console");
-        _ = AircSupport.RenderSessionRules(template, true, "testbox_console", "GitHub @ sha", files);
-        Assert(File.ReadAllText(config) == original, "airc session generation changed global config.toml");
+        string cloneRoot = Path.Combine(root, "root");
+        CreateClone(root, "SimonBarnett", "agentic_fomprep", Path.Combine(cloneRoot, "agentic_fomprep"),
+            new Dictionary<string, string>
+            {
+                ["AGENTS.md"] = "# Test agent\n",
+                ["launcher/agent-rules.md"] = "# Priority rules\n\n{{AIRC_SECTION}}\n",
+                [".grok/skills/test/SKILL.md"] = "# Test skill\n",
+            });
+        CreateClone(root, "SimonBarnett", "fixture", Path.Combine(cloneRoot, "fixture"),
+            new Dictionary<string, string> { ["SC263182/README.md"] = "# Integration project\n" });
+        string aircFixture = Path.Combine(root, "airc");
+        Directory.CreateDirectory(aircFixture);
+        File.WriteAllText(Path.Combine(aircFixture, "bobiverse-airc-commands.md"), "# Commands skill\n");
+        File.WriteAllText(Path.Combine(aircFixture, "bobiverse-airc.md"), "# Architecture skill\n");
+        string cliRoot = Path.Combine(root, "cli");
+        string ghDir = Path.Combine(cliRoot, "gh");
+        string grokDir = Path.Combine(cliRoot, "grok");
+        CopyFakeCli(fakeCli, ghDir, "gh.exe");
+        CopyFakeCli(fakeCli, grokDir, "grok.exe");
+        CopyGitExecutable(ghDir);
+
+        string prioritySkills = Path.Combine(cloneRoot, "agentic_fomprep", ".grok", "skills").Replace('\\', '/');
+        string original = $"[skills]\npaths = [\"{prioritySkills}\", \"C:/bobiverse/airc/.grok/skills\"]\n";
+        const string canary = "do-not-read-or-print-this-canary";
+        ScenarioResult noAirc;
+        using (PrepareConnectionFile(root, canary))
+            noAirc = RunLauncherScenario(root, launcherExe, cloneRoot, ghDir, grokDir, original, null, false);
+        AssertScenarioClean(noAirc, canary, original, "airc=no");
+        Assert(noAirc.Stdout.Contains("bobiverse airc skills path", StringComparison.OrdinalIgnoreCase),
+            "airc=no did not print the global-config warning");
+        Assert(noAirc.SessionRules.All(r => !r.Contains("bobiverse-airc", StringComparison.OrdinalIgnoreCase)
+            && !r.Contains("DCCLISTEN", StringComparison.Ordinal)), "airc=no session contained airc guidance");
+
+        ScenarioResult aircYes = RunLauncherScenario(root, launcherExe, cloneRoot, ghDir, grokDir, original,
+            "--airc-console testbox_console", false);
+        AssertScenarioClean(aircYes, canary, original, "airc=yes");
+        Assert(aircYes.Stdout.Contains("console not verified", StringComparison.OrdinalIgnoreCase),
+            "launcher did not explain that the configured console was unverified");
+        Assert(aircYes.SessionRules.Length == 1
+            && aircYes.SessionRules[0].Contains("selected from --airc-console and was not verified as connected", StringComparison.Ordinal)
+            && aircYes.SessionRules[0].Contains("bobiverse-airc-commands", StringComparison.Ordinal)
+            && aircYes.AircFiles.Select(File.ReadAllText).Any(f => f.Contains("DCCLISTEN", StringComparison.Ordinal)),
+            "airc=yes did not write correctly sourced session-only airc rules");
+        Assert(aircYes.AircFiles.Length == 3, "airc files were not confined to the session airc folder");
+
+        ScenarioResult fetchFailure = RunLauncherScenario(root, launcherExe, cloneRoot, ghDir, grokDir, original,
+            "--airc-console testbox_console", true);
+        AssertScenarioClean(fetchFailure, canary, original, "airc skill fetch failure");
+        Assert(fetchFailure.Stdout.Contains("airc: no (continuing without airc)", StringComparison.Ordinal),
+            "non-interactive airc skill fetch failure did not continue without airc");
+        Assert(fetchFailure.SessionRules.Length == 1
+            && !fetchFailure.SessionRules[0].Contains("bobiverse-airc", StringComparison.OrdinalIgnoreCase),
+            "failed airc skill fetch left airc instructions in session rules");
     }
-    finally
-    {
-        Environment.SetEnvironmentVariable("HOME", oldHome);
-        Environment.SetEnvironmentVariable("USERPROFILE", oldUserProfile);
-        Directory.Delete(root, true);
-    }
+    finally { Directory.Delete(root, true); }
 }
 
 static void TestDiscoveryFailure()
@@ -193,10 +234,14 @@ static void TestDiscoveryFailure()
                 new[] { "airc commands", "airc architecture" }, "DCCLISTEN for {{AIRC_CONSOLE}}", configuredConsole!);
             string configuredRules = AircSupport.RenderSessionRules(
                 File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "fixtures", "agent-rules.md")),
-                true, configuredConsole, "local fixture", configuredFiles);
+                true, configuredConsole, "local fixture", configuredFiles,
+                consoleVerified: false, consoleSource: ".priority-agent.json");
             Assert(configuredRules.Contains(configuredConsole!) && configuredRules.Contains(configuredFiles.DccGuide)
                 && File.ReadAllText(configuredFiles.DccGuide).Contains(configuredConsole!),
                 "configured console discovery fallback did not load airc session context");
+            Assert(configuredRules.Contains("selected from .priority-agent.json and was not verified as connected", StringComparison.Ordinal)
+                && !configuredRules.Contains("read-only IRC NAMES lookup", StringComparison.Ordinal),
+                "unverified console provenance was described as a NAMES lookup");
 
             bool noneSelected = AircSupport.TrySelectListedConsole(true, discovery, null, null,
                 false, null, out string? noneConsole, out string noConsoleReason);
@@ -220,45 +265,155 @@ static void TestDiscoveryFailure()
         "real discovery should explain why anonymous NAMES is unavailable");
 }
 
-static void TestPasswordCanary()
+static FileStream PrepareConnectionFile(string root, string canary)
 {
-    string root = NewTemp();
-    try
+    string passwords = Path.Combine(root, "passwords");
+    Directory.CreateDirectory(passwords);
+    var file = new FileStream(Path.Combine(passwords, "fixture-connections.txt"),
+        FileMode.Create, FileAccess.ReadWrite, FileShare.None);
+    byte[] content = Encoding.UTF8.GetBytes(canary);
+    file.Write(content);
+    file.Flush();
+    return file;
+}
+
+static ScenarioResult RunLauncherScenario(string root, string launcherExe, string cloneRoot,
+    string ghDir, string grokDir, string originalConfig, string? aircArgs, bool failSkillFetch)
+{
+    string scenario = Path.Combine(root, "scenario-" + Guid.NewGuid().ToString("N"));
+    string home = Path.Combine(scenario, "home");
+    string local = Path.Combine(scenario, "local");
+    Directory.CreateDirectory(Path.Combine(home, ".grok"));
+    Directory.CreateDirectory(local);
+    string config = Path.Combine(home, ".grok", "config.toml");
+    File.WriteAllText(config, originalConfig);
+    var start = new ProcessStartInfo(launcherExe)
     {
-        string path = Path.Combine(root, "customer-connections.txt");
-        const string canary = "do-not-read-or-print-this-canary";
-        File.WriteAllText(path, canary);
-        var stdout = new StringWriter();
-        var stderr = new StringWriter();
-        var oldOut = Console.Out;
-        var oldError = Console.Error;
-        string rules = AircSupport.RenderSessionRules(
-            File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "fixtures", "agent-rules.md")),
-            false, null, "", null);
-        string sessionDirectory = Path.Combine(root, "sessions", Guid.NewGuid().ToString("N"));
-        Directory.CreateDirectory(sessionDirectory);
-        string rulesPath = Path.Combine(sessionDirectory, "rules.md");
-        string launchPath = Path.Combine(sessionDirectory, "launch.json");
-        string logPath = Path.Combine(root, "launcher.log");
-        try
-        {
-            using var locked = new FileStream(path, FileMode.Open, FileAccess.ReadWrite, FileShare.None);
-            Console.SetOut(stdout);
-            Console.SetError(stderr);
-            bool exists = AircSupport.ConnectionFileExists(path);
-            Assert(exists, "connection file existence check failed");
-            string status = AircSupport.ConnectionFileStatus("customer", path, exists);
-            Console.WriteLine(status);
-            AircSupport.WriteSessionMetadata(sessionDirectory, rules, new { connectionFile = path, airc = false });
-            File.WriteAllText(logPath, stdout.ToString());
-        }
-        finally { Console.SetOut(oldOut); Console.SetError(oldError); }
-        var artifacts = new[] { stdout.ToString(), stderr.ToString(), File.ReadAllText(rulesPath),
-            File.ReadAllText(launchPath), File.ReadAllText(logPath) };
-        Assert(artifacts.All(x => !x.Contains(canary, StringComparison.Ordinal)),
-            "connection canary appeared in output or launch artifacts");
+        UseShellExecute = false,
+        RedirectStandardOutput = true,
+        RedirectStandardError = true,
+        RedirectStandardInput = true,
+        WorkingDirectory = cloneRoot,
+    };
+    foreach (string arg in new[]
+    {
+        "--dry-run", "--customer", "fixture", "--project", "SC263182", "--root", cloneRoot,
+        "--passwords-dir", Path.Combine(root, "passwords"), "--no-pause", "--no-fuel-check",
+    })
+        start.ArgumentList.Add(arg);
+    if (!string.IsNullOrWhiteSpace(aircArgs))
+        foreach (string arg in aircArgs.Split(' ', StringSplitOptions.RemoveEmptyEntries)) start.ArgumentList.Add(arg);
+    start.Environment["USERPROFILE"] = home;
+    start.Environment["HOME"] = home;
+    start.Environment["LOCALAPPDATA"] = local;
+    start.Environment["XDG_DATA_HOME"] = local;
+    start.Environment["PATH"] = string.Join(Path.PathSeparator, new[] { ghDir, grokDir, start.Environment["PATH"] ?? "" });
+    start.Environment["FAKE_GH_FAIL_SKILLS"] = failSkillFetch ? "1" : "0";
+    start.Environment["FAKE_GROK_COMMAND"] = launcherExe + " --mcp-catalog";
+    start.Environment["FAKE_AIRC_FIXTURE_DIR"] = Path.Combine(root, "airc");
+    using Process process = Process.Start(start) ?? throw new InvalidOperationException("Could not start published launcher");
+    Task<string> stdoutTask = process.StandardOutput.ReadToEndAsync();
+    Task<string> stderrTask = process.StandardError.ReadToEndAsync();
+    process.WaitForExit();
+    string stdout = stdoutTask.GetAwaiter().GetResult();
+    string stderr = stderrTask.GetAwaiter().GetResult();
+    Assert(process.ExitCode == 0, $"published launcher dry run exited {process.ExitCode}: {stdout}\n{stderr}");
+
+    string sessionsDir = Path.Combine(local, "PriorityAgent", "sessions");
+    string[] sessionDirs = Directory.Exists(sessionsDir) ? Directory.GetDirectories(sessionsDir) : Array.Empty<string>();
+    Assert(sessionDirs.Length == 1, $"expected one real launcher session, found {sessionDirs.Length}");
+    string[] rules = sessionDirs.Select(d => File.ReadAllText(Path.Combine(d, "rules.md"))).ToArray();
+    string[] metadata = sessionDirs.Select(d => File.ReadAllText(Path.Combine(d, "launch.json"))).ToArray();
+    string[] aircFiles = Directory.Exists(Path.Combine(sessionDirs[0], "airc"))
+        ? Directory.GetFiles(Path.Combine(sessionDirs[0], "airc"), "*", SearchOption.AllDirectories)
+        : Array.Empty<string>();
+    string logDir = Path.Combine(local, "PriorityAgent", "logs");
+    string[] logs = Directory.Exists(logDir) ? Directory.GetFiles(logDir).Select(File.ReadAllText).ToArray() : Array.Empty<string>();
+    return new ScenarioResult(stdout, stderr, File.ReadAllBytes(config), rules, metadata, aircFiles, logs);
+}
+
+static void AssertScenarioClean(ScenarioResult result, string canary, string originalConfig, string scenario)
+{
+    Assert(result.Config.SequenceEqual(Encoding.UTF8.GetBytes(originalConfig)),
+        $"{scenario} changed config.toml");
+    string[] artifacts = new[] { result.Stdout, result.Stderr }.Concat(result.SessionRules)
+        .Concat(result.SessionMetadata).Concat(result.Logs).ToArray();
+    Assert(artifacts.All(x => !x.Contains(canary, StringComparison.Ordinal)),
+        $"{scenario} exposed the connection-file canary in output or launcher artifacts");
+}
+
+static void CopyFakeCli(string sourceDir, string destinationDir, string exeName)
+{
+    Directory.CreateDirectory(destinationDir);
+    foreach (string file in Directory.GetFiles(sourceDir))
+    {
+        string name = Path.GetFileName(file);
+        if (name.EndsWith(".exe", StringComparison.OrdinalIgnoreCase) || name.Equals("FakeCli", StringComparison.Ordinal))
+            name = exeName;
+        string destination = Path.Combine(destinationDir, name);
+        File.Copy(file, destination, true);
+        if (!OperatingSystem.IsWindows() && (name.EndsWith(".exe", StringComparison.OrdinalIgnoreCase) || name == exeName))
+            File.SetUnixFileMode(destination, UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute
+                | UnixFileMode.GroupRead | UnixFileMode.GroupExecute | UnixFileMode.OtherRead | UnixFileMode.OtherExecute);
     }
-    finally { Directory.Delete(root, true); }
+}
+
+static void CopyGitExecutable(string destinationDir)
+{
+    if (OperatingSystem.IsWindows()) return;
+    foreach (string directory in (Environment.GetEnvironmentVariable("PATH") ?? "").Split(Path.PathSeparator))
+    {
+        string source = Path.Combine(directory.Trim('"'), "git");
+        if (!File.Exists(source)) continue;
+        string destination = Path.Combine(destinationDir, "git.exe");
+        File.Copy(source, destination, true);
+        if (!OperatingSystem.IsWindows())
+            File.SetUnixFileMode(destination, UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute
+                | UnixFileMode.GroupRead | UnixFileMode.GroupExecute | UnixFileMode.OtherRead | UnixFileMode.OtherExecute);
+        return;
+    }
+    throw new InvalidOperationException("Could not locate git for launcher integration test");
+}
+
+static void CreateClone(string root, string owner, string repo, string clonePath, Dictionary<string, string> files)
+{
+    string seed = Path.Combine(root, "seed", owner, repo);
+    string remote = Path.Combine(root, "remote", owner, repo + ".git");
+    Directory.CreateDirectory(seed);
+    Directory.CreateDirectory(Path.GetDirectoryName(remote)!);
+    RunGit(root, "init", "--bare", remote);
+    RunGit(seed, "init", "-b", "main");
+    RunGit(seed, "config", "user.email", "test@example.invalid");
+    RunGit(seed, "config", "user.name", "Integration Test");
+    foreach ((string path, string content) in files)
+    {
+        string target = Path.Combine(seed, path.Replace('/', Path.DirectorySeparatorChar));
+        Directory.CreateDirectory(Path.GetDirectoryName(target)!);
+        File.WriteAllText(target, content);
+    }
+    RunGit(seed, "add", ".");
+    RunGit(seed, "commit", "-m", "fixture");
+    RunGit(seed, "remote", "add", "origin", remote);
+    RunGit(seed, "push", "-u", "origin", "main");
+    RunGit(root, "--git-dir", remote, "symbolic-ref", "HEAD", "refs/heads/main");
+    Directory.CreateDirectory(Path.GetDirectoryName(clonePath)!);
+    RunGit(root, "clone", remote, clonePath);
+}
+
+static void RunGit(string cwd, params string[] args)
+{
+    var start = new ProcessStartInfo("git")
+    {
+        WorkingDirectory = cwd,
+        RedirectStandardOutput = true,
+        RedirectStandardError = true,
+    };
+    foreach (string arg in args) start.ArgumentList.Add(arg);
+    using Process process = Process.Start(start) ?? throw new InvalidOperationException("Could not start git");
+    string stdout = process.StandardOutput.ReadToEnd();
+    string stderr = process.StandardError.ReadToEnd();
+    process.WaitForExit();
+    if (process.ExitCode != 0) throw new InvalidOperationException($"git {string.Join(' ', args)} failed: {stdout}\n{stderr}");
 }
 
 static string NewTemp()
@@ -272,3 +427,6 @@ static void Assert(bool condition, string message)
 {
     if (!condition) throw new InvalidOperationException(message);
 }
+
+sealed record ScenarioResult(string Stdout, string Stderr, byte[] Config, string[] SessionRules,
+    string[] SessionMetadata, string[] AircFiles, string[] Logs);

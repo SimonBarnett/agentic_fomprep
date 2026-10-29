@@ -38,7 +38,12 @@ jobs:
           dotnet-version: 8.0.x
       - name: Publish self-contained Windows executable
         run: dotnet publish launcher/PriorityAgent.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -o launcher/out
+      - name: Publish fake CLI for launcher integration tests
+        run: dotnet publish launcher.Tests/FakeCli/FakeCli.csproj -c Release -r win-x64 -o launcher.Tests/FakeCli/out
       - name: Run launcher acceptance tests
+        env:
+          PRIORITY_AGENT_TEST_EXE: ${{ github.workspace }}/launcher/out/PriorityAgent.exe
+          PRIORITY_AGENT_TEST_CLI_DIR: ${{ github.workspace }}/launcher.Tests/FakeCli/out
         run: dotnet run --project launcher.Tests/PriorityAgent.Tests.csproj -c Release
       - name: Check executable help
         shell: pwsh
@@ -55,7 +60,7 @@ jobs:
           path: launcher/out/PriorityAgent.exe
           if-no-files-found: error
   release:
-    if: github.event_name == 'workflow_dispatch' || startsWith(github.ref, 'refs/tags/launcher-v')
+    if: (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main') || startsWith(github.ref, 'refs/tags/launcher-v')
     needs: validate
     runs-on: windows-latest
     permissions:
@@ -77,6 +82,7 @@ jobs:
         shell: pwsh
         env:
           GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
           INPUT_TAG: ${{ inputs.tag }}
         run: |
           if ($env:GITHUB_REF_TYPE -eq 'tag') {

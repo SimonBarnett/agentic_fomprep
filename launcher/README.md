@@ -153,8 +153,11 @@ cd launcher
 .\build.ps1 -Install                                      # Windows: build + copy to D:\tools\PriorityAgent + desktop shortcut
 ```
 
-The `Launcher release` workflow runs on `launcher-v*` tags or manual dispatch, builds the executable, runs the
-launcher tests, and publishes a GitHub **pre-release** with `PriorityAgent.exe` and its `.sha256` file. Download
+The Windows workflow also runs the published executable through dry-run integration scenarios with isolated
+profiles and fake GitHub/Grok CLIs, checking config preservation, session-only airc files, and connection-file
+canary handling. The `Launcher release` workflow runs on launcher pull requests and `main` pushes for validation;
+it publishes a GitHub **pre-release** with `PriorityAgent.exe` and its `.sha256` file for `launcher-v*` tags or a
+manual dispatch from `main`. Download
 it from [GitHub Releases](https://github.com/SimonBarnett/agentic_fomprep/releases) and verify the checksum
 before use. Releases remain pre-release until separately approved.
 

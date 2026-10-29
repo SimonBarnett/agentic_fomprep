@@ -9,8 +9,8 @@ public sealed record AircSessionFiles(string CommandsSkill, string ArchitectureS
 public static class AircSupport
 {
     public const int MaxWindowsCommandLineLength = 32_000;
-    static readonly Regex ConsoleNick = new(@"^[A-Za-z0-9][A-Za-z0-9_-]*_console$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
-    static readonly Regex MachineId = new(@"^[A-Za-z0-9][A-Za-z0-9_-]*$", RegexOptions.CultureInvariant);
+    static readonly Regex ConsoleNick = new(@"\A[A-Za-z0-9][A-Za-z0-9_-]*_console\z", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+    static readonly Regex MachineId = new(@"\A[A-Za-z0-9][A-Za-z0-9_-]*\z", RegexOptions.CultureInvariant);
 
     public static AircConfig LoadConfig(string? projectDir, string? customerDir)
     {
@@ -196,7 +196,8 @@ public static class AircSupport
     }
 
     public static string RenderSessionRules(
-        string template, bool enabled, string? console, string source, AircSessionFiles? files)
+        string template, bool enabled, string? console, string source, AircSessionFiles? files,
+        bool consoleVerified = true, string consoleSource = "")
     {
         string section = "";
         if (enabled)
@@ -209,10 +210,13 @@ public static class AircSupport
 ## Airc session-only context
 
 - Selected target: `{{AIRC_CONSOLE}}` on channel `#{{AIRC_MACHINE}}`. Send remote shell PRIVMSGs only to this selected console; do not address any other console.
-- Console machine id: `{{AIRC_MACHINE}}`. The console selection came from a read-only IRC NAMES lookup.
+- Console machine id: `{{AIRC_MACHINE}}`. {{AIRC_VERIFICATION}}
 - Source: SimonBarnett/bobiverse `{{AIRC_SOURCE}}`. Troubleshooting is not preloaded; read `{{AIRC_TROUBLESHOOTING}}` only if the console misbehaves.
 - Read these session-only airc files before working: `{{AIRC_COMMANDS_SKILL}}`, `{{AIRC_ARCHITECTURE_SKILL}}`, and `{{AIRC_DCC_GUIDE}}`.
 """.Replace("{{AIRC_SOURCE}}", source, StringComparison.Ordinal)
+                .Replace("{{AIRC_VERIFICATION}}", consoleVerified
+                    ? "The console selection came from a read-only IRC NAMES lookup."
+                    : $"The console was selected from {consoleSource} and was not verified as connected.", StringComparison.Ordinal)
                 .Replace("{{AIRC_TROUBLESHOOTING}}", troubleshooting, StringComparison.Ordinal)
                 .Replace("{{AIRC_COMMANDS_SKILL}}", files.CommandsSkill, StringComparison.Ordinal)
                 .Replace("{{AIRC_ARCHITECTURE_SKILL}}", files.ArchitectureSkill, StringComparison.Ordinal)

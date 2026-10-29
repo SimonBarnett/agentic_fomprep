@@ -186,6 +186,8 @@ static class Program
         Console.WriteLine($"airc: {(airc ? "yes" : "no")} (from {aircDecisionSource})");
         Log($"airc decision: {(airc ? "yes" : "no")} (from {aircDecisionSource})");
         string? aircConsole = null;
+        bool aircConsoleVerified = true;
+        string aircConsoleSource = "";
         if (airc)
         {
             AircConsoleDiscoveryResult discovery = DiscoverConnectedAircConsoles();
@@ -198,7 +200,12 @@ static class Program
                 Console.WriteLine("airc: no (continuing without airc)");
             }
             else if (discoveryError.StartsWith("console not verified:", StringComparison.Ordinal))
+            {
+                aircConsoleVerified = false;
+                aircConsoleSource = AircConsoleArg != null ? "--airc-console"
+                    : aircConfig.ConsoleSource ?? "configuration";
                 Info($"airc: using {aircConsole} ({discoveryError})");
+            }
             else Console.WriteLine($"airc: using {aircConsole}");
         }
 
@@ -251,7 +258,7 @@ static class Program
         if (airc && aircConsole != null)
             aircFiles = AircSupport.WriteSessionFiles(sessionDir, aircSkills, ReadResource("airc-dcc.md"), aircConsole);
         rules = AircSupport.RenderSessionRules(rules, airc && aircConsole != null, aircConsole,
-            aircSource, aircFiles);
+            aircSource, aircFiles, aircConsoleVerified, aircConsoleSource);
         foreach (var kv in vars) rules = rules.Replace("{{" + kv.Key + "}}", kv.Value);
         Info($"rules: {rulesSrc} ({rules.Length} chars)");
         if (cust != null)

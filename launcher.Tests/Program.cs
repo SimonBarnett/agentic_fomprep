@@ -308,6 +308,8 @@ static ScenarioResult RunLauncherScenario(string root, string launcherExe, strin
     start.Environment["LOCALAPPDATA"] = local;
     start.Environment["XDG_DATA_HOME"] = local;
     start.Environment["PATH"] = string.Join(Path.PathSeparator, new[] { ghDir, grokDir, start.Environment["PATH"] ?? "" });
+    start.Environment["PRIORITY_AGENT_TEST_GH"] = Path.Combine(ghDir, "gh.exe");
+    start.Environment["PRIORITY_AGENT_TEST_GROK"] = Path.Combine(grokDir, "grok.exe");
     start.Environment["FAKE_GH_FAIL_SKILLS"] = failSkillFetch ? "1" : "0";
     start.Environment["FAKE_GROK_COMMAND"] = launcherExe + " --mcp-catalog";
     start.Environment["FAKE_AIRC_FIXTURE_DIR"] = Path.Combine(root, "airc");
@@ -398,6 +400,7 @@ static void CreateClone(string root, string owner, string repo, string clonePath
     RunGit(root, "--git-dir", remote, "symbolic-ref", "HEAD", "refs/heads/main");
     Directory.CreateDirectory(Path.GetDirectoryName(clonePath)!);
     RunGit(root, "clone", remote, clonePath);
+    RunGit(clonePath, "remote", "set-url", "origin", Path.GetFullPath(remote).Replace('\\', '/'));
 }
 
 static void RunGit(string cwd, params string[] args)

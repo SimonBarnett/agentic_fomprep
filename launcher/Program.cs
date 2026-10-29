@@ -86,9 +86,12 @@ static class Program
         if (AircConsoleArg != null) logArgs = logArgs.Replace(AircConsoleArg, "<airc-console>", StringComparison.OrdinalIgnoreCase);
         Log($"=== start args: {logArgs}");
 
-        string? git = Which("git.exe", @"C:\Program Files\Git\cmd\git.exe", @"D:\Program Files\Git\cmd\git.exe");
-        string? gh = Which("gh.exe", @"C:\Program Files\GitHub CLI\gh.exe", @"D:\Program Files\GitHub CLI\gh.exe");
-        string? grok = Which("grok.exe", Path.Combine(Home, ".grok", "bin", "grok.exe"));
+        string? git = Which("git.exe", Environment.GetEnvironmentVariable("PRIORITY_AGENT_TEST_GIT"),
+            @"C:\Program Files\Git\cmd\git.exe", @"D:\Program Files\Git\cmd\git.exe");
+        string? gh = Which("gh.exe", Environment.GetEnvironmentVariable("PRIORITY_AGENT_TEST_GH"),
+            @"C:\Program Files\GitHub CLI\gh.exe", @"D:\Program Files\GitHub CLI\gh.exe");
+        string? grok = Which("grok.exe", Environment.GetEnvironmentVariable("PRIORITY_AGENT_TEST_GROK"),
+            Path.Combine(Home, ".grok", "bin", "grok.exe"));
         Info($"git : {git ?? "MISSING"}\ngh  : {gh ?? "MISSING"}\ngrok: {grok ?? "MISSING"}");
         if (git == null || gh == null) { Err("git and gh are required."); Pause(); return 1; }
         Git = git; Gh = gh;
@@ -747,8 +750,9 @@ static class Program
     }
 
     // ------------------------------------------------------------------ helpers
-    static string? Which(string exe, params string[] known)
+    static string? Which(string exe, string? testOverride, params string[] known)
     {
+        if (!string.IsNullOrWhiteSpace(testOverride) && File.Exists(testOverride)) return testOverride;
         foreach (var k in known) if (File.Exists(k)) return k;
         foreach (var d in (Environment.GetEnvironmentVariable("PATH") ?? "").Split(Path.PathSeparator))
         {

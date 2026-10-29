@@ -36,10 +36,11 @@ with the right context.
      an existing clone in `D:\ai`, `C:\ai` or `D:\repos` is reused.
    - **Project / service call**: one of the customer repo's top-level folders, skipping dot-folders.
      cwd is that folder.
-5. It asks whether this session needs airc, then uses a read-only IRC `NAMES` lookup on `#wonderland`
-   and the reported machine shop channels to list currently connected `*_console` nicks. A configured
-   `airc_console` is preselected when connected. The launcher never sends a PRIVMSG during discovery.
-   If no console can be found, it offers to continue without airc.
+5. It asks whether this session needs airc. A credential-free live `*_console` listing is not
+   available today (irc.ntsa.uk requires auth; the Bob report lists fleet machines only). A valid
+   configured or `--airc-console` nick is trusted with a "console not verified" note. With no nick
+   configured, the launcher warns and offers to continue without airc. It never sends a PRIVMSG
+   during discovery.
 6. **New customer / new project** never creates anything. It prints `Ask Haitch: new customer repo for X`
    or `Ask Haitch: new project folder Y in <repo>`, copies the line to the clipboard and exits. Haitch creates it.
 7. It checks fuel like `ce-dayworks/scripts/Start-DayWorks.ps1`.

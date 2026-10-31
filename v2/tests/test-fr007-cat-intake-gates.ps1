@@ -41,7 +41,7 @@ if (-not (Test-Path -LiteralPath $agents)) {
     $stripped = $at -replace 'SimonBarnett/agentic_fomprep', 'REMOVED_HOME_REPO_FOR_NEGATIVE'
     $negOk = $true
     $negWhy = 'ok'
-    if ($stripped -notmatch 'https://irc\.ntsa\.uk/bob/v1/intake') { $negOk = $false; $negWhy = 'missing intake URL' }
+    if ($stripped -notmatch 'https://bob\.ntsa\.uk/bob/v1/intake') { $negOk = $false; $negWhy = 'missing intake URL' }
     if ($stripped -notmatch 'SimonBarnett/agentic_fomprep') { $negOk = $false; $negWhy = 'missing home repo' }
     if ($negOk) {
         $fail += 'negative check did not fail after stripping SimonBarnett/agentic_fomprep from AGENTS'

@@ -83,7 +83,7 @@ When `gh` push/PR is blocked, or when filing issue|fr|skill|harvest gaps without
 a ready patch, POST to Bobiverse intake in the **same turn** (no GitHub account
 required; offline payloads queue and retry):
 
-`POST https://irc.ntsa.uk/bob/v1/intake` with payload `repo=SimonBarnett/agentic_fomprep`
+`POST https://bob.ntsa.uk/bob/v1/intake` with payload `repo=SimonBarnett/agentic_fomprep`
 (and `kind` = `issue` | `fr` | `skill` | `harvest`).
 
 Repo-local wrappers (default repo this product; scripts land in FR-004/FR-005):

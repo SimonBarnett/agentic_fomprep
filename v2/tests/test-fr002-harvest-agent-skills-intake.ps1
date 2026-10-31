@@ -12,8 +12,8 @@ $fail = @()
 if ($text -notmatch '(?m)^github:\s*https://github\.com/SimonBarnett/agentic_fomprep\s*$') {
     $fail += 'frontmatter github: must be https://github.com/SimonBarnett/agentic_fomprep'
 }
-if ($text -notmatch 'https://irc\.ntsa\.uk/bob/v1/intake') {
-    $fail += 'skill missing Bobiverse intake URL https://irc.ntsa.uk/bob/v1/intake'
+if ($text -notmatch 'https://bob\.ntsa\.uk/bob/v1/intake') {
+    $fail += 'skill missing Bobiverse intake URL https://bob.ntsa.uk/bob/v1/intake'
 }
 if ($text -notmatch 'SimonBarnett/agentic_fomprep') {
     $fail += 'skill missing SimonBarnett/agentic_fomprep as intake repo'

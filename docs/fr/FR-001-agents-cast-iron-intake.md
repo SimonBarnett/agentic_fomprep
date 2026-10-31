@@ -9,7 +9,7 @@ Root `AGENTS.md` opens with CAST IRON harvest/file rules that POST to Bobiverse 
 
 ## Deliverables
 
-- Top-of-file CAST IRON block (a-search pattern) naming `https://irc.ntsa.uk/bob/v1/intake`.
+- Top-of-file CAST IRON block (a-search pattern) naming `https://bob.ntsa.uk/bob/v1/intake`.
 - Example command: `tools\Report-FomprepIntakeIssue.ps1 -Kind issue|fr|skill|harvest -Title "..." -Body "..."` (default repo this product).
 - Session close: `tools\Invoke-FomprepHarvest.ps1 -Summary ... -Lesson ...` then `-Flush`.
 - Never print/store secrets in filings.

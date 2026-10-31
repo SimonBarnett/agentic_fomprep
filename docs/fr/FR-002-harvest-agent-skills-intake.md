@@ -10,7 +10,7 @@ Foundation skill `.grok/skills/harvest-agent-skills/SKILL.md` makes Bobiverse in
 ## Deliverables
 
 - Keep frontmatter `github: https://github.com/SimonBarnett/agentic_fomprep`.
-- Add CAST IRON intake subsection: POST `https://irc.ntsa.uk/bob/v1/intake` with `repo=SimonBarnett/agentic_fomprep`.
+- Add CAST IRON intake subsection: POST `https://bob.ntsa.uk/bob/v1/intake` with `repo=SimonBarnett/agentic_fomprep`.
 - Point at `tools/Report-FomprepIntakeIssue.ps1` and `tools/Invoke-FomprepHarvest.ps1`.
 - Keep branch+PR as preferred path for playbook landings; intake is mandatory when PR cannot open and for issue/FR gaps.
 - Wrong-book table unchanged for IRC/fleet/MUD homes.

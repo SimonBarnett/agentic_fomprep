@@ -11,7 +11,7 @@ $src = Get-Content -LiteralPath $script -Raw -Encoding UTF8
 if ($src -notmatch "SimonBarnett/agentic_fomprep") {
     $fail += 'script source missing default repo SimonBarnett/agentic_fomprep'
 }
-if ($src -notmatch 'https://irc\.ntsa\.uk/bob/v1/intake') {
+if ($src -notmatch 'https://bob\.ntsa\.uk/bob/v1/intake') {
     $fail += 'script source missing intake URL'
 }
 if ($src -notmatch '\[switch\]\$Flush') {

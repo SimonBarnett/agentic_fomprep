@@ -4,7 +4,7 @@
 
 .DESCRIPTION
   Builds one harvest payload from -Summary / -Lesson and POSTs to
-  https://irc.ntsa.uk/bob/v1/intake with default -Repo SimonBarnett/agentic_fomprep.
+  https://bob.ntsa.uk/bob/v1/intake with default -Repo SimonBarnett/agentic_fomprep.
   Offline or failing POSTs land under harvest-outbox (repo + ~/.grok/bob) and are
   resent by -Flush (same idempotency_key). Refuses credential-looking text.
 
@@ -23,7 +23,7 @@ param(
     [string[]]$Lesson = @(),
     [string]$Repo = 'SimonBarnett/agentic_fomprep',
     [string]$Book = 'harvest-priority-skills',
-    [string]$IntakeUrl = 'https://irc.ntsa.uk/bob/v1/intake',
+    [string]$IntakeUrl = 'https://bob.ntsa.uk/bob/v1/intake',
     [string]$Machine = '',
     [string]$Agent = 'Invoke-FomprepHarvest',
     [string]$OutboxDir = '',

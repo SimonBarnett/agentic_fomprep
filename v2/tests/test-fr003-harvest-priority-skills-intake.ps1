@@ -9,8 +9,8 @@ if (-not (Test-Path -LiteralPath $skill)) { throw "missing $skill" }
 $text = Get-Content -LiteralPath $skill -Raw -Encoding UTF8
 $fail = @()
 
-if ($text -notmatch 'https://irc\.ntsa\.uk/bob/v1/intake') {
-    $fail += 'skill missing Bobiverse intake URL https://irc.ntsa.uk/bob/v1/intake'
+if ($text -notmatch 'https://bob\.ntsa\.uk/bob/v1/intake') {
+    $fail += 'skill missing Bobiverse intake URL https://bob.ntsa.uk/bob/v1/intake'
 }
 if ($text -notmatch 'SimonBarnett/agentic_fomprep') {
     $fail += 'skill missing SimonBarnett/agentic_fomprep'

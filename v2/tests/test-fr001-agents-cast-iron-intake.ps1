@@ -9,8 +9,8 @@ if (-not (Test-Path -LiteralPath $agents)) { throw "missing AGENTS.md at $agents
 $text = Get-Content -LiteralPath $agents -Raw -Encoding UTF8
 $fail = @()
 
-if ($text -notmatch 'https://irc\.ntsa\.uk/bob/v1/intake') {
-    $fail += 'AGENTS.md missing Bobiverse intake URL https://irc.ntsa.uk/bob/v1/intake'
+if ($text -notmatch 'https://bob\.ntsa\.uk/bob/v1/intake') {
+    $fail += 'AGENTS.md missing Bobiverse intake URL https://bob.ntsa.uk/bob/v1/intake'
 }
 if ($text -notmatch 'Report-FomprepIntakeIssue\.ps1') {
     $fail += 'AGENTS.md missing Report-FomprepIntakeIssue.ps1 example'

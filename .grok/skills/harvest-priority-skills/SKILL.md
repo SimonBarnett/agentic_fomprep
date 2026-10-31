@@ -51,7 +51,7 @@ When push/PR fails, or when filing issue|fr|skill|harvest gaps without a ready
 patch, POST to Bobiverse intake in the **same turn** before idle (no GitHub
 account required; offline payloads queue and retry):
 
-`POST https://irc.ntsa.uk/bob/v1/intake` with payload
+`POST https://bob.ntsa.uk/bob/v1/intake` with payload
 `repo=SimonBarnett/agentic_fomprep` (and `kind` = `issue` | `fr` | `skill` |
 `harvest`). Always pass an explicit `-Repo SimonBarnett/agentic_fomprep` when
 using shared Bobiverse helpers (never omit `-Repo` so the filing lands on

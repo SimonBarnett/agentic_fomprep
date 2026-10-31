@@ -9,7 +9,7 @@ Ship a repo-local reporter that POSTs to Bobiverse intake with default `-Repo Si
 
 ## Deliverables
 
-- `tools/Report-FomprepIntakeIssue.ps1` (PS 5.1): params `-Kind`, `-Title`, `-Body`, optional `-Repo` (default `SimonBarnett/agentic_fomprep`), optional `-IntakeUrl` default `https://irc.ntsa.uk/bob/v1/intake`.
+- `tools/Report-FomprepIntakeIssue.ps1` (PS 5.1): params `-Kind`, `-Title`, `-Body`, optional `-Repo` (default `SimonBarnett/agentic_fomprep`), optional `-IntakeUrl` default `https://bob.ntsa.uk/bob/v1/intake`.
 - Offline queue under repo or `~/.grok/bob/report-outbox` with idempotency_key; secret scan refuse.
 - Optional: if `BOB_INSTALL_ROOT`/`C:\ai\bob\scripts\Report-BobiverseIntakeIssue.ps1` exists, may delegate with forced `-Repo` default — self-contained POST must still work without bob install (skillbook referral).
 - ASCII-safe; no secrets in examples.

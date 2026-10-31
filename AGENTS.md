@@ -4,7 +4,7 @@
 > 1. ALWAYS harvest skills you learn and file EVERY issue / FR / bug / gap you find in the
 >    SAME turn. Never leave a finding unfiled, never "note it for later", never skip it because it is small.
 > 2. File with the Bobiverse intake webhook (no secret or login needed;
->    `POST https://irc.ntsa.uk/bob/v1/intake`; offline it is queued locally and retried):
+>    `POST https://bob.ntsa.uk/bob/v1/intake`; offline it is queued locally and retried):
 >    `tools\Report-FomprepIntakeIssue.ps1 -Kind issue|fr|skill|harvest -Title "..." -Body "..."`
 >    (default repo is this product: `SimonBarnett/agentic_fomprep`). When calling the shared
 >    Bobiverse helpers instead, always pass an explicit `-Repo SimonBarnett/agentic_fomprep`

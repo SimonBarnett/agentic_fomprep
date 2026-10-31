@@ -73,3 +73,13 @@ Expanded `priority-uat-wcf` (skill-source + catalog meta **1.2.0**) from CE Day 
 - Rules: draft-first approval for live writes; header copied from recent PQs (expiry +30d, REFERENCE max 12); one `CONS-HR-MED` line per step, qty = 2x internal, `ZEMG_INTQUANT` = internal, prep time spread; never send PRICE (triggers set it, read it back); lines inserted at LINE 1 and LINE not settable -> post in reverse; per-line remarks (Outcome / Forms/columns, `[new]` columns, no template headings, replace not append, plain apostrophes not `&#x27;`); quote Note + standard terms; duplicate checks; full read-back of lines and totals.
 - Source session anonymised (customer, request and project replaced).
 
+
+## 2026-10-31 - Report form zooms + API Licence + portable prep
+
+- New skill-source `docs/skill-sources/programming/REPORT_FORM_ZOOMS.md` (ZOOMCOLUMNS2 FORMEXEC/COLNAME/ZOOMEXEC/JOINCOL; hide id; show PARTDES-style descriptions; prepare after change).
+- New skill-source `docs/skill-sources/programming/API_LICENCE_WCF.md` (USERSB.REST = API License for formStart; prefer app-pool recycle over iisreset).
+- Expanded `PREPARE_PROCEDURE.md`: portable `run-repprep-via-exec.mjs` path for airc/customer boxes; API Licence cross-link; Priority root discovery.
+- Catalog `priority-report-form-zooms` (meta 1.0.0), `priority-api-licence-wcf` (meta 1.0.0); bumped `priority-procedure-prep` to **1.1.0**.
+- Synced via `tools/Sync-PriorityGrokSkills.ps1`.
+- Source: anonymised HR Smith Dev session (assembly-tree report links + prepare kit); no customer hosts/secrets in skill bodies.
+

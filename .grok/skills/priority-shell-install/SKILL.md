@@ -86,3 +86,11 @@ Populate `errors[]` in order, whatever WP0 finds exists: SDK messages, upgrade/r
 ## Not this catalog
 
 Do not call `install_shell` on `mcp-priority.ntsa.uk`. That host has no ERP SQL. Write runner files from `get_runner_files` (or use the Grok plugin `priority-shell-install`) and run them where WCF and dictionary SQL are reachable.
+
+## Related Medatech lessons (lazy)
+
+For install/SSL/bin_95/ops prose from the Medatech network dump, resolve via **priority-skill-dag** (do not load the whole corpus):
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File tools\priority-skill-dag\Resolve-SkillDag.ps1 -Query "<intent>"
+```

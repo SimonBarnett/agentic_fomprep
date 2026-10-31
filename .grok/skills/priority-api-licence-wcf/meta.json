@@ -1,0 +1,6 @@
+{
+  "name": "priority-api-licence-wcf",
+  "title": "Priority API Licence for WCF formStart",
+  "description": "USERSB.REST is the API License flag required for priority-web-sdk formStart (including EXEC / REPPREPDIRECT2). Diagnose the Blocker and flip REST on Dev/test only when approved.",
+  "version": "1.0.0"
+}

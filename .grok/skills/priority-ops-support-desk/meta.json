@@ -1,0 +1,6 @@
+{
+    "title":  "Priority support desk / BPM service calls",
+    "description":  "Medatech-network topic skill for support-desk. Uses priority-skill-dag lazy load.",
+    "name":  "priority-ops-support-desk",
+    "version":  "1.0.0"
+}

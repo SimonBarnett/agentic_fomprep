@@ -13,6 +13,9 @@ var checks = new List<(string Name, Action Run)>
     ("realistic airc skills stay off the command line", TestCommandLineSize),
     ("published launcher dry runs preserve config and protect connection canaries", TestLauncherDryRuns),
     ("README documents unverified-console fallback, not live NAMES", TestReadmeAircDiscovery),
+    ("dirty clone plus stub uses the dirty clone", TestDirtyClonePreferredOverStub),
+    ("dirty clone only is usable", TestDirtyCloneOnly),
+    ("no real clone lists every rejected candidate", TestNoRealCloneFatalListsCandidates),
 };
 
 int failures = 0;
@@ -217,6 +220,46 @@ static void TestReadmeAircDiscovery()
         "README must document the unverified configured-console fallback");
     Assert(!readme.Contains("then uses a read-only IRC `NAMES` lookup", StringComparison.Ordinal),
         "README numbered flow still claims a live NAMES picker that Discover() cannot perform");
+    Assert(readme.Contains("uncommitted changes is still usable", StringComparison.Ordinal),
+        "README must say a dirty agentic_fomprep clone is usable");
+}
+
+static void TestDirtyClonePreferredOverStub()
+{
+    var sightings = new[]
+    {
+        new CloneSighting(@"D:\ai\agentic_fomprep", CloneKind.Stub),
+        new CloneSighting(@"C:\ai\agentic_fomprep", CloneKind.Dirty),
+    };
+    string? chosen = CloneResolve.SelectUsable(sightings, out string? reason);
+    Assert(chosen == @"C:\ai\agentic_fomprep", "dirty real clone should win over an empty stub");
+    Assert(reason != null && reason.Contains("dirty", StringComparison.OrdinalIgnoreCase), "reason should say dirty / skip pull");
+}
+
+static void TestDirtyCloneOnly()
+{
+    var sightings = new[] { new CloneSighting(@"C:\ai\agentic_fomprep", CloneKind.Dirty) };
+    string? chosen = CloneResolve.SelectUsable(sightings, out string? reason);
+    Assert(chosen == @"C:\ai\agentic_fomprep", "lone dirty clone must be usable");
+    Assert(reason != null && reason.Contains("skip pull", StringComparison.OrdinalIgnoreCase), "dirty clone must skip pull");
+}
+
+static void TestNoRealCloneFatalListsCandidates()
+{
+    var sightings = new[]
+    {
+        new CloneSighting(@"D:\ai\agentic_fomprep", CloneKind.Stub),
+        new CloneSighting(@"C:\ai\agentic_fomprep", CloneKind.Missing),
+        new CloneSighting(@"D:\repos\agentic_fomprep", CloneKind.WrongOrigin),
+    };
+    Assert(CloneResolve.SelectUsable(sightings, out _) == null, "no usable clone should be selected");
+    string fatal = CloneResolve.FatalUnavailable("SimonBarnett/agentic_fomprep", sightings);
+    Assert(fatal.Contains("empty stub", StringComparison.OrdinalIgnoreCase)
+        && fatal.Contains("missing", StringComparison.OrdinalIgnoreCase)
+        && fatal.Contains("origin is not this repo", StringComparison.OrdinalIgnoreCase)
+        && fatal.Contains("D:\\ai\\agentic_fomprep", StringComparison.Ordinal)
+        && fatal.Contains("C:\\ai\\agentic_fomprep", StringComparison.Ordinal),
+        "FATAL must name every candidate and why it was rejected");
 }
 
 static void TestDiscoveryFailure()

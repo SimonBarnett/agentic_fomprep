@@ -1,0 +1,6 @@
+{
+    "title":  "Priority API / portal / EDI / sync",
+    "description":  "Medatech-network topic skill for integrations. Uses priority-skill-dag lazy load.",
+    "name":  "priority-ops-integrations",
+    "version":  "1.0.0"
+}

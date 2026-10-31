@@ -18,15 +18,18 @@ Grab this skill from catalog MCP `https://mcp-priority.ntsa.uk/mcp` (`get_skill`
 
 Repo runner (CE DEV1 pack): `src\Prepare-NamedProcedure.ps1` + `src\sdk\run-repprep-via-exec.mjs`.
 
+Portable path (customer / airc box): same `run-repprep-via-exec.mjs` with `--name --url --company --user` and env `PRIORITY_SDK_PASSWORD`; SQL-gate `EXECPREPLOCK` + `PrepDir\d{T$EXEC}.prp` yourself. Do not retarget frozen CE `AllowedComputer` pins.
+
 ## Hard rules
 
 1. Never report prepared unless `ok=true` **and** `UPD='N'` **and** `d{T$EXEC}.prp` mtime advanced on **that instance**.
 2. Never `UPDATE … SET UPD='N'` to fake success.
 3. Never invent `webBaseUrl`, SQL instance, or company. Only ids from the user’s allowlist.
-4. Never log the web password. CredMan only.
+4. Never log the web password. CredMan or a local cred file outside git only.
 5. One name per call. SDK toast alone is not success.
 6. If `instances.json` is missing or empty: **stop** and tell the user to fill it.
 7. Do **not** use Named Form Prep (`EFORM` / `FORMPREPDRCT2`) for `TYPE=P` — it returns form-not-found.
+8. `formStart(EXEC)` needs **API Licence** (`USERSB.REST='Y'`) — see **priority-api-licence-wcf**.
 
 ## Allowlist
 
@@ -69,4 +72,6 @@ Bare `procStart(REPPREPDIRECT2)` without the EXEC row often cannot fill the FILE
 ## Related
 
 - Forms: **priority-formprep** (`FORMPREPDRCT2`)
+- API Licence: **priority-api-licence-wcf** / `API_LICENCE_WCF.md`
+- Report form links: **priority-report-form-zooms** / `REPORT_FORM_ZOOMS.md`
 - Shell AFTERPREP: **priority-version-revision-discipline** / **priority-shell-compile**

@@ -85,6 +85,23 @@ until the user allowlists an instance for this session.
    billing query (what shipped, PRs/issues, hours day, Bob hours entry id).
    Never put secrets in `log.md`. Skill: `hours-log-work-session`.
 
+## Merge on green (FR #247)
+
+`allow_auto_merge` is on, but `gh pr merge --auto` still needs **branch protection
+on `main`**. Without it GraphQL returns `enablePullRequestAutoMerge` /
+`Protected branch rules not configured for this branch`.
+
+Live rule: `main` has classic protection (PRs required, 0 approving reviews, no
+required status checks, no force-push/delete). That is enough for `--auto`.
+Required check is **not** `validate` (Launcher release only runs on launcher
+paths; requiring it would stall every other PR).
+
+MRB: after PASS, `gh pr merge <n> --auto --merge`. If GraphQL still refuses,
+comment `merge-on-green pending` and stop (owner merge). Do not poll CI.
+
+Replay / assert: `tools/Assert-FomprepMainAutoMerge.ps1`. Details:
+`docs/merge-on-green.md`.
+
 ## Default tools in this repo
 
 | Task | Entry |

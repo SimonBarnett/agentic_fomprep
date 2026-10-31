@@ -1,0 +1,6 @@
+{
+  "name": "priority-report-form-zooms",
+  "title": "Priority report form zooms (ZOOMCOLUMNS2)",
+  "description": "Link report name columns to Priority forms via ZOOMCOLUMNS2 (FORMEXEC/COLNAME/ZOOMEXEC/JOINCOL). Hide id columns; show PARTDES-style descriptions; prepare after change.",
+  "version": "1.0.0"
+}

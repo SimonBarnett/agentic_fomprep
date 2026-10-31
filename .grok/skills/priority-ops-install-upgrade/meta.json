@@ -1,0 +1,6 @@
+{
+    "title":  "Priority install / upgrade / refresh",
+    "description":  "Medatech-network topic skill for install-upgrade. Uses priority-skill-dag lazy load.",
+    "name":  "priority-ops-install-upgrade",
+    "version":  "1.0.0"
+}

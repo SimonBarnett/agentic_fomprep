@@ -1,0 +1,6 @@
+{
+  "name": "priority-skill-dag",
+  "title": "Priority skill DAG lazy loader",
+  "description": "Resolve which Medatech lessons and catalog skills to load for a query. CAST IRON harvest via harvest-priority-skills.",
+  "version": "1.0.0"
+}

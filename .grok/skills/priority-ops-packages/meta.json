@@ -1,0 +1,6 @@
+{
+    "title":  "Medatech Installed-as-Standard packages",
+    "description":  "Medatech-network topic skill for packages. Uses priority-skill-dag lazy load.",
+    "name":  "priority-ops-packages",
+    "version":  "1.0.0"
+}

@@ -9,6 +9,7 @@
     <Compile Remove="FakeCli/**/*.cs" />
     <Compile Include="../launcher/AircSupport.cs" Link="AircSupport.cs" />
     <Compile Include="../launcher/AircConsoleDiscovery.cs" Link="AircConsoleDiscovery.cs" />
+    <Compile Include="../launcher/CloneResolve.cs" Link="CloneResolve.cs" />
     <None Include="fixtures/**/*" CopyToOutputDirectory="PreserveNewest" />
     <None Include="../launcher/agent-rules.md" Link="fixtures/agent-rules.md" CopyToOutputDirectory="PreserveNewest" />
     <None Include="../launcher/airc-dcc.md" Link="fixtures/airc-dcc.md" CopyToOutputDirectory="PreserveNewest" />

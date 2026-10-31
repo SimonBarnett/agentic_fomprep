@@ -11,7 +11,7 @@ if (-not (Test-Path -LiteralPath $doc)) {
 }
 else {
     $text = Get-Content -LiteralPath $doc -Raw -Encoding UTF8
-    if ($text -notmatch 'https://irc\.ntsa\.uk/bob/v1/intake') {
+    if ($text -notmatch 'https://bob\.ntsa\.uk/bob/v1/intake') {
         $fail += 'doc missing Bobiverse intake URL'
     }
     if ($text -notmatch 'SimonBarnett/agentic_fomprep') {

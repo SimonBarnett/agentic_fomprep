@@ -8,8 +8,8 @@ if (-not (Test-Path -LiteralPath $vision)) { throw "missing $vision" }
 $fail = @()
 $text = Get-Content -LiteralPath $vision -Raw -Encoding UTF8
 
-if ($text -notmatch 'https://irc\.ntsa\.uk/bob/v1/intake') {
-    $fail += 'VISION.md missing Bobiverse intake URL https://irc.ntsa.uk/bob/v1/intake'
+if ($text -notmatch 'https://bob\.ntsa\.uk/bob/v1/intake') {
+    $fail += 'VISION.md missing Bobiverse intake URL https://bob.ntsa.uk/bob/v1/intake'
 }
 if ($text -notmatch 'SimonBarnett/agentic_fomprep') {
     $fail += 'VISION.md missing SimonBarnett/agentic_fomprep'

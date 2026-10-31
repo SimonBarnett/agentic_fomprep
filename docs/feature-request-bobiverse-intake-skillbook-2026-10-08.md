@@ -7,7 +7,7 @@
 
 ## Operator brief (LOCKED intent)
 
-1. This repo must **report via the Bobiverse intake** (`POST https://irc.ntsa.uk/bob/v1/intake`).
+1. This repo must **report via the Bobiverse intake** (`POST https://bob.ntsa.uk/bob/v1/intake`).
 2. It must work as an **agent started in its CWD** (repo root) **or** as a **skillbook** another agent is pointed at.
 3. Other agents that use Priority / formprep skills must file **issues / FRs / skill harvests** back to **`SimonBarnett/agentic_fomprep`**, not to bobiverse harvest tips for product lessons.
 
@@ -54,7 +54,7 @@ LOCKED
 [Agent in agentic_fomprep CWD]
     -> read AGENTS.md (CAST IRON)
     -> .grok/skills/* (Priority + harvest-*)
-    -> tools/Report-FomprepIntakeIssue.ps1  \  POST https://irc.ntsa.uk/bob/v1/intake
+    -> tools/Report-FomprepIntakeIssue.ps1  \  POST https://bob.ntsa.uk/bob/v1/intake
     -> tools/Invoke-FomprepHarvest.ps1      /  repo=SimonBarnett/agentic_fomprep
     -> offline: report-outbox/ / harvest-outbox/ then -Flush
 
@@ -95,7 +95,7 @@ No UI. Shape UNKNOWN — no HTML mocks.
 ## LOCKED
 
 - Target repo `SimonBarnett/agentic_fomprep`
-- Intake URL `https://irc.ntsa.uk/bob/v1/intake`
+- Intake URL `https://bob.ntsa.uk/bob/v1/intake`
 - Default intake `repo` field = `SimonBarnett/agentic_fomprep`
 - Dual mode: CWD agent + referred skillbook
 - Anti-omnibus: many small Goal/Deliverables/Testable FRs (see `fr/`)

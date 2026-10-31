@@ -30,7 +30,7 @@ param(
 
     [string]$Repo = 'SimonBarnett/agentic_fomprep',
 
-    [string]$IntakeUrl = 'https://irc.ntsa.uk/bob/v1/intake',
+    [string]$IntakeUrl = 'https://bob.ntsa.uk/bob/v1/intake',
 
     [string]$IdempotencyKey = '',
 

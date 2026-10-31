@@ -6,7 +6,7 @@ intake.
 
 Intake (no secret required; offline payloads queue and retry):
 
-`POST https://irc.ntsa.uk/bob/v1/intake` with payload
+`POST https://bob.ntsa.uk/bob/v1/intake` with payload
 `repo=SimonBarnett/agentic_fomprep` and `kind` = `issue` | `fr` | `skill` |
 `harvest`.
 

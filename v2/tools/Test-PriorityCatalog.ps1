@@ -835,7 +835,7 @@ $t64Why = 'CAT-T64 harvest-agent-skills CAST IRON Bobiverse intake subsection mi
 if (Test-Path -LiteralPath $agentsIntakeSkill) {
     $t64 = Get-Content -LiteralPath $agentsIntakeSkill -Raw -Encoding UTF8
     $hasHeading = $t64 -match 'CAST IRON - Bobiverse intake'
-    $hasUrl = $t64 -match 'https://irc\.ntsa\.uk/bob/v1/intake'
+    $hasUrl = $t64 -match 'https://bob\.ntsa\.uk/bob/v1/intake'
     $hasRepo = $t64 -match 'SimonBarnett/agentic_fomprep'
     $hasReport = $t64 -match 'Report-FomprepIntakeIssue'
     $hasInvoke = $t64 -match 'Invoke-FomprepHarvest'
@@ -858,7 +858,7 @@ $t65Why = 'CAT-T65 harvest-priority-skills CAST IRON Bobiverse intake subsection
 if (Test-Path -LiteralPath $prioHarvestSkill) {
     $t65 = Get-Content -LiteralPath $prioHarvestSkill -Raw -Encoding UTF8
     $hasHeading = $t65 -match 'CAST IRON - Bobiverse intake'
-    $hasUrl = $t65 -match 'https://irc\.ntsa\.uk/bob/v1/intake'
+    $hasUrl = $t65 -match 'https://bob\.ntsa\.uk/bob/v1/intake'
     $hasRepo = $t65 -match 'SimonBarnett/agentic_fomprep'
     $hasReport = $t65 -match 'Report-FomprepIntakeIssue'
     $hasInvoke = $t65 -match 'Invoke-FomprepHarvest'
@@ -884,7 +884,7 @@ $t66Why = 'CAT-T66 Report-FomprepIntakeIssue.ps1 missing'
 if (Test-Path -LiteralPath $reportTool) {
     $rt = Get-Content -LiteralPath $reportTool -Raw -Encoding UTF8
     $hasDefault = $rt -match "Repo\s*=\s*'SimonBarnett/agentic_fomprep'" -or $rt -match 'defaultRepo\s*=\s*''SimonBarnett/agentic_fomprep'''
-    $hasUrl = $rt -match 'https://irc\.ntsa\.uk/bob/v1/intake'
+    $hasUrl = $rt -match 'https://bob\.ntsa\.uk/bob/v1/intake'
     $hasDry = $rt -match '\[switch\]\$DryRun'
     $hasNoDel = $rt -match '\[switch\]\$NoDelegate'
     $hasValidate = $rt -match "ValidateSet\('issue',\s*'fr',\s*'skill',\s*'harvest'\)"
@@ -913,7 +913,7 @@ $t67Why = 'CAT-T67 Invoke-FomprepHarvest.ps1 missing'
 if (Test-Path -LiteralPath $harvestTool) {
     $ht = Get-Content -LiteralPath $harvestTool -Raw -Encoding UTF8
     $hasDefault = $ht -match "Repo\s*=\s*'SimonBarnett/agentic_fomprep'" -or $ht -match 'defaultRepo\s*=\s*''SimonBarnett/agentic_fomprep'''
-    $hasUrl = $ht -match 'https://irc\.ntsa\.uk/bob/v1/intake'
+    $hasUrl = $ht -match 'https://bob\.ntsa\.uk/bob/v1/intake'
     $hasFlush = $ht -match '\[switch\]\$Flush'
     $hasDry = $ht -match '\[switch\]\$DryRun'
     $hasNoDel = $ht -match '\[switch\]\$NoDelegate'
@@ -944,7 +944,7 @@ $t68Ok = $false
 $t68Why = 'CAT-T68 docs/skillbook-referral.md missing'
 if (Test-Path -LiteralPath $skillbookDoc) {
     $sb = Get-Content -LiteralPath $skillbookDoc -Raw -Encoding UTF8
-    $hasUrl = $sb -match 'https://irc\.ntsa\.uk/bob/v1/intake'
+    $hasUrl = $sb -match 'https://bob\.ntsa\.uk/bob/v1/intake'
     $hasRepo = $sb -match 'SimonBarnett/agentic_fomprep'
     $hasModeA = $sb -match 'Mode A'
     $hasModeB = $sb -match 'Mode B'
@@ -1154,7 +1154,7 @@ if (-not (Test-Path -LiteralPath $agentsPath)) {
         $agentsIntakeOk = $false
         $agentsIntakeWhy = 'AGENTS.md BOM'
     }
-    if ($at -notmatch 'https://irc\.ntsa\.uk/bob/v1/intake') { $agentsIntakeOk = $false; $agentsIntakeWhy = 'missing intake URL' }
+    if ($at -notmatch 'https://bob\.ntsa\.uk/bob/v1/intake') { $agentsIntakeOk = $false; $agentsIntakeWhy = 'missing intake URL' }
     if ($at -notmatch 'SimonBarnett/agentic_fomprep') { $agentsIntakeOk = $false; $agentsIntakeWhy = 'missing home repo' }
     if ($at -notmatch 'Report-FomprepIntakeIssue\.ps1') { $agentsIntakeOk = $false; $agentsIntakeWhy = 'missing Report-FomprepIntakeIssue' }
     if ($at -notmatch 'Invoke-FomprepHarvest\.ps1') { $agentsIntakeOk = $false; $agentsIntakeWhy = 'missing Invoke-FomprepHarvest' }
@@ -1168,7 +1168,7 @@ $t69Ok = $false
 $t69Why = 'CAT-T69 VISION.md honesty-box intake missing'
 if (Test-Path -LiteralPath $visionPath) {
     $vt = Get-Content -LiteralPath $visionPath -Raw -Encoding UTF8
-    $hasUrl = $vt -match 'https://irc\.ntsa\.uk/bob/v1/intake'
+    $hasUrl = $vt -match 'https://bob\.ntsa\.uk/bob/v1/intake'
     $hasRepo = $vt -match 'SimonBarnett/agentic_fomprep'
     $hasSkillbook = $vt -match 'skillbook-referral' -or $vt -match '(?i)skillbook'
     $hasExec = $vt -match 'EXECPREPLOCK'

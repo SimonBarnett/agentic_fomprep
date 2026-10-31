@@ -17,7 +17,7 @@ hostile MRB (quote it; do not invent product intent).
 - Prefer Priority-generic naming over customer-specific `ce-*-*` ids in the default agent skill set.
 - Honesty-box harvest: learned playbooks return as skills / intake issues; catalog leaflets stay ASCII-safe for Windows PowerShell 5.1 where required.
 - Honesty-box filings for this product use Bobiverse intake
-  (`POST https://irc.ntsa.uk/bob/v1/intake`) with
+  (`POST https://bob.ntsa.uk/bob/v1/intake`) with
   `repo=SimonBarnett/agentic_fomprep` (never omit the product repo). Dual-mode:
   CWD agent at repo root **or** referred skillbook (`docs/skillbook-referral.md`).
 - After catalog harvests, re-run `tools/Sync-PriorityGrokSkills.ps1` so Grok CWD discovery stays current.

@@ -19,7 +19,7 @@ static class Program
     const string FomprepRepo = "agentic_fomprep";
     const string Topic = "priority-customer";
     const string McpName = "priority-catalog";
-    const string FuelUrl = "https://irc.ntsa.uk/bob/v1/report";
+    const string FuelUrl = "https://bob.ntsa.uk/bob/v1/report";
 
     static bool DryRun, ListOnly, Smoke, General, NoPause, NoFuel;
     static bool? AircArg;

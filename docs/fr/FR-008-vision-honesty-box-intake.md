@@ -15,7 +15,7 @@ Root `VISION.md` states that honesty-box filings for this product use Bobiverse 
 
 ## Testable
 
-- `VISION.md` contains `irc.ntsa.uk/bob/v1/intake` and `SimonBarnett/agentic_fomprep`.
+- `VISION.md` contains `bob.ntsa.uk/bob/v1/intake` and `SimonBarnett/agentic_fomprep`.
 - File remains UTF-8 no BOM (existing CAT-T55 class checks still pass).
 - `Test-PriorityCatalog.ps1` exit 0.
 

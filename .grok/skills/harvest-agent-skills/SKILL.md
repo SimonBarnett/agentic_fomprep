@@ -168,3 +168,4 @@ books use `harvest-agent-skills` pointing at their home.)
 - Greenfield product FR that needs a new repo: create the confirmed repo, seed verbatim first commit, then land generic changes on a fr-N branch PR with Closes owner/origin-repo#N; cross-repo closingIssuesReferences may stay empty until merge — comment the PR on the origin issue and note MRB confirm-close.
 - PriorityAgent EnsureClone: never skip a valid dirty agentic_fomprep clone for preferClean; warn+skip pull; FATAL must list every candidate path and reject reason
 - FR #247: allow_auto_merge true is not enough; main must have classic protection (0 reviews, no path-filtered validate) or GraphQL enablePullRequestAutoMerge fails Protected branch rules not configured.
+- UAT pin drift: when agent-rules.md bumps rules-version, Fr201 must use >= N like Mrb200 or main stays red and UAT FAILs with no release

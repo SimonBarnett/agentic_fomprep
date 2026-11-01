@@ -1,5 +1,6 @@
 #requires -Version 5.1
-# FR #201: VISION.md must match Priority Agent rules v2 (PR #200 Simon decision).
+# FR #201: VISION.md must match Priority Agent rules v2 behaviours (PR #200 Simon decision).
+# FR #251: pin rules-version >= 2 (same as Test-Mrb200); document may be 3+ after later bumps.
 $ErrorActionPreference = 'Stop'
 $repo = if ($env:FOMPREP_MRB_ROOT) { $env:FOMPREP_MRB_ROOT } else { Split-Path -Parent $PSScriptRoot }
 $visionPath = Join-Path $repo 'VISION.md'
@@ -14,7 +15,8 @@ Gate 'vision-no-bom' (-not ($raw.Length -ge 3 -and $raw[0] -eq 0xEF -and $raw[1]
 $v = [Text.Encoding]::UTF8.GetString($raw)
 $rl = [IO.File]::ReadAllText($rulesPath)
 
-Gate 'rules-v2' ($rl -match 'rules-version:\s*2') 'agent-rules still rules-version 2'
+$rulesVer = [int]([regex]::Match($rl, 'rules-version:\s*(\d+)').Groups[1].Value)
+Gate 'rules-v2' ($rulesVer -ge 2) "rules-version >= 2 (got $rulesVer)"
 Gate 'rules-connect-no-ask' ($rl -match 'without asking first') 'rules keep connect without ask'
 Gate 'vision-connect-no-ask' ($v -match 'without asking first' -or $v -match "don't need to ask first") 'VISION allows connect without ask'
 Gate 'vision-prefer-dev' ($v -match 'Prefer DEV' -or $v -match 'prefer DEV') 'VISION prefers DEV for changes'

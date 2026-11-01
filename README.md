@@ -185,3 +185,8 @@ DEV1 evidence for AT4/AT7/AT1/P0-W1 (2026-09-16) is in `tests/last-dev-run.md`. 
 - Change live/PRI connection strings
 
 `config/dev.psd1` is pinned on CE-PRIORITY-DEV1 (WP0): `SqlDatabase = system`, `ExecTable = dbo.T$EXEC` (id col `T$EXEC`), `LockTable = dbo.EXECPREPLOCK` (join `T$EXEC`), `FormKeysTable = dbo.FORMKEYS`, `FormJoinsTable = dbo.FORMJOINS`, `PinComplete = $true`. `$env:COMPUTERNAME` is the 15-char NetBIOS `CE-PRIORITY-DEV`; DNS hostname is `CE-PRIORITY-DEV1` — both are in `AllowedComputer`. Frozen hosts/SQL instance live in `src/Private/Get-FrozenEnvironment.ps1` and cannot be pointed at PRI by editing config alone.
+
+## UAT
+
+Repo-level UAT evidence lives in [docs/UAT-LOG.md](docs/UAT-LOG.md) (latest PASS commit, harness commands, VISION table).
+

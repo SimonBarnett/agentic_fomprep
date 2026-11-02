@@ -18,7 +18,8 @@ static class AircConsoleDiscovery
     /// FR #258: credential-free listing from Bob digest <c>airc_consoles</c>
     /// (fallback: per-machine <c>console_nicks</c>). Override with env
     /// <c>PRIORITY_AGENT_AIRC_REPORT_JSON</c> (file path) or
-    /// <c>PRIORITY_AGENT_REPORT_URL</c> for tests.
+    /// <c>PRIORITY_AGENT_REPORT_URL</c> for tests. An explicit <paramref name="fetch"/>
+    /// always wins over the fixture env (MRB #259: CI sets the fixture for dry-runs).
     /// </summary>
     public static AircConsoleDiscoveryResult Discover(
         string? reportUrl = null,
@@ -27,13 +28,18 @@ static class AircConsoleDiscovery
     {
         try
         {
-            string? fixturePath = Environment.GetEnvironmentVariable("PRIORITY_AGENT_AIRC_REPORT_JSON");
-            if (!string.IsNullOrWhiteSpace(fixturePath))
+            // Injectable fetch overrides process-level fixture so unit tests stay
+            // hermetic when CI exports PRIORITY_AGENT_AIRC_REPORT_JSON for dry-runs.
+            if (fetch == null)
             {
-                if (!File.Exists(fixturePath))
-                    return AircConsoleDiscoveryResult.Unavailable(
-                        "Bob report fixture missing: " + fixturePath);
-                return ParseReport(File.ReadAllText(fixturePath));
+                string? fixturePath = Environment.GetEnvironmentVariable("PRIORITY_AGENT_AIRC_REPORT_JSON");
+                if (!string.IsNullOrWhiteSpace(fixturePath))
+                {
+                    if (!File.Exists(fixturePath))
+                        return AircConsoleDiscoveryResult.Unavailable(
+                            "Bob report fixture missing: " + fixturePath);
+                    return ParseReport(File.ReadAllText(fixturePath));
+                }
             }
 
             string urlText = string.IsNullOrWhiteSpace(reportUrl)

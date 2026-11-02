@@ -19,7 +19,9 @@ Authoritative procedure: `docs/skill-sources/programming/REPORT_FORM_ZOOMS.md`.
 2. Prefer the estate’s common `ZOOMEXEC` for that `COLNAME` (often `LOGPART` for `PARTNAME`).
 3. Never invent form `T$EXEC` — look up `T$EXEC` where `TYPE='F'`.
 4. After `ZOOMCOLUMNS2` / `REPCLMNS` / table column changes: `EXECPREPLOCK.UPD='Y'` and Prepare.
-5. No secrets in skills or SQL notes.
+5. `REPCLMNS.HIDE='I'` means **Input** (parameter dialog), not zoomable display — use blank HIDE for names, `Y` for ids.
+6. HTML reports: `_winform` via `REPCLMNSA` (not only ZOOMCOLUMNS2); calc `STRCAT` only on `T$COLUMN=0`; Unicode NBSP not `&nbsp;`; `HIDE=Y`+`RSELECT=N` or DELETE junk cols; never `FWIDTH=0` on link helpers.
+7. No secrets in skills or SQL notes.
 
 ## Loop
 

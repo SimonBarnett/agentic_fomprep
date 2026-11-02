@@ -40,13 +40,15 @@ with the right context.
    - **Project / service call**: one of the customer repo's top-level folders, skipping dot-folders.
      cwd is that folder.
 5. It asks whether this session needs airc. Connected `*_console` nicks are listed from the Bob
-   digest report (`GET https://bob.ntsa.uk/bob/v1/report` → top-level `airc_consoles`, or per-machine
-   `console_nicks`) with a short timeout and no credentials. Interactive mode offers a numbered
-   picker (configured nick preselected). Non-interactive: `--airc-console` must be in the list, or a
-   single console is auto-picked. If the report fetch fails or the field is missing, a valid
-   configured / `--airc-console` nick is still trusted with a "console not verified" note. With no
-   nick and no listing, the launcher warns and offers to continue without airc. It never sends a
-   PRIVMSG during discovery.
+   digest report (`GET https://bob.ntsa.uk/bob/v1/report` → top-level `airc_consoles`, optional
+   `airc_console_details` with `channel`, or per-machine `console_nicks`) with a short timeout and no
+   credentials. Interactive mode offers a numbered picker showing each nick and its target channel
+   (configured nick preselected). Non-interactive: `--airc-console` must be in the list, or a single
+   console is auto-picked. Channel resolution: digest `channel` when present; else `#<stem>` for
+   registered shop consoles only; else `#wonderland`. If the report fetch fails or the field is
+   missing, a valid configured / `--airc-console` nick is still trusted with a "console not verified"
+   note. With no nick and no listing, the launcher warns and offers to continue without airc. It
+   never sends a PRIVMSG during discovery.
 6. **New customer / new project** never creates anything. It prints `Ask Haitch: new customer repo for X`
    or `Ask Haitch: new project folder Y in <repo>`, copies the line to the clipboard and exits. Haitch creates it.
 7. It checks fuel like `ce-dayworks/scripts/Start-DayWorks.ps1`.
@@ -91,12 +93,17 @@ stay off the Windows command line. The airc skills path is never added to global
 Priority skills path is unchanged). Troubleshooting is referenced by path and is not preloaded. If a bobiverse
 airc skills path is already in the global Grok config, the launcher warns without editing it.
 
-Connected consoles come from the Bob digest report (bobiverse #5204 / PR #5469): credential-free
-`airc_consoles` (preferred) or `machines.*.console_nicks`. Session rules say the pick was verified from
-the Bob report when discovery succeeds. If the report is unreachable or those fields are missing, a
-valid configured / `--airc-console` nick is trusted with a visible "console not verified" note.
-Without a configured nick, unavailable or empty discovery warns and offers to continue without airc.
-Tests may override the report via `PRIORITY_AGENT_AIRC_REPORT_JSON` (fixture file) or
+Connected consoles come from the Bob digest report (bobiverse #5204 / PR #5469 / #5947): credential-free
+`airc_consoles` (preferred) or `machines.*.console_nicks`, plus optional `airc_console_details`
+(`[{nick, machine, channel}]`). The target IRC channel is taken from `airc_console_details[].channel`
+when present. Otherwise registered shop consoles (`flamingo`, `marchhare`, `redqueen`) keep
+`#<stem>`; every other console defaults to `#wonderland` (customer consoles must not invent
+`#hrs-priority-de` from a truncated nick). The interactive picker shows `(#channel)` next to each
+nick. Session rules say the pick was verified from the Bob report when discovery succeeds. If the
+report is unreachable or those fields are missing, a valid configured / `--airc-console` nick is
+trusted with a visible "console not verified" note (channel still follows the shop / `#wonderland`
+rules). Without a configured nick, unavailable or empty discovery warns and offers to continue
+without airc. Tests may override the report via `PRIORITY_AGENT_AIRC_REPORT_JSON` (fixture file) or
 `PRIORITY_AGENT_REPORT_URL`.
 
 ## Agent rules (summary; full text in `agent-rules.md`)

@@ -9,8 +9,15 @@ public sealed record AircSessionFiles(string CommandsSkill, string ArchitectureS
 public static class AircSupport
 {
     public const int MaxWindowsCommandLineLength = 32_000;
+    /// <summary>Registered Bob shop machine ids; stem-channel fallback only applies here (FR #263).</summary>
+    public static readonly HashSet<string> RegisteredShopMachines = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "flamingo", "marchhare", "redqueen",
+    };
+    public const string DefaultCustomerConsoleChannel = "#wonderland";
     static readonly Regex ConsoleNick = new(@"\A[A-Za-z0-9][A-Za-z0-9_-]*_console\z", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
     static readonly Regex MachineId = new(@"\A[A-Za-z0-9][A-Za-z0-9_-]*\z", RegexOptions.CultureInvariant);
+    static readonly Regex ChannelName = new(@"\A#[A-Za-z0-9][A-Za-z0-9_-]*\z", RegexOptions.CultureInvariant);
 
     public static AircConfig LoadConfig(string? projectDir, string? customerDir)
     {
@@ -87,6 +94,52 @@ public static class AircSupport
     {
         if (string.IsNullOrWhiteSpace(console) || !ConsoleNick.IsMatch(console)) return null;
         return console[..^"_console".Length];
+    }
+
+    /// <summary>
+    /// FR #263: target IRC channel for a console nick.
+    /// Prefer digest <c>airc_console_details[].channel</c>; else <c>#stem</c> only for
+    /// registered shop machines; otherwise <see cref="DefaultCustomerConsoleChannel"/>.
+    /// </summary>
+    public static string ChannelForConsole(
+        string? console,
+        IReadOnlyDictionary<string, string>? channelsByNick = null)
+    {
+        string? stem = MachineFromConsole(console);
+        if (stem == null)
+            throw new ArgumentException("Invalid airc console nick.", nameof(console));
+
+        if (channelsByNick != null
+            && !string.IsNullOrWhiteSpace(console)
+            && channelsByNick.TryGetValue(console.Trim(), out string? fromDigest)
+            && !string.IsNullOrWhiteSpace(fromDigest))
+        {
+            string normalized = NormalizeChannel(fromDigest);
+            if (ChannelName.IsMatch(normalized)) return normalized;
+        }
+
+        if (RegisteredShopMachines.Contains(stem)) return "#" + stem;
+        return DefaultCustomerConsoleChannel;
+    }
+
+    public static string NormalizeChannel(string? channel)
+    {
+        if (string.IsNullOrWhiteSpace(channel)) return "";
+        string trimmed = channel.Trim();
+        if (!trimmed.StartsWith('#')) trimmed = "#" + trimmed;
+        return trimmed;
+    }
+
+    public static string FormatConsolePickerLine(
+        string console,
+        string? preferred = null,
+        IReadOnlyDictionary<string, string>? channelsByNick = null)
+    {
+        string channel = ChannelForConsole(console, channelsByNick);
+        string tag = preferred != null
+            && console.Equals(preferred, StringComparison.OrdinalIgnoreCase)
+            ? " (configured)" : "";
+        return $"{console} ({channel}){tag}";
     }
 
     public static List<string> MachineChannelsFromReport(string reportJson)
@@ -197,31 +250,37 @@ public static class AircSupport
 
     public static string RenderSessionRules(
         string template, bool enabled, string? console, string source, AircSessionFiles? files,
-        bool consoleVerified = true, string consoleSource = "")
+        bool consoleVerified = true, string consoleSource = "",
+        string? channel = null,
+        IReadOnlyDictionary<string, string>? channelsByNick = null)
     {
         string section = "";
         if (enabled)
         {
             string machine = MachineFromConsole(console) ?? throw new InvalidDataException("Invalid airc console nick");
+            string targetChannel = string.IsNullOrWhiteSpace(channel)
+                ? ChannelForConsole(console, channelsByNick)
+                : NormalizeChannel(channel);
             const string troubleshooting = "airc/.grok/skills/bobiverse-airc-troubleshooting/SKILL.md";
             if (files == null) throw new ArgumentNullException(nameof(files));
             section = """
 
 ## Airc session-only context
 
-- Selected target: `{{AIRC_CONSOLE}}` on channel `#{{AIRC_MACHINE}}`. Send remote shell PRIVMSGs only to this selected console; do not address any other console.
+- Selected target: `{{AIRC_CONSOLE}}` on channel `{{AIRC_CHANNEL}}`. Send remote shell PRIVMSGs only to this selected console; do not address any other console.
 - Console machine id: `{{AIRC_MACHINE}}`. {{AIRC_VERIFICATION}}
 - Source: SimonBarnett/bobiverse `{{AIRC_SOURCE}}`. Troubleshooting is not preloaded; read `{{AIRC_TROUBLESHOOTING}}` only if the console misbehaves.
 - Read these session-only airc files before working: `{{AIRC_COMMANDS_SKILL}}`, `{{AIRC_ARCHITECTURE_SKILL}}`, and `{{AIRC_DCC_GUIDE}}`.
 """.Replace("{{AIRC_SOURCE}}", source, StringComparison.Ordinal)
                 .Replace("{{AIRC_VERIFICATION}}", consoleVerified
-                    ? "The console was verified from the Bob report (airc_consoles / console_nicks)."
+                    ? "The console was verified from the Bob report (airc_consoles / airc_console_details / console_nicks)."
                     : $"The console was selected from {consoleSource} and was not verified as connected.", StringComparison.Ordinal)
                 .Replace("{{AIRC_TROUBLESHOOTING}}", troubleshooting, StringComparison.Ordinal)
                 .Replace("{{AIRC_COMMANDS_SKILL}}", files.CommandsSkill, StringComparison.Ordinal)
                 .Replace("{{AIRC_ARCHITECTURE_SKILL}}", files.ArchitectureSkill, StringComparison.Ordinal)
                 .Replace("{{AIRC_DCC_GUIDE}}", files.DccGuide, StringComparison.Ordinal)
                 .Replace("{{AIRC_CONSOLE}}", console!, StringComparison.Ordinal)
+                .Replace("{{AIRC_CHANNEL}}", targetChannel, StringComparison.Ordinal)
                 .Replace("{{AIRC_MACHINE}}", machine, StringComparison.Ordinal);
         }
         return template.Replace("{{AIRC_SECTION}}", section, StringComparison.Ordinal);

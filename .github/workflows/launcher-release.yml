@@ -40,6 +40,12 @@ jobs:
         run: dotnet publish launcher/PriorityAgent.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -o launcher/out
       - name: Publish fake CLI for launcher integration tests
         run: dotnet publish launcher.Tests/FakeCli/FakeCli.csproj -c Release -r win-x64 -o launcher.Tests/FakeCli/out
+      - name: Write airc report fixture for discovery dry-runs
+        shell: pwsh
+        run: |
+          $path = Join-Path $env:RUNNER_TEMP 'priority-agent-airc-report.json'
+          Set-Content -LiteralPath $path -Value '{"airc_consoles":["testbox_console","flamingo_console"]}' -Encoding utf8
+          "PRIORITY_AGENT_AIRC_REPORT_JSON=$path" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
       - name: Run launcher acceptance tests
         env:
           PRIORITY_AGENT_TEST_EXE: ${{ github.workspace }}/launcher/out/PriorityAgent.exe

@@ -359,33 +359,57 @@ static void TestReportParsing()
 
 static void TestDiscoverInjection()
 {
-    var ok = AircConsoleDiscovery.Discover(
-        reportUrl: "https://example.invalid/report",
-        fetch: (_, _) => """{"airc_consoles":["testbox_console"]}""");
-    Assert(ok.Available && ok.Consoles.SequenceEqual(new[] { "testbox_console" }),
-        "injectable fetch did not return AvailableWith");
-
-    var fail = AircConsoleDiscovery.Discover(
-        reportUrl: "https://example.invalid/report",
-        fetch: (_, _) => throw new HttpRequestException("connection refused"));
-    Assert(!fail.Available && fail.Error.Contains("unavailable", StringComparison.OrdinalIgnoreCase),
-        "fetch failure must keep unverified fallback Unavailable");
-
-    string root = NewTemp();
+    // CI launcher-release exports PRIORITY_AGENT_AIRC_REPORT_JSON for dry-runs.
+    // Explicit fetch must still win (MRB #259); clear/restore around fixture-only path.
+    string? priorFixture = Environment.GetEnvironmentVariable("PRIORITY_AGENT_AIRC_REPORT_JSON");
     try
     {
-        string path = Path.Combine(root, "fixture-report.json");
-        File.WriteAllText(path, """{"airc_consoles":["fixture_console"]}""");
-        Environment.SetEnvironmentVariable("PRIORITY_AGENT_AIRC_REPORT_JSON", path);
-        var fromFile = AircConsoleDiscovery.Discover(
-            fetch: (_, _) => throw new Exception("fetch must not run when fixture is set"));
-        Assert(fromFile.Available && fromFile.Consoles.SequenceEqual(new[] { "fixture_console" }),
-            "PRIORITY_AGENT_AIRC_REPORT_JSON fixture was ignored");
+        var ok = AircConsoleDiscovery.Discover(
+            reportUrl: "https://example.invalid/report",
+            fetch: (_, _) => """{"airc_consoles":["testbox_console"]}""");
+        Assert(ok.Available && ok.Consoles.SequenceEqual(new[] { "testbox_console" }),
+            "injectable fetch did not return AvailableWith");
+
+        // Even when a process fixture is present, explicit fetch overrides it.
+        string leakRoot = NewTemp();
+        try
+        {
+            string leakPath = Path.Combine(leakRoot, "ci-leak-report.json");
+            File.WriteAllText(leakPath, """{"airc_consoles":["testbox_console","flamingo_console"]}""");
+            Environment.SetEnvironmentVariable("PRIORITY_AGENT_AIRC_REPORT_JSON", leakPath);
+            var overrides = AircConsoleDiscovery.Discover(
+                reportUrl: "https://example.invalid/report",
+                fetch: (_, _) => """{"airc_consoles":["testbox_console"]}""");
+            Assert(overrides.Available && overrides.Consoles.SequenceEqual(new[] { "testbox_console" }),
+                "explicit fetch must override PRIORITY_AGENT_AIRC_REPORT_JSON (CI leak)");
+        }
+        finally { DeleteTempDirectory(leakRoot); }
+
+        var fail = AircConsoleDiscovery.Discover(
+            reportUrl: "https://example.invalid/report",
+            fetch: (_, _) => throw new HttpRequestException("connection refused"));
+        Assert(!fail.Available && fail.Error.Contains("unavailable", StringComparison.OrdinalIgnoreCase),
+            "fetch failure must keep unverified fallback Unavailable");
+
+        string root = NewTemp();
+        try
+        {
+            string path = Path.Combine(root, "fixture-report.json");
+            File.WriteAllText(path, """{"airc_consoles":["fixture_console"]}""");
+            Environment.SetEnvironmentVariable("PRIORITY_AGENT_AIRC_REPORT_JSON", path);
+            // No fetch arg: fixture env supplies the body (production dry-run path).
+            var fromFile = AircConsoleDiscovery.Discover();
+            Assert(fromFile.Available && fromFile.Consoles.SequenceEqual(new[] { "fixture_console" }),
+                "PRIORITY_AGENT_AIRC_REPORT_JSON fixture was ignored");
+        }
+        finally
+        {
+            DeleteTempDirectory(root);
+        }
     }
     finally
     {
-        Environment.SetEnvironmentVariable("PRIORITY_AGENT_AIRC_REPORT_JSON", null);
-        DeleteTempDirectory(root);
+        Environment.SetEnvironmentVariable("PRIORITY_AGENT_AIRC_REPORT_JSON", priorFixture);
     }
 }
 

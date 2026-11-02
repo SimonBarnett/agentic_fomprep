@@ -9,6 +9,7 @@ var checks = new List<(string Name, Action Run)>
     ("console discovery filters and selects", TestConsoleSelection),
     ("unverified configured consoles retain airc; absent console disables it", TestDiscoveryFailure),
     ("Bob report airc_consoles parsing", TestReportParsing),
+    ("console channel from digest details / shop / wonderland", TestConsoleChannelResolution),
     ("Discover uses injectable fetch / fixture file", TestDiscoverInjection),
     ("verified session rules cite Bob report not NAMES", TestVerifiedBobReportRules),
     ("airc=no renders no airc context", TestNoAircContext),
@@ -232,6 +233,10 @@ static void TestReadmeAircDiscovery()
     string readme = File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "fixtures", "launcher-README.md"));
     Assert(readme.Contains("airc_consoles", StringComparison.Ordinal),
         "README must document Bob report airc_consoles discovery");
+    Assert(readme.Contains("airc_console_details", StringComparison.Ordinal),
+        "README must document airc_console_details channel resolution (FR #263)");
+    Assert(readme.Contains("#wonderland", StringComparison.Ordinal),
+        "README must document #wonderland default for non-shop consoles");
     Assert(readme.Contains("console not verified", StringComparison.Ordinal),
         "README must document the unverified configured-console fallback when the report is unavailable");
     Assert(!readme.Contains("the Bob report does not list connected customer consoles", StringComparison.Ordinal),
@@ -355,6 +360,62 @@ static void TestReportParsing()
     var badJson = AircConsoleDiscovery.ParseReport("{not-json");
     Assert(!badJson.Available && badJson.Error.Contains("invalid", StringComparison.OrdinalIgnoreCase),
         "bad JSON must be Unavailable");
+}
+
+static void TestConsoleChannelResolution()
+{
+    // Digest details win (customer console must not invent #<stem>).
+    var withDetails = AircConsoleDiscovery.ParseReport(
+        """
+        {
+          "airc_consoles":["hrs-priority-de_console","flamingo_console"],
+          "airc_console_details":[
+            {"nick":"hrs-priority-de_console","machine":"hrs-priority-de","channel":"#wonderland"},
+            {"nick":"flamingo_console","machine":"flamingo","channel":"#flamingo"}
+          ]
+        }
+        """);
+    Assert(withDetails.Available
+        && withDetails.ChannelsByNick["hrs-priority-de_console"] == "#wonderland"
+        && withDetails.ChannelsByNick["flamingo_console"] == "#flamingo",
+        "airc_console_details channels were not parsed");
+    Assert(AircSupport.ChannelForConsole("hrs-priority-de_console", withDetails.ChannelsByNick) == "#wonderland",
+        "digest channel=#wonderland must win for hrs-priority-de_console");
+    Assert(AircSupport.ChannelForConsole("flamingo_console", withDetails.ChannelsByNick) == "#flamingo",
+        "shop digest channel must win for flamingo_console");
+
+    // Shop stem fallback when details omit the nick.
+    Assert(AircSupport.ChannelForConsole("flamingo_console") == "#flamingo", "shop flamingo must use #flamingo");
+    Assert(AircSupport.ChannelForConsole("marchhare_console") == "#marchhare", "shop marchhare must use #marchhare");
+    Assert(AircSupport.ChannelForConsole("redqueen_console") == "#redqueen", "shop redqueen must use #redqueen");
+
+    // Non-shop with missing channel defaults to #wonderland (never #<truncated-stem>).
+    Assert(AircSupport.ChannelForConsole("hrs-priority-de_console") == "#wonderland",
+        "customer console without digest channel must default to #wonderland");
+    Assert(AircSupport.ChannelForConsole("hrs-priority-de_console") != "#hrs-priority-de",
+        "must not invent #hrs-priority-de from the nick stem");
+
+    // Picker shows channel next to nick.
+    Assert(AircSupport.FormatConsolePickerLine("hrs-priority-de_console", null, withDetails.ChannelsByNick)
+            == "hrs-priority-de_console (#wonderland)",
+        "picker line must show digest channel");
+    Assert(AircSupport.FormatConsolePickerLine("flamingo_console", "flamingo_console")
+            == "flamingo_console (#flamingo) (configured)",
+        "picker line must show shop channel and configured tag");
+
+    // Session rules use resolved channel, not always #<stem>.
+    string root = NewTemp();
+    try
+    {
+        AircSessionFiles files = AircSupport.WriteSessionFiles(root,
+            new[] { "commands", "architecture" }, "DCC {{AIRC_CONSOLE}}", "hrs-priority-de_console");
+        string rules = AircSupport.RenderSessionRules("{{AIRC_SECTION}}", true, "hrs-priority-de_console",
+            "GitHub @ test", files, channelsByNick: withDetails.ChannelsByNick);
+        Assert(rules.Contains("on channel `#wonderland`", StringComparison.Ordinal)
+            && !rules.Contains("on channel `#hrs-priority-de`", StringComparison.Ordinal),
+            "session rules must use digest/wonderland channel for customer console");
+    }
+    finally { DeleteTempDirectory(root); }
 }
 
 static void TestDiscoverInjection()

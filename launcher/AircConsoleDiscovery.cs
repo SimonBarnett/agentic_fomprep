@@ -2,11 +2,21 @@ using System.Text.Json;
 
 namespace PriorityAgent;
 
-public sealed record AircConsoleDiscoveryResult(bool Available, IReadOnlyList<string> Consoles, string Error)
+public sealed record AircConsoleDiscoveryResult(
+    bool Available,
+    IReadOnlyList<string> Consoles,
+    string Error,
+    IReadOnlyDictionary<string, string> ChannelsByNick)
 {
-    public static AircConsoleDiscoveryResult Unavailable(string error) => new(false, Array.Empty<string>(), error);
-    public static AircConsoleDiscoveryResult AvailableWith(IEnumerable<string> consoles) =>
-        new(true, AircSupport.NormalizeConsoles(consoles), "");
+    public static AircConsoleDiscoveryResult Unavailable(string error) =>
+        new(false, Array.Empty<string>(), error,
+            new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase));
+
+    public static AircConsoleDiscoveryResult AvailableWith(
+        IEnumerable<string> consoles,
+        IReadOnlyDictionary<string, string>? channelsByNick = null) =>
+        new(true, AircSupport.NormalizeConsoles(consoles), "",
+            channelsByNick ?? new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase));
 }
 
 static class AircConsoleDiscovery
@@ -15,8 +25,9 @@ static class AircConsoleDiscovery
     public static readonly TimeSpan DefaultTimeout = TimeSpan.FromSeconds(8);
 
     /// <summary>
-    /// FR #258: credential-free listing from Bob digest <c>airc_consoles</c>
-    /// (fallback: per-machine <c>console_nicks</c>). Override with env
+    /// FR #258 / #263: credential-free listing from Bob digest <c>airc_consoles</c>
+    /// (fallback: per-machine <c>console_nicks</c>) plus optional
+    /// <c>airc_console_details[].channel</c> (bobiverse #5947). Override with env
     /// <c>PRIORITY_AGENT_AIRC_REPORT_JSON</c> (file path) or
     /// <c>PRIORITY_AGENT_REPORT_URL</c> for tests. An explicit <paramref name="fetch"/>
     /// always wins over the fixture env (MRB #259: CI sets the fixture for dry-runs).
@@ -80,11 +91,13 @@ static class AircConsoleDiscovery
             if (root.ValueKind != JsonValueKind.Object)
                 return AircConsoleDiscoveryResult.Unavailable("Bob report root was not an object.");
 
+            var channelsByNick = ParseConsoleChannels(root);
+
             bool sawAircConsoles = root.TryGetProperty("airc_consoles", out var aircConsoles);
             if (sawAircConsoles)
             {
                 if (aircConsoles.ValueKind == JsonValueKind.Null)
-                    return AircConsoleDiscoveryResult.AvailableWith(Array.Empty<string>());
+                    return AircConsoleDiscoveryResult.AvailableWith(Array.Empty<string>(), channelsByNick);
                 if (aircConsoles.ValueKind != JsonValueKind.Array)
                     return AircConsoleDiscoveryResult.Unavailable(
                         "Bob report airc_consoles was not an array.");
@@ -97,7 +110,7 @@ static class AircConsoleDiscovery
                         if (!string.IsNullOrWhiteSpace(s)) fromTop.Add(s);
                     }
                 }
-                return AircConsoleDiscoveryResult.AvailableWith(fromTop);
+                return AircConsoleDiscoveryResult.AvailableWith(fromTop, channelsByNick);
             }
 
             // Fallback: collect machines.*.console_nicks when top-level list is absent.
@@ -122,12 +135,41 @@ static class AircConsoleDiscovery
                     }
                 }
                 if (sawNickField)
-                    return AircConsoleDiscoveryResult.AvailableWith(fromMachines);
+                    return AircConsoleDiscoveryResult.AvailableWith(fromMachines, channelsByNick);
             }
 
             return AircConsoleDiscoveryResult.Unavailable(
                 "Bob report has no airc_consoles (and no machines.*.console_nicks).");
         }
+    }
+
+    /// <summary>
+    /// FR #263: map nick -&gt; channel from digest <c>airc_console_details</c>
+    /// (<c>[{nick, machine, channel}]</c>). Invalid nicks / blank channels are skipped.
+    /// </summary>
+    public static IReadOnlyDictionary<string, string> ParseConsoleChannels(JsonElement root)
+    {
+        var map = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        if (!root.TryGetProperty("airc_console_details", out var details)
+            || details.ValueKind != JsonValueKind.Array)
+            return map;
+
+        foreach (var item in details.EnumerateArray())
+        {
+            if (item.ValueKind != JsonValueKind.Object) continue;
+            if (!item.TryGetProperty("nick", out var nickEl) || nickEl.ValueKind != JsonValueKind.String)
+                continue;
+            string? nick = nickEl.GetString();
+            if (string.IsNullOrWhiteSpace(nick) || !AircSupport.IsValidConsole(nick)) continue;
+            if (!item.TryGetProperty("channel", out var chEl) || chEl.ValueKind != JsonValueKind.String)
+                continue;
+            string? channel = chEl.GetString();
+            if (string.IsNullOrWhiteSpace(channel)) continue;
+            string normalized = AircSupport.NormalizeChannel(channel);
+            if (normalized.Length < 2) continue;
+            map[nick.Trim()] = normalized;
+        }
+        return map;
     }
 
     static string FetchReport(Uri uri, TimeSpan timeout)

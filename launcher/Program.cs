@@ -191,13 +191,19 @@ static class Program
         Console.WriteLine($"airc: {(airc ? "yes" : "no")} (from {aircDecisionSource})");
         Log($"airc decision: {(airc ? "yes" : "no")} (from {aircDecisionSource})");
         string? aircConsole = null;
+        string? aircChannel = null;
+        IReadOnlyDictionary<string, string> aircChannelsByNick =
+            new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         bool aircConsoleVerified = true;
         string aircConsoleSource = "";
         if (airc)
         {
             AircConsoleDiscoveryResult discovery = DiscoverConnectedAircConsoles();
+            aircChannelsByNick = discovery.ChannelsByNick;
             if (!AircSupport.TrySelectListedConsole(airc, discovery, aircConfig.Console, AircConsoleArg,
-                interactiveAirc, AskAircConsole, out aircConsole, out string discoveryError))
+                interactiveAirc,
+                (list, preferred) => AskAircConsole(list, preferred, aircChannelsByNick),
+                out aircConsole, out string discoveryError))
             {
                 Warn($"airc: {discoveryError}");
                 if (!ContinueWithoutAirc(interactiveAirc)) { Pause(); return 1; }
@@ -209,9 +215,14 @@ static class Program
                 aircConsoleVerified = false;
                 aircConsoleSource = AircConsoleArg != null ? "--airc-console"
                     : aircConfig.ConsoleSource ?? "configuration";
-                Info($"airc: using {aircConsole} ({discoveryError})");
+                aircChannel = AircSupport.ChannelForConsole(aircConsole, aircChannelsByNick);
+                Info($"airc: using {aircConsole} on {aircChannel} ({discoveryError})");
             }
-            else Console.WriteLine($"airc: using {aircConsole}");
+            else
+            {
+                aircChannel = AircSupport.ChannelForConsole(aircConsole, aircChannelsByNick);
+                Console.WriteLine($"airc: using {aircConsole} on {aircChannel}");
+            }
         }
 
         // ---- 4. grok: register MCP + skills, build brief, launch ----------------------
@@ -261,9 +272,13 @@ static class Program
         Directory.CreateDirectory(sessionDir);
         AircSessionFiles? aircFiles = null;
         if (airc && aircConsole != null)
+        {
             aircFiles = AircSupport.WriteSessionFiles(sessionDir, aircSkills, ReadResource("airc-dcc.md"), aircConsole);
+            aircChannel ??= AircSupport.ChannelForConsole(aircConsole, aircChannelsByNick);
+        }
         rules = AircSupport.RenderSessionRules(rules, airc && aircConsole != null, aircConsole,
-            aircSource, aircFiles, aircConsoleVerified, aircConsoleSource);
+            aircSource, aircFiles, aircConsoleVerified, aircConsoleSource,
+            channel: aircChannel, channelsByNick: aircChannelsByNick);
         foreach (var kv in vars) rules = rules.Replace("{{" + kv.Key + "}}", kv.Value);
         Info($"rules: {rulesSrc} ({rules.Length} chars)");
         if (cust != null)
@@ -278,7 +293,10 @@ static class Program
         brief.AppendLine($"Context level: {level}. Working directory: {workDir}.");
         brief.AppendLine($"General Priority repo: {fomprep} (SimonBarnett/agentic_fomprep @ {GitOut(fomprep, "rev-parse", "--short", "HEAD")}); MCP server '{McpName}' and its .grok/skills are loaded.");
         if (airc && aircConsole != null)
-            brief.AppendLine($"Airc target: {aircConsole} in #{AircSupport.MachineFromConsole(aircConsole)}. Send remote shell commands only to this selected console; use the loaded airc and DCC guidance.");
+        {
+            aircChannel ??= AircSupport.ChannelForConsole(aircConsole, aircChannelsByNick);
+            brief.AppendLine($"Airc target: {aircConsole} in {aircChannel}. Send remote shell commands only to this selected console; use the loaded airc and DCC guidance.");
+        }
         if (cust != null) brief.AppendLine($"Customer: {cust.Name} = {cust.FullName}, clone {custDir}. Connection secrets (never commit/echo): {pwFile}.");
         if (project != null) brief.AppendLine($"Project / service call: {project} at {projectDir}.");
         var readFirst = new List<string> { Path.Combine(fomprep, "AGENTS.md") };
@@ -306,8 +324,11 @@ static class Program
         if (aircConsole != null)
         {
             logDisplay = logDisplay.Replace(aircConsole, "<airc-console>", StringComparison.OrdinalIgnoreCase);
+            string channel = aircChannel ?? AircSupport.ChannelForConsole(aircConsole, aircChannelsByNick);
+            logDisplay = logDisplay.Replace(channel, "<airc-channel>", StringComparison.OrdinalIgnoreCase);
             string? machine = AircSupport.MachineFromConsole(aircConsole);
-            if (machine != null) logDisplay = logDisplay.Replace("#" + machine, "<airc-channel>", StringComparison.OrdinalIgnoreCase);
+            if (machine != null)
+                logDisplay = logDisplay.Replace("#" + machine, "<airc-channel>", StringComparison.OrdinalIgnoreCase);
         }
         Log("launch: " + logDisplay);
         Check(Directory.Exists(workDir), $"working directory exists: {workDir}");
@@ -505,10 +526,13 @@ static class Program
     static bool ContinueWithoutAirc(bool interactive) =>
         !interactive || !Ask("Continue without airc? [Y/n]: ").StartsWith("n", StringComparison.OrdinalIgnoreCase);
 
-    static string? AskAircConsole(IReadOnlyList<string> consoles, string? preferred)
+    static string? AskAircConsole(
+        IReadOnlyList<string> consoles,
+        string? preferred,
+        IReadOnlyDictionary<string, string>? channelsByNick = null)
     {
         for (int i = 0; i < consoles.Count; i++)
-            Console.WriteLine($"  {i + 1,2}. {consoles[i]}{(consoles[i].Equals(preferred, StringComparison.OrdinalIgnoreCase) ? " (configured)" : "")}");
+            Console.WriteLine($"  {i + 1,2}. {AircSupport.FormatConsolePickerLine(consoles[i], preferred, channelsByNick)}");
         string? defaultNick = preferred ?? (consoles.Count == 1 ? consoles[0] : null);
         string defaultText = defaultNick == null ? "" : $" (Enter={defaultNick})";
         string answer = Ask($"Pick airc console [1-{consoles.Count}]{defaultText}: ");

@@ -170,3 +170,4 @@ books use `harvest-agent-skills` pointing at their home.)
 - FR #247: allow_auto_merge true is not enough; main must have classic protection (0 reviews, no path-filtered validate) or GraphQL enablePullRequestAutoMerge fails Protected branch rules not configured.
 - UAT pin drift: when agent-rules.md bumps rules-version, Fr201 must use >= N like Mrb200 or main stays red and UAT FAILs with no release
 - Re-offered FR with open Closes PR: ACK, verify closingIssuesReferences, DONE that PR URL; never open a second implement PR
+- PRIORITY_AGENT_AIRC_REPORT_JSON fixture is for dry-runs without fetch; Discover(explicit fetch) must ignore that env so CI GITHUB_ENV cannot break inject unit tests (MRB #259/#261)

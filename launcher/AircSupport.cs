@@ -215,7 +215,7 @@ public static class AircSupport
 - Read these session-only airc files before working: `{{AIRC_COMMANDS_SKILL}}`, `{{AIRC_ARCHITECTURE_SKILL}}`, and `{{AIRC_DCC_GUIDE}}`.
 """.Replace("{{AIRC_SOURCE}}", source, StringComparison.Ordinal)
                 .Replace("{{AIRC_VERIFICATION}}", consoleVerified
-                    ? "The console selection came from a read-only IRC NAMES lookup."
+                    ? "The console was verified from the Bob report (airc_consoles / console_nicks)."
                     : $"The console was selected from {consoleSource} and was not verified as connected.", StringComparison.Ordinal)
                 .Replace("{{AIRC_TROUBLESHOOTING}}", troubleshooting, StringComparison.Ordinal)
                 .Replace("{{AIRC_COMMANDS_SKILL}}", files.CommandsSkill, StringComparison.Ordinal)

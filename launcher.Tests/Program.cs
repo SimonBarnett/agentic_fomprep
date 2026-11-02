@@ -8,11 +8,14 @@ var checks = new List<(string Name, Action Run)>
     ("CLI decisions override config", TestDecisionOverrides),
     ("console discovery filters and selects", TestConsoleSelection),
     ("unverified configured consoles retain airc; absent console disables it", TestDiscoveryFailure),
+    ("Bob report airc_consoles parsing", TestReportParsing),
+    ("Discover uses injectable fetch / fixture file", TestDiscoverInjection),
+    ("verified session rules cite Bob report not NAMES", TestVerifiedBobReportRules),
     ("airc=no renders no airc context", TestNoAircContext),
     ("airc=yes writes session-only skills and DCC", TestAircContext),
     ("realistic airc skills stay off the command line", TestCommandLineSize),
     ("published launcher dry runs preserve config and protect connection canaries", TestLauncherDryRuns),
-    ("README documents unverified-console fallback, not live NAMES", TestReadmeAircDiscovery),
+    ("README documents Bob report airc_consoles discovery", TestReadmeAircDiscovery),
     ("dirty clone plus stub uses the dirty clone", TestDirtyClonePreferredOverStub),
     ("dirty clone only is usable", TestDirtyCloneOnly),
     ("no real clone lists every rejected candidate", TestNoRealCloneFatalListsCandidates),
@@ -107,6 +110,9 @@ static void TestAircContext()
             "both airc skill files were not written");
         Assert(rendered.Contains(files.CommandsSkill) && rendered.Contains(files.ArchitectureSkill)
             && rendered.Contains(files.DccGuide), "session rule paths were not included");
+        Assert(rendered.Contains("verified from the Bob report", StringComparison.Ordinal)
+            && !rendered.Contains("IRC NAMES", StringComparison.Ordinal),
+            "verified airc rules must cite Bob report, not IRC NAMES");
         string renderedDcc = File.ReadAllText(files.DccGuide);
         Assert(renderedDcc.Contains("DCCLISTEN") && renderedDcc.Contains("testbox_console"), "DCC guidance was not targeted");
         Assert(!rendered.Contains("Fixture troubleshooting content"), "troubleshooting content should not be loaded");
@@ -156,6 +162,9 @@ static void TestLauncherDryRuns()
     string root = NewTemp();
     try
     {
+        string reportFixture = Path.Combine(root, "report.json");
+        File.WriteAllText(reportFixture, """{"airc_consoles":["testbox_console","flamingo_console"]}""");
+        Environment.SetEnvironmentVariable("PRIORITY_AGENT_AIRC_REPORT_JSON", reportFixture);
         string cloneRoot = Path.Combine(root, "root");
         CreateClone(root, "SimonBarnett", "agentic_fomprep", Path.Combine(cloneRoot, "agentic_fomprep"),
             new Dictionary<string, string>
@@ -192,13 +201,14 @@ static void TestLauncherDryRuns()
         ScenarioResult aircYes = RunLauncherScenario(root, launcherExe, cloneRoot, ghDir, grokDir, original,
             "--airc-console testbox_console", false);
         AssertScenarioClean(aircYes, canary, original, "airc=yes");
-        Assert(aircYes.Stdout.Contains("console not verified", StringComparison.OrdinalIgnoreCase),
-            "launcher did not explain that the configured console was unverified");
+        Assert(aircYes.Stdout.Contains("airc: using testbox_console", StringComparison.OrdinalIgnoreCase)
+            && !aircYes.Stdout.Contains("console not verified", StringComparison.OrdinalIgnoreCase),
+            "launcher should use digest-verified console without unverified fallback");
         Assert(aircYes.SessionRules.Length == 1
-            && aircYes.SessionRules[0].Contains("selected from --airc-console and was not verified as connected", StringComparison.Ordinal)
+            && aircYes.SessionRules[0].Contains("verified from the Bob report", StringComparison.Ordinal)
             && aircYes.SessionRules[0].Contains("bobiverse-airc-commands", StringComparison.Ordinal)
             && aircYes.AircFiles.Select(File.ReadAllText).Any(f => f.Contains("DCCLISTEN", StringComparison.Ordinal)),
-            "airc=yes did not write correctly sourced session-only airc rules");
+            "airc=yes did not write Bob-report-verified session-only airc rules");
         Assert(aircYes.AircFiles.Length == 3, "airc files were not confined to the session airc folder");
 
         ScenarioResult fetchFailure = RunLauncherScenario(root, launcherExe, cloneRoot, ghDir, grokDir, original,
@@ -210,16 +220,24 @@ static void TestLauncherDryRuns()
             && !fetchFailure.SessionRules[0].Contains("bobiverse-airc", StringComparison.OrdinalIgnoreCase),
             "failed airc skill fetch left airc instructions in session rules");
     }
-    finally { DeleteTempDirectory(root); }
+    finally
+    {
+        Environment.SetEnvironmentVariable("PRIORITY_AGENT_AIRC_REPORT_JSON", null);
+        DeleteTempDirectory(root);
+    }
 }
 
 static void TestReadmeAircDiscovery()
 {
     string readme = File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "fixtures", "launcher-README.md"));
+    Assert(readme.Contains("airc_consoles", StringComparison.Ordinal),
+        "README must document Bob report airc_consoles discovery");
     Assert(readme.Contains("console not verified", StringComparison.Ordinal),
-        "README must document the unverified configured-console fallback");
+        "README must document the unverified configured-console fallback when the report is unavailable");
+    Assert(!readme.Contains("the Bob report does not list connected customer consoles", StringComparison.Ordinal),
+        "README still claims the Bob report does not list connected consoles");
     Assert(!readme.Contains("then uses a read-only IRC `NAMES` lookup", StringComparison.Ordinal),
-        "README numbered flow still claims a live NAMES picker that Discover() cannot perform");
+        "README numbered flow must not claim a live NAMES picker");
     Assert(readme.Contains("uncommitted changes is still usable", StringComparison.Ordinal),
         "README must say a dirty agentic_fomprep clone is usable");
 }
@@ -313,9 +331,106 @@ static void TestDiscoveryFailure()
     Assert(!AircSupport.TrySelectListedConsole(true, AircConsoleDiscoveryResult.Unavailable("listing unavailable"),
         "bad nick", null, false, null, out _, out _), "invalid configured nick was trusted");
     Assert(!AircSupport.IsValidConsole("name_console PRIVMSG #channel"), "strict console validation accepted an injected suffix");
-    var unavailable = AircConsoleDiscovery.Discover();
-    Assert(!unavailable.Available && unavailable.Error.Contains("requires authentication", StringComparison.OrdinalIgnoreCase),
-        "real discovery should explain why anonymous NAMES is unavailable");
+}
+
+static void TestReportParsing()
+{
+    var present = AircConsoleDiscovery.ParseReport(
+        """{"airc_consoles":["@flamingo_console","win-mpre8vi4u6u_console","visitor"]}""");
+    Assert(present.Available && present.Consoles.SequenceEqual(new[] { "flamingo_console", "win-mpre8vi4u6u_console" }),
+        "present airc_consoles was not normalized");
+
+    var empty = AircConsoleDiscovery.ParseReport("""{"airc_consoles":[]}""");
+    Assert(empty.Available && empty.Consoles.Count == 0, "empty airc_consoles must be Available with zero consoles");
+
+    var missing = AircConsoleDiscovery.ParseReport("""{"machines":{"flamingo":{"pcent":{}}}}""");
+    Assert(!missing.Available && missing.Error.Contains("no airc_consoles", StringComparison.OrdinalIgnoreCase),
+        "missing airc_consoles without console_nicks must be Unavailable");
+
+    var fromNicks = AircConsoleDiscovery.ParseReport(
+        """{"machines":{"flamingo":{"console_nicks":["flamingo_console"]},"x":{"console_nicks":["bad"]}}}""");
+    Assert(fromNicks.Available && fromNicks.Consoles.SequenceEqual(new[] { "flamingo_console" }),
+        "console_nicks fallback did not collect valid *_console nicks");
+
+    var badJson = AircConsoleDiscovery.ParseReport("{not-json");
+    Assert(!badJson.Available && badJson.Error.Contains("invalid", StringComparison.OrdinalIgnoreCase),
+        "bad JSON must be Unavailable");
+}
+
+static void TestDiscoverInjection()
+{
+    // CI launcher-release exports PRIORITY_AGENT_AIRC_REPORT_JSON for dry-runs.
+    // Explicit fetch must still win (MRB #259); clear/restore around fixture-only path.
+    string? priorFixture = Environment.GetEnvironmentVariable("PRIORITY_AGENT_AIRC_REPORT_JSON");
+    try
+    {
+        var ok = AircConsoleDiscovery.Discover(
+            reportUrl: "https://example.invalid/report",
+            fetch: (_, _) => """{"airc_consoles":["testbox_console"]}""");
+        Assert(ok.Available && ok.Consoles.SequenceEqual(new[] { "testbox_console" }),
+            "injectable fetch did not return AvailableWith");
+
+        // Even when a process fixture is present, explicit fetch overrides it.
+        string leakRoot = NewTemp();
+        try
+        {
+            string leakPath = Path.Combine(leakRoot, "ci-leak-report.json");
+            File.WriteAllText(leakPath, """{"airc_consoles":["testbox_console","flamingo_console"]}""");
+            Environment.SetEnvironmentVariable("PRIORITY_AGENT_AIRC_REPORT_JSON", leakPath);
+            var overrides = AircConsoleDiscovery.Discover(
+                reportUrl: "https://example.invalid/report",
+                fetch: (_, _) => """{"airc_consoles":["testbox_console"]}""");
+            Assert(overrides.Available && overrides.Consoles.SequenceEqual(new[] { "testbox_console" }),
+                "explicit fetch must override PRIORITY_AGENT_AIRC_REPORT_JSON (CI leak)");
+        }
+        finally { DeleteTempDirectory(leakRoot); }
+
+        var fail = AircConsoleDiscovery.Discover(
+            reportUrl: "https://example.invalid/report",
+            fetch: (_, _) => throw new HttpRequestException("connection refused"));
+        Assert(!fail.Available && fail.Error.Contains("unavailable", StringComparison.OrdinalIgnoreCase),
+            "fetch failure must keep unverified fallback Unavailable");
+
+        string root = NewTemp();
+        try
+        {
+            string path = Path.Combine(root, "fixture-report.json");
+            File.WriteAllText(path, """{"airc_consoles":["fixture_console"]}""");
+            Environment.SetEnvironmentVariable("PRIORITY_AGENT_AIRC_REPORT_JSON", path);
+            // No fetch arg: fixture env supplies the body (production dry-run path).
+            var fromFile = AircConsoleDiscovery.Discover();
+            Assert(fromFile.Available && fromFile.Consoles.SequenceEqual(new[] { "fixture_console" }),
+                "PRIORITY_AGENT_AIRC_REPORT_JSON fixture was ignored");
+        }
+        finally
+        {
+            DeleteTempDirectory(root);
+        }
+    }
+    finally
+    {
+        Environment.SetEnvironmentVariable("PRIORITY_AGENT_AIRC_REPORT_JSON", priorFixture);
+    }
+}
+
+static void TestVerifiedBobReportRules()
+{
+    string root = NewTemp();
+    try
+    {
+        AircSessionFiles files = AircSupport.WriteSessionFiles(root,
+            new[] { "commands", "architecture" }, "DCC {{AIRC_CONSOLE}}", "flamingo_console");
+        string verified = AircSupport.RenderSessionRules("{{AIRC_SECTION}}", true, "flamingo_console",
+            "local", files, consoleVerified: true);
+        Assert(verified.Contains("verified from the Bob report", StringComparison.Ordinal)
+            && !verified.Contains("NAMES", StringComparison.Ordinal),
+            "verified rules must cite Bob report");
+        string unverified = AircSupport.RenderSessionRules("{{AIRC_SECTION}}", true, "flamingo_console",
+            "local", files, consoleVerified: false, consoleSource: "--airc-console");
+        Assert(unverified.Contains("selected from --airc-console and was not verified as connected", StringComparison.Ordinal),
+            "unverified rules text drifted");
+    }
+    finally { DeleteTempDirectory(root); }
 }
 
 static FileStream PrepareConnectionFile(string root, string canary)

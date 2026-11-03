@@ -172,3 +172,4 @@ books use `harvest-agent-skills` pointing at their home.)
 - Re-offered FR with open Closes PR: ACK, verify closingIssuesReferences, DONE that PR URL; never open a second implement PR
 - PRIORITY_AGENT_AIRC_REPORT_JSON fixture is for dry-runs without fetch; Discover(explicit fetch) must ignore that env so CI GITHUB_ENV cannot break inject unit tests (MRB #259/#261)
 - PriorityAgent airc: never derive customer target as #<stem> from *_console nick; use digest airc_console_details[].channel, else #wonderland (shops keep #flamingo/#marchhare/#redqueen)
+- Launcher-v tags must pass -p:Version / FileVersion / InformationalVersion into dotnet publish; csproj Version 1.0.0 is only the local default.

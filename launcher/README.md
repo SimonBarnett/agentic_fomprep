@@ -173,7 +173,8 @@ The Windows workflow also runs the published executable through dry-run integrat
 profiles and fake GitHub/Grok CLIs, checking config preservation, session-only airc files, and connection-file
 canary handling. The `Launcher release` workflow runs on launcher pull requests and `main` pushes for validation;
 it publishes a GitHub **pre-release** with `PriorityAgent.exe` and its `.sha256` file for `launcher-v*` tags or a
-manual dispatch from `main`. Download
+manual dispatch from `main`. A `launcher-vX.Y.Z` tag stamps banner / FileVersion `X.Y.Z` / `X.Y.Z.0` and
+ProductVersion `X.Y.Z+<commit>` (FR #267). Local `launcher\build.ps1 -Install` defaults to `1.0.0` unless you pass `-Version`. Download
 it from [GitHub Releases](https://github.com/SimonBarnett/agentic_fomprep/releases) and verify the checksum
 before use. Releases remain pre-release until separately approved.
 

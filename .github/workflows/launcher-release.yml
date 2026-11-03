@@ -39,9 +39,13 @@ jobs:
       - name: Resolve version from launcher-v* tag
         id: ver
         shell: pwsh
+        env:
+          INPUT_TAG: ${{ inputs.tag }}
         run: |
           . .\launcher\Get-LauncherReleaseVersion.ps1
-          $tag = if ($env:GITHUB_REF_TYPE -eq 'tag') { $env:GITHUB_REF_NAME } else { '' }
+          $tag = ''
+          if ($env:GITHUB_REF_TYPE -eq 'tag') { $tag = $env:GITHUB_REF_NAME }
+          elseif ($env:INPUT_TAG) { $tag = $env:INPUT_TAG }
           $v = Get-LauncherReleaseVersion -Tag $tag -Fallback '1.0.0'
           $file = Get-LauncherFileVersion -Version $v
           $info = Get-LauncherInformationalVersion -Version $v -Sha $env:GITHUB_SHA

@@ -31,6 +31,21 @@ static class Program
     static string LogFile = "";
     static int Fails;
 
+    // FR #267: banner is X.Y.Z (InformationalVersion), not Assembly 4-part FileVersion.
+    internal static string LauncherBannerVersion()
+    {
+        var info = Assembly.GetExecutingAssembly()
+            .GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion;
+        if (!string.IsNullOrWhiteSpace(info))
+        {
+            var core = info.Split('+')[0].Trim();
+            if (Regex.IsMatch(core, @"^\d+\.\d+\.\d+"))
+                return core;
+        }
+        var v = Assembly.GetExecutingAssembly().GetName().Version;
+        return v is null ? "0.0.0" : $"{v.Major}.{v.Minor}.{v.Build}";
+    }
+
     static int Main(string[] args)
     {
         try { return Run(args); }
@@ -82,7 +97,7 @@ static class Program
         LogFile = Path.Combine(logDir, $"launcher-{DateTime.Now:yyyyMMdd}.log");
         try { Console.Title = "Priority Agent"; } catch { }
 
-        Header($"Priority Agent launcher {Assembly.GetExecutingAssembly().GetName().Version}  " +
+        Header($"Priority Agent launcher {LauncherBannerVersion()}  " +
                (DryRun ? "[DRY RUN] " : "") + (ListOnly ? "[LIST] " : "") + (Smoke ? "[SMOKE] " : ""));
         string logArgs = string.Join(' ', args);
         if (AircConsoleArg != null) logArgs = logArgs.Replace(AircConsoleArg, "<airc-console>", StringComparison.OrdinalIgnoreCase);

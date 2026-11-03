@@ -17,8 +17,11 @@ Gate 'bad-tag' ((Get-LauncherReleaseVersion -Tag 'v1.0.1') -eq '1.0.0') 'non-lau
 
 $build = [IO.File]::ReadAllText((Join-Path $repo 'launcher\build.ps1'))
 $wf = [IO.File]::ReadAllText((Join-Path $repo '.github\workflows\launcher-release.yml'))
+$prog = [IO.File]::ReadAllText((Join-Path $repo 'launcher\Program.cs'))
 Gate 'build-version-param' ($build -match '\[string\]\$Version' -and $build -match 'p:Version=') 'build.ps1 -Version'
 Gate 'wf-tag-version' ($wf -match 'Get-LauncherReleaseVersion' -and $wf -match 'p:FileVersion=' -and $wf -match 'p:InformationalVersion=') 'workflow stamps from tag'
+Gate 'banner-xyz' ($prog -match 'LauncherBannerVersion' -and $prog -match 'InformationalVersionAttribute' -and $prog -match 'Header\(\$\"Priority Agent launcher \{LauncherBannerVersion\(\)\}') 'banner is X.Y.Z not Assembly 4-part'
+Gate 'wf-dispatch-tag' ($wf -match 'INPUT_TAG' -and $wf -match 'GITHUB_REF_TYPE') 'dispatch tag stamps the exe'
 
 if ($failed -gt 0) { Write-Host "Test-Fr267-LauncherVersion FAIL ($failed)"; exit 1 }
 Write-Host 'Test-Fr267-LauncherVersion PASS'

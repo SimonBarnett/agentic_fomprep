@@ -1,4 +1,4 @@
-﻿# Priority procedure / trigger style
+# Priority procedure / trigger style
 
 Priority-generic. CE examples are labeled.
 
@@ -67,4 +67,21 @@ together).
 Do not reuse a well-known numeric name for a string.
 
 Replay SQL (DEV applied): see Day Works
-`scripts/fixes/Fix-ZCLA_ELEDITSPLIT-SORT.SQL`.
+`scripts/fixes/Fix-ZCLA_ELEDITSPLIT-SORT.SQL.
+
+## Custom table / queue column names in SQLI (CAST IRON)
+
+Do **not** name physical or dictionary columns on custom work/queue tables
+`PART`, `SERIAL`, `SERN`, or other Priority **entity** names when those tables
+are read/written from SQLI.
+
+In SQLI, a bare `PART` in `SELECT` / `INSERT` column lists is easy to resolve
+as the PART entity or the `:PART` variable instead of your table column. Symptom:
+BFS/queue dequeue leaves the intended INT at 0 and a branch (e.g. BOM expand)
+is skipped with no obvious compile error.
+
+**Fix:** prefix custom columns (`QPART`, `QPQTY`, `BPART`, …). Keep entity
+columns only on real entity tables (`PART`, `SERIAL`, …).
+
+Observed on a customer as-built tree fill (2026-11-03): queue column `PART`
+broke PARTARC BOM fallback until renamed to `QPART`.

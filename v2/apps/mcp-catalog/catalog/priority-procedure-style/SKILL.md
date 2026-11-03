@@ -34,3 +34,8 @@ Authoring or heavily editing form triggers, SQLI procedures, or #INCLUDE bodies.
 - Msg 154 / `:$1` optimistic lock: `docs/skill-sources/programming/MSG154_OPTIMISTIC_LOCK.md`
 - UDATE mint: **priority-sql-udate-user**
 - Form Prep WCF: **priority-formprep**
+
+## SQLI custom columns
+
+Do not name custom queue/work columns `PART`/`SERIAL`/`SERN` — clash with entities/:VARs. Use `QPART`-style names. See `PROCEDURE_STYLE.md`.
+

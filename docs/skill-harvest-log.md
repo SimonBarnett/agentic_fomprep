@@ -83,3 +83,9 @@ Expanded `priority-uat-wcf` (skill-source + catalog meta **1.2.0**) from CE Day 
 - Synced via `tools/Sync-PriorityGrokSkills.ps1`.
 - Source: anonymised HR Smith Dev session (assembly-tree report links + prepare kit); no customer hosts/secrets in skill bodies.
 
+
+## 2026-11-03 — SQLI entity column names
+
+- PROCEDURE_STYLE: do not name custom SQLI table columns PART/SERIAL/SERN (entity clash).
+- Catalog priority-procedure-style leaflet note.
+

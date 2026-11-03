@@ -36,8 +36,27 @@ jobs:
       - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: 8.0.x
+      - name: Resolve version from launcher-v* tag
+        id: ver
+        shell: pwsh
+        run: |
+          . .\launcher\Get-LauncherReleaseVersion.ps1
+          $tag = if ($env:GITHUB_REF_TYPE -eq 'tag') { $env:GITHUB_REF_NAME } else { '' }
+          $v = Get-LauncherReleaseVersion -Tag $tag -Fallback '1.0.0'
+          $file = Get-LauncherFileVersion -Version $v
+          $info = Get-LauncherInformationalVersion -Version $v -Sha $env:GITHUB_SHA
+          "version=$v" | Out-File $env:GITHUB_OUTPUT -Append -Encoding utf8
+          "file_version=$file" | Out-File $env:GITHUB_OUTPUT -Append -Encoding utf8
+          "informational=$info" | Out-File $env:GITHUB_OUTPUT -Append -Encoding utf8
+          Write-Host "Launcher version $v file $file info $info"
       - name: Publish self-contained Windows executable
-        run: dotnet publish launcher/PriorityAgent.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -o launcher/out
+        run: >
+          dotnet publish launcher/PriorityAgent.csproj -c Release -r win-x64 --self-contained true
+          -p:PublishSingleFile=true
+          -p:Version=${{ steps.ver.outputs.version }}
+          -p:FileVersion=${{ steps.ver.outputs.file_version }}
+          -p:InformationalVersion=${{ steps.ver.outputs.informational }}
+          -o launcher/out
       - name: Publish fake CLI for launcher integration tests
         run: dotnet publish launcher.Tests/FakeCli/FakeCli.csproj -c Release -r win-x64 -o launcher.Tests/FakeCli/out
       - name: Write airc report fixture for discovery dry-runs

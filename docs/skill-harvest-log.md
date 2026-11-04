@@ -89,3 +89,10 @@ Expanded `priority-uat-wcf` (skill-source + catalog meta **1.2.0**) from CE Day 
 - PROCEDURE_STYLE: do not name custom SQLI table columns PART/SERIAL/SERN (entity clash).
 - Catalog priority-procedure-style leaflet note.
 
+
+## 2026-11-04 - SQLI strings, PROGPARAM, report FILE/REPCLMNSA
+
+- PROCEDURE_STYLE: `''` vs `'\0'` (boolean 1-char); PROGPARAM on SQLI for `:$.NAME`; clear leftover INPUT PROGRAMSTEXT; GOTO forward / LOOP backward; report work tables without FILE/LINK; clear REPCLMNSA.EXPR with REPCLMNSTEXT; T-SQL CHAR(39) deploy tip for empty-string PROGRAMSTEXT.
+- Catalog `priority-procedure-style` bumped to **1.2.0**.
+- Synced via `tools/Sync-PriorityGrokSkills.ps1`.
+- Source: anonymised customer Job Progress SQLI/report session; no hosts/secrets.

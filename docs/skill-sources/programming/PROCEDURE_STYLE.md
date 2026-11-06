@@ -85,3 +85,74 @@ columns only on real entity tables (`PART`, `SERIAL`, …).
 
 Observed on a customer as-built tree fill (2026-11-03): queue column `PART`
 broke PARTARC BOM fallback until renamed to `QPART`.
+
+## String init: `''` vs `'\0'` (CAST IRON)
+
+In Priority SQLI / triggers, **`:VAR = '\0'` defines a one-character boolean
+flag** (the Y / `\0` pair). It does **not** mean “empty string”.
+
+- Multi-character strings (`:WOIN`, `:PARTNAME`, `:STATUS`, …) must be
+  initialised and compared with **`''`** (empty string), e.g.
+  `:WOIN = '';` and `GOTO 90001 WHERE :WOIN = '';`.
+- Keep `'\0'` only for true one-char flags.
+- Mid-procedure resets of multi-char vars must also use `''`, not `'\0'`.
+
+Symptom when wrong: interface input appears empty, `ERRMSG` on “missing”
+lookup, or only the first character of a work-order / part name is kept.
+
+## Interface PROGPARAM and `:$.NAME`
+
+- Declare each interface name the step reads on **that step’s** `PROGPARAM`
+  (INPUT and any SQLI that does `SELECT :$.WO INTO …`).
+- INPUT-only PROGPARAM is not always enough for a later SQLI step to receive
+  `:$.WO` / `:$.SER`.
+- When converting an INPUT step from LINK/FILE params to plain CHAR params,
+  **delete leftover `PROGRAMSTEXT`** on the INPUT PROG. Old `LINK …` /
+  `ERRMSG` lines keep running and can fire before SQLI. Estate pattern for a
+  param-only INPUT: PROGPARAM rows, **zero** PROGRAMSTEXT lines.
+
+## GOTO vs LOOP (CAST IRON)
+
+- **`GOTO` resolves forward LABELs only** (exits / skip-ahead).
+- **Backward** jumps to an earlier `LABEL` must use **`LOOP`** (optionally
+  `LOOP n WHERE …`).
+- Using `GOTO` for a back-edge often surfaces as Prepare: *GOTO command with
+  no corresponding LABEL* (message may truncate the procedure name).
+- Prefer high numeric LABEL / GOTO / LOOP ids (1000+, 50000+) so prep errors
+  are not confused with procedure step numbers (10 / 20 / 30).
+
+## Report work tables: no FILE / no LINK (common pattern)
+
+For SQLI → custom work table → report (`T$TABLE` / `REPTABLES`):
+
+- Do **not** `LINK` the work table to a report `FILE` PROGPARAM unless the
+  report step truly consumes that file buffer.
+- A report PROGPARAM with `TYPE=FILE` and no matching SQLI `LINK` yields the
+  system message *There is a problem with the file links. Contact your…*
+  (this is **not** your `TRIGMSG` / `ERRMSG n` text).
+- Prefer: SQLI `DELETE`/`INSERT` the physical table; report reads via
+  `T$TABLE` + `REPTABLES` only (same shape as many as-built / stack reports).
+
+## Report column expressions: clear `REPCLMNSA.EXPR` too
+
+When replacing or removing an expression column on a report:
+
+1. Delete `REPCLMNSTEXT` for that `T$EXEC` / POS.
+2. Also delete or clear **`REPCLMNSA.EXPR`** for that POS — Form Generator
+   stores the first expression line there. Clearing TEXT alone can leave a
+   poisoned prepare (`parse error at or near token (`) when the compiled
+   WHERE concatenates column + leftover EXPR).
+
+## Deploying `PROGRAMSTEXT` with empty-string literals via T-SQL
+
+Updating `PROGRAMSTEXT.TEXT` to values that contain Priority `''` is easy to
+mangle in T-SQL quoting (`N':WOIN = '''';';'` and similar). Prefer:
+
+```sql
+DECLARE @Empty nvarchar(4) = CHAR(39) + CHAR(39); -- ''
+UPDATE PROGRAMSTEXT
+SET TEXT = N':WOIN = ' + @Empty + N';'
+WHERE PROG = @Prog AND TEXTLINE = @Line;
+```
+
+Keep each TEXT line ≤ **68** characters (same limit as FORMTRIGTEXT).

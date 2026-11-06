@@ -1,6 +1,40 @@
 # UAT log — SimonBarnett/agentic_fomprep#0
 
 **Verdict:** UAT PASS  
+**Date (UTC):** 2026-11-06T16:30:00Z  
+**Commit tested:** 9d77951854348cdf06d80bb5b742f552d102efb3 (origin/main after PR #273)  
+**Seat / machine:** redqueen-16728 (Windows). This seat did not implement cycle PRs #268-#273.  
+**Cycle PRs:** #268 launcher-v stamp (FR #267), #269/#270 harvest+fix, #271/#272 SQLI PART/SERIAL column names, #273 SQLI '' vs '\0' / PROGPARAM / GOTO / report FILE/REPCLMNSA.
+
+## Vision criteria (offline / harness)
+
+| id | criterion | result | evidence |
+|----|-----------|--------|----------|
+| V1 | Priority Agent rules-version >= 2; connect without ask; prefer DEV; never echo secrets; ask before messaging | PASS | Test-Fr201-VisionRulesV2.ps1 |
+| V2 | Fr201 pin uses -ge 2 | PASS | Test-Mrb253-Fr201RulesVersionGe2.ps1 |
+| V3 | Catalog merge gate + honesty-box + no-BOM | PASS | v2/tools/Test-PriorityCatalog.ps1 |
+| V4 | OData empty-500 company probe (FR #226) | PASS | Test-Fr226-ODataEmpty500Refuse.ps1 |
+| V5 | SaaS OIDC / catalog skill pins | PASS | Test-Fr212 / Test-Fr219 / Test-Mrb208 |
+| V6 | Main auto-merge protection docs (FR #247) | PASS | Test-Fr247-MainAutoMergeProtection.ps1 |
+| V7 | Form Prep EXECPREPLOCK/LASTPREPDATE live success | SKIP | No C:\passwords\agentic_fomprep-connections.txt on redqueen; no DEV1. Same class as prior UATs. Not a product defect this cycle. |
+| V8 | Discover airc consoles / fixture override (FR #258/#261) | PASS | Prior cycle pins still green via Test-Mrb197 / catalog; no regression this cycle. |
+| V9 | Customer console channel digest/wonderland (FR #263) | PASS | Prior cycle; harness still green. |
+| V10 | Launcher-v tags stamp Version/FileVersion/InformationalVersion; banner X.Y.Z (FR #267) | PASS | Test-Fr267-LauncherVersion.ps1 |
+| V11 | SQLI style: '' vs '\0', PROGPARAM, GOTO vs LOOP, no report FILE/STK, clear REPCLMNSA.EXPR; no PART/SERIAL custom columns | PASS | PROCEDURE_STYLE.md + catalog priority-procedure-style 1.2.0 + harvest-agent-skills needles on main |
+
+## Harness
+
+All 14 root `tests/Test-*.ps1` scripts: **PASS** (exit 0).  
+`v2/tools/Test-PriorityCatalog.ps1`: **PASS**.  
+dotnet / launcher.Tests rebuild: **SKIP** (dotnet not on redqueen; same as prior UAT). Live Form Prep: **SKIP** (no connections file).
+
+## Gaps
+
+none
+
+---
+
+**Verdict:** UAT PASS  
 **Date (UTC):** 2026-11-03T07:40:00Z  
 **Commit tested:** a069f15aef6676c67ee56d9b0ddaa44e594413eb (origin/main after PR #265)  
 **Seat / machine:** flamingo-35004 (Windows). This seat did not implement cycle PRs #256-#265.  

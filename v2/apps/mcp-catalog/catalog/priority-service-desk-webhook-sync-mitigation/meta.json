@@ -1,0 +1,6 @@
+{
+  "name": "priority-service-desk-webhook-sync-mitigation",
+  "title": "Synchronous webhook slowness is a temporary disable only",
+  "description": "A synchronous business-rule webhook that spends most of the request in a failing TLS handshake can be temporarily disabled to restore UI speed. That is a mitigation. The endpoint repair and rule re-enable were still open.",
+  "version": "1.0.0"
+}

@@ -35,14 +35,14 @@ Reading or writing Priority dictionary or business data via OData instead of UI-
 ## FORMLIMITED / RESTFLAG (critical)
 
 - Entity in `$metadata` / service root ≠ readable. `RESTFLAG` null often yields HTTP **400** on GET.
-- Audit first: `FORMLIMITED?$filter=ENAME eq '…'&$select=ENAME,RESTFLAG,LIMITFLAG`.
+- Audit first: `FORMLIMITED?$filter=ENAME eq '...'&$select=ENAME,RESTFLAG,LIMITFLAG`.
 - `RESTFLAG=Y` on FORMLIMITED can expose forms to OData **but** with LIMITFLAG blank + Si can **hide** the same forms from web sibling-tab strips (seen on PART long-desc tabs 2026-09-15).
 - Do **not** leave RESTFLAG-only FORMLIMITED on UI-tested forms until the LIMITFLAG/RESTFLAG pattern for "OData without hiding UI" is confirmed.
 - Deleting bad FORMLIMITED rows restored UI tabs.
 - `formlimited_audit` flags `restflag_without_limitflag` when RESTFLAG=Y and LIMITFLAG is not Y.
-- Dictionary key is **`[T$EXEC]`** (join via ENAME as needed). **`FORMLIMITED.FORM` does not exist** — querying it yields `sql_failed` (issue #7 / MRB `80d8ce4`).
+- Dictionary key is **`[T$EXEC]`** (join via ENAME as needed). **`FORMLIMITED.FORM` does not exist** --- querying it yields `sql_failed` (issue #7 / MRB `80d8ce4`).
 - CATALOG OData may return "API cannot be run"; register CATALOG/COLUMNS/INDEXES/INDCLMNS/CATALOGA via SQL first (`TNAME` max 20).
-- Typed DOCSTATS: table `DOCSTATS` may appear as `ZDOCSTATS` / `DDOCSTATS` / … — query the typed form for that document family.
+- Typed DOCSTATS: table `DOCSTATS` may appear as `ZDOCSTATS` / `DDOCSTATS` / ... --- query the typed form for that document family.
 - Extended custom tables may have **no** EFORM/OData entity; read via parent form or SQL.
 
 ## Allowlist (user fills this)

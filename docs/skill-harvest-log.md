@@ -1,5 +1,7 @@
 # Skill harvest log
 
+- 2026-11-07: `priority-service-desk-quote-so-attachment-refresh`. SC263161 paperclip worked after refresh and reopen of the new sales order. Mitigation only. No product fix recorded.
+
 - 2026-11-07: Enriched `priority-formprep` with SC263320 and SC263343. After a move, preparing forms (and, for SC263343, procedures) cleared unprepared-form access. Exact commands were not recorded. Procedures stay on priority-procedure-prep.
 
 - 2026-11-07: Enriched `priority-ops-install-upgrade` v1.1.0. SC263521 mobile security-certificate error cleared by installing the intermediate certificate (technician and customer confirmed); reboot and service recovery had already failed for that mobile error. Exact store and command unknown. SC263488 is a different case: services had not started after reboot, IT started them, Priority came back. Service names unknown. Do not treat either example as the other.

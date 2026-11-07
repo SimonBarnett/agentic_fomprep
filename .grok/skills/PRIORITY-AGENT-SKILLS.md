@@ -53,6 +53,7 @@ IncludeDba=False IncludeCustomer=False
 - priority-service-desk-inventory-conversion-raw-lot
 - priority-service-desk-record-modified-custom-close
 - priority-service-desk-report-browser-site-data
+- priority-service-desk-user-paccount-signup
 - priority-shell-compile
 - priority-shell-install
 - priority-skill-dag

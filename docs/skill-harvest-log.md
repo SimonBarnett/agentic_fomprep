@@ -9,6 +9,8 @@
 
 - 2026-11-07: `priority-service-desk-inventory-conversion-raw-lot`. SC263474: new lot must exist in Raw Material Lots before Inventory Conversion selection. Leave the conversion in Draft. Customer said the draft path was done. Finalized stock movement was not demonstrated. PLotByVendor=1 was observed there and is not a universal setting change.
 
+- 2026-11-07: `priority-service-desk-user-paccount-signup`. SC263458: a former-employee flag inactivated the linked user; a later active user failed registration because P.Account Sign Up was unticked. Support corrected that box and the customer retry worked. Do not reactivate departed employees from this skill.
+
 - 2026-10-26: SaaS OIDC login residuals - PowerShell ordered-map `&` join; HttpClient no-auto-redirect; consent GET+UA; OData Bearer empty HTTP 500 = DNAME/API gap (stop guessing); WCF formStart REST may 404 on SaaS. `SAAS_OIDC_LOGIN.md` + catalog `priority-saas-oidc-login` v1.1.0.
 - 2026-10-25: Priority SaaS / Cloud interactive login â€” tenant `POST /webui/<tenant>` exposes `_tabulaini=tabâ€¦.ini`; OIDC `priority-web` + PKCE; Accounts `login/checkPassword` then `mfa/checkotp` (single-use); consent redirect; `/auth/oauth2/token`; Bearer for tenant POST. New `docs/skill-sources/programming/SAAS_OIDC_LOGIN.md` + catalog `priority-saas-oidc-login` v1.0.0; pointers in `ODATA_REST_CLOUD.md` and `priority-mcp-setup`. Source: generic SaaS connectivity (customer names stripped).
 

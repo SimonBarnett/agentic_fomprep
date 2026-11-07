@@ -83,6 +83,10 @@ Full Medatech internal docs dump converted to markdown lessons under
 `priority-skill-dag` and `tools/priority-skill-dag/Resolve-SkillDag.ps1`.
 
 Topic catalog skills: `priority-ops-*`, `priority-help-wizards`.
+Confirmed service-call resolutions use topic `service-desk` and ids
+`priority-service-desk-*` (not the `priority-ops-` prefix, and not new
+bodies inside `priority-ops-support-desk`). If an existing catalog skill
+already owns the procedure, enrich that skill instead of adding a twin.
 
 Customer-specific packs are excluded. CAST IRON harvest still applies to any
 new hard rule learned from these lessons.

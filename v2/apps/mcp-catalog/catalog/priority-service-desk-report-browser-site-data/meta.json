@@ -1,0 +1,6 @@
+{
+  "name": "priority-service-desk-report-browser-site-data",
+  "title": "Report runs after a scoped browser site-data clear",
+  "description": "When a Priority report runs in a private window but not the normal profile, clear only that site's cache and cookies and retest. Not a plugin reinstall, and not a fix for every missing report.",
+  "version": "1.0.0"
+}

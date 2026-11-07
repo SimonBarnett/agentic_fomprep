@@ -42,3 +42,10 @@ Not proven: the root cause of the missing rows, the field list, and that every u
 ## Stop or escalate
 
 Stop if the owner has not approved the copy, if there is no backup of existing user designs, or if the discrepancy is a dictionary title rather than a per-user design. Escalate title changes to the form owner. No Form Prep and no trigger edit for this symptom.
+
+
+## Copy one user's design onto a new user (SC263148)
+
+Different from regenerating missing multi-record rows. A new user had the wrong personalized layout. It was not a privilege failure. On 2026-10-08 17:00 BST support ran Copy form design for all forms from the original user to the new user, refreshed, and saw the layout was right.
+
+All-forms was what this incident used. It is not the safe default. Copying overwrites the destination user's own designs. The owner approves the source user, the destination user, and the form scope. Refresh that user's session and check the layout. The menu options were not recorded. Personal filters and tiles were not proved. Do not copy privileges and do not edit designs in SQL.

@@ -28,3 +28,8 @@ Not proven: which step was independently sufficient.
 ## Stop or escalate
 
 Stop if the approved update source is not available, or if the failure is a certificate error (install-upgrade examples) rather than an outdated build. No password reset from this skill.
+
+
+## Done stays gray until a later app update (SC263170)
+
+Different symptom from the login-and-registration case above. The user could open forms and type, and the Done button stayed gray. On 2026-10-16 15:13 BST the customer said the most recent app update resolved it and the ticket could close. The fixed build, device, and download channel were not recorded. Do not pin 183.2.79 to this symptom. Do not install a third-party package. Retest the same type-then-Done path on an approved build, and record the version that actually worked before writing it down as the target.

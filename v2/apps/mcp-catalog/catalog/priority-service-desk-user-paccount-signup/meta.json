@@ -1,0 +1,6 @@
+{
+  "name": "priority-service-desk-user-paccount-signup",
+  "title": "Inactive user versus missing P.Account Sign Up",
+  "description": "Separate a former-employee link that inactivates the user from an active user whose P.Account Sign Up box is unticked. The second case was corrected and the customer retry succeeded.",
+  "version": "1.0.0"
+}

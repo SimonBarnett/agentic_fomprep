@@ -1,0 +1,6 @@
+{
+  "name": "priority-service-desk-orphan-wo-past-balance",
+  "title": "Orphan work-order balance is an inventory escalation",
+  "description": "Residual stock from a production report with no work-order reference. Escalate correction and Update Invent. by Past Balance to the inventory owner. Do not delete or repost autonomously.",
+  "version": "1.0.0"
+}

@@ -44,3 +44,16 @@ Not proven: customer retest, patch contents, and a wider sync regression.
 ## Stop or escalate
 
 Stop if the Priority split itself looks wrong, if the case is a tax mapping (the neighbouring calls), or if the only proposed action is to delete or repost financial documents. No local sync edit from this skill.
+
+
+## Different Dokka defect: accounting-family refresh (SC263283)
+
+Issue type: new-part expense accounts are correct on a native Multi-GRV invoice and wrong or missing on the Dokka invoice. Ordinary integration sync already failed.
+
+Known: the supplier said the expense account is not stored on the part. It comes from the part's Accounting Family. Dokka takes the Purchases/Inventory account for that family and sets it on the invoice line (internal note 2026-10-29 12:05 GMT). A full sync on their side can disrupt people working in Dokka. Support confirmed Dokka ran that full update (13:31 GMT). At 13:42 GMT the customer said those parts were now working. Opened 2026-10-20 13:57 BST.
+
+This is not the split-receipt sync above. The accounting-family mapping was already correct. Do not change GL accounts to force a match. There is no user button in this call. The supplier runs the full refresh, after the owner agrees a window. Do not invent the payload.
+
+A related tax or greyed-field case was still open. This refresh does not close it.
+
+Proven: supplier full refresh, then the customer confirmed the parts. Not proven: how the supplier refresh works, or the cache mechanism.

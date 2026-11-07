@@ -35,3 +35,8 @@ Not proven: the menu path and a sent email.
 ## Stop
 
 Stop if the column is absent entirely, or if the proposal is a direct table edit or a new privilege.
+
+
+## Where to add the translation (SC263185)
+
+This is the menu for the SC263220 fix, not a second production proof. There is no mass update. Add the missing translation per column at System Management > Dictionaries > Translation > Titles > Form Columns (Revised Titles). The supplier repeated that path on 2026-10-15. A Form Generator translation subform was also mentioned. Use the path that matches the column. Do not write the dictionary tables directly. Still match the installation language. Still recheck a sent message separately. Editor visibility remains what SC263220 proved.

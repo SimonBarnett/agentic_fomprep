@@ -92,3 +92,10 @@ A second capacity incident. An old January backup was sitting at a drive root, o
 That delete is not permission to remove backups. No restore test was recorded. A DBA still has to check policy, the restore chain, offsite copies, and the approved scope before any file is removed. Free space is not proof the remaining backups are valid. Do not shrink databases or silence the alert. The drive letter is omitted on purpose.
 
 This is separate from the SQLBACKUPDAYS guess in SC263422. Do not mix them into one retention change.
+
+
+## A backup.zip is not automatically disposable (SC263205)
+
+On 2026-10-15 11:43 BST support deleted a backup.zip that was using a lot of space. At 11:44:56 BST monitoring reported OK, and free space was 22 percent after an earlier critical reading around 6 percent. Opened 2026-10-14.
+
+The archive's role in the restore chain was not documented. This is capacity relief, not a corrected retention policy. Do not treat every backup.zip as safe to delete. No shrink and no fabricated backup history. A DBA still checks restorable copies before removal.

@@ -175,3 +175,4 @@ books use `harvest-agent-skills` pointing at their home.)
 - Launcher-v tags must pass -p:Version / FileVersion / InformationalVersion into dotnet publish; csproj Version 1.0.0 is only the local default.
 - Custom SQLI queue columns must not be named PART/SERIAL/SERN; use QPART-style names
 - agentic_fomprep UAT #0: confirm open issues/PRs clear, run tests/Test-*.ps1 + Test-PriorityCatalog on main, SKIP live Form Prep without connections file, docs/UAT-LOG PR then gh release create uat-YYYY-MM-DD
+- Analytics optional child fields can inner-join away parents without that child; removing the field restores parents; do not invent outer-join or zero-value child rows

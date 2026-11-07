@@ -1,4 +1,4 @@
-<!-- rules-version: 4 -->
+<!-- rules-version: 5 -->
 # Priority agent rules (from the Priority Agent launcher)
 
 The launcher fills in the {{...}} values on every start. These rules sit on top of
@@ -16,7 +16,7 @@ too, if they exist.
 - Customer: {{CUSTOMER}} ({{CUSTOMER_REPO}}, local clone `{{CUSTOMER_DIR}}`)
 - Project or service call: {{PROJECT}} (`{{PROJECT_DIR}}`)
 - Working directory: `{{WORK_DIR}}`
-- Session: `{{SESSION}}` (hours tag `session:{{SESSION_SHORT}}`)
+- Session: `{{SESSION}}` (hours `idempotency_key` `priority-agent-{{SESSION}}`)
 
 {{AIRC_SECTION}}
 
@@ -65,47 +65,34 @@ needed, tell Simon to ask Haitch: "Ask Haitch: new customer repo for <X>" or
 
 ## Hours: MANDATORY, every session
 
-Priority agents MUST report their hours. **Every session ends with hours lines**, even short ones.
-The launcher checks for them when you exit. If they are missing it relaunches you until they are written.
+Priority agents MUST report their hours. **Every session opens and closes a Bob Fleet hours
+webhook entry**, even short ones. The store is **https://bob.ntsa.uk/bob/v1/hours** (not a git
+`hours` branch). Follow skill `hours-log-work-session` and bobiverse `jeeves/docs/webhooks.md`.
 
-- Repo: **{{HOURS_REPO}}**. For a customer or project session that is the customer repo; for a
-  general-Priority-only session it is SimonBarnett/agentic_fomprep.
-- File: `hours/YYYY-MM-DD.md` (today is {{TODAY}}) on the **`hours` branch only**. Never put it on main,
-  and don't open a PR for it.
-- Use a separate worktree so the working checkout is not disturbed:
-  ```
-  git -C "{{HOURS_REPO_DIR}}" fetch origin
-  git -C "{{HOURS_REPO_DIR}}" worktree add "{{HOURS_WORKTREE}}" hours
-  ```
-  - If the worktree already exists: `git -C "{{HOURS_WORKTREE}}" pull --ff-only`.
-  - If the repo has no `hours` branch yet, create it from the default branch:
-    `git -C "{{HOURS_REPO_DIR}}" worktree add -b hours "{{HOURS_WORKTREE}}" origin/main`
-    and then `git push -u origin hours`.
-- Template: start each new day file from `hours/_template.md` on that branch. If the repo has none,
-  copy it from SimonBarnett/ce-dayworks `hours/_template.md` (local copy:
-  `{{FOMPREP_DIR}}\launcher\hours-template.md`) and commit it to `hours`.
-  - Set `date:` to the day.
-  - Set `agent: priority-grok`.
-  - Leave `status: staged`.
-- Write **at least two lines for this session**: one `dev` line and one `test` line. Append them to the table.
-  - Hours are **human-equivalent**: what a competent consultant would bill, not agent run time.
-    Use 0.0 for a role that genuinely had no effort, and say why in the description.
-  - Every line needs **evidence**: a link to a PR, commit, file or log. End the evidence cell with
-    the session tag **`session:{{SESSION_SHORT}}`**. The launcher looks for that tag.
-  - project = Priority project or service call ({{PROJECT}}, or the code in project.md); wbs = 5 unless known, `?` if unsure.
-  - Example: `| {{PROJECT}} | 5 | dev | 1.5 | Plain deliverable wording | PR #12 session:{{SESSION_SHORT}} |`
-- Rules:
-  - The file is append-only: never edit or delete a pushed line, and never force-push or delete the branch.
-    To correct a line, add a minus line with the reason.
-  - Commit and **push to `origin hours`**. Haitch picks the files up from GitHub.
-  - Haitch proposes the bookings, Simon approves them, and only Haitch sets `booked`.
-    Never book hours in Priority yourself.
-
-Also append a short entry to the project work log `log.md` in `{{PROJECT_DIR}}` (when a project is selected).
+- On start (or as soon as you begin billable work), `POST https://bob.ntsa.uk/bob/v1/hours` with an
+  open entry. Reuse the same `idempotency_key` on retry so you never create duplicates.
+  - Required: `idempotency_key`, `agent`, `start` (ISO-8601).
+  - Recommended key: **`priority-agent-{{SESSION}}`** (full session uuid).
+  - Also send when known: `on_behalf_of` (Priority USERLOGIN), `customer`, `project`, `repo_url`,
+    `description`, `source` (this machine), `billable_hint`.
+  - Use accepted field names only (`start` / `end` / `customer` / `project`). Never send credential
+    fields. Never log request bodies or print secrets.
+- Store the returned entry id with the session. On long sessions, heartbeat every 15-30 minutes:
+  `POST https://bob.ntsa.uk/bob/v1/hours/{id}/heartbeat`.
+- Before you stop: `POST https://bob.ntsa.uk/bob/v1/hours/{id}/close` with `{"end":"..."}`.
+  Closed-in-one-POST (`start` + `end` together) is fine for a short session. Nothing may stay open
+  past the webhook timeout without a reason note.
+- Hours are **human-equivalent**: what a competent consultant would bill, not agent wall-clock.
+  Use a clear description; Haitch proposes bookings, Simon approves them. Never book hours in
+  Priority yourself.
+- **CAST IRON project work log:** also append a short entry to `log.md` in `{{PROJECT_DIR}}`
+  (when a project is selected). Create the file if missing. `log.md` is billing narrative evidence;
+  it is **not** the hours database. The webhook entry is the store the launcher checks.
 
 ## End of session
 
 Before you stop:
-- Write and push your hours lines (above). This is not optional.
-- Summarise what changed and where: general PR, customer repo, project folder, hours.
+- Close your hours webhook entry (above). This is not optional.
+- Append the project `log.md` evidence when a project is selected.
+- Summarise what changed and where: general PR, customer repo, project folder, hours entry id.
 - List anything that needs Simon or Haitch.

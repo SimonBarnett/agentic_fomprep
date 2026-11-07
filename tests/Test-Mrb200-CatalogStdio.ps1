@@ -24,7 +24,7 @@ Gate 'catalog-dir' ($src -match 'v2.*mcp-catalog.*catalog') 'serves clone catalo
 Gate 'four-tools' ($cat -match 'list_catalog' -and $cat -match 'get_skill' -and $cat -match 'get_instance_schema' -and $cat -match 'get_runner_files') 'same 4 tools'
 Gate 'path-dotdot' ($cat -match 'Contains\("\.\."\)') 'runner path rejects ..'
 Gate 'no-compile' ($cat -match 'does not compile Priority forms' -or $cat -match 'does not prepare forms') 'catalog-only'
-Gate 'rules-v2' ([int]([regex]::Match($rl, 'rules-version:\s*(\d+)').Groups[1].Value) -ge 2) 'rules-version >= 2'
+Gate 'rules-v2' ([int]([regex]::Match($rl, 'rules-version:\s*(\d+)').Groups[1].Value) -ge 5) 'rules-version >= 5'
 Gate 'passwords-local' ($rl -match 'on the machine you are running on' -and $rl -match 'redqueen' -and $rl -match 'ask Haitch for it') 'C:\passwords is local; missing file -> ask Haitch'
 Gate 'connect-no-ask' ($rl -match "don't need to ask first" -or $rl -match 'without asking first') 'rules v2 connect'
 Gate 'no-echo-secrets' ($rl -match 'Never.*commit' -or $rl -match 'Never\*\* commit') 'still never commit/echo'

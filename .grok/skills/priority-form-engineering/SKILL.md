@@ -69,6 +69,12 @@ lock on `:$1.*`. Two generic causes:
    matches 0 rows). DEFAULT + backfill; users must re-retrieve.
 
 Authority: `docs/skill-sources/programming/MSG154_OPTIMISTIC_LOCK.md`.
+
+Work-order close where custom logic writes the backend balance before the
+transition completes is a different incident. Do not apply this resync or
+backfill as that repair. Route it to
+**priority-service-desk-record-modified-custom-close**.
+
 Identity UPDATE 8102: `INDEXES_TYPE_A_IDENTITY.md`.
 
 ## Related programming skills

@@ -52,6 +52,8 @@ for d in sorted(catalog.iterdir(), key=lambda p: p.name):
         topic = "integrations"
     elif "ops-support" in name:
         topic = "support-desk"
+    elif name.startswith("priority-service-desk"):
+        topic = "service-desk"
     elif "ops-customer" in name:
         topic = "customer-guides"
     elif "ops-sop" in name or "help-wizard" in name:

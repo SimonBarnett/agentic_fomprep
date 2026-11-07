@@ -10,7 +10,7 @@ Unknown: final stock figures, recreated document ids, and a full period or costi
 
 ## Prerequisites
 
-Approved backup or a Test reproduction, period controls, an audit trail, and inventory plus costing sign-off before any deletion, repost, or past-balance recalculation. Read-only tracing is the default. This harvest does not authorize those writes.
+Before authorized Live correction, require a verified backup/recovery plan, owner-approved Test rehearsal where feasible, period controls, audit trail and inventory/costing sign-off. Test reproduction alone is insufficient. Read-only tracing is the default. This harvest does not authorize those writes.
 
 ## Steps for the evidence pack
 
@@ -18,7 +18,7 @@ Approved backup or a Test reproduction, period controls, an audit trail, and inv
 2. Ask which past-balance and costing periods have already been run.
 3. Confirm whether warehouse transfers exist. In SC263492 they did not. Do not assume they do.
 4. Hand the pack to the inventory and costing owner with the menu path that support gave: Inventory > Warehouse Control > Past Balances > Update Invent. by Past Balance. The owner decides whether a document correction is required first.
-5. After an approved correction, compare before and after balances with that owner. Record the comparison outside this skill if it contains figures.
+5. After a later correction that meets the owner controls above, compare before and after balances with that owner. Record the comparison outside this skill if it contains figures. Formal approval and backup evidence for SC263492 were not retrieved.
 
 ## Verification
 

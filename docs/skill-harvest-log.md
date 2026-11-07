@@ -1,5 +1,7 @@
 ﻿# Skill harvest log
 
+- 2026-11-07: `priority-service-desk-last-purchase-price-report`. SC263402 report built in Part Catalogue Report Generator for last purchase price and date on R parts, then added to the menu. Field identifiers were not retrieved. No price update.
+
 - 2026-11-07: Service-desk topic plus `priority-service-desk-record-modified-custom-close`. Work-order close record-modified when custom close logic sets the backend balance before the transition completes (SC263394, customer confirmed 2026-11-06). Exact code edit unknown. Diagnosis, authorized Test repro, escalate to the customization owner. Not the MSG154 original-buffer resync. Holds and unresolved calls from the same scan were not harvested.
 
 - 2026-10-26: SaaS OIDC login residuals - PowerShell ordered-map `&` join; HttpClient no-auto-redirect; consent GET+UA; OData Bearer empty HTTP 500 = DNAME/API gap (stop guessing); WCF formStart REST may 404 on SaaS. `SAAS_OIDC_LOGIN.md` + catalog `priority-saas-oidc-login` v1.1.0.

@@ -1,5 +1,7 @@
 # Skill harvest log
 
+- 2026-11-07: `priority-service-desk-blank-partname-report`. SC263245 consumables report blank lines came from empty part link rows. PART.PARTNAME <> '' was deployed and the customer confirmed. Line 800 is not universal.
+
 - 2026-11-07: `priority-service-desk-analytics-child-field`. SC263252 shipping-voucher Analytics hid parents without Additional Expenses while a child cost field was included. Removing the field restored parents. Full cost report not implemented.
 
 - 2026-11-07: `priority-service-desk-ui-language-print`. SC263256 printouts were wrong in American English. Changing the UI language fixed them. Target language not named. Not the tile or OData language cases.

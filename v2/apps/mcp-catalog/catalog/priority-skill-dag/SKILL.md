@@ -63,6 +63,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File tools\priority-skill-dag\Bui
 | `financials` | VAT, COGS, Intrastat, SOX, year-end |
 | `integrations` | API, portal, EDI, sync |
 | `support-desk` | SP003, BPM service calls |
+| `service-desk` | Confirmed service-call resolutions (`priority-service-desk-*`). Not the SP003 hub. |
 | `customer-guides` | Customer-ready checked guides + user-guides |
 | `sop` | Official Priority SOP markdown |
 | `packages` | Installed-as-Standard packs |

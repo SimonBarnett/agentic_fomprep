@@ -44,3 +44,14 @@ This is not Branch A (former employee) and not Branch B (P.Account Sign Up untic
 Steps: an authorized system manager or the user corrects the intended mapping through the approved account flow, then retries the same login. Do not sign in as someone else, share a password, or substitute an arbitrary mailbox.
 
 Proven: the customer could log in after aligning the email. Not proven: which field was edited.
+
+
+## Reactivation restored access only (SC263260)
+
+Issue type: the person cannot sign in because the user is inactive. An owner-approved seat change allowed reactivation.
+
+Known: on 2026-10-19 09:57 BST support recorded that the user was inactive, it was made active again after the owner confirmed, and access was sorted. Opened 2026-10-19 09:56 BST.
+
+Not this fix: missing tiles were attributed to American versus British English. No language change and no tile recovery were recorded. Do not say language correction restored the tiles.
+
+Do not deactivate someone else to free a licence. Do not share a login. This is not the email-mismatch branch and not the P.Account Sign Up branch.

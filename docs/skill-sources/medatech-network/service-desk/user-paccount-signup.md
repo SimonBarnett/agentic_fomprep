@@ -31,3 +31,16 @@ Not proven: every login mode, and an audit row for the tick-box change.
 ## Stop or escalate
 
 Stop if the employee is former and HR has not approved a return. Stop if the request is a password reset or a mailbox change. Escalate account changes to the system manager. No security bypass.
+
+
+## Third branch: login email does not match the user record (SC263378)
+
+Issue type: cloud sign-in fails because the email used to log in is not the email on the intended Priority user. Cache clearing did not fix it.
+
+Known: on 2026-10-29 11:34 GMT the customer said there was a different email address, they changed it, and login was good. Opened 2026-10-27 11:44 GMT. Which side changed (the typed address or the stored user email) was not recorded. Do not prescribe one field for every case. Do not write the addresses down.
+
+This is not Branch A (former employee) and not Branch B (P.Account Sign Up unticked). Compare the identity email with the user definition before clearing cache again.
+
+Steps: an authorized system manager or the user corrects the intended mapping through the approved account flow, then retries the same login. Do not sign in as someone else, share a password, or substitute an arbitrary mailbox.
+
+Proven: the customer could log in after aligning the email. Not proven: which field was edited.

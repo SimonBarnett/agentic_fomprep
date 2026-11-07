@@ -20,6 +20,8 @@ topic_depends = {
     "financials": ["sop"],
     "integrations": ["install-upgrade", "system-admin"],
     "support-desk": ["system-admin", "customer-guides"],
+    # Confirmed service-call resolutions. Not the SP003/BPM hub.
+    "service-desk": ["support-desk", "system-admin"],
     "customer-guides": ["sop"],
     "sop": [],
     "packages": ["install-upgrade", "procedures"],
@@ -177,6 +179,9 @@ def infer_skill_topic(name: str) -> str:
         return topic
     if name.startswith("priority-ops-"):
         return name.replace("priority-ops-", "")
+    # priority-ops-<rest> would invent a fake topic id. Keep this prefix.
+    if name.startswith("priority-service-desk-"):
+        return "service-desk"
     if name == "priority-help-wizards":
         return "forms-code"
     if name == "priority-skill-dag":

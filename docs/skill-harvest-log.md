@@ -1,5 +1,7 @@
 # Skill harvest log
 
+- 2026-11-07: `priority-service-desk-ui-language-print`. SC263256 printouts were wrong in American English. Changing the UI language fixed them. Target language not named. Not the tile or OData language cases.
+
 - 2026-11-07: Enriched `priority-odata-dev` with SC263233. Lead tasks were missing until the installed language code was added after the ini file. 2 and 3 are the supplier's British and American codes, not a hardcoded default.
 
 - 2026-11-07: `priority-service-desk-mobile-app-update-registration`. SC263416 login succeeded after app update to the then-current 183.2.79 and user registration. That build is not a standing target. Update and registration were not isolated.

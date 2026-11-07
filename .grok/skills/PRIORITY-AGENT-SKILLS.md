@@ -56,6 +56,7 @@ IncludeDba=False IncludeCustomer=False
 - priority-service-desk-orphan-wo-past-balance
 - priority-service-desk-record-modified-custom-close
 - priority-service-desk-report-browser-site-data
+- priority-service-desk-ui-language-print
 - priority-service-desk-user-paccount-signup
 - priority-service-desk-webhook-sync-mitigation
 - priority-shell-compile

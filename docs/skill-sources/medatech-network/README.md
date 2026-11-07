@@ -31,6 +31,7 @@ Loader skill: `priority-skill-dag`
 | `financials/` | VAT, COGS, costing |
 | `integrations/` | API, portal, EDI, sync |
 | `support-desk/` | SP003, BPM |
+| `service-desk/` | Confirmed service-call resolutions. One documented fix per `priority-service-desk-*` skill. |
 | `customer-guides/` | Customer-ready + user-guides |
 | `sop/` | Official SOP (incl. version-15) |
 | `packages/` | Installed-as-Standard |

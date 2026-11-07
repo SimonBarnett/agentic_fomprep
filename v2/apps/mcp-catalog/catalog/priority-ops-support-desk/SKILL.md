@@ -28,3 +28,7 @@ Lesson root: `docs/skill-sources/medatech-network/support-desk/`
 ## Related catalog skills
 
 Use `Resolve-SkillDag.ps1` to pick overlapping executable skills (shell-install, formprep, mcp-*, backup-*, etc.).
+
+## Service-desk resolutions
+
+BPM and SP003 stay in this hub. Confirmed fault-resolution playbooks are topic `service-desk` (`priority-service-desk-*`), one skill per documented fix. Resolve those with the symptom query. Do not paste the fix into this leaflet.

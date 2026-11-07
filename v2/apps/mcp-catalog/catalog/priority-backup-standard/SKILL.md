@@ -70,3 +70,16 @@ Auditor or cutover skill can map every instance to this table with no ambiguous 
 ## Canonical doc
 
 `docs/skill-sources/dba/BACKUP_STANDARD.md` (harvested reference; CE is one example deployment).
+
+
+## Example: disk-pressure cleanup is not a new retention standard (SC263422)
+
+Issue type: database disk monitoring went critical while backup files were retained. This example does not replace the 14-day `.bak` / 3-day `.trn` policy above.
+
+Known mitigation: on 2026-10-29 an operator, with the cleanup recorded at 13:39 GMT, deleted older backups and kept the latest-night backup. Monitoring reported RECOVERY / OK at 13:46 GMT. That is short-term free space, not a restore test and not proof the retention constant is correct.
+
+Unknown: why SQLBACKUPDAYS set to 2 still showed 3 backups. The note that changing it from 2 to 1 might then keep 2 was an explicit guess. Do not copy 2-to-1, or any other constant edit, as a universal retention setting. The next scheduled cycle was not verified. No restore was demonstrated.
+
+Steps: read the monitoring trend and list what is actually using space, per company, including which backup is the latest restorable copy and what recovery retention is required. Treat a constant-versus-file-count mismatch as a hypothesis until the next cycle is observed. An authorized backup owner chooses any deletion or retention change. This harvest authorizes neither. After cleanup, watch free space and backup health. Deleting a company or a database is not this mitigation.
+
+Opened 2026-10-29 08:30 GMT. SC263449 asked which copy companies might be deleted and did not record an approved cleanup. Do not merge that call into this example.

@@ -1,4 +1,4 @@
-# FR-F — Docs park pointer (process)
+# FR-F --- Docs park pointer (process)
 
 ## Goal
 
@@ -7,7 +7,7 @@ Park this FR vision + FR mirrors under `docs/` on agentic_fomprep; open implemen
 ## Deliverables
 
 - `docs/feature-request-priority-agent-hours-webhook-2026-11-07.md`
-- `docs/fr/FR-A-*.md` … `FR-E-*.md` (and this FR-F mirror)
+- `docs/fr/FR-A-*.md` ... `FR-E-*.md` (and this FR-F mirror)
 - Docs-only PR from clean origin/main worktree
 - Issue filing: one GitHub issue per small FR
 

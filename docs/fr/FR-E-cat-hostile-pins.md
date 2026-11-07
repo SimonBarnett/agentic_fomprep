@@ -1,8 +1,8 @@
-# FR-E — CAT / hostile pins for hours webhook cutover
+# FR-E --- CAT / hostile pins for hours webhook cutover
 
 ## Goal
 
-Catalog or launcher tests lock Success needles S1–S6 after product FRs merge.
+Catalog or launcher tests lock Success needles S1-S6 after product FRs merge.
 
 ## Deliverables
 

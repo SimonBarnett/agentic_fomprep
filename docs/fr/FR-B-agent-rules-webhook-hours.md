@@ -1,4 +1,4 @@
-# FR-B — agent-rules.md webhook hours (rules-version bump)
+# FR-B --- agent-rules.md webhook hours (rules-version bump)
 
 ## Goal
 

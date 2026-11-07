@@ -1,4 +1,4 @@
-# FR-C — launcher README + hours-template legacy
+# FR-C --- launcher README + hours-template legacy
 
 ## Goal
 

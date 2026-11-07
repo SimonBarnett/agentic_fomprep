@@ -1,4 +1,4 @@
-# FR-A — Launcher HoursCheck → bob.ntsa.uk webhook
+# FR-A --- Launcher HoursCheck -> bob.ntsa.uk webhook
 
 ## Goal
 
@@ -14,6 +14,6 @@ PriorityAgent exit and `--check-hours` pass only when GET `https://bob.ntsa.uk/b
 
 ## Testable
 
-- Fixture with one closed matching entry → pass.
-- Missing / open-only / wrong key → fail.
+- Fixture with one closed matching entry -> pass.
+- Missing / open-only / wrong key -> fail.
 - Gate path does not fetch `origin/hours`.

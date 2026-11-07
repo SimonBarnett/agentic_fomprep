@@ -1,4 +1,4 @@
-# FR-D — harvest-agent-skills + skill host/store hygiene
+# FR-D --- harvest-agent-skills + skill host/store hygiene
 
 ## Goal
 
@@ -6,7 +6,7 @@ No skill teaches git hours branch as the hours store; HTTP `/bob/v1/*` hosts in 
 
 ## Deliverables
 
-- Fix `.grok/skills/harvest-agent-skills/SKILL.md` bullet "hours on hours branch" → webhook store on bob.ntsa.uk.
+- Fix `.grok/skills/harvest-agent-skills/SKILL.md` bullet "hours on hours branch" -> webhook store on bob.ntsa.uk.
 - Sweep `.grok/skills` + `docs/skill-sources` for store-on-branch wording and `irc.ntsa.uk` + `/bob/v1` HTTP cues.
 - Leave IRC Ergo `irc.ntsa.uk` wording alone when it is about IRC connectivity.
 

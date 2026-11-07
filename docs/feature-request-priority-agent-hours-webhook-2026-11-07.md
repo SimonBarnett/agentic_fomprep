@@ -1,8 +1,8 @@
-# Feature request: Priority Agent hours → bob.ntsa.uk webhook (full cutover)
+# Feature request: Priority Agent hours -> bob.ntsa.uk webhook (full cutover)
 
 **Repo:** SimonBarnett/agentic_fomprep  
 **Date:** 2026-11-07  
-**Shape:** app (PriorityAgent.exe + skills/docs) — reuse existing  
+**Shape:** app (PriorityAgent.exe + skills/docs) --- reuse existing  
 **Plan folder:** `bob/plan/work/plan-20261107-142159`
 
 ## Ultimate objective
@@ -28,32 +28,32 @@ Priority Agent sessions record billable hours only via the Bob Fleet hours webho
 - `launcher/README.md` documents hours-branch enforcement.
 - `.grok/skills/harvest-agent-skills/SKILL.md` lesson still says "hours on hours branch".
 - hours-* skills already correctly cite `https://bob.ntsa.uk/bob/v1/hours`.
-- Intake/report already use bob.ntsa.uk. `AircSupport.cs` "irc.ntsa.uk" strings are IRC Ergo connectivity — keep.
+- Intake/report already use bob.ntsa.uk. `AircSupport.cs` "irc.ntsa.uk" strings are IRC Ergo connectivity --- keep.
 
 ## Architecture
 
 ```
 PriorityAgent.exe
   rules: POST https://bob.ntsa.uk/bob/v1/hours (open) / close on exit
-  HoursCheck: GET https://bob.ntsa.uk/bob/v1/hours?user=…&status=closed
+  HoursCheck: GET https://bob.ntsa.uk/bob/v1/hours?user=...&status=closed
              pass iff one closed entry with session idempotency_key
   relaunch prompt: close hours on webhook (not push hours branch)
 Skills: append {project}/log.md for billing narrative (not the hours DB)
 ```
 
 **Wire SoT:** bobiverse `jeeves/docs/webhooks.md` (FR #3450 / #3673).  
-GET requires `user=`; optional `status`. No session query param — match `idempotency_key` client-side (recommended pattern `priority-agent-<session-uuid>`).
+GET requires `user=`; optional `status`. No session query param --- match `idempotency_key` client-side (recommended pattern `priority-agent-<session-uuid>`).
 
-**UNKNOWN for implementers:** launcher source of Priority USERLOGIN for `?user=` (env / connections / prompt) — document in FR-A; do not invent instance URLs or secrets.
+**UNKNOWN for implementers:** launcher source of Priority USERLOGIN for `?user=` (env / connections / prompt) --- document in FR-A; do not invent instance URLs or secrets.
 
 ## Host rule
 
-- HTTP `/bob/v1/*` → **bob.ntsa.uk**
-- IRC Ergo → **irc.ntsa.uk** (do not rewrite airc IRC reason strings)
+- HTTP `/bob/v1/*` -> **bob.ntsa.uk**
+- IRC Ergo -> **irc.ntsa.uk** (do not rewrite airc IRC reason strings)
 
 ## Small FRs
 
-See `docs/fr/FR-A-*.md` … `FR-F-*.md` and GitHub issues (one issue per FR).
+See `docs/fr/FR-A-*.md` ... `FR-F-*.md` and GitHub issues (one issue per FR).
 
 ## Out of scope
 

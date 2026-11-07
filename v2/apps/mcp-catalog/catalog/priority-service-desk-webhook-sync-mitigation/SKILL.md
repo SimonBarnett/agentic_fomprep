@@ -53,3 +53,16 @@ Not proven: the network root cause, delivered webhook events, or a successful re
 ## Stop or escalate
 
 Do not disable rules without the business owner. Do not close the integration defect because the screen is fast. Do not change firewalls or bypass TLS. Escalate the endpoint to the integration owner and to Priority support for the traffic question, as this call did.
+
+
+## Different endpoint: replay a bounded invoice backlog (SC263337)
+
+Issue type: after a cloud move, new invoices flow again but invoices missed during the outage do not. Restoring the path does not replay history.
+
+Known: on 2026-11-04 13:17 GMT the customer said a newly finalized invoice appeared on the portal by itself. The same day at 15:12 GMT support posted one payload per missed invoice to the configured receiver and each result was "Webhook received & Processed". On 2026-11-05 08:43 GMT the customer said the backlog looked good. SC263431 was the duplicate of this call and is the same evidence, not a second repair.
+
+Unknown: the permanent network change. The repair subform returned HTTP 500, so that text was not read. Do not describe an allowlist, a firewall rule, or an authentication scheme for this endpoint. It is not SC263461 and it is not the SC263405 host.
+
+Do not publish the receiver, the payload, or credentials. Do not POST from this skill. An authorized integration owner replays only the enumerated missed invoices, checks which ones already arrived, records the acknowledgement, and reconciles with the customer. No replay of every document. No second financial document if the target already has it.
+
+Proven: new invoices resumed, the bounded replay was acknowledged, and the customer accepted the backlog. Not proven: the network edit, idempotency rules, and the receiver schema.

@@ -90,6 +90,17 @@ trip msg 154. Prefer one session while reproducing leave-line saves.
 2. Leave-line-style `UPDATE … WHERE EXTFILENAME=''` (stale :$1) → 0 rows
 3. After PRE-UPDATE resync, leave-line UPDATE matches 1 row
 
+## Different incident -- custom work-order close
+
+The same error text can appear when custom close logic writes the backend
+balance before the close transition completes, while the screen still shows
+the prior balance. That incident is not Cause A or Cause B. The recorded
+correction was to the custom work-order closing development. The exact
+trigger name and code edit are unknown. Do not apply the PRE-UPDATE resync
+or the nullable-column backfill as that repair, and do not invent the edit.
+
+Route: catalog `priority-service-desk-record-modified-custom-close`.
+
 ## Related
 
 - Identity 8102 / TYPE=A: `INDEXES_TYPE_A_IDENTITY.md`

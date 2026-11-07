@@ -50,9 +50,17 @@ IncludeDba=False IncludeCustomer=False
 - priority-recalc-concurrency
 - priority-report-form-zooms
 - priority-saas-oidc-login
+- priority-service-desk-analytics-child-field
+- priority-service-desk-form-designer-multi-record
+- priority-service-desk-inventory-conversion-raw-lot
+- priority-service-desk-mobile-app-update-registration
+- priority-service-desk-orphan-wo-past-balance
 - priority-service-desk-record-modified-custom-close
 - priority-service-desk-blank-partname-report
 - priority-service-desk-report-browser-site-data
+- priority-service-desk-ui-language-print
+- priority-service-desk-user-paccount-signup
+- priority-service-desk-webhook-sync-mitigation
 - priority-shell-compile
 - priority-shell-install
 - priority-skill-dag

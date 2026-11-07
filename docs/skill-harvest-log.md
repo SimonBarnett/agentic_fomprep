@@ -2,12 +2,32 @@
 
 - 2026-11-07: `priority-service-desk-blank-partname-report`. SC263245 consumables report blank lines came from empty part link rows. PART.PARTNAME <> '' was deployed and the customer confirmed. Line 800 is not universal.
 
+- 2026-11-07: `priority-service-desk-analytics-child-field`. SC263252 shipping-voucher Analytics hid parents without Additional Expenses while a child cost field was included. Removing the field restored parents. Full cost report not implemented.
+
+- 2026-11-07: `priority-service-desk-ui-language-print`. SC263256 printouts were wrong in American English. Changing the UI language fixed them. Target language not named. Not the tile or OData language cases.
+
+- 2026-11-07: Enriched `priority-odata-dev` with SC263233. Lead tasks were missing until the installed language code was added after the ini file. 2 and 3 are the supplier's British and American codes, not a hardcoded default.
+
+- 2026-11-07: `priority-service-desk-mobile-app-update-registration`. SC263416 login succeeded after app update to the then-current 183.2.79 and user registration. That build is not a standing target. Update and registration were not isolated.
+
+- 2026-11-07: Enriched `priority-formprep` with SC263320 and SC263343. After a move, preparing forms (and, for SC263343, procedures) cleared unprepared-form access. Exact commands were not recorded. Procedures stay on priority-procedure-prep.
+
 - 2026-11-07: Enriched `priority-ops-install-upgrade` v1.1.0. SC263521 mobile security-certificate error cleared by installing the intermediate certificate (technician and customer confirmed); reboot and service recovery had already failed for that mobile error. Exact store and command unknown. SC263488 is a different case: services had not started after reboot, IT started them, Priority came back. Service names unknown. Do not treat either example as the other.
 - 2026-11-07: Service-desk topic plus `priority-service-desk-record-modified-custom-close`. Work-order close record-modified when custom close logic sets the backend balance before the transition completes (SC263394, customer confirmed 2026-11-06). Exact code edit unknown. Diagnosis, authorized Test repro, escalate to the customization owner. Not the MSG154 original-buffer resync. Holds and unresolved calls from the same scan were not harvested.
 
 - 2026-11-07: Enriched `priority-backup-standard` v1.1.0 with SC263422. Disk recovered after older backups were removed and the latest-night backup was kept. SQLBACKUPDAYS 2-to-1 was a guess, not a new retention standard. Monitoring OK is not a restore test.
 
 - 2026-11-07: `priority-service-desk-report-browser-site-data`. SC263476 report ran in incognito; clearing that tab's cache and cookies let the user run it. Plugin was already installed and detected. Exact cached item unknown.
+
+- 2026-11-07: `priority-service-desk-inventory-conversion-raw-lot`. SC263474: new lot must exist in Raw Material Lots before Inventory Conversion selection. Leave the conversion in Draft. Customer said the draft path was done. Finalized stock movement was not demonstrated. PLotByVendor=1 was observed there and is not a universal setting change.
+
+- 2026-11-07: `priority-service-desk-user-paccount-signup`. SC263458: a former-employee flag inactivated the linked user; a later active user failed registration because P.Account Sign Up was unticked. Support corrected that box and the customer retry worked. Do not reactivate departed employees from this skill.
+
+- 2026-11-07: `priority-service-desk-webhook-sync-mitigation`. SC263461: synchronous WebhookProcess used about 20s of a 21s request while outbound TLS failed. Temporarily disabling the listed business-rule webhooks restored performance (customer confirmed). Permanent endpoint repair and re-enable were not done. Mitigation only.
+
+- 2026-11-07: `priority-service-desk-form-designer-multi-record`. SC263454: Form Designer change of the multi-record view generated multi-record entries; the design was copied to other users; customer said live was correct. Missing-entry cause and field list unknown. Not priority-form-engineering.
+
+- 2026-11-07: `priority-service-desk-orphan-wo-past-balance`. SC263492: part created with no work-order number. Warehouse transfer was checked and was not the cause. Customer completed support-advised document corrections and Update Invent. by Past Balance, then said it was sorted. Formal approval, backup and full reconciliation evidence were not retrieved; future corrections require the stated owner controls. Escalation only. No autonomous delete or repost.
 
 - 2026-10-26: SaaS OIDC login residuals - PowerShell ordered-map `&` join; HttpClient no-auto-redirect; consent GET+UA; OData Bearer empty HTTP 500 = DNAME/API gap (stop guessing); WCF formStart REST may 404 on SaaS. `SAAS_OIDC_LOGIN.md` + catalog `priority-saas-oidc-login` v1.1.0.
 - 2026-10-25: Priority SaaS / Cloud interactive login â€” tenant `POST /webui/<tenant>` exposes `_tabulaini=tabâ€¦.ini`; OIDC `priority-web` + PKCE; Accounts `login/checkPassword` then `mfa/checkotp` (single-use); consent redirect; `/auth/oauth2/token`; Bearer for tenant POST. New `docs/skill-sources/programming/SAAS_OIDC_LOGIN.md` + catalog `priority-saas-oidc-login` v1.0.0; pointers in `ODATA_REST_CLOUD.md` and `priority-mcp-setup`. Source: generic SaaS connectivity (customer names stripped).

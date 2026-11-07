@@ -1,0 +1,6 @@
+{
+  "name": "priority-service-desk-analytics-child-field",
+  "title": "Optional Analytics child field hides parent rows",
+  "description": "Removing an optional Analytics child cost field restores parent rows that have no child. It does not deliver parent rows plus child costs. No outer-join switch exists.",
+  "version": "1.0.0"
+}

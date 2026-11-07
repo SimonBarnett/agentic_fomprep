@@ -819,11 +819,21 @@ if (Test-Path -LiteralPath $harvestSkill) {
     $bom = $false
     $bytes = [System.IO.File]::ReadAllBytes($harvestSkill)
     if ($bytes.Length -ge 3 -and $bytes[0] -eq 0xEF -and $bytes[1] -eq 0xBB -and $bytes[2] -eq 0xBF) { $bom = $true }
-    if ($hasSection -and $hasRepo -and $hasReport -and $hasInvoke -and $hasReferral -and $hasBacklog -and -not $bom) {
+    # FR #276: whole-file ASCII (same bar as test-fr002); CAT-T61 previously only checked no BOM
+    $asciiHits = @()
+    $li = 0
+    foreach ($line in (Get-Content -LiteralPath $harvestSkill -Encoding UTF8)) {
+        $li++
+        foreach ($ch in $line.ToCharArray()) {
+            if ([int]$ch -gt 127) { $asciiHits += ('L{0}:U+{1:X4}' -f $li, [int]$ch); break }
+        }
+    }
+    if ($hasSection -and $hasRepo -and $hasReport -and $hasInvoke -and $hasReferral -and $hasBacklog -and -not $bom -and ($asciiHits.Count -eq 0)) {
         $harvestOk = $true
-        $harvestWhy = 'harvest-agent-skills CAST IRON intake lesson + wrappers + referral + #109-#118 + no BOM'
+        $harvestWhy = 'harvest-agent-skills CAST IRON intake lesson + wrappers + referral + #109-#118 + no BOM + ASCII'
     } else {
-        $harvestWhy = "section=$hasSection repo=$hasRepo report=$hasReport invoke=$hasInvoke referral=$hasReferral backlog=$hasBacklog bom=$bom"
+        $harvestWhy = "section=$hasSection repo=$hasRepo report=$hasReport invoke=$hasInvoke referral=$hasReferral backlog=$hasBacklog bom=$bom ascii=$($asciiHits.Count)"
+        if ($asciiHits.Count -gt 0) { $harvestWhy += ' ' + ($asciiHits -join ',') }
     }
 }
 Add-Gate 'CAT-T61' $harvestOk $harvestWhy

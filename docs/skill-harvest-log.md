@@ -1,5 +1,7 @@
 # Skill harvest log
 
+- 2026-11-07: `priority-service-desk-mrp-production-days`. SC263299 practice company: quantity 5 and Production Days 21 with Time per Batch, MRP without Work Plan, duration 21 not 105. Customer tested maximum 100. Not live. Numbers are not universal. Earlier Work Plan advice is superseded for this case.
+
 - 2026-11-07: Enriched `priority-ops-install-upgrade` v1.1.0. SC263521 mobile security-certificate error cleared by installing the intermediate certificate (technician and customer confirmed); reboot and service recovery had already failed for that mobile error. Exact store and command unknown. SC263488 is a different case: services had not started after reboot, IT started them, Priority came back. Service names unknown. Do not treat either example as the other.
 - 2026-11-07: Service-desk topic plus `priority-service-desk-record-modified-custom-close`. Work-order close record-modified when custom close logic sets the backend balance before the transition completes (SC263394, customer confirmed 2026-11-06). Exact code edit unknown. Diagnosis, authorized Test repro, escalate to the customization owner. Not the MSG154 original-buffer resync. Holds and unresolved calls from the same scan were not harvested.
 

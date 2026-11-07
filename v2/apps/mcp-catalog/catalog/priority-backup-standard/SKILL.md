@@ -83,3 +83,12 @@ Unknown: why SQLBACKUPDAYS set to 2 still showed 3 backups. The note that changi
 Steps: read the monitoring trend and list what is actually using space, per company, including which backup is the latest restorable copy and what recovery retention is required. Treat a constant-versus-file-count mismatch as a hypothesis until the next cycle is observed. An authorized backup owner chooses any deletion or retention change. This harvest authorizes neither. After cleanup, watch free space and backup health. Deleting a company or a database is not this mitigation.
 
 Opened 2026-10-29 08:30 GMT. SC263449 asked which copy companies might be deleted and did not record an approved cleanup. Do not merge that call into this example.
+
+
+## Stray root backup, not the retention constant (SC263261)
+
+A second capacity incident. An old January backup was sitting at a drive root, outside the folder the retention job cleans. Support deleted that one file at 2026-10-19 10:39 BST. Monitoring reported OK at 10:40 BST, with free space moving from about 10 percent to 16 percent. Opened 2026-10-19 10:04 BST.
+
+That delete is not permission to remove backups. No restore test was recorded. A DBA still has to check policy, the restore chain, offsite copies, and the approved scope before any file is removed. Free space is not proof the remaining backups are valid. Do not shrink databases or silence the alert. The drive letter is omitted on purpose.
+
+This is separate from the SQLBACKUPDAYS guess in SC263422. Do not mix them into one retention change.

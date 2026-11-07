@@ -1,0 +1,6 @@
+{
+  "name": "priority-service-desk-runaway-report-cpu",
+  "title": "Identified read-only runaway report is a mitigation",
+  "description": "Cancel only the identified read-only runaway report sessions after owner agreement. HEAVYQUERY logs slow queries and does not stop them. No generic kill command.",
+  "version": "1.0.0"
+}

@@ -1,5 +1,7 @@
 ﻿# Skill harvest log
 
+- 2026-11-07: `priority-service-desk-forecast-mrp-retrieve`. SC263390 Retrieve Sales Orders - MRP, Selected Orders only, set forecast lines to MRP? Y in local and customer Test. Live not run. Do not use All Open Orders from this skill.
+
 - 2026-11-07: Service-desk topic plus `priority-service-desk-record-modified-custom-close`. Work-order close record-modified when custom close logic sets the backend balance before the transition completes (SC263394, customer confirmed 2026-11-06). Exact code edit unknown. Diagnosis, authorized Test repro, escalate to the customization owner. Not the MSG154 original-buffer resync. Holds and unresolved calls from the same scan were not harvested.
 
 - 2026-10-26: SaaS OIDC login residuals - PowerShell ordered-map `&` join; HttpClient no-auto-redirect; consent GET+UA; OData Bearer empty HTTP 500 = DNAME/API gap (stop guessing); WCF formStart REST may 404 on SaaS. `SAAS_OIDC_LOGIN.md` + catalog `priority-saas-oidc-login` v1.1.0.

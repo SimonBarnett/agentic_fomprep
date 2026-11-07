@@ -52,6 +52,7 @@ IncludeDba=False IncludeCustomer=False
 - priority-saas-oidc-login
 - priority-service-desk-form-designer-multi-record
 - priority-service-desk-inventory-conversion-raw-lot
+- priority-service-desk-mobile-app-update-registration
 - priority-service-desk-record-modified-custom-close
 - priority-service-desk-report-browser-site-data
 - priority-service-desk-user-paccount-signup

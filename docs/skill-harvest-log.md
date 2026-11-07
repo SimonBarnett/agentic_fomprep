@@ -1,5 +1,7 @@
 # Skill harvest log
 
+- 2026-11-07: `priority-service-desk-analytics-child-field`. SC263252 shipping-voucher Analytics hid parents without Additional Expenses while a child cost field was included. Removing the field restored parents. Full cost report not implemented.
+
 - 2026-11-07: `priority-service-desk-ui-language-print`. SC263256 printouts were wrong in American English. Changing the UI language fixed them. Target language not named. Not the tile or OData language cases.
 
 - 2026-11-07: Enriched `priority-odata-dev` with SC263233. Lead tasks were missing until the installed language code was added after the ini file. 2 and 3 are the supplier's British and American codes, not a hardcoded default.

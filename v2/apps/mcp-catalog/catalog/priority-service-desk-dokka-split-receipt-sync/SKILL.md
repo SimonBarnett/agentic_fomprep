@@ -57,3 +57,10 @@ This is not the split-receipt sync above. The accounting-family mapping was alre
 A related tax or greyed-field case was still open. This refresh does not close it.
 
 Proven: supplier full refresh, then the customer confirmed the parts. Not proven: how the supplier refresh works, or the cache mechanism.
+
+
+## Manual company sync restored line selection (SC263202)
+
+Different symptom from the accounting-family refresh and from the split-receipt sync. Dokka would not select GRV or PO item lines. The warning was that the certificate or document was not available for item line selection.
+
+On 2026-10-19 09:08 BST support recorded that Dokka did a manual company sync, then support tested the two affected invoices and the lines were pulled. That is a technician test. It is not the customer accepting a posted invoice. The supplier mechanism is unknown. Do not finalize, reopen, or remap accounts from this note. Opened 2026-10-14.

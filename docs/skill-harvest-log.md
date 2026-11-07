@@ -1,5 +1,7 @@
 # Skill harvest log
 
+- 2026-11-07: Enriched `priority-odata-dev` with SC263233. Lead tasks were missing until the installed language code was added after the ini file. 2 and 3 are the supplier's British and American codes, not a hardcoded default.
+
 - 2026-11-07: `priority-service-desk-mobile-app-update-registration`. SC263416 login succeeded after app update to the then-current 183.2.79 and user registration. That build is not a standing target. Update and registration were not isolated.
 
 - 2026-11-07: Enriched `priority-formprep` with SC263320 and SC263343. After a move, preparing forms (and, for SC263343, procedures) cleared unprepared-form access. Exact commands were not recorded. Procedures stay on priority-procedure-prep.

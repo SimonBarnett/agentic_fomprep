@@ -50,6 +50,7 @@ IncludeDba=False IncludeCustomer=False
 - priority-recalc-concurrency
 - priority-report-form-zooms
 - priority-saas-oidc-login
+- priority-service-desk-orphan-wo-past-balance
 - priority-shell-compile
 - priority-shell-install
 - priority-skill-dag

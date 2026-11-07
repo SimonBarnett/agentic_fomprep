@@ -38,6 +38,7 @@ Authoring or heavily editing form triggers, SQLI procedures, or #INCLUDE bodies.
 
 - Form Prep / generator nav: **priority-form-engineering**
 - Msg 154 / `:$1` optimistic lock: `docs/skill-sources/programming/MSG154_OPTIMISTIC_LOCK.md`
+- Custom work-order close that writes balance before the transition completes (exact edit unknown): `priority-service-desk-record-modified-custom-close`. Do not use the original-buffer resync as that repair.
 - UDATE mint: **priority-sql-udate-user**
 - Form Prep WCF: **priority-formprep**
 - Report zooms: **priority-report-form-zooms**

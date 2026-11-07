@@ -54,6 +54,7 @@ IncludeDba=False IncludeCustomer=False
 - priority-service-desk-record-modified-custom-close
 - priority-service-desk-report-browser-site-data
 - priority-service-desk-user-paccount-signup
+- priority-service-desk-webhook-sync-mitigation
 - priority-shell-compile
 - priority-shell-install
 - priority-skill-dag

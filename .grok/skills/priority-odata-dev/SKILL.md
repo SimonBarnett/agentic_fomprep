@@ -3,7 +3,7 @@ name: priority-odata-dev
 description: >
   Read or write Priority dictionary and business data via OData instead of UI-only.
   Use when the user says OData, EPROG dump, FORMLIMITED, RESTFLAG, tabula.ini/base,
-  or /priority-odata-dev. User allowlists instances; never invent a base URL.
+  OData language code, missing lead tasks, or /priority-odata-dev. User allowlists instances; never invent a base URL.
 ---
 
 # Priority OData (DEV)
@@ -94,3 +94,16 @@ Path must be relative (e.g. `EPROG`). Refuse `http(s):`, `..`, and absolute URLs
 ## Not this catalog
 
 Do not call `odata_get` on `mcp-priority.ntsa.uk`. That host has no ERP. Write runner files from `get_runner_files` (or use the Grok plugin `priority-odata-dev`) and run them where Priority HTTP and dictionary SQL are reachable.
+
+
+## Language code when rows exist on the form but not in GET (SC263233)
+
+Issue type: a GET returns no lead tasks even though the same records are on the form. Adding the installed language code brought them back. This is not a privilege change and not proof that every empty result is a language problem.
+
+Known route shape from the call, 2026-10-19 14:22 BST: put the language code after the ini file, separated by a comma, then the company and entity. Supplier note 2026-10-20 12:40 BST: always send the language the Priority system uses. In that note, 2 is British English and 3 is American English. Use the installed language. Do not hardcode 2 on an American English company. The existing filter stayed. At 14:40 BST the customer confirmed the API returned results. Opened 2026-10-19. Host, ini name, company, and user filters are omitted.
+
+The backend reason is unknown. SC263253 was withdrawn and is not this fix.
+
+Steps: compare the GET with the rows you can see. Change only the language segment on a read. Check the expected records came back, not merely HTTP 200. Do not broaden privileges or expose credentials.
+
+Proven: results returned after the language code. Not proven: that every task entity needs it, or a product defect.

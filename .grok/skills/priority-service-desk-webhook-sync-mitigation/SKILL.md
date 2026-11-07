@@ -23,7 +23,13 @@ Unknown: whether the handshake failed because of the target service, a firewall,
 
 Distinct from custom work-order close balance changes (`priority-service-desk-record-modified-custom-close`). Do not mix the two.
 
-SC263439 is a different hold: outbound-host approval was requested and not implemented, with no retest. Do not treat it as the proven cause here, and do not claim a permanent endpoint fix. Scheduled-report mail (SC263444, SC263512) has no known final intervention and is not this skill.
+SC263439 is not a separate unresolved guess anymore. SC263405 (opened 2026-10-28 11:40 GMT) is the same allowlist story with the change actually made, and it is a different endpoint from SC263461. Do not call 461 repaired because 405's host connects.
+
+On SC263405 the vendor recorded, 2026-11-02 13:54 GMT: immediate Part Catalogue webhook rules blocked saves because the target hostname was not on the Priority Cloud outbound allowlist. Each webhook call waited about 39 seconds before it failed, which was the about 41 second "App" time. That was not database or network timing. The hostname was added to the outbound allowlist on 2026-11-01 at 11:31 UTC. A test HTTPS connection from the cloud then completed in under 0.1 seconds. The vendor said the root cause was found and fixed for that connection.
+
+Not proven on SC263405: the customer has not retested the save, and the missed changes were not resynced. Supplier connectivity is not customer acceptance. Do not record the hostname or tenant. Do not send a firewall or resync request from this skill. The integration owner approves any resync and watches for duplicates.
+
+Scheduled-report mail (SC263444, SC263512) still has no known final intervention and is not this skill.
 
 ## Prerequisites
 

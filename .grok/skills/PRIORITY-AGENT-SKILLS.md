@@ -50,6 +50,7 @@ IncludeDba=False IncludeCustomer=False
 - priority-recalc-concurrency
 - priority-report-form-zooms
 - priority-saas-oidc-login
+- priority-service-desk-inventory-conversion-raw-lot
 - priority-service-desk-record-modified-custom-close
 - priority-service-desk-report-browser-site-data
 - priority-shell-compile

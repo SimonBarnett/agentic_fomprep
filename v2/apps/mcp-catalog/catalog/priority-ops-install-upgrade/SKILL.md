@@ -66,3 +66,18 @@ Discriminate from SC263521: there, bringing services back did not clear the mobi
 Steps: correlate the outage with the reboot. Have authorized IT check required Priority services, including delayed-start services. Apply only the approved start or startup correction. Retest the original Priority sign-in or form that failed. Do not restart the database or application servers blindly, and do not change service identities.
 
 Opened 2026-11-04 09:04 GMT. Not proven: a permanent startup-type change or a reboot regression test.
+
+
+## Database not ready, then a separate SQL-update repair (SC263330)
+
+Issue type: after both servers reboot, the web service starts before the database is available, and a later failing SQL update can keep the outage going. These are two stages.
+
+Known, 2026-10-22 17:27 BST: one web service could not connect because the database was not available when the service tried to start. Support started the service and could log in. That login is not the end of the incident.
+
+Known, 2026-10-23 08:24 BST, customer mail: a SQL update on the database server was failing repeatedly. Manually removing that update and reinstalling it got the system up again.
+
+Unknown: the update identifier and a safe removal procedure. Do not turn that sentence into commands. Do not publish a generic uninstall.
+
+Order: confirm the database is ready, then start the web service. If the customer is still down after a successful support login, hand the failing update to authorized IT. This harvest authorizes neither the restart nor the patch change.
+
+Distinguish SC263488, where services had simply not started and starting them restored Priority. Here, service start restored a login, and the customer's lasting recovery was the update reinstall. Do not collapse them.

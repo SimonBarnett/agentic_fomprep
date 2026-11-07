@@ -51,6 +51,7 @@ IncludeDba=False IncludeCustomer=False
 - priority-report-form-zooms
 - priority-saas-oidc-login
 - priority-service-desk-record-modified-custom-close
+- priority-service-desk-standard-cost-update
 - priority-shell-compile
 - priority-shell-install
 - priority-skill-dag

@@ -1,5 +1,8 @@
 # Skill harvest log
 
+- 2026-11-07: `priority-service-desk-quote-order-duplicate-lines`. SC263415 copied standard BUF6 line-add inside custom triggers and duplicated quote-to-order lines. Redundant call removed. Copy-company Open Order had no duplicate lines. Exact diff and live customer test were not retrieved.
+
+=======
 - 2026-11-07: `priority-service-desk-blank-partname-report`. SC263245 consumables report blank lines came from empty part link rows. PART.PARTNAME <> '' was deployed and the customer confirmed. Line 800 is not universal.
 
 - 2026-11-07: `priority-service-desk-analytics-child-field`. SC263252 shipping-voucher Analytics hid parents without Additional Expenses while a child cost field was included. Removing the field restored parents. Full cost report not implemented.

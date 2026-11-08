@@ -68,6 +68,8 @@ IncludeDba=False IncludeCustomer=False
 - priority-service-desk-mobile-app-update-registration
 - priority-service-desk-orphan-wo-past-balance
 - priority-service-desk-record-modified-custom-close
+- priority-service-desk-quote-order-duplicate-lines
+=======
 - priority-service-desk-report-browser-site-data
 - priority-service-desk-ui-language-print
 - priority-service-desk-user-paccount-signup

@@ -81,6 +81,121 @@ public static class BobHours
         return new(true, requested, "session owner set");
     }
 
+    public readonly record struct CustomerHoursConfig(
+        bool Ok,
+        string Detail,
+        string Customer,
+        string Project,
+        string PriorityProject,
+        string Wbs,
+        string WbsStatus);
+
+    /// <summary>
+    /// Customer routing is the repo name and the selected SC/SO folder, or
+    /// hours.json when that file is present. hours.json may contain only
+    /// customer and project. It must not name a user. project.md may contain
+    /// priority_project and wbs as plain lines or inside a fence. wbs unknown
+    /// stays unknown and is not a booking code.
+    /// </summary>
+    public static CustomerHoursConfig ReadCustomerHoursConfig(
+        string? repoName,
+        string? selectedFolder,
+        string? hoursJson,
+        string? projectMarkdown)
+    {
+        string customer = (repoName ?? "").Trim();
+        string project = (selectedFolder ?? "").Trim();
+        if (!string.IsNullOrWhiteSpace(hoursJson))
+        {
+            JsonDocument doc;
+            try { doc = JsonDocument.Parse(hoursJson); }
+            catch (JsonException) { return EmptyConfig("hours.json is not JSON"); }
+            using (doc)
+            {
+                if (doc.RootElement.ValueKind != JsonValueKind.Object)
+                    return EmptyConfig("hours.json must be an object");
+                foreach (var prop in doc.RootElement.EnumerateObject())
+                {
+                    if (prop.Name is "user" or "on_behalf_of" or "priorityUserLogin" or "hours_user" or "agent")
+                        return EmptyConfig("hours.json must not set a user");
+                    if (prop.Name is not "customer" and not "project")
+                        return EmptyConfig("hours.json only allows customer and project");
+                }
+                string fileCustomer = JsonString(doc.RootElement, "customer");
+                string fileProject = JsonString(doc.RootElement, "project");
+                if (fileCustomer.Length > 0 && customer.Length > 0 && !string.Equals(fileCustomer, customer, StringComparison.Ordinal))
+                    return EmptyConfig("hours.json customer does not match the selected repo");
+                if (fileCustomer.Length > 0) customer = fileCustomer;
+                if (fileProject.Length > 0 && project.Length > 0 && !string.Equals(fileProject, project, StringComparison.Ordinal))
+                    return EmptyConfig("hours.json project does not match the selected folder");
+                if (fileProject.Length > 0) project = fileProject;
+            }
+        }
+        if (customer.Length > 0 && !Slug.IsMatch(customer))
+            return EmptyConfig("bad_customer");
+        if (project.Length > 0 && !IsAuthoritativeProjectFolder(project))
+            return EmptyConfig("project must be an SCxxxxxx or SOxxxxxx folder");
+
+        string priority = "";
+        string wbs = "";
+        string wbsStatus = "absent";
+        if (!string.IsNullOrEmpty(projectMarkdown))
+        {
+            foreach (string raw in projectMarkdown.Replace("\r\n", "\n").Split('\n'))
+            {
+                if (!TryBookingLine(raw, out string key, out string value)) continue;
+                if (key == "priority_project" && priority.Length == 0 && !IsUnknownBooking(value))
+                    priority = value;
+                if (key == "wbs" && wbsStatus == "absent")
+                {
+                    if (IsUnknownBooking(value)) wbsStatus = "unknown";
+                    else { wbs = value; wbsStatus = "set"; }
+                }
+            }
+        }
+        return new(true, "customer hours config ok", customer, project, priority, wbs, wbsStatus);
+    }
+
+    static CustomerHoursConfig EmptyConfig(string detail) =>
+        new(false, detail, "", "", "", "", "absent");
+
+    static string JsonString(JsonElement obj, string name)
+    {
+        if (!obj.TryGetProperty(name, out var value) || value.ValueKind != JsonValueKind.String)
+            return "";
+        return (value.GetString() ?? "").Trim();
+    }
+
+    static bool TryBookingLine(string raw, out string key, out string value)
+    {
+        key = "";
+        value = "";
+        string line = raw.Trim();
+        if (line.Length == 0 || line.StartsWith("```", StringComparison.Ordinal)) return false;
+        if (line.StartsWith("|", StringComparison.Ordinal))
+        {
+            string[] cells = line.Trim('|').Split('|').Select(cell => cell.Trim().Trim('`', '*')).Where(cell => cell.Length > 0).ToArray();
+            if (cells.Length < 2) return false;
+            key = cells[0].ToLowerInvariant();
+            value = cells[1].Trim().Trim('`', '"', '\'');
+        }
+        else
+        {
+            line = line.Trim('`', '*', '#', ' ', '-');
+            var match = Regex.Match(line, @"^(priority_project|wbs)\s*[:=]\s*(.*)$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+            if (!match.Success) return false;
+            key = match.Groups[1].Value.ToLowerInvariant();
+            value = match.Groups[2].Value.Trim().Trim('`', '"', '\'');
+        }
+        return key is "priority_project" or "wbs";
+    }
+
+    static bool IsUnknownBooking(string value)
+    {
+        string text = value.Trim();
+        return text.Length == 0 || Regex.IsMatch(text, @"^(unknown|n/?a|\?|-)$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+    }
+
     /// <summary>
     /// Customer-facing completed work. start/end stay audit times. The receiver
     /// has no estimated-effort field; duration_minutes is only the elapsed span.
@@ -545,6 +660,46 @@ public static class BobHours
             && body.Contains("1.5 hours", StringComparison.Ordinal)
             && !body.Contains("duration_minutes", StringComparison.Ordinal),
             "start and end stay the audit span");
+
+        var plain = ReadCustomerHoursConfig("example-customer", "SC100001", null, "priority_project: PR100001\nwbs: unknown\n");
+        Gate("plain-project-md",
+            plain.Ok && plain.Customer == "example-customer" && plain.Project == "SC100001"
+            && plain.PriorityProject == "PR100001" && plain.WbsStatus == "unknown" && plain.Wbs.Length == 0,
+            plain.Detail + " wbs=" + plain.WbsStatus);
+        var fenced = ReadCustomerHoursConfig("example-customer", "SC100001", null, "note\n```\npriority_project: PR100001\nwbs: 1\n```\n");
+        Gate("fenced-project-md", fenced.Ok && fenced.WbsStatus == "set" && fenced.Wbs == "1", fenced.WbsStatus);
+        string hoursFile = "{\"customer\":\"example-customer\",\"project\":\"SO100001\"}";
+        var withHours = ReadCustomerHoursConfig("example-customer", "SO100001", hoursFile, "priority_project: PR100002\nwbs: 2\n");
+        Gate("hours-json", withHours.Ok && withHours.Project == "SO100001" && withHours.PriorityProject == "PR100002", withHours.Detail);
+        var disagree = ReadCustomerHoursConfig("example-customer", "SC100001", "{\"customer\":\"example-customer\",\"project\":\"SO100001\"}", null);
+        Gate("hours-json-mismatch", !disagree.Ok, disagree.Detail);
+        var userInFile = ReadCustomerHoursConfig("example-customer", "SC100001", "{\"customer\":\"example-customer\",\"project\":\"SC100001\",\"on_behalf_of\":\"UserOne\"}", null);
+        Gate("hours-json-no-user", !userInFile.Ok && userInFile.Detail.Contains("user", StringComparison.Ordinal), userInFile.Detail);
+        var routed = BindSessionOwner(null, "UserTwo");
+        var report = new Dictionary<string, string?>
+        {
+            ["idempotency_key"] = key,
+            ["agent"] = "Haitch",
+            ["on_behalf_of"] = routed.UserLogin,
+            ["start"] = "2026-11-08T09:00:00+00:00",
+            ["end"] = "2026-11-08T10:00:00+00:00",
+            ["customer"] = plain.Customer,
+            ["project"] = plain.Project,
+            ["description"] = SampleCompletedWork,
+        };
+        var reportBody = TryBuildCreateJson(report, null, out string reportJson);
+        Gate("report-omits-unknown-wbs",
+            reportBody.Ok && routed.Ok
+            && reportJson.Contains("\"on_behalf_of\":\"UserTwo\"", StringComparison.Ordinal)
+            && reportJson.Contains("\"project\":\"SC100001\"", StringComparison.Ordinal)
+            && !reportJson.Contains("priority_project", StringComparison.Ordinal)
+            && !reportJson.Contains("\"wbs\"", StringComparison.Ordinal)
+            && !reportJson.Contains("unknown", StringComparison.Ordinal),
+            reportBody.Detail);
+        var routedExpect = new BobHoursExpect(key, "h_0123456789abcdef", "UserTwo", plain.Customer, plain.Project);
+        var routedReceipt = Evaluate(Entry("h_0123456789abcdef", key, "UserTwo", plain.Customer, plain.Project, "closed",
+            "2026-11-08T09:00:00+00:00", "2026-11-08T10:00:00+00:00", "60"), routedExpect);
+        Gate("report-receipt", routedReceipt.Ok, routedReceipt.Detail);
 
         Gate("fixture-only", true, "self-test sent no HTTP request");
         Console.WriteLine(failed == 0 ? "BobHours offline self-test PASS" : "BobHours offline self-test FAIL " + failed);

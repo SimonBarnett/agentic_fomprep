@@ -191,6 +191,22 @@ static class Program
             if (project != null && !BobHours.IsAuthoritativeProjectFolder(project))
                 Warn("project folder '" + project + "' is not an SCxxxxxx or SOxxxxxx id. Left unchanged. Hours for this folder stay unresolved until an authoritative id is evidenced.");
         }
+        BobHours.CustomerHoursConfig? hoursConfig = null;
+        if (cust != null && project != null && projectDir != null && BobHours.IsAuthoritativeProjectFolder(project))
+        {
+            string? hoursText = null;
+            string? projectText = null;
+            string hoursPath = Path.Combine(custDir!, "hours.json");
+            string projectPath = Path.Combine(projectDir, "project.md");
+            if (File.Exists(hoursPath)) hoursText = File.ReadAllText(hoursPath);
+            if (File.Exists(projectPath)) projectText = File.ReadAllText(projectPath);
+            var loaded = BobHours.ReadCustomerHoursConfig(cust.Name, project, hoursText, projectText);
+            if (!loaded.Ok) { Err(loaded.Detail); Pause(); return 2; }
+            hoursConfig = loaded;
+            Info("hours routing customer " + loaded.Customer + " project " + loaded.Project
+                + " booking " + (loaded.PriorityProject.Length == 0 ? "(none)" : loaded.PriorityProject)
+                + " wbs " + loaded.WbsStatus + " (not sent on the hours report)");
+        }
         if (ListOnly) { Summary(); Pause(); return Fails == 0 ? 0 : 1; }
 
         // ---- 3b. optional airc context -----------------------------------------------
@@ -306,6 +322,8 @@ static class Program
         }
         if (ReadSessionOwner(sessionDir) == null)
             WriteSessionOwner(sessionDir, sessionOwner.UserLogin);
+        if (hoursConfig is { } routing)
+            WriteHoursRouting(sessionDir, sessionOwner.UserLogin, routing);
         vars["PRIORITY_USER"] = sessionOwner.UserLogin;
         AircSessionFiles? aircFiles = null;
         if (airc && aircConsole != null)
@@ -348,13 +366,14 @@ static class Program
         AircSupport.WriteSessionMetadata(sessionDir, rules, new
         { sessionId, level, customer = cust?.FullName, project, priorityUserLogin = sessionOwner.UserLogin, workDir, fomprep, grok, airc, aircConsole, dryRun = DryRun, smoke = Smoke, at = DateTime.Now });
 
-        string hoursCustomer = cust == null ? "Leave customer empty. " : "customer " + cust.Name + ". ";
-        string hoursProject = string.IsNullOrEmpty(project)
-            ? "Leave project empty. "
-            : "project " + project + " (the folder name). ";
+        string routeCustomer = hoursConfig?.Customer ?? cust?.Name ?? "";
+        string routeProject = hoursConfig?.Project ?? project ?? "";
+        string hoursCustomer = routeCustomer.Length == 0 ? "Leave customer empty. " : "customer " + routeCustomer + ". ";
+        string hoursProject = routeProject.Length == 0 ? "Leave project empty. " : "project " + routeProject + " (the folder name). ";
         string hoursPrompt = "HOURS NOT REPORTED. Priority agents MUST report their hours on https://bob.ntsa.uk/bob/v1/hours. "
             + "Reuse idempotency_key priority-agent-" + sessionId + ". "
             + "on_behalf_of is " + sessionOwner.UserLogin + " for this session only. " + hoursCustomer + hoursProject
+            + "Do not send priority_project or wbs. Booking stays in project.md. "
             + "Persist that same login with the returned id in " + hoursEntryFile + ". "
             + "Do not invent start, end, or duration. Do not book Priority. Then stop.";
         var gargs = AircSupport.BuildGrokArguments(workDir, sessionId, rules, brief.ToString(), Smoke);
@@ -386,7 +405,7 @@ static class Program
         if (Smoke)
         {
             Check(code == 0, "smoke launch exit code 0");
-            bool ok = RunHoursGate(sessionId, sessionDir, cust?.Name ?? "", project ?? "", out string det);
+            bool ok = RunHoursGate(sessionId, sessionDir, hoursConfig?.Customer ?? cust?.Name ?? "", hoursConfig?.Project ?? project ?? "", out string det);
             Info($"hours enforcement probe (smoke writes no hours, so a missing id is expected and no live POST is made): {det}");
             Info(ok ? "hours present" : "-> a real session would now be relaunched with the hours prompt (--resume " + sessionId + ")");
             Summary(); Pause(); return code;
@@ -396,7 +415,7 @@ static class Program
         for (int attempt = 1; ; attempt++)
         {
             Header("[5] Hours check (mandatory)");
-            if (RunHoursGate(sessionId, sessionDir, cust?.Name ?? "", project ?? "", out string det)) { Check(true, det); break; }
+            if (RunHoursGate(sessionId, sessionDir, hoursConfig?.Customer ?? cust?.Name ?? "", hoursConfig?.Project ?? project ?? "", out string det)) { Check(true, det); break; }
             Color(ConsoleColor.Red, "\n  ################################################################");
             Color(ConsoleColor.Red, "  ##  HOURS NOT REPORTED - Priority agents MUST report their hours ##");
             Color(ConsoleColor.Red, "  ################################################################");
@@ -447,14 +466,20 @@ static class Program
             return false;
         }
         string user = owner.UserLogin;
+        ReadHoursRouting(sessionDir, out string routedCustomer, out string routedProject, out string routedOwner);
+        if (routedOwner.Length > 0 && !string.Equals(routedOwner, user, StringComparison.Ordinal))
+        {
+            detail = "hours routing owner does not match session owner. No request sent.";
+            return false;
+        }
         string entryId = (HoursEntryIdArg ?? Environment.GetEnvironmentVariable("PRIORITY_AGENT_HOURS_ENTRY_ID") ?? "").Trim();
         if (entryId.Length == 0) entryId = fileId;
         var expect = new BobHoursExpect(
             BobHours.IdempotencyKeyForSession(sessionId),
             entryId,
             user,
-            expectedCustomer ?? "",
-            expectedProject ?? "");
+            routedCustomer.Length > 0 ? routedCustomer : expectedCustomer ?? "",
+            routedProject.Length > 0 ? routedProject : expectedProject ?? "");
         var pre = BobHours.Precheck(expect);
         if (!pre.Ok) { detail = pre.Detail + " No request sent."; return false; }
 
@@ -521,6 +546,47 @@ static class Program
         {
             ["priorityUserLogin"] = userLogin,
         }));
+    }
+
+    static void WriteHoursRouting(string sessionDir, string userLogin, BobHours.CustomerHoursConfig routing)
+    {
+        Directory.CreateDirectory(sessionDir);
+        string path = Path.Combine(sessionDir, "hours-routing.json");
+        if (File.Exists(path)) return;
+        File.WriteAllText(path, JsonSerializer.Serialize(new Dictionary<string, string>
+        {
+            ["on_behalf_of"] = userLogin,
+            ["customer"] = routing.Customer,
+            ["project"] = routing.Project,
+            ["priority_project"] = routing.PriorityProject,
+            ["wbs_status"] = routing.WbsStatus,
+        }));
+    }
+
+    static void ReadHoursRouting(string? sessionDir, out string customer, out string project, out string owner)
+    {
+        customer = "";
+        project = "";
+        owner = "";
+        if (string.IsNullOrEmpty(sessionDir)) return;
+        string path = Path.Combine(sessionDir, "hours-routing.json");
+        if (!File.Exists(path)) return;
+        try
+        {
+            using var doc = JsonDocument.Parse(File.ReadAllText(path));
+            if (doc.RootElement.ValueKind != JsonValueKind.Object) return;
+            customer = RoutingString(doc.RootElement, "customer");
+            project = RoutingString(doc.RootElement, "project");
+            owner = RoutingString(doc.RootElement, "on_behalf_of");
+        }
+        catch { }
+    }
+
+    static string RoutingString(JsonElement obj, string name)
+    {
+        if (!obj.TryGetProperty(name, out var value) || value.ValueKind != JsonValueKind.String)
+            return "";
+        return (value.GetString() ?? "").Trim();
     }
 
     static bool TryFetchHoursList(string query, out string json, out string detail)

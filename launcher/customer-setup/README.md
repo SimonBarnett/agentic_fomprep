@@ -10,6 +10,19 @@ copy of the same file; at runtime the clone copy is used when its
 Do not push the customer repo `main` from here. Do not deploy. Do not write
 to a customer database.
 
+## Data the launcher reads
+
+Optional repo-root `hours.json` with only `customer` and `project`. No user.
+If that file is absent, the launcher uses the repo name and the selected folder.
+
+`<folder>/project.md` may contain these lines in the prose or inside a fence:
+
+    priority_project: <booking id>
+    wbs: <code or unknown>
+
+`unknown` stays unknown. It is not sent on the hours report and it is not replaced.
+The hours report uses the folder id and the session USERLOGIN. Booking review is separate.
+
 ## What a customer repo holds
 
 - GitHub topic `priority-customer`. The repo name stays the customer name.

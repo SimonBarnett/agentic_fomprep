@@ -1,0 +1,6 @@
+{
+  "name": "priority-service-desk-scanner-numeration",
+  "title": "Scanner document numeration reached its annual maximum",
+  "description": "The 10000-documents-per-year scanner message was a full numeration, not an API quota. Extending Scanner Trans numeration let the customer open documents. The new width is unknown.",
+  "version": "1.0.0"
+}

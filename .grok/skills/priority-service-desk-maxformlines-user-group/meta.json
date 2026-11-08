@@ -1,0 +1,6 @@
+{
+  "name": "priority-service-desk-maxformlines-user-group",
+  "title": "MAXFORMLINES user or group override caps rows",
+  "description": "A form that stops at a fixed row count can be a MAXFORMLINES override for that user or group, not missing data. Change only the approved scope. The source call did not record the final number.",
+  "version": "1.0.0"
+}

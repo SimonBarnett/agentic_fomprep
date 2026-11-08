@@ -1,0 +1,6 @@
+{
+  "name": "priority-saas-wcf",
+  "title": "Priority SaaS WCF / Web SDK client",
+  "description": "Allowlist-gated priority-web-sdk client for Priority Cloud/SaaS using Bearer accessToken from token file or PRIORITY_SAAS_TOKEN. probe, session, form start/rows/set/save. OIDC via priority-saas-oidc-login first.",
+  "version": "0.1.0"
+}

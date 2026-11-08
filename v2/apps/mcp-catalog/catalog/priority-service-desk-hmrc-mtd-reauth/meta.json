@@ -1,0 +1,6 @@
+{
+  "name": "priority-service-desk-hmrc-mtd-reauth",
+  "title": "HMRC MTD reauthentication restored the VAT submission",
+  "description": "Reauthenticate through Set Up for HMRC's MTD, then the original VAT submission can succeed. Do not collect tokens. Not the earlier unverified Get New Token hold.",
+  "version": "1.0.0"
+}

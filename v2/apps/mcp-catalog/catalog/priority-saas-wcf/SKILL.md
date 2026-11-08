@@ -3,7 +3,8 @@ name: priority-saas-wcf
 description: >
   Allowlist-gated Priority SaaS Web SDK (WCF) client for PriorityAgent:
   Bearer accessToken login, tenant probe, form start/rows/set/save/subform.
-  Use when connecting SaaS/Cloud Priority over Web SDK, or /priority-saas-wcf.
+  Use when: SaaS WCF, Cloud Web SDK, priority-wcf.mjs, formStart SaaS,
+  connect SaaS Priority, accessToken WCF, /priority-saas-wcf.
 ---
 
 # Priority SaaS WCF client

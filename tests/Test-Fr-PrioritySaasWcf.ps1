@@ -28,6 +28,13 @@ Gate 'refuse-no-file' ($al -match 'no_instances_file') 'allowlist refuses missin
 Gate 'no-invent' ($rd -match '(?i)never invent' -or $sk -match '(?i)never invent') 'docs say never invent host/tenant'
 Gate 'oidc-first' ($rd -match 'priority-saas-oidc-login' -and $sk -match 'priority-saas-oidc-login') 'points at OIDC skill'
 Gate 'no-hardcoded-d-ai' ($bin -notmatch 'D:\\ai' -and $al -notmatch 'D:\\ai') 'no hardcoded D:\ai'
+$dagIndex = Join-Path $repo 'docs\skill-sources\medatech-network\_dag\dag-index.json'
+Gate 'dag-index' (Test-Path -LiteralPath $dagIndex) $dagIndex
+if (Test-Path -LiteralPath $dagIndex) {
+  $dagTxt = [IO.File]::ReadAllText($dagIndex)
+  Gate 'dag-skill-node' ($dagTxt -match 'skill:priority-saas-wcf') 'dag-index lists skill:priority-saas-wcf'
+  Gate 'dag-oidc-node' ($dagTxt -match 'skill:priority-saas-oidc-login') 'dag-index lists skill:priority-saas-oidc-login'
+}
 # CLI refuse without allowlist (node present)
 $node = Get-Command node -ErrorAction SilentlyContinue
 if ($node) {

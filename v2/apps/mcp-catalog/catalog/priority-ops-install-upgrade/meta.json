@@ -1,6 +1,6 @@
 {
-    "title":  "Priority install / upgrade / refresh",
-    "description":  "Medatech-network topic skill for install-upgrade. Uses priority-skill-dag lazy load.",
-    "name":  "priority-ops-install-upgrade",
-    "version":  "1.0.0"
+  "name": "priority-ops-install-upgrade",
+  "title": "Priority install / upgrade / refresh",
+  "description": "Install and SSL hub, plus a confirmed mobile intermediate-certificate repair and a separate post-reboot service-start repair. Exact commands for both are unknown.",
+  "version": "1.1.0"
 }

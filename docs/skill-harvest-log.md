@@ -1,5 +1,7 @@
 # Skill harvest log
 
+- 2026-11-07: `priority-service-desk-mrp-production-days`. SC263299 practice company: quantity 5 and Production Days 21 with Time per Batch, MRP without Work Plan, duration 21 not 105. Customer tested maximum 100. Not live. Numbers are not universal. Earlier Work Plan advice is superseded for this case.
+=======
 - 2026-11-07: `priority-service-desk-po-approval-restart`. SC263332 Cancel Auth restarted from the status that starts approval. Customer confirmed 2026-10-23 09:31 BST. Pending Auth is an example only. No status SQL.
 =======
 - 2026-11-07: `priority-service-desk-runaway-report-cpu`. SC263359 two manual Repair History per Serial Number runs were terminated. Cleanup finished and SQL CPU recovered. HEAVYQUERY only logs. Mitigation only. No KILL script.

@@ -1,5 +1,7 @@
 # Skill harvest log
 
+- 2026-11-07: `priority-service-desk-warranty-auto-raise`. SC263216 Live lacked Stat After Auto Raise. Two missed contracts were replayed in Draft after owner approval. Next automatic shipment not confirmed. Trigger diff unknown.
+=======
 - 2026-11-07: `priority-service-desk-email-column-translation`. SC263220 Email Editor custom fields appeared after a missing column translation was added. Language direction in the notes disagrees. Check the installation. No direct dictionary edit.
 =======
 - 2026-11-07: `priority-service-desk-invoice-po-column`. SC263237 PO reference was hidden in the selected invoice format. The field was MC Cust PO. Customer confirmed it printed. Wrong-column guess was rejected.

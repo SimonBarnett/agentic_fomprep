@@ -92,3 +92,18 @@ For install/SSL/bin_95/ops prose from the Medatech network dump, resolve via **p
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File tools\priority-skill-dag\Resolve-SkillDag.ps1 -Query "<intent>"
 ```
+
+
+## After a move: unprepared forms (SC263320, SC263343)
+
+Issue type: after a cloud or test move, users hit an unprepared-form message. Preparing the entities restored access. These examples enrich this skill. They are not a second preparation skill.
+
+SC263320, 2026-10-22 11:52 BST: support recorded that all forms were prepared and the customer confirmed on the phone that it was resolved.
+
+SC263343: on 2026-10-26 13:40 GMT the technician had not reproduced the message, and prepared all forms and procedures anyway. On 2026-10-28 13:15 GMT the customer said it looked okay.
+
+The exact menu clicks and command options were not recorded. Do not invent them. Named form success here is still `EXECPREPLOCK.UPD=N` and `LASTPREPDATE` advanced. A batch of forms is **prepare-all-unprepared-priority-forms**. Procedures are not prepared by this skill. SC263343 also prepared procedures: use **priority-procedure-prep** (`UPD=N` and `system/prep/d{T$EXEC}.prp` mtime). Do not flip `UPD` in SQL.
+
+Not every outage is an unprepared form. Capture the message and whether it followed a move. Global preparation needs an approved window. No direct edits of compiled files or the dictionary to fake a prepare.
+
+Not proven: compile output and a full regression matrix. Phone confirmation and "looks okay" are the recorded checks, not a matrix.

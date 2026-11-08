@@ -1,5 +1,8 @@
 # Skill harvest log
 
+- 2026-11-07: `priority-service-desk-shopify-product-code-import`. SC263397 order imported after the Shopify product code mapping was corrected. Exact field unknown. Failure email not fixed. Not the Dokka split-receipt skill.
+
+=======
 - 2026-11-07: `priority-service-desk-last-purchase-price-report`. SC263402 report built in Part Catalogue Report Generator for last purchase price and date on R parts, then added to the menu. Field identifiers were not retrieved. No price update.
 
 =======

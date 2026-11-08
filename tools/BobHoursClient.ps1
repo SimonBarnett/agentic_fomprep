@@ -23,6 +23,43 @@ function Test-BobHoursProjectFolder {
     return [bool]($Name -match '^(SC|SO)[0-9]+$')
 }
 
+function ConvertTo-BobHoursInstant {
+    param([Parameter(Mandatory = $true)][string]$Text)
+    $s = $Text.Trim()
+    if ($s.EndsWith('Z')) { $s = $s.Substring(0, $s.Length - 1) + '+00:00' }
+    if ($s -match '[+-]\d{2}:\d{2}$') {
+        return [datetimeoffset]::Parse($s, [cultureinfo]::InvariantCulture)
+    }
+    $clock = [datetime]::Parse($s, [cultureinfo]::InvariantCulture, [Globalization.DateTimeStyles]::RoundtripKind)
+    return [datetimeoffset]::new($clock.Ticks, [timespan]::Zero)
+}
+
+function Get-BobHoursLondonDate {
+    param([Parameter(Mandatory = $true)][datetimeoffset]$Instant)
+    $utc = $Instant.ToUniversalTime()
+    $start = Get-BobHoursUkTransition $utc.Year 3
+    $end = Get-BobHoursUkTransition $utc.Year 10
+    $hours = 0
+    if ($utc -ge $start -and $utc -lt $end) { $hours = 1 }
+    return $utc.AddHours($hours).ToString('yyyy-MM-dd')
+}
+
+function Get-BobHoursUkTransition {
+    param([int]$Year, [int]$Month)
+    $day = [datetime]::new($Year, $Month, [datetime]::DaysInMonth($Year, $Month))
+    while ($day.DayOfWeek -ne [DayOfWeek]::Sunday) { $day = $day.AddDays(-1) }
+    return [datetimeoffset]::new($day.Year, $day.Month, $day.Day, 1, 0, 0, [timespan]::Zero)
+}
+
+function Get-BobHoursListWindow {
+    param([datetimeoffset]$EntryStart, [Parameter(Mandatory = $true)][datetimeoffset]$Now, [switch]$HasStart)
+    if (-not $HasStart) { return @{ FromDay = $null; ToDay = $null } }
+    $from = Get-BobHoursLondonDate $EntryStart
+    $to = Get-BobHoursLondonDate $Now
+    if ($from -gt $to) { $to = $from }
+    return @{ FromDay = $from; ToDay = $to }
+}
+
 function New-BobHoursIdempotencyKey {
     param([Parameter(Mandatory = $true)][string]$SessionId)
     return 'priority-agent-' + $SessionId.Trim()
@@ -53,10 +90,10 @@ function New-BobHoursCreateBody {
     if ($idem -notmatch '^[A-Za-z0-9._:@-]{1,128}$') {
         return @{ Ok = $false; Detail = 'bad_idempotency_key'; Json = '' }
     }
-    try { $start = [datetimeoffset]::Parse($startRaw) } catch { return @{ Ok = $false; Detail = 'bad_start'; Json = '' } }
+    try { $start = ConvertTo-BobHoursInstant $startRaw } catch { return @{ Ok = $false; Detail = 'bad_start'; Json = '' } }
     $endRaw = Local-Req 'end'
     if ($endRaw) {
-        try { $end = [datetimeoffset]::Parse($endRaw) } catch { return @{ Ok = $false; Detail = 'bad_end'; Json = '' } }
+        try { $end = ConvertTo-BobHoursInstant $endRaw } catch { return @{ Ok = $false; Detail = 'bad_end'; Json = '' } }
         if ($end -lt $start) { return @{ Ok = $false; Detail = 'bad_end_before_start'; Json = '' } }
     }
     $customer = Local-Req 'customer'
@@ -141,8 +178,8 @@ function Test-BobHoursReceipt {
     if ([string]$entry.project -ne $Project) { return @{ Ok = $false; Detail = 'project mismatch' } }
     if (-not $entry.start -or -not $entry.end) { return @{ Ok = $false; Detail = 'closed entry missing start or end' } }
     try {
-        $start = [datetimeoffset]::Parse([string]$entry.start)
-        $end = [datetimeoffset]::Parse([string]$entry.end)
+        $start = ConvertTo-BobHoursInstant ([string]$entry.start)
+        $end = ConvertTo-BobHoursInstant ([string]$entry.end)
     } catch { return @{ Ok = $false; Detail = 'start or end is not ISO-8601' } }
     if ($end -lt $start) { return @{ Ok = $false; Detail = 'end before start' } }
     if ($null -eq $entry.duration_minutes) { return @{ Ok = $false; Detail = 'duration_minutes missing on closed entry' } }

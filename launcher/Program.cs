@@ -413,8 +413,9 @@ static class Program
     static bool RunHoursGate(string sessionId, string? sessionDir, string expectedCustomer, string expectedProject, out string detail)
     {
         string user = (HoursUserArg ?? Environment.GetEnvironmentVariable("PRIORITY_AGENT_HOURS_USER") ?? "").Trim();
+        ReadPersistedHours(sessionDir, out string fileId, out string fileStart);
         string entryId = (HoursEntryIdArg ?? Environment.GetEnvironmentVariable("PRIORITY_AGENT_HOURS_ENTRY_ID") ?? "").Trim();
-        if (entryId.Length == 0) entryId = ReadPersistedEntryId(sessionDir);
+        if (entryId.Length == 0) entryId = fileId;
         var expect = new BobHoursExpect(
             BobHours.IdempotencyKeyForSession(sessionId),
             entryId,
@@ -433,14 +434,9 @@ static class Program
         }
         else
         {
-            string fromDay = DateTime.UtcNow.AddDays(-1).ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture);
-            string toDay = DateTime.UtcNow.AddDays(1).ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture);
-            string query = BobHours.BuildListQuery(user, fromDay, toDay);
-            if (query.Contains("idempotency_key", StringComparison.Ordinal))
-            {
-                detail = "hours query must not filter by idempotency_key. No request sent.";
-                return false;
-            }
+            DateTimeOffset? started = BobHours.TryParseInstant(fileStart, out var parsedStart) ? parsedStart : null;
+            var window = BobHours.WindowForStart(started, DateTimeOffset.UtcNow);
+            string query = BobHours.BuildListQuery(user, window.FromDay, window.ToDay);
             if (!TryFetchHoursList(query, out json, out detail)) return false;
         }
         var result = BobHours.Evaluate(json, expect);
@@ -448,19 +444,22 @@ static class Program
         return result.Ok;
     }
 
-    static string ReadPersistedEntryId(string? sessionDir)
+    static void ReadPersistedHours(string? sessionDir, out string id, out string start)
     {
-        if (string.IsNullOrEmpty(sessionDir)) return "";
+        id = "";
+        start = "";
+        if (string.IsNullOrEmpty(sessionDir)) return;
         string path = Path.Combine(sessionDir, "hours-entry.json");
-        if (!File.Exists(path)) return "";
+        if (!File.Exists(path)) return;
         try
         {
             using var doc = JsonDocument.Parse(File.ReadAllText(path));
-            if (doc.RootElement.TryGetProperty("id", out var id) && id.ValueKind == JsonValueKind.String)
-                return (id.GetString() ?? "").Trim();
+            if (doc.RootElement.TryGetProperty("id", out var idEl) && idEl.ValueKind == JsonValueKind.String)
+                id = (idEl.GetString() ?? "").Trim();
+            if (doc.RootElement.TryGetProperty("start", out var startEl) && startEl.ValueKind == JsonValueKind.String)
+                start = (startEl.GetString() ?? "").Trim();
         }
         catch { }
-        return "";
     }
 
     static bool TryFetchHoursList(string query, out string json, out string detail)

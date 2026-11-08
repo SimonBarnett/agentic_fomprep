@@ -44,12 +44,82 @@ public static class BobHours
     public static string IdempotencyKeyForSession(string sessionId) =>
         "priority-agent-" + (sessionId ?? "").Trim();
 
-    /// <summary>GET query. No idempotency_key parameter (match that client-side).</summary>
-    public static string BuildListQuery(string user, string fromDay, string toDay) =>
-        "user=" + Uri.EscapeDataString(user ?? "")
-        + "&from=" + Uri.EscapeDataString(fromDay ?? "")
-        + "&to=" + Uri.EscapeDataString(toDay ?? "")
-        + "&status=closed";
+    /// <summary>
+    /// GET query. No idempotency_key parameter (match that client-side).
+    /// Empty from/to are omitted so the receiver does not drop an older London day.
+    /// </summary>
+    public static string BuildListQuery(string user, string? fromDay, string? toDay)
+    {
+        var parts = new List<string> { "user=" + Uri.EscapeDataString(user ?? "") };
+        if (!string.IsNullOrEmpty(fromDay)) parts.Add("from=" + Uri.EscapeDataString(fromDay));
+        if (!string.IsNullOrEmpty(toDay)) parts.Add("to=" + Uri.EscapeDataString(toDay));
+        parts.Add("status=closed");
+        string query = string.Join("&", parts);
+        if (query.Contains("idempotency_key", StringComparison.Ordinal))
+            throw new InvalidOperationException("hours query must not filter by idempotency_key");
+        return query;
+    }
+
+    /// <summary>
+    /// Same rule as bobhours._parse_iso: a value with no offset is that clock time in UTC.
+    /// An explicit Z or numeric offset is kept. This does not use the host local zone.
+    /// </summary>
+    public static bool TryParseInstant(string? raw, out DateTimeOffset value)
+    {
+        value = default;
+        string s = (raw ?? "").Trim();
+        if (s.Length == 0) return false;
+        if (s.EndsWith("Z", StringComparison.Ordinal))
+            s = s[..^1] + "+00:00";
+        bool hasOffset = Regex.IsMatch(s, @"[+-]\d{2}:\d{2}$", RegexOptions.CultureInvariant);
+        if (!hasOffset)
+        {
+            if (!DateTime.TryParse(s, CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind, out var clock))
+                return false;
+            value = new DateTimeOffset(clock.Ticks, TimeSpan.Zero);
+            return true;
+        }
+        return DateTimeOffset.TryParse(s, CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind, out value);
+    }
+
+    /// <summary>
+    /// Europe/London calendar date. UK civil time since 1996: BST is the hour
+    /// beginning 01:00 UTC on the last Sunday of March, through 01:00 UTC on the
+    /// last Sunday of October. bobhours uses ZoneInfo("Europe/London"); these
+    /// instants match that zone. The launcher ships with invariant globalization,
+    /// so this does not call TimeZoneInfo.
+    /// </summary>
+    public static string LondonDate(DateTimeOffset instant)
+    {
+        var utc = instant.ToUniversalTime();
+        var london = utc.AddHours(IsUkBst(utc) ? 1 : 0);
+        return london.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+    }
+
+    public readonly record struct BobHoursListWindow(string? FromDay, string? ToDay);
+
+    /// <summary>
+    /// Receiver from/to are Europe/London dates of <c>start</c>. A known start
+    /// spans that London day through the London day of <paramref name="now"/>,
+    /// including an older session. An unknown start omits both bounds.
+    /// </summary>
+    public static BobHoursListWindow WindowForStart(DateTimeOffset? entryStart, DateTimeOffset now)
+    {
+        if (entryStart is null) return new(null, null);
+        string from = LondonDate(entryStart.Value);
+        string to = LondonDate(now);
+        if (string.CompareOrdinal(from, to) > 0) to = from;
+        return new(from, to);
+    }
+
+    /// <summary>Same inclusion as bobhours._entry_in_range (London day of start).</summary>
+    public static bool LondonDayInRange(DateTimeOffset start, string? fromDay, string? toDay)
+    {
+        string day = LondonDate(start);
+        if (!string.IsNullOrEmpty(fromDay) && string.CompareOrdinal(day, fromDay) < 0) return false;
+        if (!string.IsNullOrEmpty(toDay) && string.CompareOrdinal(day, toDay) > 0) return false;
+        return true;
+    }
 
     public static BobHoursResult Precheck(BobHoursExpect expect)
     {
@@ -116,8 +186,7 @@ public static class BobHours
             string endRaw = Field(matched, "end");
             if (startRaw.Length == 0 || endRaw.Length == 0)
                 return new(false, "closed entry missing start or end");
-            if (!DateTimeOffset.TryParse(startRaw, CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind, out var start)
-                || !DateTimeOffset.TryParse(endRaw, CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind, out var end))
+            if (!TryParseInstant(startRaw, out var start) || !TryParseInstant(endRaw, out var end))
                 return new(false, "start or end is not ISO-8601");
             if (end < start) return new(false, "end before start");
             if (!matched.TryGetProperty("duration_minutes", out var dur)
@@ -163,13 +232,13 @@ public static class BobHours
             return new(false, "missing required idempotency_key, agent, on_behalf_of, or start");
         if (!Idempotency.IsMatch(idem))
             return new(false, "bad_idempotency_key");
-        if (!DateTimeOffset.TryParse(startRaw, CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind, out var start))
+        if (!TryParseInstant(startRaw, out var start))
             return new(false, "bad_start");
 
         string endRaw = Req("end");
         if (endRaw.Length > 0)
         {
-            if (!DateTimeOffset.TryParse(endRaw, CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind, out var end))
+            if (!TryParseInstant(endRaw, out var end))
                 return new(false, "bad_end");
             if (end < start) return new(false, "bad_end_before_start");
         }
@@ -290,6 +359,80 @@ public static class BobHours
         var ordinalResult = TryBuildCreateJson(ordinal, null, out _);
         Gate("reject-ordinal-project", !ordinalResult.Ok && ordinalResult.Detail.Contains("SC", StringComparison.Ordinal), ordinalResult.Detail);
 
+        Gate("id-still-16-hex",
+            EntryIdPattern.IsMatch("h_0123456789abcdef")
+            && !EntryIdPattern.IsMatch("h_0123456789abcde")
+            && !EntryIdPattern.IsMatch("h_0123456789abcdef0"),
+            "receiver id stays h_ plus 16 hex");
+
+        Gate("naive-is-utc",
+            TryParseInstant("2026-07-01T00:30:00", out var naive)
+            && naive.Offset == TimeSpan.Zero && naive.Hour == 0 && naive.Minute == 30,
+            naive.ToString("o", CultureInfo.InvariantCulture));
+        DateTimeOffset.TryParse("2026-07-01T00:30:00", CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind, out var hostLocal);
+        var hostOff = TimeZoneInfo.Local.GetUtcOffset(new DateTime(2026, 7, 1, 0, 30, 0, DateTimeKind.Unspecified));
+        Gate("naive-not-host-local",
+            hostOff == TimeSpan.Zero || naive != hostLocal,
+            "hostOffset=" + hostOff + " localParse=" + hostLocal.ToString("o", CultureInfo.InvariantCulture));
+        Gate("explicit-offset",
+            TryParseInstant("2026-07-01T00:30:00+01:00", out var plus) && plus.Offset == TimeSpan.FromHours(1),
+            plus.ToString("o", CultureInfo.InvariantCulture));
+        Gate("zulu",
+            TryParseInstant("2026-07-01T00:30:00Z", out var zed) && zed.Offset == TimeSpan.Zero && zed.Hour == 0,
+            zed.ToString("o", CultureInfo.InvariantCulture));
+
+        string mixed = Entry("h_0123456789abcdef", key, "SimonB", "example-customer", "SC100001", "closed",
+            "2026-07-01T00:30:00", "2026-07-01T01:30:00Z", "60");
+        var mixedResult = Evaluate(mixed, expect);
+        Gate("naive-utc-duration", mixedResult.Ok, mixedResult.Detail);
+
+        var bstNow = DateTimeOffset.Parse("2026-06-30T23:30:00Z", CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind);
+        Gate("london-bst-midnight", LondonDate(bstNow) == "2026-07-01", LondonDate(bstNow));
+        var bstWindow = WindowForStart(bstNow, bstNow);
+        Gate("bst-window",
+            bstWindow.FromDay == "2026-07-01" && bstWindow.ToDay == "2026-07-01"
+            && LondonDayInRange(bstNow, bstWindow.FromDay, bstWindow.ToDay),
+            (bstWindow.FromDay ?? "") + ".." + (bstWindow.ToDay ?? ""));
+        string utcToday = bstNow.UtcDateTime.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+        Gate("utc-date-drops-london-day", !LondonDayInRange(bstNow, utcToday, utcToday), utcToday);
+
+        Gate("before-bst", LondonDate(DateTimeOffset.Parse("2026-03-29T00:30:00Z", CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind)) == "2026-03-29", "");
+        Gate("bst-begins", LondonDate(DateTimeOffset.Parse("2026-03-29T01:00:00Z", CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind)) == "2026-03-29", "");
+        Gate("clocks-back", LondonDate(DateTimeOffset.Parse("2026-10-25T01:00:00Z", CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind)) == "2026-10-25", "");
+        Gate("winter-midnight", LondonDate(DateTimeOffset.Parse("2026-11-08T00:30:00Z", CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind)) == "2026-11-08", "");
+
+        var checkedOn = DateTimeOffset.Parse("2026-11-08T12:00:00Z", CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind);
+        var olderStart = DateTimeOffset.Parse("2026-11-02T09:00:00Z", CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind);
+        string oldFrom = checkedOn.UtcDateTime.AddDays(-1).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+        string oldTo = checkedOn.UtcDateTime.AddDays(1).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+        Gate("utc-clamp-drops-older", !LondonDayInRange(olderStart, oldFrom, oldTo), oldFrom + ".." + oldTo);
+        var olderWindow = WindowForStart(olderStart, checkedOn);
+        Gate("older-session-window",
+            olderWindow.FromDay == "2026-11-02" && olderWindow.ToDay == "2026-11-08"
+            && LondonDayInRange(olderStart, olderWindow.FromDay, olderWindow.ToDay),
+            (olderWindow.FromDay ?? "") + ".." + (olderWindow.ToDay ?? ""));
+        var unbounded = WindowForStart(null, checkedOn);
+        string unboundedQuery = BuildListQuery("SimonB", unbounded.FromDay, unbounded.ToDay);
+        Gate("unknown-start-omits-days",
+            unbounded.FromDay == null && unbounded.ToDay == null
+            && unboundedQuery == "user=SimonB&status=closed",
+            unboundedQuery);
+
+        try
+        {
+            var tz = TimeZoneInfo.FindSystemTimeZoneById("Europe/London");
+            foreach (var sample in new[] { "2026-03-29T00:30:00Z", "2026-03-29T01:00:00Z", "2026-06-30T23:30:00Z", "2026-10-25T00:30:00Z", "2026-10-25T01:00:00Z", "2026-11-08T00:30:00Z" })
+            {
+                var inst = DateTimeOffset.Parse(sample, CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind);
+                string zoneDay = TimeZoneInfo.ConvertTime(inst, tz).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+                Gate("zone-" + sample, LondonDate(inst) == zoneDay, zoneDay + " vs " + LondonDate(inst));
+            }
+        }
+        catch (TimeZoneNotFoundException ex)
+        {
+            Gate("zone-data", false, ex.Message);
+        }
+
         Gate("fixture-only", true, "self-test sent no HTTP request");
         Console.WriteLine(failed == 0 ? "BobHours offline self-test PASS" : "BobHours offline self-test FAIL " + failed);
         return failed == 0 ? 0 : 1;
@@ -303,6 +446,19 @@ public static class BobHours
             + "\",\"on_behalf_of\":\"" + user + "\",\"customer\":\"" + customer + "\",\"project\":\"" + project
             + "\",\"status\":\"" + status + "\",\"start\":\"" + start + "\",\"end\":" + endJson
             + ",\"duration_minutes\":" + durJson + "}]}";
+    }
+
+    static bool IsUkBst(DateTimeOffset utc)
+    {
+        var u = utc.ToUniversalTime();
+        return u >= UkTransition(u.Year, 3) && u < UkTransition(u.Year, 10);
+    }
+
+    static DateTimeOffset UkTransition(int year, int month)
+    {
+        var day = new DateTime(year, month, DateTime.DaysInMonth(year, month));
+        while (day.DayOfWeek != DayOfWeek.Sunday) day = day.AddDays(-1);
+        return new DateTimeOffset(day.Year, day.Month, day.Day, 1, 0, 0, TimeSpan.Zero);
     }
 
     static string Field(JsonElement entry, string name)

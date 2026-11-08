@@ -81,8 +81,9 @@ GitHub events stay on `POST /bob/v1/git`. That route is not the hours store.
   - Optional: `end`, `repo_url`, `description`, `source`, `tickets`, `billable_hint`.
   - Do not send `duration_minutes`, alias names (`started_at`, `customer_slug`, `project_slug`, ...),
     or credential fields. Never log request bodies or print secrets.
-- Persist the returned receiver id (`h_` plus 16 hex characters) as JSON `{"id":"..."}` in
-  `{{HOURS_ENTRY_FILE}}`. Do not invent an id. Heartbeat every 15-30 minutes:
+- Persist the returned receiver id (`h_` plus 16 hex characters) and the returned `start`
+  as JSON `{"id":"...","start":"..."}` in `{{HOURS_ENTRY_FILE}}`. Do not invent an id.
+  Heartbeat every 15-30 minutes:
   `POST https://bob.ntsa.uk/bob/v1/hours/{id}/heartbeat`.
 - Before you stop: `POST https://bob.ntsa.uk/bob/v1/hours/{id}/close` with a real `{"end":"..."}`.
   The server derives `duration_minutes` from start and end. An open entry with no heartbeat

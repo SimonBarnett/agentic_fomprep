@@ -64,8 +64,11 @@ with the right context.
    - The brief names the customer, project, paths and the files to read first.
 9. **Hours are mandatory.** When the agent exits, the launcher looks for one **closed** entry on
    `GET https://bob.ntsa.uk/bob/v1/hours` (bobiverse FR #3450 / #3673). The query is
-   `user`, `from`, `to`, and `status=closed`. It does **not** send `idempotency_key` as a query
-   parameter. The match is client-side: persisted receiver id, `priority-agent-<full session uuid>`,
+   `user` and `status=closed`. It does **not** send `idempotency_key` as a query
+   parameter. `from` and `to`, when sent, are Europe/London dates from the persisted
+   entry `start` through the London day of the check, so an older session is included.
+   A naive timestamp is that clock time in UTC, matching bobhours. If `hours-entry.json`
+   has no `start`, the date bounds are omitted. The match is client-side: persisted receiver id, `priority-agent-<full session uuid>`,
    the Priority USERLOGIN in `on_behalf_of`, the expected customer and project, `status` `closed`,
    and a real start/end.
    - `?user=` comes from `--hours-user` or `PRIORITY_AGENT_HOURS_USER`. It is not read from the

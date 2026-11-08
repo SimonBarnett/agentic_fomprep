@@ -7,8 +7,11 @@ live receipt, and do not copy customer-specific folder maps into them.
 
 Work reports go to `POST https://bob.ntsa.uk/bob/v1/hours` (create), then
 `POST /bob/v1/hours/{id}/heartbeat`, `/close`, or `/withdraw`.
-List with `GET /bob/v1/hours?user=<Priority USERLOGIN>&from=YYYY-MM-DD&to=YYYY-MM-DD&status=closed`.
-Summary and export also require `user`. Day filters use Europe/London.
+List with `GET /bob/v1/hours?user=<Priority USERLOGIN>&status=closed`.
+Add `from` and `to` only as Europe/London dates covering the entry `start` through
+the London day of the check. Omit them when `start` is unknown so an older closed
+entry is not dropped. A clock time with no offset is UTC. Summary and export also
+require `user`. Day filters use Europe/London.
 No shared secret. Match `idempotency_key` on the returned `entries` array.
 There is no key query parameter.
 

@@ -58,12 +58,30 @@ $ordinal = New-BobHoursCreateBody -Fields @{
     customer = 'example-customer'; project = 'ordinal2'
 }
 Gate 'ps-reject-ordinal' (-not $ordinal.Ok) $ordinal.Detail
+$naive = ConvertTo-BobHoursInstant '2026-07-01T00:30:00'
+Gate 'ps-naive-utc' ($naive.Offset -eq [timespan]::Zero -and $naive.Hour -eq 0 -and $naive.Minute -eq 30) $naive.ToString('o')
+$shortId = Test-BobHoursReceipt -List (Wrap (New-Entry 'closed' $key 'SimonB' 'SC100001' '2026-11-08T10:00:00+00:00' 60)) -IdempotencyKey $key -EntryId 'h_0123456789abcde' -OnBehalfOf 'SimonB' -Customer 'example-customer' -Project 'SC100001'
+Gate 'ps-id-16hex' (-not $shortId.Ok) $shortId.Detail
+$mixedEntry = [pscustomobject]@{
+    id = $id; idempotency_key = $key; on_behalf_of = 'SimonB'; customer = 'example-customer'; project = 'SC100001'
+    status = 'closed'; start = '2026-07-01T00:30:00'; end = '2026-07-01T01:30:00Z'; duration_minutes = 60
+}
+$mixedReceipt = Test-BobHoursReceipt -List (Wrap $mixedEntry) -IdempotencyKey $key -EntryId $id -OnBehalfOf 'SimonB' -Customer 'example-customer' -Project 'SC100001'
+Gate 'ps-naive-duration' ([bool]$mixedReceipt.Ok) $mixedReceipt.Detail
+$bst = Get-BobHoursLondonDate ([datetimeoffset]::Parse('2026-06-30T23:30:00Z'))
+Gate 'ps-bst-midnight' ($bst -eq '2026-07-01') $bst
+$older = Get-BobHoursListWindow -HasStart -EntryStart ([datetimeoffset]::Parse('2026-11-02T09:00:00Z')) -Now ([datetimeoffset]::Parse('2026-11-08T12:00:00Z'))
+Gate 'ps-older-window' ($older.FromDay -eq '2026-11-02' -and $older.ToDay -eq '2026-11-08') "$($older.FromDay)..$($older.ToDay)"
 
 $dotnet = Get-Command dotnet -ErrorAction SilentlyContinue
 if ($dotnet) {
     $proj = Join-Path $repo 'tests\bobhours-selftest\BobHoursSelfTest.csproj'
+    $previousTz = $env:TZ
+    $env:TZ = 'Europe/London'
     & dotnet run --project $proj -c Release
-    Gate 'dotnet-selftest' ($LASTEXITCODE -eq 0) "dotnet exit $LASTEXITCODE"
+    $dotnetExit = $LASTEXITCODE
+    if ($null -eq $previousTz) { Remove-Item Env:TZ -ErrorAction SilentlyContinue } else { $env:TZ = $previousTz }
+    Gate 'dotnet-selftest' ($dotnetExit -eq 0) "dotnet exit $dotnetExit (TZ=Europe/London)"
 } else {
     Write-Host 'SKIP dotnet-selftest (dotnet not installed)'
 }

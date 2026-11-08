@@ -39,7 +39,7 @@ Authoritative examples also live in `docs/skill-sources/hours/hours-log-work-ses
 |-------|---------|
 | `idempotency_key` | Stable key; reuse on retry (required) |
 | `agent` | IRC / seat nick (required) |
-| `on_behalf_of` | Priority USERLOGIN (example: `SimonB`) |
+| `on_behalf_of` | Priority USERLOGIN supplied for this agent session. Not a fixed person. |
 | `start` | ISO-8601 datetime when the entry opens (required on create) |
 | `end` | ISO-8601; omit while open; include with `start` for closed-in-one-POST |
 | `customer` | Customer repository name. Empty for a general session. |
@@ -63,7 +63,11 @@ Missing/empty `start` (including when only an alias was sent) returns
 `missing_start` with `rejected_aliases` (bobiverse FR #3673). Unparseable
 `start` returns `bad_start`.
 
-Closed-in-one-POST: send `start` + `end` together. Do not send `duration_minutes`.
+Reporting rules (identity, completed work, audit time versus effort, receipt)
+are only in `launcher/agent-rules.md`, which PriorityAgent loads. This skill
+does not restate them. Do not copy them into a customer repo.
+
+Closed-in-one-POST: send `start` and `end` together. Do not send `duration_minutes`.
 The server returns `status: closed` and derives `duration_minutes`. `auto_closed` is not a successful close.
 
 ## Steps (hours-start)

@@ -14,21 +14,13 @@ Plain-English deliverable description for humans and Priority.
 
 ## Rules
 
-- No internal WP/gate codes.
-- No agent names or fleet jargon.
-- Jira IDs (e.g. PE-23) only when that day's work was on that ticket.
-- Longer webhook description is fine; always also supply a short form **<= 60**
-  characters for Priority PDES.
+Canonical text is `launcher/agent-rules.md` (PriorityAgent loads it). Do not
+copy those rules into a customer repo and do not keep a second wording here.
 
-## Examples (short form <= 60)
+- Short Priority PDES form is **<= 60** characters.
+- No internal WP ids in that sentence.
 
-| Long (webhook ok) | Short PDES (<= 60) |
-|-------------------|--------------------|
-| Merged Day Works form prep fix for PE-23 and verified LASTPREPDATE moved on DEV | Day Works prep fix PE-23 on DEV |
-| Drafted Clarkson Evans timesheet lines from calendar and Teams for Monday | CE hours draft from calendar/Teams |
-| Investigated backup job failure on DEV SQL and documented triage steps | DEV SQL backup job triage notes |
-
-Bad (do not use): `WP3 gate G2 Haitch agentic_fomprep FR#121`.
+Bad (do not use): `WP3 gate`.
 
 ## Done
 

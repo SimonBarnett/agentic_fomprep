@@ -25,6 +25,14 @@ public static class BobHours
     public static readonly Regex EntryIdPattern = new(@"^h_[0-9a-f]{16}$", RegexOptions.CultureInvariant);
     public static readonly Regex Slug = new(@"^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$", RegexOptions.CultureInvariant);
     public static readonly Regex Idempotency = new(@"^[A-Za-z0-9._:@-]{1,128}$", RegexOptions.CultureInvariant);
+    public static readonly Regex UserLoginPattern = new(@"^[A-Za-z0-9][A-Za-z0-9._@-]{0,63}$", RegexOptions.CultureInvariant);
+    public const string SampleCompletedWork =
+        "Updated the agreed rates so new orders price correctly. Consultant-equivalent effort: 1.5 hours.";
+
+    static readonly HashSet<string> UnsupportedEffortKeys = new(StringComparer.Ordinal)
+    {
+        "estimated_hours", "equivalent_hours", "human_hours", "effort_minutes", "effort_hours",
+    };
 
     static readonly HashSet<string> RejectedAliases = new(StringComparer.Ordinal)
     {
@@ -43,6 +51,69 @@ public static class BobHours
 
     public static string IdempotencyKeyForSession(string sessionId) =>
         "priority-agent-" + (sessionId ?? "").Trim();
+
+    public static bool IsPriorityUserLogin(string? value) =>
+        !string.IsNullOrEmpty(value) && UserLoginPattern.IsMatch(value);
+
+    public readonly record struct SessionOwner(bool Ok, string UserLogin, string Detail);
+
+    /// <summary>
+    /// The session file is the owner. A later request may repeat that login.
+    /// A different login is refused and the stored owner is left in place.
+    /// There is no default login and no operating-system user.
+    /// </summary>
+    public static SessionOwner BindSessionOwner(string? persistedOwner, string? requestedOwner)
+    {
+        string persisted = (persistedOwner ?? "").Trim();
+        string requested = (requestedOwner ?? "").Trim();
+        if (persisted.Length > 0)
+        {
+            if (!IsPriorityUserLogin(persisted))
+                return new(false, "", "persisted session owner is not a Priority USERLOGIN");
+            if (requested.Length > 0 && !string.Equals(persisted, requested, StringComparison.Ordinal))
+                return new(false, persisted, "session owner is " + persisted + "; refusing to reassign");
+            return new(true, persisted, "session owner kept");
+        }
+        if (requested.Length == 0)
+            return new(false, "", "Priority USERLOGIN unavailable");
+        if (!IsPriorityUserLogin(requested))
+            return new(false, "", "Priority USERLOGIN is not a usable login");
+        return new(true, requested, "session owner set");
+    }
+
+    /// <summary>
+    /// Customer-facing completed work. start/end stay audit times. The receiver
+    /// has no estimated-effort field; duration_minutes is only the elapsed span.
+    /// Consultant-equivalent effort is stated in description. billable_hint is
+    /// only Y or N. A Priority booking id such as PR230001 is not a pull request.
+    /// </summary>
+    public static BobHoursResult AssessCompletedWork(string? description)
+    {
+        string text = (description ?? "").Trim();
+        if (text.Length == 0)
+            return new(false, "completed work description missing");
+        if (text.Length > 4000)
+            return new(false, "bad_description");
+        if (Regex.IsMatch(text, @"\bWP\s*[-#]?\d+", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant))
+            return new(false, "description contains an internal work-package id");
+        if (Regex.IsMatch(text, @"\bFR\s*[#-]?\d+", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant))
+            return new(false, "description contains an internal feature-request id");
+        if (Regex.IsMatch(text, @"\bPR\s*[#-]\s*\d+", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)
+            || Regex.IsMatch(text, @"\bpull request\b", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant))
+            return new(false, "description contains an internal pull-request id");
+        if (Regex.IsMatch(text, @"github\.com/\S+/(pull|issues)/\d+", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)
+            || Regex.IsMatch(text, @"\bissue\s*#\s*\d+", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant))
+            return new(false, "description contains an internal issue number");
+        bool namesElapsed = Regex.IsMatch(text, @"\b(wall[- ]clock|elapsed|session duration)\b", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+        bool namesEffort = Regex.IsMatch(text, @"consultant-equivalent effort\s*:\s*\d+(\.\d+)?\s*hours?\b", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+        if (namesElapsed && !namesEffort)
+            return new(false, "elapsed time is not the consultant-equivalent effort");
+        if (!namesEffort)
+            return new(false, "description needs an explicit consultant-equivalent effort");
+        if (Regex.IsMatch(text, @"\b(including|plus)\s+(idle|retries|retry time|wait time)\b", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant))
+            return new(false, "description adds idle or retry time to the effort");
+        return new(true, "completed work description ok");
+    }
 
     /// <summary>
     /// GET query. No idempotency_key parameter (match that client-side).
@@ -197,6 +268,8 @@ public static class BobHours
             if (derived < 0) derived = 0;
             if (minutes != derived)
                 return new(false, "duration_minutes does not match start and end");
+            var prose = AssessCompletedWork(Field(matched, "description"));
+            if (!prose.Ok) return prose;
             return new(true, "one closed entry " + expect.EntryId + " matched client-side");
         }
     }
@@ -215,7 +288,8 @@ public static class BobHours
                 || CredentialKeys.Contains(norm)
                 || norm.EndsWith("_password", StringComparison.Ordinal)
                 || norm.EndsWith("_token", StringComparison.Ordinal)
-                || key == "duration_minutes")
+                || key == "duration_minutes"
+                || UnsupportedEffortKeys.Contains(norm))
                 rejected.Add(key);
         }
         if (rejected.Count > 0)
@@ -251,6 +325,9 @@ public static class BobHours
             return new(false, "customer work needs an SC or SO project folder");
         if (project.Length > 0 && !IsAuthoritativeProjectFolder(project))
             return new(false, "project must be an SCxxxxxx or SOxxxxxx folder");
+
+        var prose = AssessCompletedWork(Req("description"));
+        if (!prose.Ok) return prose;
 
         string bill = Req("billable_hint");
         if (bill.Length > 0 && bill != "Y" && bill != "N")
@@ -294,8 +371,8 @@ public static class BobHours
 
         const string session = "11111111-1111-1111-1111-111111111111";
         string key = IdempotencyKeyForSession(session);
-        var expect = new BobHoursExpect(key, "h_0123456789abcdef", "SimonB", "example-customer", "SC100001");
-        string closed = Entry("h_0123456789abcdef", key, "SimonB", "example-customer", "SC100001", "closed",
+        var expect = new BobHoursExpect(key, "h_0123456789abcdef", "UserOne", "example-customer", "SC100001");
+        string closed = Entry("h_0123456789abcdef", key, "UserOne", "example-customer", "SC100001", "closed",
             "2026-11-08T09:00:00+00:00", "2026-11-08T10:00:00+00:00", "60");
 
         var ok = Evaluate(closed, expect);
@@ -304,17 +381,17 @@ public static class BobHours
         var missing = Evaluate("{\"entries\":[]}", expect);
         Gate("missing", !missing.Ok && missing.Detail.Contains("not in the list", StringComparison.Ordinal), missing.Detail);
 
-        string open = Entry("h_0123456789abcdef", key, "SimonB", "example-customer", "SC100001", "open",
+        string open = Entry("h_0123456789abcdef", key, "UserOne", "example-customer", "SC100001", "open",
             "2026-11-08T09:00:00+00:00", "", "");
         var openResult = Evaluate(open, expect);
         Gate("open", !openResult.Ok && openResult.Detail.Contains("still open", StringComparison.Ordinal), openResult.Detail);
 
-        string wrongKey = Entry("h_0123456789abcdef", "priority-agent-other", "SimonB", "example-customer", "SC100001", "closed",
+        string wrongKey = Entry("h_0123456789abcdef", "priority-agent-other", "UserOne", "example-customer", "SC100001", "closed",
             "2026-11-08T09:00:00+00:00", "2026-11-08T10:00:00+00:00", "60");
         var wrong = Evaluate(wrongKey, expect);
         Gate("wrong-key", !wrong.Ok && wrong.Detail.Contains("idempotency_key", StringComparison.Ordinal), wrong.Detail);
 
-        string autoClosed = Entry("h_0123456789abcdef", key, "SimonB", "example-customer", "SC100001", "auto_closed",
+        string autoClosed = Entry("h_0123456789abcdef", key, "UserOne", "example-customer", "SC100001", "auto_closed",
             "2026-11-08T09:00:00+00:00", "2026-11-08T10:00:00+00:00", "60");
         var auto = Evaluate(autoClosed, expect);
         Gate("auto-closed", !auto.Ok && auto.Detail.Contains("auto_closed", StringComparison.Ordinal), auto.Detail);
@@ -322,21 +399,41 @@ public static class BobHours
         var wrongUser = Evaluate(Entry("h_0123456789abcdef", key, "Other", "example-customer", "SC100001", "closed",
             "2026-11-08T09:00:00+00:00", "2026-11-08T10:00:00+00:00", "60"), expect);
         Gate("wrong-user", !wrongUser.Ok && wrongUser.Detail.Contains("USERLOGIN", StringComparison.Ordinal), wrongUser.Detail);
+        var expectTwo = new BobHoursExpect(key, "h_0123456789abcdef", "UserTwo", "example-customer", "SC100001");
+        var userTwo = Evaluate(Entry("h_0123456789abcdef", key, "UserTwo", "example-customer", "SC100001", "closed",
+            "2026-11-08T09:00:00+00:00", "2026-11-08T10:00:00+00:00", "60"), expectTwo);
+        Gate("user-two", userTwo.Ok && BuildListQuery("UserTwo", null, null) == "user=UserTwo&status=closed", userTwo.Detail);
+        var cross = Evaluate(Entry("h_0123456789abcdef", key, "UserTwo", "example-customer", "SC100001", "closed",
+            "2026-11-08T09:00:00+00:00", "2026-11-08T10:00:00+00:00", "60"), expect);
+        Gate("cross-user", !cross.Ok, cross.Detail);
+        var setOne = BindSessionOwner(null, "UserOne");
+        var setTwo = BindSessionOwner(null, "UserTwo");
+        var kept = BindSessionOwner("UserOne", "UserTwo");
+        var absent = BindSessionOwner(null, null);
+        Gate("two-session-owners",
+            setOne.Ok && setOne.UserLogin == "UserOne" && setTwo.Ok && setTwo.UserLogin == "UserTwo",
+            setOne.UserLogin + "/" + setTwo.UserLogin);
+        Gate("owner-not-reassigned",
+            !kept.Ok && kept.UserLogin == "UserOne" && kept.Detail.Contains("refusing to reassign", StringComparison.Ordinal),
+            kept.Detail);
+        Gate("owner-unavailable",
+            !absent.Ok && absent.UserLogin.Length == 0 && absent.Detail.Contains("unavailable", StringComparison.Ordinal),
+            absent.Detail);
 
-        var wrongProject = Evaluate(Entry("h_0123456789abcdef", key, "SimonB", "example-customer", "SO100001", "closed",
+        var wrongProject = Evaluate(Entry("h_0123456789abcdef", key, "UserOne", "example-customer", "SO100001", "closed",
             "2026-11-08T09:00:00+00:00", "2026-11-08T10:00:00+00:00", "60"), expect);
         Gate("wrong-project", !wrongProject.Ok && wrongProject.Detail.Contains("project mismatch", StringComparison.Ordinal), wrongProject.Detail);
 
-        var badDuration = Evaluate(Entry("h_0123456789abcdef", key, "SimonB", "example-customer", "SC100001", "closed",
+        var badDuration = Evaluate(Entry("h_0123456789abcdef", key, "UserOne", "example-customer", "SC100001", "closed",
             "2026-11-08T09:00:00+00:00", "2026-11-08T10:00:00+00:00", "480"), expect);
         Gate("bad-duration", !badDuration.Ok && badDuration.Detail.Contains("duration_minutes", StringComparison.Ordinal), badDuration.Detail);
 
-        string query = BuildListQuery("SimonB", "2026-11-02", "2026-11-08");
+        string query = BuildListQuery("UserOne", "2026-11-02", "2026-11-08");
         Gate("query-no-key",
-            query == "user=SimonB&from=2026-11-02&to=2026-11-08&status=closed" && !query.Contains("idempotency", StringComparison.Ordinal),
+            query == "user=UserOne&from=2026-11-02&to=2026-11-08&status=closed" && !query.Contains("idempotency", StringComparison.Ordinal),
             query);
 
-        var alias = new Dictionary<string, string?> { ["started_at"] = "2026-11-08T09:00:00+00:00", ["idempotency_key"] = key, ["agent"] = "Haitch", ["on_behalf_of"] = "SimonB" };
+        var alias = new Dictionary<string, string?> { ["started_at"] = "2026-11-08T09:00:00+00:00", ["idempotency_key"] = key, ["agent"] = "Haitch", ["on_behalf_of"] = "UserOne" };
         var aliasResult = TryBuildCreateJson(alias, null, out _);
         Gate("reject-alias", !aliasResult.Ok && aliasResult.Detail.Contains("started_at", StringComparison.Ordinal), aliasResult.Detail);
 
@@ -344,12 +441,12 @@ public static class BobHours
         {
             ["idempotency_key"] = key,
             ["agent"] = "Haitch",
-            ["on_behalf_of"] = "SimonB",
+            ["on_behalf_of"] = "UserOne",
             ["start"] = "2026-11-08T09:00:00+00:00",
             ["end"] = "2026-11-08T10:00:00+00:00",
             ["customer"] = "example-customer",
             ["project"] = "SC100001",
-            ["description"] = "fixture",
+            ["description"] = SampleCompletedWork,
             ["source"] = "fixture",
         };
         var built = TryBuildCreateJson(good, null, out string body);
@@ -381,7 +478,7 @@ public static class BobHours
             TryParseInstant("2026-07-01T00:30:00Z", out var zed) && zed.Offset == TimeSpan.Zero && zed.Hour == 0,
             zed.ToString("o", CultureInfo.InvariantCulture));
 
-        string mixed = Entry("h_0123456789abcdef", key, "SimonB", "example-customer", "SC100001", "closed",
+        string mixed = Entry("h_0123456789abcdef", key, "UserOne", "example-customer", "SC100001", "closed",
             "2026-07-01T00:30:00", "2026-07-01T01:30:00Z", "60");
         var mixedResult = Evaluate(mixed, expect);
         Gate("naive-utc-duration", mixedResult.Ok, mixedResult.Detail);
@@ -412,10 +509,10 @@ public static class BobHours
             && LondonDayInRange(olderStart, olderWindow.FromDay, olderWindow.ToDay),
             (olderWindow.FromDay ?? "") + ".." + (olderWindow.ToDay ?? ""));
         var unbounded = WindowForStart(null, checkedOn);
-        string unboundedQuery = BuildListQuery("SimonB", unbounded.FromDay, unbounded.ToDay);
+        string unboundedQuery = BuildListQuery("UserOne", unbounded.FromDay, unbounded.ToDay);
         Gate("unknown-start-omits-days",
             unbounded.FromDay == null && unbounded.ToDay == null
-            && unboundedQuery == "user=SimonB&status=closed",
+            && unboundedQuery == "user=UserOne&status=closed",
             unboundedQuery);
 
         try
@@ -433,19 +530,36 @@ public static class BobHours
             Gate("zone-data", false, ex.Message);
         }
 
+        var jargon = AssessCompletedWork("Spent the session on WP3, FR #12, and PR #34.");
+        Gate("reject-internal-ids", !jargon.Ok, jargon.Detail);
+        var wall = AssessCompletedWork("Session duration was 60 minutes.");
+        Gate("reject-elapsed-as-hours", !wall.Ok && wall.Detail.Contains("elapsed", StringComparison.Ordinal), wall.Detail);
+        var booking = AssessCompletedWork("Recorded the booking id in the project file. Consultant-equivalent effort: 1 hours. Booking PR230001 stays a project id.");
+        Gate("booking-id-not-pull-request", booking.Ok, booking.Detail);
+        var effortKey = new Dictionary<string, string?>(good) { ["effort_hours"] = "1.5" };
+        var effortRejected = TryBuildCreateJson(effortKey, null, out _);
+        Gate("no-effort-field", !effortRejected.Ok && effortRejected.Detail.Contains("effort_hours", StringComparison.Ordinal), effortRejected.Detail);
+        Gate("audit-times-kept",
+            body.Contains("2026-11-08T09:00:00", StringComparison.Ordinal)
+            && body.Contains("2026-11-08T10:00:00", StringComparison.Ordinal)
+            && body.Contains("1.5 hours", StringComparison.Ordinal)
+            && !body.Contains("duration_minutes", StringComparison.Ordinal),
+            "start and end stay the audit span");
+
         Gate("fixture-only", true, "self-test sent no HTTP request");
         Console.WriteLine(failed == 0 ? "BobHours offline self-test PASS" : "BobHours offline self-test FAIL " + failed);
         return failed == 0 ? 0 : 1;
     }
 
-    static string Entry(string id, string key, string user, string customer, string project, string status, string start, string end, string duration)
+    static string Entry(string id, string key, string user, string customer, string project, string status, string start, string end, string duration, string? description = null)
     {
         string endJson = end.Length == 0 ? "null" : "\"" + end + "\"";
         string durJson = duration.Length == 0 ? "null" : duration;
+        string desc = (description ?? SampleCompletedWork).Replace("\\", "\\\\").Replace("\"", "\\\"");
         return "{\"entries\":[{\"id\":\"" + id + "\",\"idempotency_key\":\"" + key
             + "\",\"on_behalf_of\":\"" + user + "\",\"customer\":\"" + customer + "\",\"project\":\"" + project
             + "\",\"status\":\"" + status + "\",\"start\":\"" + start + "\",\"end\":" + endJson
-            + ",\"duration_minutes\":" + durJson + "}]}";
+            + ",\"duration_minutes\":" + durJson + ",\"description\":\"" + desc + "\"}]}";
     }
 
     static bool IsUkBst(DateTimeOffset utc)

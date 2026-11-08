@@ -291,6 +291,22 @@ static class Program
         string rules = LoadRules(fomprep, out string rulesSrc);
         string sessionDir = sessionDirEarly;
         Directory.CreateDirectory(sessionDir);
+        string? requestedUser = string.IsNullOrWhiteSpace(HoursUserArg) ? null : HoursUserArg.Trim();
+        if (requestedUser == null && !Console.IsInputRedirected)
+        {
+            string typed = Ask("Priority USERLOGIN for this session: ");
+            requestedUser = string.IsNullOrWhiteSpace(typed) ? null : typed.Trim();
+        }
+        var sessionOwner = BobHours.BindSessionOwner(ReadSessionOwner(sessionDir), requestedUser);
+        if (!sessionOwner.Ok || string.IsNullOrEmpty(sessionOwner.UserLogin))
+        {
+            Err(sessionOwner.Detail + " Pass --hours-user for this launch. No default login is used.");
+            Pause();
+            return 2;
+        }
+        if (ReadSessionOwner(sessionDir) == null)
+            WriteSessionOwner(sessionDir, sessionOwner.UserLogin);
+        vars["PRIORITY_USER"] = sessionOwner.UserLogin;
         AircSessionFiles? aircFiles = null;
         if (airc && aircConsole != null)
         {
@@ -307,7 +323,7 @@ static class Program
             bool connectionsExist = AircSupport.ConnectionFileExists(pwFile);
             Check(connectionsExist, AircSupport.ConnectionFileStatus(cust.Name, pwFile, connectionsExist));
         }
-        Info($"hours: webhook idempotency_key priority-agent-{sessionId}; persist the returned id at {hoursEntryFile}; exit matches that id client-side");
+        Info($"hours: session owner {sessionOwner.UserLogin}; idempotency_key priority-agent-{sessionId}; persist the returned id at {hoursEntryFile}");
 
         var brief = new StringBuilder();
         brief.AppendLine($"Priority agent session {sessionId} (launched {DateTime.Now:yyyy-MM-dd HH:mm} on {Environment.MachineName}).");
@@ -330,7 +346,7 @@ static class Program
 
         string rulesFile = Path.Combine(sessionDir, "rules.md");
         AircSupport.WriteSessionMetadata(sessionDir, rules, new
-        { sessionId, level, customer = cust?.FullName, project, workDir, fomprep, grok, airc, aircConsole, dryRun = DryRun, smoke = Smoke, at = DateTime.Now });
+        { sessionId, level, customer = cust?.FullName, project, priorityUserLogin = sessionOwner.UserLogin, workDir, fomprep, grok, airc, aircConsole, dryRun = DryRun, smoke = Smoke, at = DateTime.Now });
 
         string hoursCustomer = cust == null ? "Leave customer empty. " : "customer " + cust.Name + ". ";
         string hoursProject = string.IsNullOrEmpty(project)
@@ -338,8 +354,8 @@ static class Program
             : "project " + project + " (the folder name). ";
         string hoursPrompt = "HOURS NOT REPORTED. Priority agents MUST report their hours on https://bob.ntsa.uk/bob/v1/hours. "
             + "Reuse idempotency_key priority-agent-" + sessionId + ". "
-            + "on_behalf_of is the Priority USERLOGIN. " + hoursCustomer + hoursProject
-            + "Persist only the returned id in " + hoursEntryFile + ". "
+            + "on_behalf_of is " + sessionOwner.UserLogin + " for this session only. " + hoursCustomer + hoursProject
+            + "Persist that same login with the returned id in " + hoursEntryFile + ". "
             + "Do not invent start, end, or duration. Do not book Priority. Then stop.";
         var gargs = AircSupport.BuildGrokArguments(workDir, sessionId, rules, brief.ToString(), Smoke);
         var resumeArgs = new List<string> { "--cwd", workDir, "--resume", sessionId, "--trust", "--rules", rules, hoursPrompt };
@@ -412,8 +428,25 @@ static class Program
     // A live GET is a single attempt with no retry. Non-success is delivery unverified.
     static bool RunHoursGate(string sessionId, string? sessionDir, string expectedCustomer, string expectedProject, out string detail)
     {
-        string user = (HoursUserArg ?? Environment.GetEnvironmentVariable("PRIORITY_AGENT_HOURS_USER") ?? "").Trim();
-        ReadPersistedHours(sessionDir, out string fileId, out string fileStart);
+        ReadPersistedHours(sessionDir, out string fileId, out string fileStart, out string fileOwner);
+        string? persistedOwner = sessionDir == null ? null : ReadSessionOwner(sessionDir);
+        var owner = BobHours.BindSessionOwner(persistedOwner, HoursUserArg);
+        if (string.IsNullOrEmpty(persistedOwner))
+        {
+            detail = "session owner unavailable. No request sent.";
+            return false;
+        }
+        if (!owner.Ok)
+        {
+            detail = owner.Detail + " No request sent.";
+            return false;
+        }
+        if (fileOwner.Length > 0 && !string.Equals(fileOwner, owner.UserLogin, StringComparison.Ordinal))
+        {
+            detail = "hours entry owner does not match session owner. No request sent.";
+            return false;
+        }
+        string user = owner.UserLogin;
         string entryId = (HoursEntryIdArg ?? Environment.GetEnvironmentVariable("PRIORITY_AGENT_HOURS_ENTRY_ID") ?? "").Trim();
         if (entryId.Length == 0) entryId = fileId;
         var expect = new BobHoursExpect(
@@ -444,10 +477,11 @@ static class Program
         return result.Ok;
     }
 
-    static void ReadPersistedHours(string? sessionDir, out string id, out string start)
+    static void ReadPersistedHours(string? sessionDir, out string id, out string start, out string owner)
     {
         id = "";
         start = "";
+        owner = "";
         if (string.IsNullOrEmpty(sessionDir)) return;
         string path = Path.Combine(sessionDir, "hours-entry.json");
         if (!File.Exists(path)) return;
@@ -458,8 +492,35 @@ static class Program
                 id = (idEl.GetString() ?? "").Trim();
             if (doc.RootElement.TryGetProperty("start", out var startEl) && startEl.ValueKind == JsonValueKind.String)
                 start = (startEl.GetString() ?? "").Trim();
+            if (doc.RootElement.TryGetProperty("on_behalf_of", out var ownerEl) && ownerEl.ValueKind == JsonValueKind.String)
+                owner = (ownerEl.GetString() ?? "").Trim();
         }
         catch { }
+    }
+
+    static string? ReadSessionOwner(string sessionDir)
+    {
+        string path = Path.Combine(sessionDir, "identity.json");
+        if (!File.Exists(path)) return null;
+        try
+        {
+            using var doc = JsonDocument.Parse(File.ReadAllText(path));
+            if (doc.RootElement.TryGetProperty("priorityUserLogin", out var user) && user.ValueKind == JsonValueKind.String)
+                return (user.GetString() ?? "").Trim();
+        }
+        catch { }
+        return null;
+    }
+
+    static void WriteSessionOwner(string sessionDir, string userLogin)
+    {
+        Directory.CreateDirectory(sessionDir);
+        string path = Path.Combine(sessionDir, "identity.json");
+        if (File.Exists(path)) return;
+        File.WriteAllText(path, JsonSerializer.Serialize(new Dictionary<string, string>
+        {
+            ["priorityUserLogin"] = userLogin,
+        }));
     }
 
     static bool TryFetchHoursList(string query, out string json, out string detail)
@@ -967,7 +1028,9 @@ PriorityAgent.exe [options]
   --check-hours <ignored-repo-dir> --session <full uuid>
                         webhook hours gate for that session (not a git hours ref)
   --hours-user <USERLOGIN>
-                        Priority USERLOGIN for ?user= (else PRIORITY_AGENT_HOURS_USER)
+                        Priority USERLOGIN for this launch only. Required when input is
+                        not a terminal. Not read from the OS user or a shared default.
+                        An existing session keeps the login in its identity.json.
   --hours-entry-id <h_...>
                         persisted receiver id (else hours-entry.json or PRIORITY_AGENT_HOURS_ENTRY_ID)
   PRIORITY_AGENT_HOURS_JSON

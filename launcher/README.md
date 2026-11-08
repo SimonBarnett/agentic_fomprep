@@ -59,8 +59,10 @@ with the right context.
    - It never handles keys.
 8. It **starts Grok** in the same console:
    `grok --cwd <context> --session-id <new uuid> --trust --rules <agent rules> "<context brief>"`.
-   - The rules come from `launcher/agent-rules.md` in the agentic_fomprep clone when its `rules-version` is at
-     least the embedded copy's; otherwise the copy embedded in the exe is used. The `{{...}}` placeholders are filled in.
+   - The rules come from `launcher/agent-rules.md`. That file is the only reporting
+     policy. The exe embeds a copy of it at build time. On launch, `LoadRules` uses the
+     clone file when its `rules-version` is at least the embedded copy. Customer repos
+     are not given a copy. The `{{...}}` placeholders are filled in.
    - The brief names the customer, project, paths and the files to read first.
 9. **Hours are mandatory.** When the agent exits, the launcher looks for one **closed** entry on
    `GET https://bob.ntsa.uk/bob/v1/hours` (bobiverse FR #3450 / #3673). The query is
@@ -71,8 +73,10 @@ with the right context.
    has no `start`, the date bounds are omitted. The match is client-side: persisted receiver id, `priority-agent-<full session uuid>`,
    the Priority USERLOGIN in `on_behalf_of`, the expected customer and project, `status` `closed`,
    and a real start/end.
-   - `?user=` comes from `--hours-user` or `PRIORITY_AGENT_HOURS_USER`. It is not read from the
-     passwords file and it is not logged as a secret.
+   - `?user=` and `on_behalf_of` are the USERLOGIN stored in that session's `identity.json`
+     at launch (`--hours-user`, or a prompt when a terminal is attached). The launcher does
+     not read the OS account name, a shared environment default, or the connections file.
+     A later launch for someone else does not rewrite an existing session.
    - The returned id is persisted in the session `hours-entry.json`. Tests set
      `PRIORITY_AGENT_HOURS_JSON` to a list fixture. When that variable is set, the check does
      not contact the network.

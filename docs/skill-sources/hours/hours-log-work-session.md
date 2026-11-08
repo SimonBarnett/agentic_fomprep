@@ -41,7 +41,7 @@ map; FR #3450 / FR #3673).
 |-------|---------|
 | `idempotency_key` | Stable key; reuse on retry (required) |
 | `agent` | Agent nick (required); do not send `agent_nick` |
-| `on_behalf_of` | Priority USERLOGIN (example: `SimonB`) |
+| `on_behalf_of` | Priority USERLOGIN supplied for this agent session. Not a fixed person. |
 | `start` | ISO-8601 start with offset (Europe/London) |
 | `end` | ISO-8601 end; omit while open; include with `start` for closed-in-one-POST |
 | `customer` | Customer repository name. Empty for a general session. |

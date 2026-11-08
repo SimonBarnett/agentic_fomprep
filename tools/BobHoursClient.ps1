@@ -5,8 +5,10 @@
 
 .DESCRIPTION
   Builds a create body and evaluates a saved GET /bob/v1/hours list.
-  This file does not call the network. Live GET/POST stays out of this script
-  while supported reads are blocked. A fixture match is not a receipt.
+  This file does not call the network and does not define reporting policy.
+  Wording, identity, and effort checks live in launcher/BobHours.cs, which
+  enforces launcher/agent-rules.md. Live GET/POST stays out of this script.
+  A fixture match is not a receipt.
   Git events stay on POST /bob/v1/git. That route is not the hours store.
 #>
 
@@ -17,6 +19,29 @@ $script:BobHoursCredential = @(
     'password', 'passwd', 'pwd', 'secret', 'token', 'api_key', 'apikey', 'access_token', 'refresh_token',
     'authorization', 'auth', 'bearer', 'private_key', 'client_secret'
 )
+
+function Resolve-BobHoursSessionOwner {
+    param([string]$PersistedOwner, [string]$RequestedOwner)
+    $persisted = if ($PersistedOwner) { $PersistedOwner.Trim() } else { '' }
+    $requested = if ($RequestedOwner) { $RequestedOwner.Trim() } else { '' }
+    $pattern = '^[A-Za-z0-9][A-Za-z0-9._@-]{0,63}$'
+    if ($persisted) {
+        if ($persisted -notmatch $pattern) {
+            return @{ Ok = $false; UserLogin = ''; Detail = 'persisted session owner is not a Priority USERLOGIN' }
+        }
+        if ($requested -and $requested -cne $persisted) {
+            return @{ Ok = $false; UserLogin = $persisted; Detail = "session owner is $persisted; refusing to reassign" }
+        }
+        return @{ Ok = $true; UserLogin = $persisted; Detail = 'session owner kept' }
+    }
+    if (-not $requested) {
+        return @{ Ok = $false; UserLogin = ''; Detail = 'Priority USERLOGIN unavailable' }
+    }
+    if ($requested -notmatch $pattern) {
+        return @{ Ok = $false; UserLogin = ''; Detail = 'Priority USERLOGIN is not a usable login' }
+    }
+    return @{ Ok = $true; UserLogin = $requested; Detail = 'session owner set' }
+}
 
 function Test-BobHoursProjectFolder {
     param([string]$Name)
@@ -72,7 +97,7 @@ function New-BobHoursCreateBody {
     )
     foreach ($key in @($Fields.Keys)) {
         $norm = ([string]$key).Trim().ToLowerInvariant().Replace('-', '_')
-        if ($script:BobHoursRejected -contains [string]$key -or $script:BobHoursCredential -contains $norm -or $norm.EndsWith('_password') -or $norm.EndsWith('_token') -or [string]$key -eq 'duration_minutes') {
+        if ($script:BobHoursRejected -contains [string]$key -or $script:BobHoursCredential -contains $norm -or $norm.EndsWith('_password') -or $norm.EndsWith('_token') -or [string]$key -eq 'duration_minutes' -or $norm -in @('estimated_hours','equivalent_hours','human_hours','effort_minutes','effort_hours')) {
             return @{ Ok = $false; Detail = "rejected fields: $key"; Json = '' }
         }
     }

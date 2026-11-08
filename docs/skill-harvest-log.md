@@ -134,3 +134,10 @@ Expanded `priority-uat-wcf` (skill-source + catalog meta **1.2.0**) from CE Day 
 - Also: strip UTF-8 BOM on token/allowlist JSON; `token_expired` from `expires_in`+`obtained_at`; Failure table in `SAAS_WCF_CLIENT.md`.
 - Evidence: `npm test` 20 pass; `Test-Fr-PrioritySaasWcf.ps1` PASS; Live `session` returns `api_licence` with `loginUrlSource=probe.wcf`.
 - PR: https://github.com/SimonBarnett/agentic_fomprep/pull/338
+
+## 2026-11-08 — API Licence Cloud form path + MCP root_records
+
+- Cloud form path: set `USERSB.RESTLOGIN` then `PRIVUSERS.REST` (USERSB form often lacks REST column).
+- MCP `form_update` requires `root_records` (not `root_form`).
+- Updated `API_LICENCE_WCF.md` + catalog `priority-api-licence-wcf` / `priority-mcp-forms`.
+- Source: SaaS WCF Live smoke after API License tick (generic). Folded into PR #338.

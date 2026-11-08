@@ -125,3 +125,4 @@ Expanded `priority-uat-wcf` (skill-source + catalog meta **1.2.0**) from CE Day 
 - Catalog `priority-procedure-style` bumped to **1.2.0**.
 - Synced via `tools/Sync-PriorityGrokSkills.ps1`.
 - Source: anonymised customer Job Progress SQLI/report session; no hosts/secrets.
+- 2026-11-08: API Licence Cloud form path — PRIVUSERS.REST after USERSB.RESTLOGIN; MCP form_update root_records (not root_form). Updated API_LICENCE_WCF.md + catalog priority-api-licence-wcf / priority-mcp-forms. Source: SaaS WCF Live smoke (generic).

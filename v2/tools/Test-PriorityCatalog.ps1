@@ -79,6 +79,7 @@ $expected = @(
     'priority-dictionary-sql',
     'priority-mcp-setup',
     'priority-saas-oidc-login',
+    'priority-saas-wcf',
     'priority-mcp-discovery',
     'priority-mcp-forms',
     'priority-mcp-procedures',
@@ -1232,6 +1233,44 @@ if ((Test-Path -LiteralPath $pasPath) -and (Test-Path -LiteralPath $syncPath)) {
     }
 }
 Add-Gate 'CAT-T70' $t70Ok $t70Why
+
+# 2026-11-07 service-desk: custom work-order close is diagnosis only
+$sdId = 'priority-service-desk-record-modified-custom-close'
+$sdSkill = Join-Path $catalog "$sdId\SKILL.md"
+$sdMeta = Join-Path $catalog "$sdId\meta.json"
+$sdLesson = Join-Path $repo 'docs\skill-sources\medatech-network\service-desk\record-modified-custom-close.md'
+$sdBuild = Join-Path $repo 'tools\priority-skill-dag\build_dag.py'
+$sdGrok = Join-Path $repo ".grok\skills\$sdId\SKILL.md"
+$sdDagSkill = Join-Path $catalog 'priority-skill-dag\SKILL.md'
+$t74Ok = $false
+$t74Why = 'CAT-T74 service-desk custom-close skill missing'
+if ((Test-Path -LiteralPath $sdSkill) -and (Test-Path -LiteralPath $sdMeta) -and (Test-Path -LiteralPath $sdLesson) -and (Test-Path -LiteralPath $sdBuild) -and (Test-Path -LiteralPath $sdGrok) -and (Test-Path -LiteralPath $sdDagSkill)) {
+    $sdRaw = Get-Content -LiteralPath $sdSkill -Raw -Encoding UTF8
+    $sdLes = Get-Content -LiteralPath $sdLesson -Raw -Encoding UTF8
+    $sdPy = Get-Content -LiteralPath $sdBuild -Raw -Encoding UTF8
+    $sdDag = Get-Content -LiteralPath $sdDagSkill -Raw -Encoding UTF8
+    $sdMetaObj = Get-Content -LiteralPath $sdMeta -Raw -Encoding UTF8 | ConvertFrom-Json
+    $sdBytes = [System.IO.File]::ReadAllBytes($sdMeta)
+    $sdBom = ($sdBytes.Length -ge 3 -and $sdBytes[0] -eq 0xEF -and $sdBytes[1] -eq 0xBB -and $sdBytes[2] -eq 0xBF)
+    $sdHashSkill = (Get-FileHash -LiteralPath $sdSkill -Algorithm SHA256).Hash
+    $sdHashGrok = (Get-FileHash -LiteralPath $sdGrok -Algorithm SHA256).Hash
+    $hasRoute = ($sdRaw -match 'SC263394') -and ($sdRaw -match 'custom work-order closing') -and ($sdRaw -match 'MSG154_OPTIMISTIC_LOCK')
+    $noRepair = ($sdRaw -notmatch '(?i)UPDATE\s+\w+\s+SET') -and ($sdRaw -notmatch 'INTO :\$1')
+    $unknown = ($sdRaw -match 'exact (trigger|code|edit)') -and ($sdRaw -match 'unknown')
+    $topic = ($sdPy -match '"service-desk":\s*\["support-desk"') -and ($sdPy -match 'priority-service-desk-')
+    $dagRow = $sdDag -match 'service-desk'
+    $metaOk = ([string]$sdMetaObj.name -eq $sdId) -and ([string]$sdMetaObj.version -match '^\d+\.\d+\.\d+$')
+    $lessonOk = ($sdLes -match 'SC263394') -and ($sdLes -notmatch '(?i)UPDATE\s+\w+\s+SET')
+    $mirror = $sdHashSkill -eq $sdHashGrok
+    if ($hasRoute -and $noRepair -and $unknown -and $topic -and $dagRow -and $metaOk -and $lessonOk -and $mirror -and -not $sdBom) {
+        $t74Ok = $true
+        $t74Why = 'service-desk custom-close skill: diagnosis only, DAG topic, no repair SQL, grok mirror'
+    } else {
+        $t74Why = "route=$hasRoute repairBlocked=$noRepair unknown=$unknown topic=$topic dag=$dagRow meta=$metaOk lesson=$lessonOk mirror=$mirror bom=$sdBom"
+    }
+}
+Add-Gate 'CAT-T74' $t74Ok $t74Why
+
 
 
 

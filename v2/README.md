@@ -6,7 +6,7 @@ This folder is the next version:
 
 | Path | Role |
 |------|------|
-| `v2/apps/mcp-catalog/` | Amplify app for **https://mcp-priority.ntsa.uk** (skill catalog MCP). Add a skill by adding `catalog/<name>/`. |
+| `v2/apps/mcp-catalog/` | Amplify app for **https://mcp.ntsa.uk** (skill catalog MCP). Add a skill by adding `catalog/<name>/`. |
 | `v2/plugins/priority-formprep/` | Grok plugin: local execute (`list_instances`, `prepare_form`) against the **user** instance allowlist. |
 | `v2/plugins/priority-shell-compile/` | Grok plugin: local `compile_shell`. Separate from install. WCF walker uses pinned Prepare Upgrade ENAME. |
 | `v2/plugins/priority-shell-install/` | Grok plugin: local `install_shell`. Parse, path allowlist, DBI refuse before WCF. SQL gate + `formsUnprepared[]` handoff (no auto-prep). |
@@ -25,13 +25,17 @@ If that skill also **executes** locally, add `v2/plugins/<name>/` and list it in
 
 ## Amplify + DNS (you)
 
-1. Amplify Hosting → this GitHub repo, branch `main`, monorepo app root `v2/apps/mcp-catalog` (`amplify.yml` already set).
-2. ntsa.uk DNS: CNAME `mcp-priority` → the Amplify default hostname (`*.amplifyapp.com`).
-3. Amplify console → custom domain `mcp-priority.ntsa.uk`.
+Deploy settings, env names, and what Amplify cannot run: [docs/amplify-hosting.md](../docs/amplify-hosting.md).
 
-**Local stdio (recommended):** `grok mcp add priority-catalog -- node <clone>/v2/apps/mcp-catalog/stdio.mjs`. It is zero-dependency (no npm install), serves `catalog/` from the clone and has the same tools. The Priority Agent launcher registers it automatically.
+1. Amplify Hosting compute (`WEB_COMPUTE`) → this GitHub repo, branch `main`, monorepo app root `v2/apps/mcp-catalog` (`amplify.yml`).
+2. ntsa.uk DNS: the CNAME records the Amplify console prints for `mcp.ntsa.uk`. Do not invent the `*.amplifyapp.com` target.
+3. Amplify console → custom domain `mcp.ntsa.uk` on branch `main`.
 
-Hosted MCP URL (not live: the DNS name doesn't resolve): `https://mcp-priority.ntsa.uk/mcp` (JSON-RPC POST). Tools: `list_catalog`, `get_skill`, `get_instance_schema`, `get_runner_files`. There is **no** `prepare_form` on Amplify.
+Skill leaflets still mention `mcp-priority.ntsa.uk`. That name is allowlisted if you attach it as a second hostname. It is not a separate app.
+
+**Local stdio (recommended):** `grok mcp add priority-catalog -- node <clone>/v2/apps/mcp-catalog/stdio.mjs`. It is zero-dependency (no npm install), serves `catalog/` from the clone and has the same tools. The Priority Agent launcher registers it automatically. Amplify does not serve stdio.
+
+Hosted MCP URL: `https://mcp.ntsa.uk/mcp` (one JSON-RPC POST per request, protocol `2024-11-05`). Tools: `list_catalog`, `get_skill`, `get_instance_schema`, `get_runner_files`. There is **no** `prepare_form` on Amplify.
 
 ## Local execute (after grab)
 

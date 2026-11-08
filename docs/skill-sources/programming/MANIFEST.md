@@ -17,10 +17,11 @@ FR: `docs/feature-request-eshbel-priority-programming-harvest-2026-09-24.md`
 | CREATE_TABLE.md | priority-create-table | Physical CREATE + IGNORE_DUP_KEY; COLUMNS.SIZE never 0 |
 | ODATA_REST_CLOUD.md | priority-odata-dev | Cloud REST PAT, DNAME, RESTFLAG→400, EFORM FTRIG text, typed DOCSTATS |
 | SAAS_OIDC_LOGIN.md | priority-saas-oidc-login | SaaS WebUI OIDC PKCE + Accounts email MFA → Bearer token |
+| SAAS_WCF_CLIENT.md | priority-saas-wcf | Allowlist-gated SaaS Web SDK client (accessToken); probe/session/form |
 | IGNORE_DUP_KEY.md | priority-dictionary-sql / priority-create-table | Tabula unique indexes must use IGNORE_DUP_KEY=ON |
 | FORMCLMNSA_JOINS.md | priority-dictionary-sql / priority-formprep | Child FORMCLMNSA `= :$$.COL`; joins survive Form Prep |
 | INDEXES_TYPE_A_IDENTITY.md | priority-dictionary-sql | IDENTITY columns keep INDEXES TYPE=A (8102 if U) |
-| MSG154_OPTIMISTIC_LOCK.md | priority-form-engineering / procedure-style | msg 154: mid-edit :$1 race; nullable form cols; PRE-UPDATE resync hygiene; FORMTRIGTEXT 68-char lines |
+| MSG154_OPTIMISTIC_LOCK.md | priority-form-engineering / procedure-style | msg 154: mid-edit :$1 race; nullable form cols; PRE-UPDATE resync hygiene; FORMTRIGTEXT 68-char lines. Custom work-order close balance writes route to priority-service-desk-record-modified-custom-close instead. |
 
 | EMPTY_NAMED_TRIGGER_STUB.md | Empty FORMTRIG named stub (0 FORMTRIGTEXT); restore from good instance |
 | PREPARE_PROCEDURE.md | priority-procedure-prep | TYPE=P/R via EXEC + REPPREPDIRECT2; gate UPD=N + d{T$EXEC}.prp mtime |

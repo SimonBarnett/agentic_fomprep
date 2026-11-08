@@ -9,12 +9,20 @@ Used by PriorityAgent after an OIDC Bearer token exists (`priority-saas-oidc-log
 2. Store under `C:\passwords\<id>-oauth-tokens.json` (outside git):
 
 ```json
-{ "access_token": "...", "refresh_token": "...", "expires_at": "..." }
+{
+  "access_token": "...",
+  "refresh_token": "...",
+  "expires_in": 1800,
+  "obtained_at": "2026-11-08T18:00:00.000Z"
+}
 ```
+
+(`expires_at` ISO is also accepted. Write UTF-8 **without BOM** — PowerShell `Set-Content` BOM is stripped by the client but avoid it.)
 
 3. Or set env `PRIORITY_SAAS_TOKEN` for the process only.
 
 The Web SDK `login({ accessToken })` sends that token as the WCF UsernameToken password.
+Login **url** is the tenant probe `wcf` value (`…/wcf/service.svc`), not the host alone.
 
 ## Allowlist-gated
 
@@ -70,6 +78,8 @@ Writes (`form set` / `form save`) require `allowLive: true` on the row (and oper
 - Never log or commit tokens / passwords / OTPs.
 - SaaS REST `formStart` 404 is not proof auth failed; use this Web SDK path.
 - OIDC MFA stays in `priority-saas-oidc-login`; this client only consumes the token.
+- OIDC user needs **API License** for WCF login. If login returns API License, tick REST on the user (approved env) or use PAT + OData/MCP for dictionary work.
+- For FORMTRIG/EFORM inventory on Cloud, prefer PAT OData / MCP over this client.
 
 ## Tests
 

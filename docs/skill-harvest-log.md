@@ -125,3 +125,12 @@ Expanded `priority-uat-wcf` (skill-source + catalog meta **1.2.0**) from CE Day 
 - Catalog `priority-procedure-style` bumped to **1.2.0**.
 - Synced via `tools/Sync-PriorityGrokSkills.ps1`.
 - Source: anonymised customer Job Progress SQLI/report session; no hosts/secrets.
+
+## 2026-11-08 — SaaS WCF Phase 1 field fix (Hillier Live)
+
+- Tenant: Priority Cloud (generic lesson; customer name omitted from catalog).
+- Bug: host-only login URL → SDK appends `/wcf/wcf/Service.svc` → `Can't connect to server.` Fix: use probed `wcf` (`…/wcf/service.svc`).
+- Next error after fix: API License required on OIDC user for WCF; dictionary inventory path = REST PAT + OData (language `,3`) / Cloud MCP.
+- Also: strip UTF-8 BOM on token/allowlist JSON; `token_expired` from `expires_in`+`obtained_at`; Failure table in `SAAS_WCF_CLIENT.md`.
+- Evidence: `npm test` 20 pass; `Test-Fr-PrioritySaasWcf.ps1` PASS; Live `session` returns `api_licence` with `loginUrlSource=probe.wcf`.
+- PR: https://github.com/SimonBarnett/agentic_fomprep/pull/338

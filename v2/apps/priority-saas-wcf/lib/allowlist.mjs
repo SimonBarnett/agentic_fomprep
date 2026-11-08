@@ -11,13 +11,19 @@ export function defaultInstancesPath() {
   return path.join(os.homedir(), '.priority-saas-wcf', 'instances.json');
 }
 
+/** Strip UTF-8 BOM (PowerShell Set-Content on Windows). */
+export function stripBom(text) {
+  const s = String(text || '');
+  return s.charCodeAt(0) === 0xfeff ? s.slice(1) : s;
+}
+
 export function readAllowlist(filePath = defaultInstancesPath()) {
   if (!filePath || !fs.existsSync(filePath)) {
     return { ok: false, reason: 'no_instances_file', path: filePath || '' };
   }
   let raw;
   try {
-    raw = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+    raw = JSON.parse(stripBom(fs.readFileSync(filePath, 'utf8')));
   } catch (e) {
     return { ok: false, reason: 'instances_invalid_json', path: filePath, message: String(e.message || e) };
   }

@@ -18,18 +18,23 @@ Grab from catalog MCP (`get_skill` with `name=priority-saas-wcf`).
 ## When
 
 Need a **deterministic** Web SDK session against Priority **SaaS / Cloud**
-(`p.priority-connect.online` or regional host) to open forms, read/edit rows,
+(`p.priority-connect.online` or regional host) to **open/edit business forms**
 or (Phase 2) prepare form/procedure/report. On-prem CredMan password path stays
 `priority-formprep` / `src/Prepare-NamedForm.ps1`.
+
+For Cloud **dictionary / trigger** archaeology (`EFORM`, `FORMTRIG`, SEARCH-ALL-FIELD
+bodies), prefer **REST PAT + OData** (`priority-odata-dev`) or **Priority Cloud MCP**
+(`priority-mcp-forms`) first — do not start MFA solely for that.
 
 ## Hard rules
 
 1. Never invent host, tenant, company DNAME, or WCF URL. Allowlist only.
 2. Never commit or log tokens, passwords, or OTPs.
-3. OIDC + MFA first: `priority-saas-oidc-login` -> token file under `C:\passwords\`.
-4. This client reads `PRIORITY_SAAS_TOKEN` or `instance.tokenFile` (`access_token`).
+3. OIDC + MFA first for Web SDK: `priority-saas-oidc-login` -> token file under `C:\passwords\` (UTF-8 no BOM; `expires_in` + `obtained_at` ok).
+4. This client reads `PRIORITY_SAAS_TOKEN` or `instance.tokenFile` (`access_token`); login URL = probed `wcf` (`…/service.svc`).
 5. Live writes need `allowLive: true` and explicit operator approval.
 6. REST `…/service.svc/formStart` 404 on SaaS is not proof auth failed; use this SDK.
+7. OIDC user needs API License (`USERSB.REST`) for WCF login; otherwise use PAT/MCP fallback (see `SAAS_WCF_CLIENT.md`).
 
 ## Loop
 

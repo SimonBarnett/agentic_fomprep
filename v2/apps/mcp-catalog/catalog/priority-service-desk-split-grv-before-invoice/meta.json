@@ -1,0 +1,6 @@
+{
+  "name": "priority-service-desk-split-grv-before-invoice",
+  "title": "Split a GRV line before the first invoice",
+  "description": "A received line must be split before any invoice links it, or a smaller invoice quantity consumes the whole receipt line. Support proved this on local Priority 26.0 only. Not a customer-live confirmation and not the Dokka sync defect.",
+  "version": "1.0.0"
+}

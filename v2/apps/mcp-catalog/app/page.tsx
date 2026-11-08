@@ -1,20 +1,32 @@
+import { headers } from 'next/headers';
 import { listSkills } from '../lib/catalog';
+import { catalogPublicOrigin } from '../lib/public-origin';
 
+export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
 export default function Home() {
+  const requestHeaders = headers();
+  const origin = catalogPublicOrigin({
+    host: requestHeaders.get('host'),
+    forwardedHost: requestHeaders.get('x-forwarded-host'),
+    proto: requestHeaders.get('x-forwarded-proto'),
+  });
   const skills = listSkills();
   return (
     <main>
-      <h1>mcp-priority.ntsa.uk</h1>
+      <h1>{new URL(origin).host}</h1>
       <p>
         Catalog MCP for Priority agent skills. Agents <strong>grab</strong> a skill here, then run it
         against instances the <strong>user</strong> allowlisted. This host does not compile forms and
         cannot see on-prem SQL.
       </p>
       <h2>Add the MCP</h2>
-      <pre>{`grok mcp add --transport http priority-formprep https://mcp-priority.ntsa.uk/mcp`}</pre>
-      <p>Cursor / Claude: HTTP MCP URL <code>https://mcp-priority.ntsa.uk/mcp</code> (JSON-RPC POST).</p>
+      <pre>{`grok mcp add --transport http priority-catalog ${origin}/mcp`}</pre>
+      <p>
+        Cursor / Claude: HTTP MCP URL <code>{origin}/mcp</code> (one JSON-RPC object per POST,
+        protocol 2024-11-05). This deployment does not serve stdio or a long-lived event stream.
+      </p>
       <h2>Skills</h2>
       <p>
         Add another skill later by dropping <code>catalog/&lt;name&gt;/meta.json</code> and{' '}

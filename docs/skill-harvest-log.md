@@ -1,5 +1,7 @@
 # Skill harvest log
 
+- 2026-11-07: `priority-service-desk-license-manual-install`. SC263215 official 25.0 license matched the system and the higher seat count was visible. 26.0 was the wrong file. Renew License remains unfixed. No license material stored.
+=======
 - 2026-11-07: `priority-service-desk-portal-view-price`. SC263208 View Price in Portal was ticked and the customer said it worked. Discounts and branding were not part of the fix. No prices recorded.
 =======
 - 2026-11-07: `priority-service-desk-warranty-auto-raise`. SC263216 Live lacked Stat After Auto Raise. Two missed contracts were replayed in Draft after owner approval. Next automatic shipment not confirmed. Trigger diff unknown.

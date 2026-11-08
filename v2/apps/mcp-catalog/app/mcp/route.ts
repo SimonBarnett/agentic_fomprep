@@ -1,21 +1,38 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { corsHeaders, handleMcp } from '../../lib/mcp';
+import { catalogPublicOrigin } from '../../lib/public-origin';
 
+export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
-export async function OPTIONS() {
-  return new NextResponse(null, { status: 204, headers: corsHeaders });
+const responseHeaders = {
+  ...corsHeaders,
+  'Cache-Control': 'no-store',
+};
+
+function requestOrigin(req: NextRequest): string {
+  return catalogPublicOrigin({
+    host: req.headers.get('host'),
+    forwardedHost: req.headers.get('x-forwarded-host'),
+    proto: req.headers.get('x-forwarded-proto'),
+  });
 }
 
-export async function GET() {
+export async function OPTIONS() {
+  return new NextResponse(null, { status: 204, headers: responseHeaders });
+}
+
+export async function GET(req: NextRequest) {
   return NextResponse.json(
     {
       ok: true,
+      origin: requestOrigin(req),
       transport: 'POST JSON-RPC to /mcp',
+      protocolVersion: '2024-11-05',
       tools: ['list_catalog', 'get_skill', 'get_instance_schema', 'get_runner_files'],
-      note: 'This host does not prepare Priority forms.',
+      note: 'This host does not prepare Priority forms. stdio is not served here.',
     },
-    { headers: corsHeaders }
+    { headers: responseHeaders }
   );
 }
 
@@ -26,12 +43,12 @@ export async function POST(req: NextRequest) {
   } catch {
     return NextResponse.json(
       { jsonrpc: '2.0', error: { code: -32700, message: 'parse error' } },
-      { status: 400, headers: corsHeaders }
+      { status: 400, headers: responseHeaders }
     );
   }
-  const result = handleMcp(body);
+  const result = handleMcp(body, requestOrigin(req));
   if (result === null) {
-    return new NextResponse(null, { status: 204, headers: corsHeaders });
+    return new NextResponse(null, { status: 204, headers: responseHeaders });
   }
-  return NextResponse.json(result, { headers: corsHeaders });
+  return NextResponse.json(result, { headers: responseHeaders });
 }

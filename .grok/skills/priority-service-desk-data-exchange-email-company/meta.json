@@ -1,0 +1,6 @@
+{
+  "name": "priority-service-desk-data-exchange-email-company",
+  "title": "Data exchange email participants become company identifiers",
+  "description": "Map legacy data-exchange email participants to company identifiers with Update Interface by Email in each company. A blank inbox needs an explicit date search. Reinstall did not fix the link.",
+  "version": "1.0.0"
+}

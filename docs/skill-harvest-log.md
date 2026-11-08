@@ -1,5 +1,8 @@
 # Skill harvest log
 
+- 2026-11-07: `priority-service-desk-forecast-mrp-retrieve`. SC263390 Retrieve Sales Orders - MRP, Selected Orders only, set forecast lines to MRP? Y in local and customer Test. Live not run. Do not use All Open Orders from this skill.
+
+=======
 - 2026-11-07: `priority-service-desk-first-costing-baseline`. SC263410 had never run costing, so 01/01/22 was costed before the 31/03/26 valuation. Those dates are not universal. Customer could then run the valuation. Distinct from the orphan work-order past-balance escalation. No autonomous delete.
 =======
 - 2026-11-07: `priority-service-desk-quote-so-attachment-refresh`. SC263161 paperclip worked after refresh and reopen of the new sales order. Mitigation only. No product fix recorded.

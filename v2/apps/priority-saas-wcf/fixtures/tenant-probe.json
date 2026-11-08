@@ -1,0 +1,8 @@
+{
+  "wcf": "https://p.priority-connect.online/wcf/service.svc",
+  "server": "AWS_PROD",
+  "authority": "https://p.priority-connect.online/auth/",
+  "admode": 1,
+  "h5client": "https://cdn.example.invalid/h5",
+  "priorityParams": "_tabulaini=tabexampletenant.ini&foo=1"
+}

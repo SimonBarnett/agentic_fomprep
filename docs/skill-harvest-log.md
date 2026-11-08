@@ -37,6 +37,8 @@
 
 - 2026-11-07: `priority-service-desk-split-grv-before-invoice`. SC263436: split the GRV received line before the first invoice link, then invoice the split lines separately. Support finalized two 500-unit invoices against a 1000-unit receipt on local Priority 26.0 without changing received quantity. Customer production test was not recorded. Not the Dokka split-sync skill.
 
+- 2026-11-07: `priority-service-desk-duplicate-report-cleanup`. SC263424: duplicate project reports cleaned by a developer script limited to an approved list, tested on a copy company, then run live after approval. Customer said it looked updated. Query text was not retrieved. Escalation only. Do not invent delete SQL. Do not blame a service restart.
+
 - 2026-10-26: SaaS OIDC login residuals - PowerShell ordered-map `&` join; HttpClient no-auto-redirect; consent GET+UA; OData Bearer empty HTTP 500 = DNAME/API gap (stop guessing); WCF formStart REST may 404 on SaaS. `SAAS_OIDC_LOGIN.md` + catalog `priority-saas-oidc-login` v1.1.0.
 - 2026-10-25: Priority SaaS / Cloud interactive login â€” tenant `POST /webui/<tenant>` exposes `_tabulaini=tabâ€¦.ini`; OIDC `priority-web` + PKCE; Accounts `login/checkPassword` then `mfa/checkotp` (single-use); consent redirect; `/auth/oauth2/token`; Bearer for tenant POST. New `docs/skill-sources/programming/SAAS_OIDC_LOGIN.md` + catalog `priority-saas-oidc-login` v1.0.0; pointers in `ODATA_REST_CLOUD.md` and `priority-mcp-setup`. Source: generic SaaS connectivity (customer names stripped).
 

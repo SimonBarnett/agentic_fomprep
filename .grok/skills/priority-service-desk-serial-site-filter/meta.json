@@ -1,0 +1,6 @@
+{
+  "name": "priority-service-desk-serial-site-filter",
+  "title": "Service-call device list filtered by a different site",
+  "description": "An empty service-call device list can be a site mismatch on the serial, not a missing asset. Do not remove a legitimate site split. Technician-tested only.",
+  "version": "1.0.0"
+}

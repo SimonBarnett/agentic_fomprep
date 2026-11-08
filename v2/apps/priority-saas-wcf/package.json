@@ -1,0 +1,20 @@
+{
+  "name": "priority-saas-wcf",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Allowlist-gated Priority SaaS Web SDK client for PriorityAgent (Bearer accessToken).",
+  "type": "module",
+  "bin": {
+    "priority-wcf": "./bin/priority-wcf.mjs"
+  },
+  "scripts": {
+    "test": "node --test tests/*.test.mjs",
+    "priority-wcf": "node bin/priority-wcf.mjs"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "priority-web-sdk": "3.0.39"
+  }
+}

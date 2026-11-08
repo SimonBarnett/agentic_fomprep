@@ -3,6 +3,42 @@
 - 2026-11-07: `priority-service-desk-mobile-migration-qr`. SC263384 apps failed after a server move. A new registration QR worked. QR contents and menu path were not recorded. Mail setup was not confirmed.
 
 =======
+=======
+- 2026-11-07: `priority-service-desk-forecast-mrp-retrieve`. SC263390 Retrieve Sales Orders - MRP, Selected Orders only, set forecast lines to MRP? Y in local and customer Test. Live not run. Do not use All Open Orders from this skill.
+
+=======
+- 2026-11-07: `priority-service-desk-first-costing-baseline`. SC263410 had never run costing, so 01/01/22 was costed before the 31/03/26 valuation. Those dates are not universal. Customer could then run the valuation. Distinct from the orphan work-order past-balance escalation. No autonomous delete.
+=======
+- 2026-11-07: `priority-service-desk-quote-so-attachment-refresh`. SC263161 paperclip worked after refresh and reopen of the new sales order. Mitigation only. No product fix recorded.
+=======
+- 2026-11-07: `priority-service-desk-scanner-numeration`. SC263177 Scanner Trans numeration was extended and the customer could open documents. Not an API quota. Diff and new width unknown. No sequence reset.
+=======
+- 2026-11-07: `priority-service-desk-public-ip-allowlist`. SC263173 login worked after the new public IP was allowlisted. Later churn still happened. No addresses stored. Not an email or password fix.
+=======
+- 2026-11-07: `priority-service-desk-license-manual-install`. SC263215 official 25.0 license matched the system and the higher seat count was visible. 26.0 was the wrong file. Renew License remains unfixed. No license material stored.
+=======
+- 2026-11-07: `priority-service-desk-portal-view-price`. SC263208 View Price in Portal was ticked and the customer said it worked. Discounts and branding were not part of the fix. No prices recorded.
+=======
+- 2026-11-07: `priority-service-desk-warranty-auto-raise`. SC263216 Live lacked Stat After Auto Raise. Two missed contracts were replayed in Draft after owner approval. Next automatic shipment not confirmed. Trigger diff unknown.
+=======
+- 2026-11-07: `priority-service-desk-email-column-translation`. SC263220 Email Editor custom fields appeared after a missing column translation was added. Language direction in the notes disagrees. Check the installation. No direct dictionary edit.
+=======
+- 2026-11-07: `priority-service-desk-invoice-po-column`. SC263237 PO reference was hidden in the selected invoice format. The field was MC Cust PO. Customer confirmed it printed. Wrong-column guess was rejected.
+=======
+- 2026-11-07: `priority-service-desk-standard-cost-update`. SC263270 UpdStdCost=0 so nightly costing did not write catalogue standard costs. Calculate/Update Standard Cost corrected the parents. No amounts. No constant change.
+=======
+- 2026-11-07: `priority-service-desk-hmrc-mtd-reauth`. SC263292 customer reauthenticated via Set Up for HMRC's MTD and the VAT submission went through. Not SC263549. No tokens. 18-month interval is not current policy.
+=======
+- 2026-11-07: `priority-service-desk-serial-site-filter`. SC263316 serial customer matched but the site did not, so the device dropdown was empty. It listed the device when the site was removed. Customer accepted the explanation. Do not drop real site segregation.
+=======
+- 2026-11-07: `priority-service-desk-mrp-production-days`. SC263299 practice company: quantity 5 and Production Days 21 with Time per Batch, MRP without Work Plan, duration 21 not 105. Customer tested maximum 100. Not live. Numbers are not universal. Earlier Work Plan advice is superseded for this case.
+=======
+- 2026-11-07: `priority-service-desk-po-approval-restart`. SC263332 Cancel Auth restarted from the status that starts approval. Customer confirmed 2026-10-23 09:31 BST. Pending Auth is an example only. No status SQL.
+=======
+- 2026-11-07: `priority-service-desk-runaway-report-cpu`. SC263359 two manual Repair History per Serial Number runs were terminated. Cleanup finished and SQL CPU recovered. HEAVYQUERY only logs. Mitigation only. No KILL script.
+=======
+- 2026-11-07: `priority-service-desk-data-exchange-email-company`. SC263373 reinstall did not restore data exchange. Define Comps. for Data Exchange and Update Interface by Email in each company did. Customer found exchanges by searching the current date. Full PO and receipt lifecycle was not recorded.
+=======
 - 2026-11-07: `priority-service-desk-shopify-product-code-import`. SC263397 order imported after the Shopify product code mapping was corrected. Exact field unknown. Failure email not fixed. Not the Dokka split-receipt skill.
 
 =======

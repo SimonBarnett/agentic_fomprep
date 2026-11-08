@@ -70,6 +70,40 @@ IncludeDba=False IncludeCustomer=False
 - priority-service-desk-record-modified-custom-close
 - priority-service-desk-mobile-migration-qr
 =======
+- priority-service-desk-forecast-mrp-retrieve
+=======
+- priority-service-desk-first-costing-baseline
+=======
+- priority-service-desk-quote-so-attachment-refresh
+=======
+- priority-service-desk-scanner-numeration
+=======
+- priority-service-desk-public-ip-allowlist
+=======
+- priority-service-desk-license-manual-install
+=======
+- priority-service-desk-portal-view-price
+=======
+- priority-service-desk-warranty-auto-raise
+=======
+- priority-service-desk-email-column-translation
+=======
+- priority-service-desk-invoice-po-column
+=======
+- priority-service-desk-standard-cost-update
+=======
+- priority-service-desk-hmrc-mtd-reauth
+=======
+- priority-service-desk-serial-site-filter
+=======
+- priority-service-desk-mrp-production-days
+=======
+- priority-service-desk-po-approval-restart
+=======
+- priority-service-desk-runaway-report-cpu
+=======
+- priority-service-desk-data-exchange-email-company
+=======
 - priority-service-desk-shopify-product-code-import
 =======
 - priority-service-desk-last-purchase-price-report

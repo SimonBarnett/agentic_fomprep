@@ -38,6 +38,7 @@ The launcher prefers `D:\ai\agentic_fomprep`, then also searches `C:\ai`, `D:\re
 | Shells | `priority-version-revision-discipline`, `priority-shell-compile`, `priority-shell-install` |
 | Procedures | `priority-procedure-prep` |
 | OData / MCP | `priority-odata-dev`, `priority-mcp-*` |
+| SaaS WCF | `priority-saas-wcf` (Bearer Web SDK), `priority-saas-oidc-login` (token first) |
 | UAT kernel | `priority-uat-orchestrator`, `priority-uat-wcf` |
 | Hours (generic) | `priority-hours-*` (except named handoffs) |
 | Quotes | `priority-price-quotation-create` |
@@ -108,6 +109,7 @@ Replay / assert: `tools/Assert-FomprepMainAutoMerge.ps1`. Details:
 |------|--------|
 | Prepare one form | `src\Prepare-NamedForm.ps1 -Name <ENAME>` |
 | Prepare one procedure | `src\Prepare-NamedProcedure.ps1 -Name <ENAME>` |
+| SaaS Web SDK (Bearer) | `v2\apps\priority-saas-wcf\bin\priority-wcf.mjs` (allowlist + token file) |
 | Last named-form result | `tools\Get-LastFormPrepResult.ps1` |
 | Sync Grok skills | `tools\Sync-PriorityGrokSkills.ps1` |
 | Catalog gate | `v2\tools\Test-PriorityCatalog.ps1` |

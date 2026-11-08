@@ -44,6 +44,8 @@ skill_topic = {
     "priority-odata-dev": "integrations",
     "priority-uat-orchestrator": "uat",
     "priority-hours-orchestrator": "hours",
+    "priority-saas-oidc-login": "programming",
+    "priority-saas-wcf": "programming",
 }
 
 STOP = {
@@ -194,6 +196,8 @@ def infer_skill_topic(name: str) -> str:
         return "system-admin"
     if any(x in name for x in ("mcp", "odata")):
         return "integrations"
+    if "saas" in name:
+        return "programming"
     if any(
         x in name
         for x in (
@@ -207,6 +211,7 @@ def infer_skill_topic(name: str) -> str:
             "version",
             "shadow",
             "prepare",
+            "wcf",
         )
     ):
         return "programming"

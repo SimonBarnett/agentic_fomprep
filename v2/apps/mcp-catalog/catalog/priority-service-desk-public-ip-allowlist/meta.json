@@ -1,0 +1,6 @@
+{
+  "name": "priority-service-desk-public-ip-allowlist",
+  "title": "A changed public IP blocked login until it was allowlisted",
+  "description": "Login succeeded after the user's new public address was allowlisted. A later address also had to be added. No addresses or firewall rules are stored.",
+  "version": "1.0.0"
+}

@@ -1,0 +1,6 @@
+{
+  "name": "priority-service-desk-license-manual-install",
+  "title": "Install the official license that matches the version",
+  "description": "Install the official license that matches the running major version when Renew License does not raise the seat count. Automatic renewal was not fixed. No license file is stored.",
+  "version": "1.0.0"
+}

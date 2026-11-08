@@ -1,0 +1,6 @@
+{
+  "name": "priority-service-desk-inventory-conversion-raw-lot",
+  "title": "Draft inventory conversion needs the raw-material lot first",
+  "description": "Create the new raw-material lot, then select it on a Draft inventory conversion. Customer acceptance of the draft path is not proof the conversion was finalized or that stock moved.",
+  "version": "1.0.0"
+}

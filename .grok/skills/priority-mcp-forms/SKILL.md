@@ -42,13 +42,14 @@ Date filter values use Priority formats (e.g. Date8 `DD/MM/YY`), not ISO.
 | Param | Type | Required |
 |-------|------|----------|
 | `company_name` | string | Yes |
-| `root_form` | object | Yes |
-| `subforms` | array | No |
+| `root_records` | array | Yes |
 
-`root_form`: `form_name`, `record_keys[]`, `field_updates[]` (`name`/`value`).
+Live Cloud MCP requires **`root_records`** (one or more independent parent rows in the same form; max 10). Older leaflets / some portal examples say `root_form` — that shape returns `Missing required parameter 'root_records'`.
+
+Each `root_records[]` element: `form_name`, `record_keys[]`, `field_updates[]` (`name`/`value`), optional nested `subforms` (children of **that** parent only).
 
 - **Create:** `record_keys: []`; only fields the user specified (triggers fill many mandatories).
-- **Update:** **all** key fields in `record_keys`, including Hidden keys from `form_columns` / prior fetch.
+- **Update:** **all** key fields in `record_keys`, including Hidden keys from `form_columns` / prior fetch (error text often lists missing keys).
 
 HTML text forms: update `TEXT` with HTML as returned by fetch (`_is_html_form`).
 
@@ -77,11 +78,13 @@ Partial success: parent may save while subforms fail — retry from the failed c
 ```json
 {
   "company_name": "test",
-  "root_form": {
-    "form_name": "ORDERS",
-    "record_keys": [],
-    "field_updates": [{ "name": "CUSTNAME", "value": "1291005" }]
-  }
+  "root_records": [
+    {
+      "form_name": "ORDERS",
+      "record_keys": [],
+      "field_updates": [{ "name": "CUSTNAME", "value": "1291005" }]
+    }
+  ]
 }
 ```
 
@@ -90,6 +93,7 @@ Partial success: parent may save while subforms fail — retry from the failed c
 - Hidden keys (e.g. `ORD` beside `ORDNAME`) are still required on update
 - API transaction cost on every call
 - Cloud-only
+- `form_columns` / `form_tree` may fail on some tenants (`unknown action`); use prior `form_fetch` keys when columns are unavailable
 
 ## Success
 

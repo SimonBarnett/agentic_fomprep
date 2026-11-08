@@ -70,6 +70,16 @@ IncludeDba=False IncludeCustomer=False
 - priority-service-desk-record-modified-custom-close
 - priority-service-desk-shipping-site-vat
 =======
+- priority-service-desk-procedure-loop-desktop-tile
+=======
+- priority-service-desk-mobile-migration-qr
+=======
+- priority-service-desk-forecast-mrp-retrieve
+=======
+- priority-service-desk-first-costing-baseline
+=======
+- priority-service-desk-quote-so-attachment-refresh
+=======
 - priority-service-desk-scanner-numeration
 =======
 - priority-service-desk-public-ip-allowlist

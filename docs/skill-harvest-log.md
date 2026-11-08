@@ -2,6 +2,19 @@
 
 - 2026-11-07: `priority-service-desk-shipping-site-vat`. SC263171 order VAT followed the shipping site. Customer confirmed the site correction. No tax code stored. Posted orders are not recalculated by this change.
 =======
+- 2026-11-07: `priority-service-desk-procedure-loop-desktop-tile`. SC263369 step 10 set GO to 10. Prefixed copy and menu replacement were not enough until the customer replaced the old desktop tile on 2026-11-04. Do not edit the standard procedure in place.
+=======
+- 2026-11-07: `priority-service-desk-mobile-migration-qr`. SC263384 apps failed after a server move. A new registration QR worked. QR contents and menu path were not recorded. Mail setup was not confirmed.
+
+=======
+=======
+- 2026-11-07: `priority-service-desk-forecast-mrp-retrieve`. SC263390 Retrieve Sales Orders - MRP, Selected Orders only, set forecast lines to MRP? Y in local and customer Test. Live not run. Do not use All Open Orders from this skill.
+
+=======
+- 2026-11-07: `priority-service-desk-first-costing-baseline`. SC263410 had never run costing, so 01/01/22 was costed before the 31/03/26 valuation. Those dates are not universal. Customer could then run the valuation. Distinct from the orphan work-order past-balance escalation. No autonomous delete.
+=======
+- 2026-11-07: `priority-service-desk-quote-so-attachment-refresh`. SC263161 paperclip worked after refresh and reopen of the new sales order. Mitigation only. No product fix recorded.
+=======
 - 2026-11-07: `priority-service-desk-scanner-numeration`. SC263177 Scanner Trans numeration was extended and the customer could open documents. Not an API quota. Diff and new width unknown. No sequence reset.
 =======
 - 2026-11-07: `priority-service-desk-public-ip-allowlist`. SC263173 login worked after the new public IP was allowlisted. Later churn still happened. No addresses stored. Not an email or password fix.

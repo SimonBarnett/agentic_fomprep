@@ -1,0 +1,6 @@
+{
+  "name": "priority-service-desk-dokka-split-receipt-sync",
+  "title": "Dokka split-receipt sync is a supplier escalation",
+  "description": "Priority receipt lines split locally still look aggregated in Dokka until the supplier changes their sync. Supplier said the split synced. Customer retest was not recorded. No local patch.",
+  "version": "1.0.0"
+}

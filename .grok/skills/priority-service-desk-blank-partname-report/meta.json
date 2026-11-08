@@ -1,0 +1,6 @@
+{
+  "name": "priority-service-desk-blank-partname-report",
+  "title": "Filter blank part rows out of a consumables report",
+  "description": "Deployed report filter PART.PARTNAME <> '' removed blank consumable lines. The line number is specific to that report. Base rows were not deleted.",
+  "version": "1.0.0"
+}

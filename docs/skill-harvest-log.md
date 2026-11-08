@@ -1,5 +1,8 @@
 # Skill harvest log
 
+- 2026-11-07: `priority-service-desk-last-purchase-price-report`. SC263402 report built in Part Catalogue Report Generator for last purchase price and date on R parts, then added to the menu. Field identifiers were not retrieved. No price update.
+
+=======
 - 2026-11-07: `priority-service-desk-quote-order-duplicate-lines`. SC263415 copied standard BUF6 line-add inside custom triggers and duplicated quote-to-order lines. Redundant call removed. Copy-company Open Order had no duplicate lines. Exact diff and live customer test were not retrieved.
 
 =======

@@ -68,6 +68,8 @@ IncludeDba=False IncludeCustomer=False
 - priority-service-desk-mobile-app-update-registration
 - priority-service-desk-orphan-wo-past-balance
 - priority-service-desk-record-modified-custom-close
+- priority-service-desk-standard-cost-update
+=======
 - priority-service-desk-hmrc-mtd-reauth
 =======
 - priority-service-desk-serial-site-filter

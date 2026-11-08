@@ -1,5 +1,7 @@
 # Skill harvest log
 
+- 2026-11-07: `priority-service-desk-standard-cost-update`. SC263270 UpdStdCost=0 so nightly costing did not write catalogue standard costs. Calculate/Update Standard Cost corrected the parents. No amounts. No constant change.
+=======
 - 2026-11-07: `priority-service-desk-hmrc-mtd-reauth`. SC263292 customer reauthenticated via Set Up for HMRC's MTD and the VAT submission went through. Not SC263549. No tokens. 18-month interval is not current policy.
 =======
 - 2026-11-07: `priority-service-desk-serial-site-filter`. SC263316 serial customer matched but the site did not, so the device dropdown was empty. It listed the device when the site was removed. Customer accepted the explanation. Do not drop real site segregation.

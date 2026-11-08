@@ -1,5 +1,7 @@
 # Skill harvest log
 
+- 2026-11-07: `priority-service-desk-first-costing-baseline`. SC263410 had never run costing, so 01/01/22 was costed before the 31/03/26 valuation. Those dates are not universal. Customer could then run the valuation. Distinct from the orphan work-order past-balance escalation. No autonomous delete.
+=======
 - 2026-11-07: `priority-service-desk-quote-so-attachment-refresh`. SC263161 paperclip worked after refresh and reopen of the new sales order. Mitigation only. No product fix recorded.
 =======
 - 2026-11-07: `priority-service-desk-scanner-numeration`. SC263177 Scanner Trans numeration was extended and the customer could open documents. Not an API quota. Diff and new width unknown. No sequence reset.

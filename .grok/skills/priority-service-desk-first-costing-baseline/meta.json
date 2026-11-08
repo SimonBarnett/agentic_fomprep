@@ -1,0 +1,6 @@
+{
+  "name": "priority-service-desk-first-costing-baseline",
+  "title": "First costing needs an opening past-balance baseline",
+  "description": "When a company has never run costing, an opening past-balance baseline has to be costed before the target valuation date. Dates in the source call are not universal. No autonomous delete.",
+  "version": "1.0.0"
+}

@@ -62,3 +62,18 @@ GET the latest PQs (same customer first) and copy `TYPECODE`, `AGENTCODE` (sales
 - Print or commit the password; write live without approval of the shown draft.
 - Enter a price, rate, price list or discount.
 - Rely on `LINE` to order lines; append remarks; create duplicate quotes or lines.
+
+
+## Header currency disagrees with existing lines (SC263229)
+
+This is not the OData create procedure above. Do not send prices.
+
+Issue type: a quote header is in one currency and the quoted-item lines are in another. The difference showed up as an unwanted discount. Changing the header failed while the old lines remained.
+
+Known sequence, 2026-10-21 09:17 BST: remove the quoted lines, change the header currency to the line currency, then add the lines again with the correct part and the related information that was captured first. At 10:45 BST the customer said that worked. An earlier server-copy adjustment did not fix it. Opened 2026-10-19. The currencies in the call are not a default pair for other quotes.
+
+Preconditions: the quote is still editable, the owner has approved, and every line's part and commercial detail has been copied out first. Do not do this on a posted document or one that already has downstream links. Removing lines can drop approvals and links. If those exist, stop and use the supported correction path instead of this sequence.
+
+Do not delete lines with SQL. Do not invent prices or rates. Do not zero the discount and leave the currencies mixed.
+
+Proven: the customer confirmed the sequence. Not proven: the original error screenshot and the accounting calculation.

@@ -1,0 +1,6 @@
+{
+  "name": "priority-service-desk-form-designer-multi-record",
+  "title": "Regenerate a multi-record Form Designer layout",
+  "description": "When single-record and multi-record user designs diverge, change the multi-record view in Form Designer so multi-record entries are generated, then copy that design only with owner approval. Not a dictionary title change.",
+  "version": "1.0.0"
+}

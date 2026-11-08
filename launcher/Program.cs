@@ -925,7 +925,7 @@ PriorityAgent.exe [options]
   --dry-run             do everything except change grok config / customer clones and start the agent;
                         prints the exact grok command line
   --smoke               real setup + one brief single-turn Grok launch that makes no changes
-  --root <dir>          clone root for repos new to this machine (default: first existing X:\AI on C→D→E…Z,
+  --root <dir>          clone root for repos new to this machine (default: first existing X:\AI on C->D->E..Z,
                         else create \AI on the first ready drive in that order; env PRIORITY_AGENT_ROOT)
   --no-fuel-check       skip the Bob fuel report check
   --no-pause            don't wait for Enter before closing

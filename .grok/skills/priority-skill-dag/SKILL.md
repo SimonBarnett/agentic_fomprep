@@ -16,7 +16,8 @@ Foundation: harvest-priority-skills -> report back to https://github.com/SimonBa
 
 1. **Do not load the whole corpus.** Resolve the DAG first; open only the ranked `loadOrder` paths.
 2. **Never read `docs/skill-sources/medatech-network/_dag/dag.json`.** It is ~2 MB and will blow context. Run the resolve script. `dag-index.json` is slim metadata only — still prefer the script.
-3. Prefer **catalog skills** (`v2/apps/mcp-catalog/catalog/*/SKILL.md`) for executable playbooks (formprep, shell install, hours, UAT).
+3. Prefer **catalog skills** (`v2/apps/mcp-catalog/catalog/*/SKILL.md`) for executable playbooks (formprep, shell install, hours, UAT, SaaS WCF).
+   SaaS Cloud Web SDK: resolve query like `SaaS WCF` / `priority-wcf` → `priority-saas-wcf` (token via `priority-saas-oidc-login` first).
 4. Prefer **lessons** under `docs/skill-sources/medatech-network/` for ops/SOP/install guidance. Use each hit’s `summary` before opening the full file.
 5. Respect **byte budget**. Default `MaxBytes=24000`. Files over `SingleFileCeiling=20000` are skipped unless `-AllowLarge`.
 6. CAST IRON: new repeatable procedures learned while using lessons must be harvested back (catalog + skill-sources) via `harvest-priority-skills`.

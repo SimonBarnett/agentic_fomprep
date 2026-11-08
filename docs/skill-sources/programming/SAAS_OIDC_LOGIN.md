@@ -198,6 +198,7 @@ WCF is down - transport/shape may differ from on-prem web-sdk examples.
 
 ## Related
 
+- `SAAS_WCF_CLIENT.md` / `priority-saas-wcf` - Web SDK client after you have a Bearer token
 - `ODATA_REST_CLOUD.md` / `priority-odata-dev` - OData base, PAT, RESTFLAG
 - `priority-mcp-setup` - MCP PAT / OAuth public clients (different client ids)
 - `priority-uat-wcf` - WCF form walking after you have a session

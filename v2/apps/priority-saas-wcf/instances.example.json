@@ -1,0 +1,15 @@
+{
+  "instances": [
+    {
+      "id": "example-saas-dev",
+      "title": "Example SaaS DEV (edit me; never invent host/tenant)",
+      "host": "p.priority-connect.online",
+      "tenant": "exampletenant",
+      "company": "exampledname",
+      "user": "user@example.com",
+      "tokenFile": "C:\\passwords\\example-saas-oauth-tokens.json",
+      "language": 3,
+      "allowLive": false
+    }
+  ]
+}

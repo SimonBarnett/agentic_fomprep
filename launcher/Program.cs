@@ -25,9 +25,11 @@ static class Program
     static bool? AircArg;
     static string? CustomerArg, ProjectArg, CheckHoursDir, SessionArg;
     static string? AircConsoleArg;
-    static string CloneRoot = Environment.GetEnvironmentVariable("PRIORITY_AGENT_ROOT") ?? @"D:\ai";
+    /// <summary>Explicit --root / PRIORITY_AGENT_ROOT; null means auto-resolve X:\AI.</summary>
+    static string? CloneRootOverride = Environment.GetEnvironmentVariable("PRIORITY_AGENT_ROOT");
+    static string CloneRoot = "";
     static string PasswordsDir = Environment.GetEnvironmentVariable("PRIORITY_AGENT_PASSWORDS") ?? @"C:\passwords";
-    static readonly string[] SearchRoots = { @"D:\ai", @"C:\ai", @"D:\repos", @"C:\repos" };
+    static string[] SearchRoots = Array.Empty<string>();
     static string LogFile = "";
     static int Fails;
 
@@ -73,7 +75,7 @@ static class Program
                 case "--general": General = true; break;
                 case "--customer": CustomerArg = Next(); break;
                 case "--project": ProjectArg = Next(); break;
-                case "--root": CloneRoot = Next(); break;
+                case "--root": CloneRootOverride = Next(); break;
                 case "--no-pause": NoPause = true; break;
                 case "--no-fuel-check": NoFuel = true; break;
                 case "--airc": AircArg = true; break;
@@ -102,6 +104,30 @@ static class Program
         string logArgs = string.Join(' ', args);
         if (AircConsoleArg != null) logArgs = logArgs.Replace(AircConsoleArg, "<airc-console>", StringComparison.OrdinalIgnoreCase);
         Log($"=== start args: {logArgs}");
+
+        // AI workspace root: --root / PRIORITY_AGENT_ROOT, else find or create X:\AI (C→D→E…Z).
+        if (!string.IsNullOrWhiteSpace(CloneRootOverride))
+        {
+            CloneRoot = Path.GetFullPath(CloneRootOverride.Trim());
+            if (!Directory.Exists(CloneRoot))
+            {
+                Info($"creating clone root {CloneRoot}");
+                Directory.CreateDirectory(CloneRoot);
+            }
+        }
+        else
+        {
+            bool created = false;
+            CloneRoot = AiRoot.Resolve(create: p =>
+            {
+                Info($"creating AI root {p}");
+                Directory.CreateDirectory(p);
+                created = true;
+            });
+            if (!created) Info($"AI root: {CloneRoot}");
+        }
+        SearchRoots = AiRoot.BuildSearchRoots(CloneRoot);
+        Log($"clone root: {CloneRoot}; search: {string.Join(", ", SearchRoots)}");
 
         string? git = Which("git.exe", Environment.GetEnvironmentVariable("PRIORITY_AGENT_TEST_GIT"),
             @"C:\Program Files\Git\cmd\git.exe", @"D:\Program Files\Git\cmd\git.exe");
@@ -899,7 +925,8 @@ PriorityAgent.exe [options]
   --dry-run             do everything except change grok config / customer clones and start the agent;
                         prints the exact grok command line
   --smoke               real setup + one brief single-turn Grok launch that makes no changes
-  --root <dir>          clone root for repos new to this machine (default D:\ai, env PRIORITY_AGENT_ROOT)
+  --root <dir>          clone root for repos new to this machine (default: first existing X:\AI on C→D→E…Z,
+                        else create \AI on the first ready drive in that order; env PRIORITY_AGENT_ROOT)
   --no-fuel-check       skip the Bob fuel report check
   --no-pause            don't wait for Enter before closing
   --passwords-dir <dir> where <repo>-connections.txt lives (<repo> = GitHub repo name, lowercase) (default C:\passwords, env PRIORITY_AGENT_PASSWORDS);

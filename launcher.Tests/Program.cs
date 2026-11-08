@@ -20,6 +20,9 @@ var checks = new List<(string Name, Action Run)>
     ("dirty clone plus stub uses the dirty clone", TestDirtyClonePreferredOverStub),
     ("dirty clone only is usable", TestDirtyCloneOnly),
     ("no real clone lists every rejected candidate", TestNoRealCloneFatalListsCandidates),
+    ("AI root prefers existing C:\\AI over later drives", TestAiRootPrefersExistingC),
+    ("AI root skips missing D: and creates on first ready drive", TestAiRootCreatesOnFirstReady),
+    ("AI root search lists AI and repos across ready drives", TestAiRootBuildSearchRoots),
 };
 
 int failures = 0;
@@ -283,6 +286,51 @@ static void TestNoRealCloneFatalListsCandidates()
         && fatal.Contains("D:\\ai\\agentic_fomprep", StringComparison.Ordinal)
         && fatal.Contains("C:\\ai\\agentic_fomprep", StringComparison.Ordinal),
         "FATAL must name every candidate and why it was rejected");
+}
+
+static void TestAiRootPrefersExistingC()
+{
+    var existing = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { @"C:\AI" };
+    string created = "";
+    string root = AiRoot.Resolve(
+        driveReady: c => c is 'C' or 'E',
+        exists: p => existing.Contains(p),
+        create: p => created = p);
+    Assert(string.Equals(root, Path.GetFullPath(@"C:\AI"), StringComparison.OrdinalIgnoreCase),
+        "should prefer existing C:\\AI when C and E are ready and D is missing");
+    Assert(created == "", "must not create when an AI root already exists");
+}
+
+static void TestAiRootCreatesOnFirstReady()
+{
+    string created = "";
+    string root = AiRoot.Resolve(
+        driveReady: c => c is 'C' or 'E',
+        exists: _ => false,
+        create: p => created = p);
+    Assert(string.Equals(created, @"C:\AI", StringComparison.OrdinalIgnoreCase),
+        "with no existing AI folder, create on first ready drive (C) even when E also exists");
+    Assert(string.Equals(root, Path.GetFullPath(@"C:\AI"), StringComparison.OrdinalIgnoreCase),
+        "resolved root should be C:\\AI");
+}
+
+static void TestAiRootBuildSearchRoots()
+{
+    string[] roots = AiRoot.BuildSearchRoots(
+        @"C:\AI",
+        driveReady: c => c is 'C' or 'E',
+        exists: p => p.Equals(@"C:\AI", StringComparison.OrdinalIgnoreCase)
+            || p.Equals(@"E:\AI", StringComparison.OrdinalIgnoreCase)
+            || p.Equals(@"E:\repos", StringComparison.OrdinalIgnoreCase));
+    Assert(roots.Length >= 3, "expected preferred + E:\\AI + E:\\repos");
+    Assert(string.Equals(roots[0], Path.GetFullPath(@"C:\AI"), StringComparison.OrdinalIgnoreCase),
+        "preferred clone root must be first");
+    Assert(roots.Any(r => r.Equals(Path.GetFullPath(@"E:\AI"), StringComparison.OrdinalIgnoreCase)),
+        "must include other ready AI roots");
+    Assert(roots.Any(r => r.Equals(Path.GetFullPath(@"E:\repos"), StringComparison.OrdinalIgnoreCase)),
+        "must include existing repos roots");
+    Assert(!roots.Any(r => r.StartsWith(@"D:\", StringComparison.OrdinalIgnoreCase)),
+        "must not invent paths on drives that are not ready");
 }
 
 static void TestDiscoveryFailure()

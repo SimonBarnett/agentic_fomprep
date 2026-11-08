@@ -1,5 +1,7 @@
 # Skill harvest log
 
+- 2026-11-07: `priority-service-desk-shipping-site-vat`. SC263171 order VAT followed the shipping site. Customer confirmed the site correction. No tax code stored. Posted orders are not recalculated by this change.
+=======
 - 2026-11-07: `priority-service-desk-procedure-loop-desktop-tile`. SC263369 step 10 set GO to 10. Prefixed copy and menu replacement were not enough until the customer replaced the old desktop tile on 2026-11-04. Do not edit the standard procedure in place.
 =======
 - 2026-11-07: `priority-service-desk-mobile-migration-qr`. SC263384 apps failed after a server move. A new registration QR worked. QR contents and menu path were not recorded. Mail setup was not confirmed.

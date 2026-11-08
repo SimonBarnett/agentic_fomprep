@@ -1,0 +1,6 @@
+{
+  "name": "priority-service-desk-record-modified-custom-close",
+  "title": "Work-order close record-modified (custom close balance)",
+  "description": "Diagnose record-modified on work-order close when custom close logic writes backend balance before the transition completes. Exact code edit unknown. No repair SQL.",
+  "version": "1.0.0"
+}

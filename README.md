@@ -9,6 +9,7 @@ product repo.
 | **Grok / agent CWD** | Repo root + `AGENTS.md` (Priority Agent) |
 | **Skills on disk** | `.grok/skills/` — sync with `tools\Sync-PriorityGrokSkills.ps1` |
 | **Catalog / MCP** | `v2/apps/mcp-catalog/catalog/` |
+| **Hosted catalog** | [docs/amplify-hosting.md](docs/amplify-hosting.md) — Amplify compute for `https://mcp.ntsa.uk` (grab-only; Form Prep stays local) |
 | **Playbooks** | `docs/skill-sources/` |
 
 Customer product work lives in customer repos laid out `/{customer}/{project}`

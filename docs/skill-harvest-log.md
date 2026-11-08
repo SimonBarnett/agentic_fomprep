@@ -1,5 +1,7 @@
 # Skill harvest log
 
+- 2026-11-07: `priority-service-desk-runaway-report-cpu`. SC263359 two manual Repair History per Serial Number runs were terminated. Cleanup finished and SQL CPU recovered. HEAVYQUERY only logs. Mitigation only. No KILL script.
+=======
 - 2026-11-07: `priority-service-desk-data-exchange-email-company`. SC263373 reinstall did not restore data exchange. Define Comps. for Data Exchange and Update Interface by Email in each company did. Customer found exchanges by searching the current date. Full PO and receipt lifecycle was not recorded.
 =======
 - 2026-11-07: `priority-service-desk-shopify-product-code-import`. SC263397 order imported after the Shopify product code mapping was corrected. Exact field unknown. Failure email not fixed. Not the Dokka split-receipt skill.

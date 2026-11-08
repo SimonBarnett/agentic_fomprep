@@ -1,0 +1,6 @@
+{
+  "name": "priority-service-desk-shopify-product-code-import",
+  "title": "Shopify product-code mapping blocked the order import",
+  "description": "Correct a Shopify product-code mismatch so the order imports once. The source did not name the field. The failure-notification email stayed open.",
+  "version": "1.0.0"
+}

@@ -1,0 +1,6 @@
+{
+  "name": "priority-service-desk-email-column-translation",
+  "title": "Missing column translation hides Email Editor fields",
+  "description": "Email Editor custom fields appeared after the missing column translation was added. Match the deployment language. Do not hardcode British English. Sent mail was not rechecked.",
+  "version": "1.0.0"
+}

@@ -1,5 +1,50 @@
 # Skill harvest log
 
+- 2026-11-07: `priority-service-desk-quote-so-attachment-refresh`. SC263161 paperclip worked after refresh and reopen of the new sales order. Mitigation only. No product fix recorded.
+=======
+- 2026-11-07: `priority-service-desk-scanner-numeration`. SC263177 Scanner Trans numeration was extended and the customer could open documents. Not an API quota. Diff and new width unknown. No sequence reset.
+=======
+- 2026-11-07: `priority-service-desk-public-ip-allowlist`. SC263173 login worked after the new public IP was allowlisted. Later churn still happened. No addresses stored. Not an email or password fix.
+=======
+- 2026-11-07: `priority-service-desk-license-manual-install`. SC263215 official 25.0 license matched the system and the higher seat count was visible. 26.0 was the wrong file. Renew License remains unfixed. No license material stored.
+=======
+- 2026-11-07: `priority-service-desk-portal-view-price`. SC263208 View Price in Portal was ticked and the customer said it worked. Discounts and branding were not part of the fix. No prices recorded.
+=======
+- 2026-11-07: `priority-service-desk-warranty-auto-raise`. SC263216 Live lacked Stat After Auto Raise. Two missed contracts were replayed in Draft after owner approval. Next automatic shipment not confirmed. Trigger diff unknown.
+=======
+- 2026-11-07: `priority-service-desk-email-column-translation`. SC263220 Email Editor custom fields appeared after a missing column translation was added. Language direction in the notes disagrees. Check the installation. No direct dictionary edit.
+=======
+- 2026-11-07: `priority-service-desk-invoice-po-column`. SC263237 PO reference was hidden in the selected invoice format. The field was MC Cust PO. Customer confirmed it printed. Wrong-column guess was rejected.
+=======
+- 2026-11-07: `priority-service-desk-standard-cost-update`. SC263270 UpdStdCost=0 so nightly costing did not write catalogue standard costs. Calculate/Update Standard Cost corrected the parents. No amounts. No constant change.
+=======
+- 2026-11-07: `priority-service-desk-hmrc-mtd-reauth`. SC263292 customer reauthenticated via Set Up for HMRC's MTD and the VAT submission went through. Not SC263549. No tokens. 18-month interval is not current policy.
+=======
+- 2026-11-07: `priority-service-desk-serial-site-filter`. SC263316 serial customer matched but the site did not, so the device dropdown was empty. It listed the device when the site was removed. Customer accepted the explanation. Do not drop real site segregation.
+=======
+- 2026-11-07: `priority-service-desk-mrp-production-days`. SC263299 practice company: quantity 5 and Production Days 21 with Time per Batch, MRP without Work Plan, duration 21 not 105. Customer tested maximum 100. Not live. Numbers are not universal. Earlier Work Plan advice is superseded for this case.
+=======
+- 2026-11-07: `priority-service-desk-po-approval-restart`. SC263332 Cancel Auth restarted from the status that starts approval. Customer confirmed 2026-10-23 09:31 BST. Pending Auth is an example only. No status SQL.
+=======
+- 2026-11-07: `priority-service-desk-runaway-report-cpu`. SC263359 two manual Repair History per Serial Number runs were terminated. Cleanup finished and SQL CPU recovered. HEAVYQUERY only logs. Mitigation only. No KILL script.
+=======
+- 2026-11-07: `priority-service-desk-data-exchange-email-company`. SC263373 reinstall did not restore data exchange. Define Comps. for Data Exchange and Update Interface by Email in each company did. Customer found exchanges by searching the current date. Full PO and receipt lifecycle was not recorded.
+=======
+- 2026-11-07: `priority-service-desk-shopify-product-code-import`. SC263397 order imported after the Shopify product code mapping was corrected. Exact field unknown. Failure email not fixed. Not the Dokka split-receipt skill.
+
+=======
+- 2026-11-07: `priority-service-desk-last-purchase-price-report`. SC263402 report built in Part Catalogue Report Generator for last purchase price and date on R parts, then added to the menu. Field identifiers were not retrieved. No price update.
+
+=======
+- 2026-11-07: `priority-service-desk-quote-order-duplicate-lines`. SC263415 copied standard BUF6 line-add inside custom triggers and duplicated quote-to-order lines. Redundant call removed. Copy-company Open Order had no duplicate lines. Exact diff and live customer test were not retrieved.
+
+=======
+- 2026-11-07: `priority-service-desk-blank-partname-report`. SC263245 consumables report blank lines came from empty part link rows. PART.PARTNAME <> '' was deployed and the customer confirmed. Line 800 is not universal.
+
+- 2026-11-07: `priority-service-desk-analytics-child-field`. SC263252 shipping-voucher Analytics hid parents without Additional Expenses while a child cost field was included. Removing the field restored parents. Full cost report not implemented.
+
+- 2026-11-07: `priority-service-desk-ui-language-print`. SC263256 printouts were wrong in American English. Changing the UI language fixed them. Target language not named. Not the tile or OData language cases.
+
 - 2026-11-07: Enriched `priority-odata-dev` with SC263233. Lead tasks were missing until the installed language code was added after the ini file. 2 and 3 are the supplier's British and American codes, not a hardcoded default.
 
 - 2026-11-07: `priority-service-desk-mobile-app-update-registration`. SC263416 login succeeded after app update to the then-current 183.2.79 and user registration. That build is not a standing target. Update and registration were not isolated.
@@ -20,6 +65,18 @@
 - 2026-11-07: `priority-service-desk-webhook-sync-mitigation`. SC263461: synchronous WebhookProcess used about 20s of a 21s request while outbound TLS failed. Temporarily disabling the listed business-rule webhooks restored performance (customer confirmed). Permanent endpoint repair and re-enable were not done. Mitigation only.
 
 - 2026-11-07: `priority-service-desk-form-designer-multi-record`. SC263454: Form Designer change of the multi-record view generated multi-record entries; the design was copied to other users; customer said live was correct. Missing-entry cause and field list unknown. Not priority-form-engineering.
+
+- 2026-11-07: `priority-service-desk-orphan-wo-past-balance`. SC263492: part created with no work-order number. Warehouse transfer was checked and was not the cause. Customer completed support-advised document corrections and Update Invent. by Past Balance, then said it was sorted. Formal approval, backup and full reconciliation evidence were not retrieved; future corrections require the stated owner controls. Escalation only. No autonomous delete or repost.
+
+- 2026-11-07: `priority-service-desk-dokka-split-receipt-sync`. SC263506: split Priority receipt lines stayed aggregated in Dokka. Dokka reported a change on their side and that split goods synced. Customer retest was not documented. No local SQL or config patch. Adjacent tax calls SC263507, SC263508, and SC263509 stay unresolved and separate.
+
+- 2026-11-07: `priority-service-desk-browser-plugin-enable`. SC263453 enabling the disabled plugin restored executive reports. SC263452 enabling it for Priority in Chrome restored statement PDFs. SC263456 attributes a shipping-document link to the plugin without recording the exact action, so it is corroboration only. No catalog plugin-enable skill existed to enrich.
+
+- 2026-11-07: `priority-service-desk-maxformlines-user-group`. SC263442: some role members saw 2000 rows because of a user/group MAXFORMLINES override. Path: System Constants, MAXFORMLINES, Constant per User/User Group. Customer said sorted. Final value and precedence unknown. Do not lift all caps.
+
+- 2026-11-07: `priority-service-desk-split-grv-before-invoice`. SC263436: split the GRV received line before the first invoice link, then invoice the split lines separately. Support finalized two 500-unit invoices against a 1000-unit receipt on local Priority 26.0 without changing received quantity. Customer production test was not recorded. Not the Dokka split-sync skill.
+
+- 2026-11-07: `priority-service-desk-duplicate-report-cleanup`. SC263424: duplicate project reports cleaned by a developer script limited to an approved list, tested on a copy company, then run live after approval. Customer said it looked updated. Query text was not retrieved. Escalation only. Do not invent delete SQL. Do not blame a service restart.
 
 - 2026-10-26: SaaS OIDC login residuals - PowerShell ordered-map `&` join; HttpClient no-auto-redirect; consent GET+UA; OData Bearer empty HTTP 500 = DNAME/API gap (stop guessing); WCF formStart REST may 404 on SaaS. `SAAS_OIDC_LOGIN.md` + catalog `priority-saas-oidc-login` v1.1.0.
 - 2026-10-25: Priority SaaS / Cloud interactive login â€” tenant `POST /webui/<tenant>` exposes `_tabulaini=tabâ€¦.ini`; OIDC `priority-web` + PKCE; Accounts `login/checkPassword` then `mfa/checkotp` (single-use); consent redirect; `/auth/oauth2/token`; Bearer for tenant POST. New `docs/skill-sources/programming/SAAS_OIDC_LOGIN.md` + catalog `priority-saas-oidc-login` v1.0.0; pointers in `ODATA_REST_CLOUD.md` and `priority-mcp-setup`. Source: generic SaaS connectivity (customer names stripped).
@@ -117,3 +174,19 @@ Expanded `priority-uat-wcf` (skill-source + catalog meta **1.2.0**) from CE Day 
 - Catalog `priority-procedure-style` bumped to **1.2.0**.
 - Synced via `tools/Sync-PriorityGrokSkills.ps1`.
 - Source: anonymised customer Job Progress SQLI/report session; no hosts/secrets.
+
+## 2026-11-08 — SaaS WCF Phase 1 field fix (Hillier Live)
+
+- Tenant: Priority Cloud (generic lesson; customer name omitted from catalog).
+- Bug: host-only login URL → SDK appends `/wcf/wcf/Service.svc` → `Can't connect to server.` Fix: use probed `wcf` (`…/wcf/service.svc`).
+- Next error after fix: API License required on OIDC user for WCF; dictionary inventory path = REST PAT + OData (language `,3`) / Cloud MCP.
+- Also: strip UTF-8 BOM on token/allowlist JSON; `token_expired` from `expires_in`+`obtained_at`; Failure table in `SAAS_WCF_CLIENT.md`.
+- Evidence: `npm test` 20 pass; `Test-Fr-PrioritySaasWcf.ps1` PASS; Live `session` returns `api_licence` with `loginUrlSource=probe.wcf`.
+- PR: https://github.com/SimonBarnett/agentic_fomprep/pull/338
+
+## 2026-11-08 — API Licence Cloud form path + MCP root_records
+
+- Cloud form path: set `USERSB.RESTLOGIN` then `PRIVUSERS.REST` (USERSB form often lacks REST column).
+- MCP `form_update` requires `root_records` (not `root_form`).
+- Updated `API_LICENCE_WCF.md` + catalog `priority-api-licence-wcf` / `priority-mcp-forms`.
+- Source: SaaS WCF Live smoke after API License tick (generic). Folded into PR #338.

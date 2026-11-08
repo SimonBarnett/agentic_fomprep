@@ -1,5 +1,7 @@
 # Skill harvest log
 
+- 2026-11-07: `priority-service-desk-quote-so-attachment-refresh`. SC263161 paperclip worked after refresh and reopen of the new sales order. Mitigation only. No product fix recorded.
+=======
 - 2026-11-07: `priority-service-desk-scanner-numeration`. SC263177 Scanner Trans numeration was extended and the customer could open documents. Not an API quota. Diff and new width unknown. No sequence reset.
 =======
 - 2026-11-07: `priority-service-desk-public-ip-allowlist`. SC263173 login worked after the new public IP was allowlisted. Later churn still happened. No addresses stored. Not an email or password fix.

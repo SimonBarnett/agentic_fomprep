@@ -1,0 +1,6 @@
+{
+  "name": "priority-service-desk-invoice-po-column",
+  "title": "Unhide the invoice print column that holds the PO reference",
+  "description": "Unhide the column that actually holds the PO reference in the selected invoice format. In this call that field was MC Cust PO. Do not assume the account number.",
+  "version": "1.0.0"
+}

@@ -1,0 +1,6 @@
+{
+  "name": "priority-service-desk-warranty-auto-raise",
+  "title": "Warranty auto-raise needs the post-creation status",
+  "description": "Set Stat After Auto Raise on the Live sale type, then replay only the missed warranty contracts the owner approves. Future automatic creation was not confirmed.",
+  "version": "1.0.0"
+}

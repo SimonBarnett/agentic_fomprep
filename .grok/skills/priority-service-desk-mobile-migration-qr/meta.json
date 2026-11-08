@@ -1,0 +1,6 @@
+{
+  "name": "priority-service-desk-mobile-migration-qr",
+  "title": "Regenerate the mobile registration QR after a server move",
+  "description": "After a server move, generate a new mobile registration QR and have the user register again. Do not store the QR. Menu clicks and mail success were not in the call.",
+  "version": "1.0.0"
+}

@@ -1,5 +1,9 @@
 # Skill harvest log
 
+- 2026-11-07: `priority-service-desk-mobile-migration-qr`. SC263384 apps failed after a server move. A new registration QR worked. QR contents and menu path were not recorded. Mail setup was not confirmed.
+
+=======
+=======
 - 2026-11-07: `priority-service-desk-forecast-mrp-retrieve`. SC263390 Retrieve Sales Orders - MRP, Selected Orders only, set forecast lines to MRP? Y in local and customer Test. Live not run. Do not use All Open Orders from this skill.
 
 =======

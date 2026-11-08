@@ -1,4 +1,5 @@
 import { getSkill, listSkills, readRunnerFile, type SkillRecord } from './catalog';
+import { catalogPublicOrigin } from './public-origin';
 
 const PROTOCOL = '2024-11-05';
 const SERVER = { name: 'mcp-priority', version: '1.0.0' };
@@ -62,13 +63,13 @@ function needSkill(name?: string): { ok: true; skill: SkillRecord } | { ok: fals
   return { ok: false, error: `unknown skill '${name || ''}'` };
 }
 
-function callTool(name: string, args: Record<string, unknown> | undefined) {
+function callTool(name: string, args: Record<string, unknown> | undefined, origin: string) {
   const a = args || {};
   const skillName = typeof a.name === 'string' ? a.name : undefined;
 
   if (name === 'list_catalog') {
     return jsonResult({
-      host: 'https://mcp-priority.ntsa.uk',
+      host: origin,
       execute: 'local — user instances.json + CredMan; this MCP does not prepare forms',
       addSkill: 'add apps/mcp-catalog/catalog/<name>/meta.json + SKILL.md',
       skills: listSkills().map((s) => ({
@@ -113,7 +114,7 @@ function callTool(name: string, args: Record<string, unknown> | undefined) {
   return { isError: true, ...textResult(`unknown tool ${name}`) };
 }
 
-export function handleMcp(body: unknown): unknown {
+export function handleMcp(body: unknown, origin = catalogPublicOrigin()): unknown {
   const msg = body as { jsonrpc?: string; id?: unknown; method?: string; params?: Record<string, unknown> };
   if (!msg || msg.jsonrpc !== '2.0' || !msg.method) {
     return { jsonrpc: '2.0', id: msg && msg.id, error: { code: -32600, message: 'invalid request' } };
@@ -148,7 +149,7 @@ export function handleMcp(body: unknown): unknown {
   if (method === 'tools/call') {
     const tool = String(params.name || '');
     const args = (params.arguments || {}) as Record<string, unknown>;
-    const result = callTool(tool, args);
+    const result = callTool(tool, args, origin);
     return { jsonrpc: '2.0', id, result };
   }
   if (method === 'resources/list') {

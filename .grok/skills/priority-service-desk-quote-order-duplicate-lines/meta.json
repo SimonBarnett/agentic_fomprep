@@ -1,0 +1,6 @@
+{
+  "name": "priority-service-desk-quote-order-duplicate-lines",
+  "title": "Copied quote-to-order trigger duplicated lines",
+  "description": "Copied custom quote-to-order triggers that also call the standard line-add create duplicate lines. Remove only the redundant call. Copy-company test passed; live acceptance and the exact diff were not in the call.",
+  "version": "1.0.0"
+}

@@ -1,0 +1,6 @@
+{
+  "name": "priority-service-desk-mrp-production-days",
+  "title": "MRP production days apply to the batch quantity",
+  "description": "With Time per Batch, Production Days is the duration of the Production Quantity when MRP runs without a Work Plan. Practice-company proof only. Do not copy the sample quantities.",
+  "version": "1.0.0"
+}

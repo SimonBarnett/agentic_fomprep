@@ -52,5 +52,6 @@ No `docs/mrb-*.pdf` on `main` (MRB PDFs are out of policy).
 | [wp0-walker-slice-2026-09-19.md](wp0-walker-slice-2026-09-19.md) | Walker slice scope |
 | [OPERATOR_HOWTO_ESHBEL.md](OPERATOR_HOWTO_ESHBEL.md) | Operator notes |
 | [GROK_HANDOFF.md](GROK_HANDOFF.md) | Grok handoff |
+| [amplify-hosting.md](amplify-hosting.md) | Amplify Hosting for `https://mcp.ntsa.uk` (catalog MCP only) |
 
 Committed WP0 run artefact: `v2/tests/wp0-last.json` (offline; R* skipped when `PRIORITY_WP0_INSTANCE` unset).

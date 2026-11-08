@@ -1,0 +1,6 @@
+{
+  "name": "priority-service-desk-duplicate-report-cleanup",
+  "title": "Duplicate project-report cleanup is an approved escalation",
+  "description": "Duplicate project hour reports were removed by an approved, list-limited script that was tested on a copy company. The query text is not in the call. Do not invent delete SQL. Customer confirmation is not a root-cause fix.",
+  "version": "1.0.0"
+}

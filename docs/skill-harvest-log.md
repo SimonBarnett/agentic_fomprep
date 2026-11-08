@@ -1,5 +1,7 @@
 # Skill harvest log
 
+- 2026-11-07: `priority-service-desk-hmrc-mtd-reauth`. SC263292 customer reauthenticated via Set Up for HMRC's MTD and the VAT submission went through. Not SC263549. No tokens. 18-month interval is not current policy.
+=======
 - 2026-11-07: `priority-service-desk-serial-site-filter`. SC263316 serial customer matched but the site did not, so the device dropdown was empty. It listed the device when the site was removed. Customer accepted the explanation. Do not drop real site segregation.
 =======
 - 2026-11-07: `priority-service-desk-mrp-production-days`. SC263299 practice company: quantity 5 and Production Days 21 with Time per Batch, MRP without Work Plan, duration 21 not 105. Customer tested maximum 100. Not live. Numbers are not universal. Earlier Work Plan advice is superseded for this case.

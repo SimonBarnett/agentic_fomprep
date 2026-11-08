@@ -22,8 +22,8 @@ human-readable summary of **actual work done** to the project work log:
 
 | Repo layout | Path |
 |-------------|------|
-| Customer repo with project folder (e.g. `SimonBarnett/trutex`) | `{project}/log.md` (example: `deposco/log.md`) |
-| Multi-customer / Priority layout | `{customer}/{project}/log.md` (example: `ce-priority/dayworks/log.md`) |
+| Customer repo with an SC/SO folder | `{SCxxxxxx-or-SOxxxxxx}/log.md` |
+| Multi-folder layout | `{customer}/{SCxxxxxx-or-SOxxxxxx}/log.md` |
 
 **Create the file if it is missing.** Dated entries; enough detail for a later
 billing query (what shipped, PRs/issues, hours day, Bob hours entry id if known).
@@ -44,8 +44,8 @@ map; FR #3450 / FR #3673).
 | `on_behalf_of` | Priority USERLOGIN (example: `SimonB`) |
 | `start` | ISO-8601 start with offset (Europe/London) |
 | `end` | ISO-8601 end; omit while open; include with `start` for closed-in-one-POST |
-| `customer` | Customer id (example: `trutex`) |
-| `project` | Project id (example: `deposco`) |
+| `customer` | Customer repository name. Empty for a general session. |
+| `project` | Authoritative `SCxxxxxx` or `SOxxxxxx` folder. Not the Medatech booking id. |
 | `repo_url` | GitHub URL for the work |
 | `description` | Short human description |
 | `tickets` | Optional array of issue/PR refs |
@@ -91,29 +91,33 @@ When the human asks to record N hours for a past or current day:
 
 ```json
 {
-  "idempotency_key": "customer-project-topic-YYYY-MM-DD",
+  "idempotency_key": "priority-agent-<full-session-uuid>",
   "agent": "grok-<seat>",
-  "on_behalf_of": "SimonB",
-  "start": "YYYY-MM-DDT09:00:00+01:00",
-  "end": "YYYY-MM-DDT17:00:00+01:00",
-  "customer": "trutex",
-  "project": "deposco",
-  "repo_url": "https://github.com/SimonBarnett/trutex",
+  "on_behalf_of": "<Priority USERLOGIN>",
+  "start": "YYYY-MM-DDT09:00:00+00:00",
+  "end": "YYYY-MM-DDT10:00:00+00:00",
+  "customer": "<customer-repo>",
+  "project": "SC100001",
+  "repo_url": "https://github.com/SimonBarnett/<customer-repo>",
   "description": "Short description of actual work",
   "tickets": ["#21"],
-  "source": "marchhare",
+  "source": "<machine>",
   "billable_hint": "Y"
 }
 ```
 
-Expect `status: closed` and `duration_minutes` (480 = 8h). Then append `log.md`.
+Do not send `duration_minutes`. On a real close the server sets `status` to
+`closed` and derives `duration_minutes` from start and end (60 for the span
+above). Then append `log.md`. A fixture or a blocked GET is not a receipt.
 
-Verify:
+Verify only with a supported read:
 
 ```text
-GET /bob/v1/hours?user=SimonB&from=YYYY-MM-DD&to=YYYY-MM-DD
-GET /bob/v1/hours/summary?user=SimonB&date=YYYY-MM-DD
+GET /bob/v1/hours?user=<Priority USERLOGIN>&from=YYYY-MM-DD&to=YYYY-MM-DD
+GET /bob/v1/hours/summary?user=<Priority USERLOGIN>&date=YYYY-MM-DD
 ```
+
+Match `idempotency_key` on the returned entries. The query has no key filter.
 
 ## Done
 

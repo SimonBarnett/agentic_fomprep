@@ -50,7 +50,9 @@ with the right context.
    note. With no nick and no listing, the launcher warns and offers to continue without airc. It
    never sends a PRIVMSG during discovery.
 6. **New customer / new project** never creates anything. It prints `Ask Haitch: new customer repo for X`
-   or `Ask Haitch: new project folder Y in <repo>`, copies the line to the clipboard and exits. Haitch creates it.
+   or `Ask Haitch: new project folder Y in <repo>`, copies the line to the clipboard and exits. Haitch creates it
+   from `launcher/customer-setup`. A project folder must already be an authoritative `SCxxxxxx` or `SOxxxxxx`.
+   The Medatech booking id and WBS go in that folder's `project.md`, not in the folder name.
 7. It checks fuel like `ce-dayworks/scripts/Start-DayWorks.ps1`.
    - Source: the Bob report `machines.<machine>.pcent["grok-chat"]`.
    - Above 0 means the pool is used. 0 or unknown gives a warning and asks before continuing.
@@ -60,12 +62,26 @@ with the right context.
    - The rules come from `launcher/agent-rules.md` in the agentic_fomprep clone when its `rules-version` is at
      least the embedded copy's; otherwise the copy embedded in the exe is used. The `{{...}}` placeholders are filled in.
    - The brief names the customer, project, paths and the files to read first.
-9. **Hours are mandatory.** When the agent exits, the launcher fetches `origin/hours` from the customer repo
-   (agentic_fomprep for a general session). It checks that `hours/<today>.md` has a `dev` line **and** a `test`
-   line, each with evidence and tagged `session:<first 8 hex of session id>`.
-   - If they are missing, it shows a loud red warning.
-   - It then **relaunches the same session** (`grok --resume <id>`) with a "report your hours now" prompt.
-   - It repeats until the lines are there. Typing `SKIP` overrides this, and the override is logged.
+9. **Hours are mandatory.** When the agent exits, the launcher looks for one **closed** entry on
+   `GET https://bob.ntsa.uk/bob/v1/hours` (bobiverse FR #3450 / #3673). The query is
+   `user`, `from`, `to`, and `status=closed`. It does **not** send `idempotency_key` as a query
+   parameter. The match is client-side: persisted receiver id, `priority-agent-<full session uuid>`,
+   the Priority USERLOGIN in `on_behalf_of`, the expected customer and project, `status` `closed`,
+   and a real start/end.
+   - `?user=` comes from `--hours-user` or `PRIORITY_AGENT_HOURS_USER`. It is not read from the
+     passwords file and it is not logged as a secret.
+   - The returned id is persisted in the session `hours-entry.json`. Tests set
+     `PRIORITY_AGENT_HOURS_JSON` to a list fixture. When that variable is set, the check does
+     not contact the network.
+   - A non-success GET is **delivery unverified**. The launcher tries once and does not retry.
+     Do not treat a merged rules file or this source change as an installed exe conversion.
+     `LoadRules` uses `launcher/agent-rules.md` from the clone when its `rules-version` is at
+     least the copy embedded in `PriorityAgent.exe`. The embedded copy changes only when the
+     exe is rebuilt and published, which this change does not do.
+   - If the entry is missing, open, `auto_closed`, or for a different key, the launcher shows a
+     loud red warning and relaunches the same session (`grok --resume <id>`) until the closed
+     entry matches, or the operator types `SKIP` (logged).
+   - `log.md` stays narrative evidence. It is not the hours store. The check does not read a git hours ref.
 
 Logs go to `%LOCALAPPDATA%\PriorityAgent\logs`. Per-session `launch.json` and the rendered rules go to `...\sessions`.
 
@@ -122,11 +138,11 @@ without airc. Tests may override the report via `PRIORITY_AGENT_AIRC_REPORT_JSON
   - The launcher only checks that the file exists. It never reads it.
 - **Customer systems**: agents may connect to the selected customer's systems with the connections file **without asking first**.
   They must not message the customer's people without asking Simon.
-- **Hours (mandatory)**: the format comes from ce-dayworks.
-  - Lines go in `hours/YYYY-MM-DD.md` on the customer repo's **`hours` branch**, from `hours/_template.md`.
-    If the repo has none, copy `launcher/hours-template.md`, which is the ce-dayworks template.
-  - The hours are human-equivalent, every line has evidence, and the file is append-only (no force-push).
-  - Haitch proposes the bookings and Simon approves them.
+- **Hours (mandatory)**: one closed webhook entry per session, matched client-side as in step 9.
+  - Human-equivalent time, with evidence links in the description or `tickets`. Haitch proposes
+    bookings and Simon approves them. The agent does not post Priority.
+  - `launcher/hours-template.md` is a legacy markdown table. It is not the hours store and it is
+    not the customer-repo template. Use `launcher/customer-setup` for new repos.
 
 ## Use
 

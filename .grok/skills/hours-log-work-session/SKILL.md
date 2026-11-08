@@ -42,8 +42,8 @@ Authoritative examples also live in `docs/skill-sources/hours/hours-log-work-ses
 | `on_behalf_of` | Priority USERLOGIN (example: `SimonB`) |
 | `start` | ISO-8601 datetime when the entry opens (required on create) |
 | `end` | ISO-8601; omit while open; include with `start` for closed-in-one-POST |
-| `customer` | e.g. `ce-priority` / `trutex` |
-| `project` | e.g. `dayworks` / `deposco` |
+| `customer` | Customer repository name. Empty for a general session. |
+| `project` | Authoritative `SCxxxxxx` or `SOxxxxxx` folder. Not the Medatech booking id. |
 | `repo_url` | GitHub URL for the work |
 | `description` | Short human description |
 | `tickets` | Optional array of issue/PR refs |
@@ -63,13 +63,13 @@ Missing/empty `start` (including when only an alias was sent) returns
 `missing_start` with `rejected_aliases` (bobiverse FR #3673). Unparseable
 `start` returns `bad_start`.
 
-Closed-in-one-POST: send `start` + `end` together; expect `status:closed` and
-`duration_minutes`.
+Closed-in-one-POST: send `start` + `end` together. Do not send `duration_minutes`.
+The server returns `status: closed` and derives `duration_minutes`. `auto_closed` is not a successful close.
 
 ## Steps (hours-start)
 
 1. On ACK (or explicit start), `POST /bob/v1/hours` with open entry fields.
-2. Store the returned entry id with the job context.
+2. Store the returned entry id (`h_` plus 16 hex characters) with the job context. Do not invent an id.
 3. On long tasks, heartbeat every 15-30 minutes: `POST /bob/v1/hours/{id}/heartbeat`.
 4. Reuse the same `idempotency_key` if the create must be retried.
 

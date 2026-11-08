@@ -1,4 +1,4 @@
-<!-- rules-version: 5 -->
+<!-- rules-version: 6 -->
 # Priority agent rules (from the Priority Agent launcher)
 
 The launcher fills in the {{...}} values on every start. These rules sit on top of
@@ -65,29 +65,38 @@ needed, tell Simon to ask Haitch: "Ask Haitch: new customer repo for <X>" or
 
 ## Hours: MANDATORY, every session
 
-Priority agents MUST report their hours. **Every session opens and closes a Bob Fleet hours
-webhook entry**, even short ones. The store is **https://bob.ntsa.uk/bob/v1/hours** (not a git
-`hours` branch). Follow skill `hours-log-work-session` and bobiverse `jeeves/docs/webhooks.md`.
+Priority agents MUST report their hours. **Every session opens and closes one Bob Fleet hours
+webhook entry**, even short ones. The store is **https://bob.ntsa.uk/bob/v1/hours**.
+Follow skill `hours-log-work-session` and bobiverse `jeeves/docs/webhooks.md` (FR #3450 / #3673).
+GitHub events stay on `POST /bob/v1/git`. That route is not the hours store.
 
-- On start (or as soon as you begin billable work), `POST https://bob.ntsa.uk/bob/v1/hours` with an
-  open entry. Reuse the same `idempotency_key` on retry so you never create duplicates.
-  - Required: `idempotency_key`, `agent`, `start` (ISO-8601).
-  - Recommended key: **`priority-agent-{{SESSION}}`** (full session uuid).
-  - Also send when known: `on_behalf_of` (Priority USERLOGIN), `customer`, `project`, `repo_url`,
-    `description`, `source` (this machine), `billable_hint`.
-  - Use accepted field names only (`start` / `end` / `customer` / `project`). Never send credential
-    fields. Never log request bodies or print secrets.
-- Store the returned entry id with the session. On long sessions, heartbeat every 15-30 minutes:
+- On start, `POST https://bob.ntsa.uk/bob/v1/hours`. Reuse the same `idempotency_key` on retry.
+  - Server requires `idempotency_key`, `agent`, `on_behalf_of`, and `start` (ISO-8601).
+  - Key: **`priority-agent-{{SESSION}}`** (the full session uuid).
+  - `on_behalf_of` is the Priority USERLOGIN.
+  - When a customer is selected, `customer` is the customer repo name and `project` is the
+    folder name. That folder must already be an authoritative `SCxxxxxx` or `SOxxxxxx`.
+    Do not invent one. A Medatech booking id and WBS stay in that folder's `project.md`.
+    They are different fields. Do not put them in `project`.
+  - Optional: `end`, `repo_url`, `description`, `source`, `tickets`, `billable_hint`.
+  - Do not send `duration_minutes`, alias names (`started_at`, `customer_slug`, `project_slug`, ...),
+    or credential fields. Never log request bodies or print secrets.
+- Persist the returned receiver id (`h_` plus 16 hex characters) as JSON `{"id":"..."}` in
+  `{{HOURS_ENTRY_FILE}}`. Do not invent an id. Heartbeat every 15-30 minutes:
   `POST https://bob.ntsa.uk/bob/v1/hours/{id}/heartbeat`.
-- Before you stop: `POST https://bob.ntsa.uk/bob/v1/hours/{id}/close` with `{"end":"..."}`.
-  Closed-in-one-POST (`start` + `end` together) is fine for a short session. Nothing may stay open
-  past the webhook timeout without a reason note.
+- Before you stop: `POST https://bob.ntsa.uk/bob/v1/hours/{id}/close` with a real `{"end":"..."}`.
+  The server derives `duration_minutes` from start and end. An open entry with no heartbeat
+  becomes `auto_closed` after 120 minutes by default. That is not a successful close.
+  Do not invent an end to avoid it.
+- The launcher reads the list and matches **client-side** (the query has no key filter):
+  the persisted id, the same full-session key, the same USERLOGIN, the expected customer and
+  project, `status` `closed`, and a real start/end. A blocked GET is delivery unverified.
+  Do not claim the report arrived without that readback.
 - Hours are **human-equivalent**: what a competent consultant would bill, not agent wall-clock.
-  Use a clear description; Haitch proposes bookings, Simon approves them. Never book hours in
-  Priority yourself.
+  Haitch proposes bookings, Simon approves them. Never book hours in Priority yourself.
 - **CAST IRON project work log:** also append a short entry to `log.md` in `{{PROJECT_DIR}}`
   (when a project is selected). Create the file if missing. `log.md` is billing narrative evidence;
-  it is **not** the hours database. The webhook entry is the store the launcher checks.
+  it is **not** the hours database.
 
 ## End of session
 

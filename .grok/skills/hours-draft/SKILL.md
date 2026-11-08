@@ -24,10 +24,10 @@ auto-post to Priority.
 ## Steps
 
 1. GET entries and the day summary for the day/week (Europe/London).
-2. Resolve each entry's Priority record and WBS from customer/project
+2. Resolve each entry's Priority booking id and WBS from that SC/SO folder's
    `project.md` first; use `docs/skill-sources/hours/wbs-fallback-map.md` only
-   as fallback. If a report arrives without `project.md`, run
-   `hours-repo-metadata` to open a PR.
+   as a booking/WBS hint, never as a folder name. If `project.md` is missing,
+   run `hours-repo-metadata` to open a PR. Do not auto-post.
 3. Merge with calendar, Teams and email.
 4. De-overlap parallel agent time: book **human-equivalent** time, not the sum
    of agent wall clocks (see `priority-hours-orchestrator`).

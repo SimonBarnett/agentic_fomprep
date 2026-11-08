@@ -1,5 +1,7 @@
 # Skill harvest log
 
+- 2026-11-07: `priority-service-desk-po-approval-restart`. SC263332 Cancel Auth restarted from the status that starts approval. Customer confirmed 2026-10-23 09:31 BST. Pending Auth is an example only. No status SQL.
+=======
 - 2026-11-07: `priority-service-desk-runaway-report-cpu`. SC263359 two manual Repair History per Serial Number runs were terminated. Cleanup finished and SQL CPU recovered. HEAVYQUERY only logs. Mitigation only. No KILL script.
 =======
 - 2026-11-07: `priority-service-desk-data-exchange-email-company`. SC263373 reinstall did not restore data exchange. Define Comps. for Data Exchange and Update Interface by Email in each company did. Customer found exchanges by searching the current date. Full PO and receipt lifecycle was not recorded.

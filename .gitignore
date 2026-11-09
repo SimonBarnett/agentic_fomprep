@@ -24,8 +24,12 @@ report-outbox/
 harvest-outbox/
 
 # Launcher test build output
+launcher/bin/
+launcher/obj/
 launcher.Tests/bin/
 launcher.Tests/obj/
+tests/bobhours-selftest/bin/
+tests/bobhours-selftest/obj/
 launcher.Tests/FakeCli/bin/
 launcher.Tests/FakeCli/obj/
 launcher.Tests/FakeCli/out/

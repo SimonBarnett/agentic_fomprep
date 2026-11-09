@@ -1,8 +1,9 @@
 # Hours WBS fallback map (easy to update)
 
-Used by `hours-classify` and `hours-draft` **only when** customer/project
-`project.md` files are missing. Prefer `/customer/project.md` and
-`/customer/project/project.md` first.
+Used by `hours-classify` and `hours-draft` **only when** `<SCxxxxxx-or-SOxxxxxx>/project.md`
+is missing. It may hint a Medatech booking id or WBS. It is not a folder-name
+map and must not be copied into webhook `project`. Prefer `project.md` in the
+authoritative SC or SO folder. Do not invent an SC/SO from this table.
 
 | Work | Priority project (example) | WBS |
 |------|----------------------------|-----|

@@ -26,22 +26,21 @@ Repo path and URL, ticket, meeting/thread, customer cues.
 
 ## Steps
 
-1. Resolve webhook fields `customer` and `project` from the repo path convention
-   `/{customer}/{project}` (generic Priority stays in agentic_fomprep).
-   Example: `customer`=`ce-priority`, `project`=`dayworks` (repo
-   `SimonBarnett/ce-priority`, folder `dayworks/`; it replaces
-   `SimonBarnett/ce-dayworks`). Another example: `trutex` / `deposco`.
+1. Webhook `customer` is the customer repository name. Webhook `project` is the
+   project folder name. For customer work that folder must already be the
+   authoritative service-call or sales-order id (`SC` or `SO` plus digits).
+   Do not rename a folder and do not invent an id. A Medatech booking id is a
+   different field and must not be copied into webhook `project`.
    Do not POST `customer_slug` / `project_slug` (bobiverse
    `jeeves/docs/webhooks.md` Agent field map).
-2. Read Priority customer/project record from `/customer/project.md` and WBS from
-   `/customer/project/project.md`. **These files come first.**
-   Example: `ce-priority/project.md` -> Clarkson Evans record `PR230001`;
-   `ce-priority/dayworks/project.md` -> WBS `5`.
-3. Only if those files are missing, fall back to
-   `docs/skill-sources/hours/wbs-fallback-map.md` (same table as
-   `priority-hours-orchestrator` examples). Do not hard-code the map in agents.
+2. Read the booking id and WBS from `<folder>/project.md` in that folder.
+   **That file comes first.** Those values stay in `project.md`.
+3. Only if `project.md` is missing, `docs/skill-sources/hours/wbs-fallback-map.md`
+   may hint a booking id or WBS. It must not supply a folder name. If the folder
+   is not an authoritative `SC`/`SO` id, leave the entry unclassified.
+   Do not hard-code the map in agents.
 4. When a `project.md` was missing or wrong, flag `hours-repo-metadata`.
-5. When still unsure, leave project/WBS blank and write `unclassified because...`
+5. When still unsure, leave booking/WBS blank and write `unclassified because...`
    on the entry. **Never guess.**
 
 ## Done

@@ -28,13 +28,14 @@ Priority customer/project record and WBS confirmed by the drafter or human.
 
 ## Layout (Si convention)
 
-- `/customer/project.md` - Priority customer/project record reports are made
-  against (example: `ce-priority/project.md` -> PR230001).
-- `/customer/project/project.md` - that project's WBS code (example:
-  `ce-priority/dayworks/project.md` -> `5`).
-- `/customer/project/log.md` (customer-repo layout: `/project/log.md`) -
-  CAST IRON work log for billing evidence; create if missing when hours are
-  recorded (`hours-log-work-session`).
+- Customer repo root name stays the customer name. It is not an SC or SO number.
+- `<SCxxxxxx-or-SOxxxxxx>/project.md` holds `priority_project` (Medatech booking
+  id) and `wbs`. Those are different fields from the folder name. Do not replace
+  either with the other. Leave a value blank until a human confirms it.
+- `<SCxxxxxx-or-SOxxxxxx>/log.md` is the work-log narrative, not the hours store.
+  Create it if missing when hours are recorded (`hours-log-work-session`).
+- Do not rename an existing folder onto a guessed SC/SO. If the authoritative
+  number is not evidenced, leave the folder unchanged.
 
 ## Steps
 

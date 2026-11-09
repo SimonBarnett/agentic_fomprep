@@ -1,0 +1,7 @@
+# Mapping for this folder. The folder name is the authoritative SC or SO id.
+# priority_project is the Medatech project booking id. It is a different field.
+# wbs is the work-breakdown code. It is a different field.
+# Leave a value blank until a human confirms it. Do not invent either value.
+
+priority_project:
+wbs:

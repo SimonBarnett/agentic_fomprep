@@ -1,5 +1,5 @@
 /**
- * FR #354 build gates: DAG↔catalog sync + public-safe content scan.
+ * FR #354 build gates: DAG↔catalog sync, dangling-edge + cycle checks, public-safe scan.
  */
 import fs from 'node:fs';
 import path from 'node:path';
@@ -47,6 +47,64 @@ if (catalogOnlyMissing.length) {
   fail(`DAG catalog-skill nodes missing folders: ${catalogOnlyMissing.slice(0, 20).join(', ')}`);
 }
 
+// FR #354 acceptance: every edge endpoint exists; no directed cycles
+const nodeIds = new Set((dag.nodes || []).map((n) => String(n.id || '')));
+const dangling = [];
+const adj = new Map();
+for (const e of dag.edges || []) {
+  const from = String(e.from || '');
+  const to = String(e.to || '');
+  if (!nodeIds.has(from) || !nodeIds.has(to)) {
+    dangling.push(`${from}->${to}`);
+    if (dangling.length >= 20) break;
+  }
+  if (!adj.has(from)) adj.set(from, []);
+  adj.get(from).push(to);
+}
+if (dangling.length) {
+  fail(`dangling edge endpoints (${dangling.length}): ${dangling.slice(0, 10).join(', ')}`);
+}
+// Topic↔topic depends_on may loop for navigation; fail cycles that touch skill/lesson/loader nodes.
+const nodeType = new Map((dag.nodes || []).map((n) => [String(n.id || ''), String(n.type || '')]));
+const cycleAdj = new Map();
+for (const e of dag.edges || []) {
+  const from = String(e.from || '');
+  const to = String(e.to || '');
+  const ft = nodeType.get(from) || '';
+  const tt = nodeType.get(to) || '';
+  if (ft === 'topic' && tt === 'topic') continue;
+  if (!cycleAdj.has(from)) cycleAdj.set(from, []);
+  cycleAdj.get(from).push(to);
+}
+const WHITE = 0;
+const GRAY = 1;
+const BLACK = 2;
+const color = new Map();
+for (const id of cycleAdj.keys()) color.set(id, WHITE);
+for (const vs of cycleAdj.values()) {
+  for (const v of vs) if (!color.has(v)) color.set(v, WHITE);
+}
+let cycleAt = null;
+function dfs(u) {
+  color.set(u, GRAY);
+  for (const v of cycleAdj.get(u) || []) {
+    if (!color.has(v)) continue;
+    if (color.get(v) === GRAY) {
+      cycleAt = `${u}->${v}`;
+      return true;
+    }
+    if (color.get(v) === WHITE && dfs(v)) return true;
+  }
+  color.set(u, BLACK);
+  return false;
+}
+for (const id of [...color.keys()]) {
+  if (color.get(id) === WHITE && dfs(id)) break;
+}
+if (cycleAt) {
+  fail(`directed cycle detected near ${cycleAt}`);
+}
+
 // Secret / private-data scan (public MCP — no credentials or private hosts)
 const SECRET_RX = [
   /\bpassword\s*[:=]\s*\S+/i,
@@ -81,5 +139,5 @@ if (hits.length) {
 }
 
 process.stdout.write(
-  `check-dag: ok catalog=${catalogSkills.length} dagSkillIds=${skillNodes.size} nodes=${(dag.nodes || []).length}\n`,
+  `check-dag: ok catalog=${catalogSkills.length} dagSkillIds=${skillNodes.size} nodes=${(dag.nodes || []).length} edges=${(dag.edges || []).length}\n`,
 );

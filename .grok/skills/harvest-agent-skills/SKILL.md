@@ -179,3 +179,4 @@ books use `harvest-agent-skills` pointing at their home.)
 - Service-desk training checkpoint issues are receipts: when a later checkpoint (#328) supersedes an earlier one (#317) and cited skill PRs are all MERGED, close the earlier checkpoint as Duplicate of the later issue and DONE FR with the covering merged PR URL; do not open a second implement PR.
 - SaaS prepare: port EFORM/EXEC activateStart walks onto accessToken sessions; scrape FORMPREPERRS; gate via odataBase re-read when SQL unavailable; walkOk alone is not preparedClaim
 - priority-web-sdk appends /wcf/wcf/Service.svc unless url ends in .svc; use tenant probe wcf. OIDC user needs API License for WCF; PAT+OData/MCP for dictionary. Strip UTF-8 BOM on Windows token JSON.
+- Root .gitignore must list .bobiverse-seat and **/ .bobiverse-seat so harvest/MRB tips cannot commit Bobiverse job seat markers; document in harvest-agent-skills Do-not + Write tip (FR #349 / PR #350).

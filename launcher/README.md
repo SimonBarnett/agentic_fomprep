@@ -46,12 +46,7 @@ with the right context.
      an existing clone under any searched `X:\AI` or `X:\repos` is reused.
    - **Project / service call**: one of the customer repo's top-level folders, skipping dot-folders.
      cwd is that folder.
-5. It loads **Priority WCF instances** from `.priority-agent.json` (project file overrides customer).
-   Each instance has `id`, `serverUrl`, and `mode` (`direct` or `relay`). Credentials are never stored
-   there. The launcher writes a session-only `wcf-instances.json` and injects WCF client instructions
-   into the agent rules (bobiverse `priority_wcf.py`, FR #6035 / #6026). Legacy `airc` / `airc_console`
-   fields still load without error and print a warning that they are ignored. `--airc`, `--no-airc`
-   and `--airc-console` are rejected with a clear "removed; use the WCF client" message.
+5. It loads **Priority SaaS WCF allowlist** rows (FR #348): default %USERPROFILE%\.priority-saas-wcf\instances.json (env PRIORITY_SAAS_WCF_INSTANCES), or a wcfInstancesPath / SaaS-shaped list in .priority-agent.json (project overrides customer). Each row has id, host, 	enant, company, user, 	okenFile, llowLive (see 2/apps/priority-saas-wcf/instances.example.json). Credentials and tokens are never stored there. The launcher writes a session-only wcf-instances.json and injects instructions for in/priority-wcf.mjs + skill priority-saas-wcf (not bobiverse #6026 priority_wcf.py). Legacy irc / irc_console fields still load without error and print a warning that they are ignored. --airc, --no-airc and --airc-console are rejected with a clear "removed; use the WCF client" message.
 6. **New customer / new project** never creates anything. It prints `Ask Haitch: new customer repo for X`
    or `Ask Haitch: new project folder Y in <repo>`, copies the line to the clipboard and exits. Haitch creates it
    from `launcher/customer-setup`. A project folder must already be an authoritative `SCxxxxxx` or `SOxxxxxx`.
@@ -97,26 +92,38 @@ Logs go to `%LOCALAPPDATA%\PriorityAgent\logs`. Per-session `launch.json` and th
 
 ## WCF configuration (FR #348)
 
-Project settings override customer settings. The project file is `<project>/.priority-agent.json`,
-falling back to `<customer>/.priority-agent.json`:
+The client is fom-prep 2/apps/priority-saas-wcf (in/priority-wcf.mjs), skill priority-saas-wcf.
+Allowlist default: %USERPROFILE%\.priority-saas-wcf\instances.json (override PRIORITY_SAAS_WCF_INSTANCES).
+Copy from 2/apps/priority-saas-wcf/instances.example.json:
 
-```json
+`json
 {
-  "wcf": [
-    { "id": "saas-dev", "serverUrl": "https://prioritydev.example.invalid", "mode": "direct" },
-    { "id": "hrs-lan", "serverUrl": "http://priority.internal.example.invalid", "mode": "relay" }
+  "instances": [
+    {
+      "id": "saas-dev",
+      "host": "p.priority-connect.online",
+      "tenant": "exampletenant",
+      "company": "exampledname",
+      "user": "user@example.com",
+      "tokenFile": "C:\\passwords\\example-saas-oauth-tokens.json",
+      "language": 3,
+      "allowLive": false
+    }
   ]
 }
-```
+`
 
-`mode` is `direct` (reachable HTTPS host) or `relay` (same bobiverse WCF client via on-LAN airc transport
-for internal-only servers). An empty or missing list is fine; the agent rules then say to ask Simon.
-Aliases: top-level `wcfInstances`, or `wcf.instances`, or a single `wcf` object. Also accept `url` /
-`server_url` for the host. **Never** put passwords, CredMan targets, or tokens in this file.
+Optional project/customer .priority-agent.json may set wcfInstancesPath to that file, or embed the same
+SaaS-shaped wcf / instances array (project overrides customer). **Never** put passwords or tokens in
+these files. Tokens come from 	okenFile or process env PRIORITY_SAAS_TOKEN (see priority-saas-oidc-login).
 
-Legacy keys `airc` and `airc_console` are ignored with a warning. The launcher does not open DCC and
-does not send airc shell PRIVMSGs. Agent instructions require the Priority WCF client path for tables,
-procedures, forms, reports, interfaces and prepare work --- not airc shell, WINRUN, web SDK or OData.
+Rows that look like bobiverse #6026 (serverUrl + mode direct|relay) are ignored with a warning.
+
+Legacy keys irc and irc_console are ignored with a warning. The launcher does not open DCC and
+does not send airc shell PRIVMSGs. Agent rules require priority-wcf.mjs for Priority work and require
+a harvest through Bobiverse intake (	ools\\Report-FomprepIntakeIssue.ps1 / Invoke-FomprepHarvest.ps1)
+after every client session.
+
 
 ## Agent rules (summary; full text in `agent-rules.md`)
 

@@ -6,7 +6,7 @@ using System.Text.RegularExpressions;
 var checks = new List<(string Name, Action Run)>
 {
     ("project wcf overrides customer; legacy airc warns", TestWcfConfigPrecedenceAndLegacy),
-    ("direct and relay modes load and render", TestDirectAndRelayModes),
+    ("saas allowlist loads and renders priority-wcf.mjs rules", TestSaasAllowlistAndRules),
     ("session instances file has no secrets", TestSessionInstancesNoSecrets),
     ("airc source files and template are gone", TestAircFilesGone),
     ("README documents WCF client only", TestReadmeWcfOnly),
@@ -36,17 +36,16 @@ static void TestWcfConfigPrecedenceAndLegacy()
         string customer = Path.Combine(root, "customer"), project = Path.Combine(customer, "project");
         Directory.CreateDirectory(project);
         File.WriteAllText(Path.Combine(customer, ".priority-agent.json"),
-            """{"airc":true,"airc_console":"flamingo_console","wcf":[{"id":"cust","serverUrl":"https://cust.example.invalid","mode":"direct"}]}""");
+            """{"airc":true,"airc_console":"flamingo_console","wcf":[{"id":"cust","host":"cust.example.invalid","tenant":"tcust","company":"CCUST","user":"u@c","tokenFile":"C:\\\\passwords\\\\cust.json","allowLive":false}]}""");
         File.WriteAllText(Path.Combine(project, ".priority-agent.json"),
-            """{"airc":false,"wcf":[{"id":"proj","serverUrl":"https://proj.example.invalid","mode":"relay"}]}""");
+            """{"airc":false,"wcf":[{"id":"proj","host":"proj.example.invalid","tenant":"tproj","company":"CPROJ","user":"u@p","tokenFile":"C:\\\\passwords\\\\proj.json","allowLive":false}]}""");
         WcfConfig config = WcfSupport.LoadConfig(project, customer);
         Assert(config.Instances.Count == 1 && config.Instances[0].Id == "proj", "project wcf must replace customer");
-        Assert(config.Instances[0].Mode == "relay", "project relay mode lost");
+        Assert(config.Instances[0].Host == "proj.example.invalid" && config.Instances[0].Tenant == "tproj", "project saas fields lost");
         Assert(config.LegacyAircWarnings.Count >= 1, "legacy airc fields must warn");
         Assert(config.LegacyAircWarnings.Any(w => w.Contains("ignored", StringComparison.OrdinalIgnoreCase)),
             "legacy warning must say ignored");
 
-        // Customer-only with legacy keys still loads and warns; does not enable airc anything.
         WcfConfig customerOnly = WcfSupport.LoadConfig(null, customer);
         Assert(customerOnly.Instances.Count == 1 && customerOnly.Instances[0].Id == "cust", "customer wcf lost");
         Assert(customerOnly.LegacyAircWarnings.Count >= 1, "customer legacy airc must warn");
@@ -54,7 +53,7 @@ static void TestWcfConfigPrecedenceAndLegacy()
     finally { DeleteTempDirectory(root); }
 }
 
-static void TestDirectAndRelayModes()
+static void TestSaasAllowlistAndRules()
 {
     string root = NewTemp();
     try
@@ -64,32 +63,30 @@ static void TestDirectAndRelayModes()
         File.WriteAllText(Path.Combine(dir, ".priority-agent.json"), """
             {
               "wcf": [
-                { "id": "saas", "serverUrl": "https://prioritydev.example.invalid/", "mode": "direct" },
-                { "id": "hrs", "url": "http://priority.lan.example.invalid", "mode": "relay" },
-                { "id": "bad", "serverUrl": "ftp://nope.example.invalid", "mode": "direct" },
-                { "id": "badmode", "serverUrl": "https://ok.example.invalid", "mode": "warp" }
+                { "id": "saas", "host": "p.priority-connect.online", "tenant": "ten", "company": "CO", "user": "u@e", "tokenFile": "C:\\\\passwords\\\\t.json", "allowLive": false },
+                { "id": "legacy", "serverUrl": "https://prioritydev.example.invalid/", "mode": "direct" },
+                { "id": "bad", "host": "", "tenant": "x" }
               ]
             }
             """);
         WcfConfig config = WcfSupport.LoadConfig(null, dir);
-        Assert(config.Instances.Count == 3, $"expected 3 valid instances, got {config.Instances.Count}");
-        Assert(config.Instances.Any(i => i.Id == "saas" && i.Mode == "direct"
-            && i.ServerUrl == "https://prioritydev.example.invalid"), "direct instance wrong");
-        Assert(config.Instances.Any(i => i.Id == "hrs" && i.Mode == "relay"), "relay instance wrong");
-        Assert(config.Instances.Any(i => i.Id == "badmode" && i.Mode == "direct"), "bad mode must fall back to direct");
+        Assert(config.Instances.Count == 1 && config.Instances[0].Id == "saas", $"expected 1 saas instance, got {config.Instances.Count}");
+        Assert(config.LegacyAircWarnings.Any(w => w.Contains("#6026", StringComparison.Ordinal) || w.Contains("ignored", StringComparison.OrdinalIgnoreCase)),
+            "legacy serverUrl row must warn");
 
         string file = WcfSupport.WriteSessionInstancesFile(root, config.Instances);
         string rules = WcfSupport.RenderSessionRules("before{{WCF_SECTION}}after", config.Instances, file);
-        Assert(rules.Contains("Priority WCF client", StringComparison.Ordinal)
-            && rules.Contains("mode=`direct`", StringComparison.Ordinal)
-            && rules.Contains("mode=`relay`", StringComparison.Ordinal)
-            && rules.Contains("priority_wcf.py", StringComparison.Ordinal)
+        Assert(rules.Contains("priority-wcf.mjs", StringComparison.Ordinal)
+            && rules.Contains("priority-saas-wcf", StringComparison.Ordinal)
+            && rules.Contains("bob.ntsa.uk/bob/v1/intake", StringComparison.Ordinal)
+            && rules.Contains("Report-FomprepIntakeIssue", StringComparison.Ordinal)
+            && rules.Contains("Invoke-FomprepHarvest", StringComparison.Ordinal)
             && rules.Contains("WINRUN", StringComparison.Ordinal)
-            && rules.Contains("OData", StringComparison.Ordinal)
+            && rules.Contains("#6026", StringComparison.Ordinal)
             && !rules.Contains("DCCLISTEN", StringComparison.Ordinal)
             && !rules.Contains("{{WCF_SECTION}}", StringComparison.Ordinal)
             && !rules.Contains("{{AIRC_SECTION}}", StringComparison.Ordinal),
-            "rules must cover WCF direct/relay and forbid old paths");
+            "rules must name fom-prep client + harvest and forbid old paths");
         Assert(rules.StartsWith("before", StringComparison.Ordinal) && rules.EndsWith("after", StringComparison.Ordinal),
             "template bookends lost");
     }
@@ -103,17 +100,21 @@ static void TestSessionInstancesNoSecrets()
     {
         var instances = new[]
         {
-            new WcfInstance("dev", "https://prioritydev.example.invalid", "direct"),
+            new WcfInstance("dev", "p.priority-connect.online", "ten", "CO", "u@e", "C:\\\\passwords\\\\t.json", 3, false, ""),
         };
         string path = WcfSupport.WriteSessionInstancesFile(root, instances);
         string text = File.ReadAllText(path);
-        Assert(!Regex.IsMatch(text, @"password|credentialTarget|Bearer\s+[A-Za-z0-9_-]{20,}|secret",
+        Assert(!Regex.IsMatch(text, @"\bpassword\b|credentialTarget|Bearer\s+[A-Za-z0-9_-]{20,}|access_token|\bsecret\b",
             RegexOptions.IgnoreCase), "session wcf file must not look like secrets");
         using var doc = JsonDocument.Parse(text);
-        Assert(doc.RootElement.GetProperty("instances")[0].GetProperty("serverUrl").GetString()
-            == "https://prioritydev.example.invalid", "serverUrl missing from session file");
-        Assert(doc.RootElement.GetProperty("instances")[0].GetProperty("mode").GetString() == "direct",
-            "mode missing from session file");
+        Assert(doc.RootElement.GetProperty("client").GetString()!.Contains("priority-wcf.mjs", StringComparison.Ordinal),
+            "session file must name priority-wcf.mjs");
+        Assert(doc.RootElement.GetProperty("instances")[0].GetProperty("host").GetString()
+            == "p.priority-connect.online", "host missing from session file");
+        Assert(doc.RootElement.GetProperty("instances")[0].GetProperty("tenant").GetString() == "ten",
+            "tenant missing from session file");
+        Assert(!doc.RootElement.GetProperty("instances")[0].TryGetProperty("serverUrl", out _),
+            "session file must not use serverUrl schema");
     }
     finally { DeleteTempDirectory(root); }
 }
@@ -133,12 +134,13 @@ static void TestAircFilesGone()
 static void TestReadmeWcfOnly()
 {
     string readme = File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "fixtures", "launcher-README.md"));
-    Assert(readme.Contains("WCF", StringComparison.Ordinal) && readme.Contains("priority_wcf", StringComparison.OrdinalIgnoreCase)
-        || readme.Contains("serverUrl", StringComparison.Ordinal),
-        "README must document WCF serverUrl / client");
-    Assert(readme.Contains("\"mode\": \"direct\"", StringComparison.Ordinal)
-        && readme.Contains("\"mode\": \"relay\"", StringComparison.Ordinal),
-        "README must show direct and relay examples");
+    Assert(readme.Contains("priority-wcf.mjs", StringComparison.Ordinal)
+        && readme.Contains("priority-saas-wcf", StringComparison.Ordinal)
+        && readme.Contains("tokenFile", StringComparison.Ordinal),
+        "README must document fom-prep priority-wcf.mjs allowlist");
+    Assert(!readme.Contains("\"mode\": \"direct\"", StringComparison.Ordinal)
+        && !readme.Contains("\"mode\": \"relay\"", StringComparison.Ordinal),
+        "README must not show bobiverse direct/relay as the client route");
     Assert(!readme.Contains("airc_consoles", StringComparison.Ordinal)
         && !readme.Contains("Does this session need airc", StringComparison.Ordinal)
         && !readme.Contains("bobiverse-airc-commands", StringComparison.Ordinal),
@@ -164,7 +166,7 @@ static void TestCommandLineSize()
     try
     {
         string rules = WcfSupport.RenderSessionRules("{{WCF_SECTION}}",
-            new[] { new WcfInstance("dev", "https://prioritydev.example.invalid", "direct") },
+            new[] { new WcfInstance("dev", "p.priority-connect.online", "ten", "CO", "u@e", "C:\\tok\\t.json", 3, false, "") },
             Path.Combine(root, "wcf-instances.json"));
         var args = LauncherSupport.BuildGrokArguments(root, Guid.NewGuid().ToString(), rules,
             "Priority session " + new string('x', 500), false);

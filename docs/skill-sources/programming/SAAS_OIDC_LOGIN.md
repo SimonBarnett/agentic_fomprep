@@ -1,4 +1,4 @@
-﻿# Priority SaaS / Cloud - OIDC + Accounts MFA login (generic)
+# Priority SaaS / Cloud - OIDC + Accounts MFA login (generic)
 
 Authoritative companion to catalog skill `priority-saas-oidc-login`.
 Harvested 2026-10-25; extended 2026-10-26. Customer tenants and emails are

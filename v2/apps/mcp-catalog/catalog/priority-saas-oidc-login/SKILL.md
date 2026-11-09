@@ -68,6 +68,9 @@ Applies to **any** SaaS tenant - not one customer.
 | `MaximumRedirectExceeded` | Use HttpClient AllowAutoRedirect=false |
 | Truncated redirect URL | Loses login_verifier; cannot continue without new OTP |
 | OData empty HTTP 500 on company guesses | Unknown DNAME and/or no API licence; stop after N empties (FR #226) |
+| WCF login URL doubles `/wcf/wcf/Service.svc` | `priority-web-sdk` appends `/wcf/wcf/Service.svc` unless the URL already ends in `.svc`; use the tenant probe `wcf` value |
+| Token JSON UTF-8 BOM on Windows | Strip BOM before parse; write UTF-8 no BOM under `C:\passwords\` |
+| OIDC user WCF login fails after token | User needs API License (`USERSB.REST`) for WCF; PAT+OData/MCP for dictionary when licence missing |
 | `service.svc/formStart` 404 | SaaS WCF shape may differ; not proof auth failed |
 
 ## Success

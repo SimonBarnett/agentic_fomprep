@@ -1,4 +1,4 @@
-﻿# Priority SaaS / Cloud - OIDC + Accounts MFA login (generic)
+# Priority SaaS / Cloud - OIDC + Accounts MFA login (generic)
 
 Authoritative companion to catalog skill `priority-saas-oidc-login`.
 Harvested 2026-10-25; extended 2026-10-26. Customer tenants and emails are
@@ -195,6 +195,12 @@ WCF is down - transport/shape may differ from on-prem web-sdk examples.
    company DNAME and API licence or PAT with the operator. Helper:
    `Register-ODataEmpty500Probe` / `Assert-ODataCompanyProbeAllowed` in
    `priority-odata-dev` runner `lib/odata.ps1`.
+
+
+
+### WCF login URL (priority-web-sdk)
+
+`priority-web-sdk` appends `/wcf/wcf/Service.svc` unless the URL already ends in `.svc`. Use the tenant probe `wcf` value. OIDC users need API License for WCF; strip UTF-8 BOM from Windows token JSON.
 
 ## Related
 

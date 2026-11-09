@@ -33,3 +33,6 @@ tests/bobhours-selftest/obj/
 launcher.Tests/FakeCli/bin/
 launcher.Tests/FakeCli/obj/
 launcher.Tests/FakeCli/out/
+# Bobiverse / bob-worker job seat markers (FR #349) - never commit
+.bobiverse-seat
+**/.bobiverse-seat

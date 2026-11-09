@@ -95,6 +95,11 @@ function validateRow(row) {
   const tokenFile = row.tokenFile ? String(row.tokenFile).trim() : '';
   const allowLive = row.allowLive === true;
   const title = row.title ? String(row.title) : id;
+  // SaaS prep gate (FR #339): pass through OData re-read settings. Never secrets.
+  const odataBase = row.odataBase ? String(row.odataBase).trim() : (row.odataUrl ? String(row.odataUrl).trim() : '');
+  const odataPrepPath = row.odataPrepPath
+    ? String(row.odataPrepPath).trim()
+    : (row.odataPrepEntity ? String(row.odataPrepEntity).trim() : '');
   return {
     ok: true,
     instance: {
@@ -108,6 +113,8 @@ function validateRow(row) {
       tabulaini,
       tokenFile,
       allowLive,
+      ...(odataBase ? { odataBase } : {}),
+      ...(odataPrepPath ? { odataPrepPath } : {}),
       url: `https://${host}`,
       webuiUrl: `https://${host}/webui/${tenant}`,
     },

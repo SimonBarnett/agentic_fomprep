@@ -125,7 +125,9 @@ export async function fetchODataPrepSnapshot(instance, ename, { accessToken = ''
   // PAT only from env — never from allowlist JSON.
   const bearer = String(accessToken || process.env.PRIORITY_SAAS_TOKEN || '').trim();
   if (pat) {
-    headers.Authorization = 'Basic ' + Buffer.from(`token:${pat}`).toString('base64');
+    // Priority REST PAT: username = token value, password = literal "PAT"
+    // (not "token:<pat>", which 401s on Cloud OData).
+    headers.Authorization = 'Basic ' + Buffer.from(`${pat}:PAT`).toString('base64');
   } else if (bearer) {
     headers.Authorization = 'Bearer ' + bearer;
   } else {

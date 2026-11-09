@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Priority SaaS WCF client (Phase 1).
+ * Priority SaaS WCF client (Phase 1 + Phase 2 prepare/proc).
  * Allowlist-gated; Bearer accessToken from PRIORITY_SAAS_TOKEN or tokenFile.
  * Usage: node bin/priority-wcf.mjs <verb> [args] --instance <id>
  */
@@ -12,6 +12,8 @@ import { loadAccessToken } from '../lib/token.mjs';
 import { probeTenant } from '../lib/probe.mjs';
 import { loginSession, logout, safeEnd } from '../lib/session.mjs';
 import { formStart, formGetRows, formSetFields, formSave, formStartSubForm } from '../lib/form.mjs';
+import { runPrepare } from '../lib/prepare.mjs';
+import { runProcStart } from '../lib/proc.mjs';
 import { emit, fail, ok, redact } from '../lib/json-out.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -37,14 +39,19 @@ function usage() {
   form set     --instance <id> --form <ENAME> --fields '{"COL":"v"}' [--filter '{"field":"X","fromval":"y"}']
   form save    --instance <id> --form <ENAME> --fields '{...}' [--filter ...]
   form subform --instance <id> --form <PARENT> --subform <CHILD> [--rows]
+  prepare form|procedure|report --instance <id> --name <ENAME> [--proc FORMPREPDRCT2|REPPREPDIRECT2] [--no-gate]
+  proc start --instance <id> --name <ENAME> [--ptype P|R]
   help
 
 Env:
   PRIORITY_SAAS_WCF_INSTANCES  allowlist JSON (default %USERPROFILE%\\.priority-saas-wcf\\instances.json)
   PRIORITY_SAAS_TOKEN          Bearer access_token (else instance.tokenFile)
+  PRIORITY_SAAS_ODATA_PAT      optional PAT for SaaS prep gate OData re-read (instance.odataBase)
 
 CAST IRON: never invent host/tenant/company; never log tokens.
 OIDC first: skill priority-saas-oidc-login -> token file -> this client.
+Prepare success on SaaS requires an independent gate (OData when odataBase set);
+without it walkOk may be true but preparedClaim stays false.
 `;
   process.stdout.write(text);
   process.exitCode = 0;
@@ -117,7 +124,7 @@ async function withSession(fn, { write = false, needToken = true } = {}) {
   });
 
   try {
-    return await fn({ instance, session, dump, tokenSource });
+    return await fn({ instance, session, dump, tokenSource, accessToken });
   } finally {
     await logout(session.priority);
   }
@@ -289,6 +296,82 @@ async function cmdForm(sub) {
   );
 }
 
+async function cmdPrepare(kind) {
+  const name = arg('--name') || arg('--form');
+  if (!name) return fail('name_required', { need: '--name <ENAME>' });
+  const k = String(kind || '').toLowerCase();
+  if (!['form', 'procedure', 'report'].includes(k)) {
+    return fail('prepare_kind_required', { need: 'prepare form|procedure|report', got: kind });
+  }
+  // Prepare mutates dictionary compile state — treat as write.
+  return withSession(
+    async ({ instance, session, dump, tokenSource, accessToken }) => {
+      const result = await runPrepare(session, instance, k, name, {
+        proc: arg('--proc') || undefined,
+        gate: !hasFlag('--no-gate'),
+        accessToken: accessToken || '',
+        messages: [],
+      });
+      dump('prepare.json', result);
+      if (!result.walkOk) {
+        return fail('prepare_walk_failed', {
+          action: 'prepare.' + k,
+          instanceId: instance.id,
+          tokenSource,
+          ...result,
+        });
+      }
+      if (!result.preparedClaim && !hasFlag('--no-gate')) {
+        return fail('prepare_gate_failed', {
+          action: 'prepare.' + k,
+          instanceId: instance.id,
+          tokenSource,
+          ...result,
+        });
+      }
+      return ok({
+        action: 'prepare.' + k,
+        instanceId: instance.id,
+        tokenSource,
+        ...result,
+      });
+    },
+    { write: true },
+  );
+}
+
+async function cmdProc(sub) {
+  if (sub !== 'start') {
+    return fail('proc_sub_required', { need: 'start', got: sub });
+  }
+  const name = arg('--name') || arg('--proc');
+  if (!name) return fail('name_required', { need: '--name <ENAME>' });
+  return withSession(
+    async ({ instance, session, dump, tokenSource }) => {
+      const result = await runProcStart(session, instance, name, {
+        ptype: arg('--ptype', 'P'),
+        nameHint: arg('--hint', ''),
+      });
+      dump('proc.json', result);
+      if (!result.ok) {
+        return fail(result.reason || 'proc_failed', {
+          action: 'proc.start',
+          instanceId: instance.id,
+          tokenSource,
+          ...result,
+        });
+      }
+      return ok({
+        action: 'proc.start',
+        instanceId: instance.id,
+        tokenSource,
+        ...result,
+      });
+    },
+    { write: hasFlag('--write') },
+  );
+}
+
 async function main() {
   const verb = (process.argv[2] || 'help').toLowerCase();
   if (verb === 'help' || verb === '-h' || verb === '--help') return usage();
@@ -299,14 +382,17 @@ async function main() {
     if (!sub) return fail('form_sub_required', { need: 'start|rows|set|save|subform' });
     return cmdForm(sub);
   }
-  if (verb === 'prepare' || verb === 'proc') {
-    return fail('not_implemented', {
-      verb,
-      message: 'Phase 2: prepare form|procedure|report and proc start. Use form/session for now.',
-      phase: 2,
-    });
+  if (verb === 'prepare') {
+    const kind = (process.argv[3] || '').toLowerCase();
+    if (!kind) return fail('prepare_kind_required', { need: 'form|procedure|report' });
+    return cmdPrepare(kind);
   }
-  return fail('unknown_verb', { verb, hint: 'probe|session|form|help' });
+  if (verb === 'proc') {
+    const sub = (process.argv[3] || '').toLowerCase();
+    if (!sub) return fail('proc_sub_required', { need: 'start' });
+    return cmdProc(sub);
+  }
+  return fail('unknown_verb', { verb, hint: 'probe|session|form|prepare|proc|help' });
 }
 
 main().catch((e) => {

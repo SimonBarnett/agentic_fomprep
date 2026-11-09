@@ -2,6 +2,7 @@
 
 Authoritative companion to catalog skill `priority-saas-wcf`.
 Phase 1: allowlist + Bearer `accessToken` + probe/session/form verbs.
+Phase 2 (FR #339): `prepare form|procedure|report`, `FORMPREPERRS`, `proc start`, SaaS OData gate.
 
 ## Why
 
@@ -69,7 +70,14 @@ This client resolves `url` from tenant probe `wcf` (preferred) before login.
 
 ## CLI
 
-See `v2/apps/priority-saas-wcf/README.md`. Phase 2 will add `prepare` and `proc`.
+See `v2/apps/priority-saas-wcf/README.md`.
+
+### Phase 2 CLI
+
+- `prepare form|procedure|report --instance <id> --name <ENAME>`
+- `proc start --instance <id> --name <ENAME> [--ptype P|R]`
+- Optional allowlist `odataBase` (+ env `PRIORITY_SAAS_ODATA_PAT`) for independent UPD/LASTPREPDATE re-read when local SQL is unavailable.
+- Never claim prepared without gate (`preparedClaim`); `walkOk` alone is not Form Prep success.
 
 ## Related
 

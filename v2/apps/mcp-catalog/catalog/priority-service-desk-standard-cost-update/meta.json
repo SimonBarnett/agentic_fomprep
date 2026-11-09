@@ -1,0 +1,6 @@
+{
+  "name": "priority-service-desk-standard-cost-update",
+  "title": "Calculate/Update Standard Cost writes the catalogue",
+  "description": "UpdStdCost=0 lets nightly costing calculate without updating the Part Catalogue. Calculate/Update Standard Cost corrected the parents. Do not change the constant from this skill.",
+  "version": "1.0.0"
+}

@@ -1,0 +1,6 @@
+{
+  "name": "priority-service-desk-procedure-loop-desktop-tile",
+  "title": "Procedure self-loop and a stale desktop tile",
+  "description": "A self-jumping custom procedure needs a prefixed copy and menu replacement. The old desktop tile can still run the broken procedure until it is replaced. Both stages were required.",
+  "version": "1.0.0"
+}

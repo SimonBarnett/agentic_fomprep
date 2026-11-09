@@ -1,0 +1,6 @@
+{
+  "name": "priority-service-desk-portal-view-price",
+  "title": "View Price in Portal shows prices for that customer",
+  "description": "Tick View Price in Portal on the approved customer. The customer confirmed prices appeared. The flag does not implement discounts or branding.",
+  "version": "1.0.0"
+}

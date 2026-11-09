@@ -85,6 +85,8 @@ tokens only on the local secrets path.
 ## Related
 
 - Long form: `docs/skill-sources/programming/SAAS_OIDC_LOGIN.md`
+- After token exists, drive SaaS Web SDK: `priority-saas-wcf`
+  (`v2/apps/priority-saas-wcf/bin/priority-wcf.mjs`)
 - OData / PAT: `priority-odata-dev`, `ODATA_REST_CLOUD.md`
 - MCP: `priority-mcp-setup`
 - WCF UAT after session: `priority-uat-wcf`

@@ -1,21 +1,24 @@
+# LEGACY. Not the hours store.
+# Do not copy this file into a customer repo. Do not push it to a git hours ref.
+# Hours are the bob.ntsa.uk webhook. See launcher/customer-setup and hours-log-work-session.
+# The table below is historical shape only. The project column here was a Medatech
+# booking id. That id is not the webhook project field and not the SC/SO folder name.
+
 ---
 date: YYYY-MM-DD       # the working day the effort belongs to (weekday)
-agent: dayworks-grok
-status: staged          # staged, then booked (Haitch sets this)
-# booked: YYYY-MM-DD    # Haitch adds this when booked
+agent: legacy-template
+status: legacy          # not a webhook status
 ---
 
-| project  | wbs | role | hours | description                                    | evidence       |
-|----------|-----|------|-------|------------------------------------------------|----------------|
-| PR230001 | 5   | dev  | 0.0   | Plain deliverable wording                      | PR #n          |
-| PR230001 | 5   | test | 0.0   | Plain deliverable wording for the tests        | evidence/...   |
+| booking id | wbs | role | hours | description                                    | evidence       |
+|------------|-----|------|-------|------------------------------------------------|----------------|
+| (blank)    |     |      |       | Do not file a fictitious line                  |                |
 
 <!--
-Rules (see docs/agent-loop.md):
-- Push daily files to the `hours` branch, never to main. That branch is
-  append-only: no force-push, no delete. No PR needed.
-- Human-equivalent hours, not agent run time. Every line needs evidence.
-- Failed test runs link to their CASE file in evidence/ (on main).
-- Never edit after push; correct with a minus line + reason.
-- WBS 5 by default, 2.35 DBA/disk, 1000 catch-up, ? if unsure.
+This template is not authoritative. Webhook field rules:
+- idempotency_key priority-agent-<full-session-uuid>, reused on retry
+- persist the returned id; heartbeat every 15-30 minutes
+- project folder is SCxxxxxx or SOxxxxxx; booking id and WBS stay in project.md
+- do not send duration_minutes; do not treat auto_closed as a successful close
+- log.md is narrative only
 -->

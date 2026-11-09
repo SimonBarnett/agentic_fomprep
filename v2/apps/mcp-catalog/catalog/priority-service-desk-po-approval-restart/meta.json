@@ -1,0 +1,6 @@
+{
+  "name": "priority-service-desk-po-approval-restart",
+  "title": "Restart purchase-order approval from the starting status",
+  "description": "A purchase order on Cancel Auth needs the company's approval-starting status before approvers can act. Pending Auth is an example, not a universal code.",
+  "version": "1.0.0"
+}

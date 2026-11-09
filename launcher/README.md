@@ -96,7 +96,7 @@ The client is fom-prep v2/apps/priority-saas-wcf (bin/priority-wcf.mjs), skill p
 Allowlist default: %USERPROFILE%\.priority-saas-wcf\instances.json (override PRIORITY_SAAS_WCF_INSTANCES).
 Copy from v2/apps/priority-saas-wcf/instances.example.json:
 
-`json
+``json
 {
   "instances": [
     {
@@ -111,7 +111,7 @@ Copy from v2/apps/priority-saas-wcf/instances.example.json:
     }
   ]
 }
-`
+``
 
 Optional project/customer .priority-agent.json may set wcfInstancesPath to that file, or embed the same
 SaaS-shaped wcf / instances array (project overrides customer). **Never** put passwords or tokens in

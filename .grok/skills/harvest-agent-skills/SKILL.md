@@ -125,7 +125,7 @@ bobiverse if `-Repo` is missing). Dual-mode CWD vs referred skillbook:
    `v2/apps/mcp-catalog/catalog/<id>/SKILL.md` + `docs/skill-sources/` via
    `harvest-priority-skills`.
 3. Append a dated line to `docs/skill-harvest-log.md`.
-4. Commit on a **branch**, open a **PR**. Link related issues.
+4. Commit on a **branch**, open a **PR**. Link related issues. Never stage `.bobiverse-seat` (gitignored; FR #349).
 5. If catalog gates exist, add/adjust and run `v2/tools/Test-PriorityCatalog.ps1`.
 
 ## Inclusion rule
@@ -139,6 +139,8 @@ bobiverse if `-Repo` is missing). Dual-mode CWD vs referred skillbook:
 books use `harvest-agent-skills` pointing at their home.)
 
 ## Do not
+
+- Commit `.bobiverse-seat` (Bobiverse job seat marker). Keep it gitignored / untracked; never `git add` it on harvest or MRB tips (FR #349).
 
 - Push harvest to `main`.
 - Commit "nothing found".

@@ -1,0 +1,6 @@
+{
+  "name": "priority-service-desk-quote-so-attachment-refresh",
+  "title": "Refresh restores attachments after quote conversion",
+  "description": "After quote-to-order conversion, refresh and reopen the new sales order before using the paperclip. Workaround only. Do not convert the quote again.",
+  "version": "1.0.0"
+}

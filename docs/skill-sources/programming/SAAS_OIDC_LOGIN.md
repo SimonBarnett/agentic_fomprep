@@ -196,8 +196,15 @@ WCF is down - transport/shape may differ from on-prem web-sdk examples.
    `Register-ODataEmpty500Probe` / `Assert-ODataCompanyProbeAllowed` in
    `priority-odata-dev` runner `lib/odata.ps1`.
 
+
+
+### WCF login URL (priority-web-sdk)
+
+`priority-web-sdk` appends `/wcf/wcf/Service.svc` unless the URL already ends in `.svc`. Use the tenant probe `wcf` value. OIDC users need API License for WCF; strip UTF-8 BOM from Windows token JSON.
+
 ## Related
 
+- `SAAS_WCF_CLIENT.md` / `priority-saas-wcf` - Web SDK client after you have a Bearer token
 - `ODATA_REST_CLOUD.md` / `priority-odata-dev` - OData base, PAT, RESTFLAG
 - `priority-mcp-setup` - MCP PAT / OAuth public clients (different client ids)
 - `priority-uat-wcf` - WCF form walking after you have a session

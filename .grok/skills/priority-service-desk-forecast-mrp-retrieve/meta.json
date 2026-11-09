@@ -1,0 +1,6 @@
+{
+  "name": "priority-service-desk-forecast-mrp-retrieve",
+  "title": "Forecast order lines need Retrieve Sales Orders - MRP",
+  "description": "Forecast lines are not in MRP until Retrieve Sales Orders - MRP is run for the selected order. Local and customer Test set MRP? to Y. Live was not run.",
+  "version": "1.0.0"
+}

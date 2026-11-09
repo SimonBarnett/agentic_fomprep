@@ -20,6 +20,9 @@ var checks = new List<(string Name, Action Run)>
     ("dirty clone plus stub uses the dirty clone", TestDirtyClonePreferredOverStub),
     ("dirty clone only is usable", TestDirtyCloneOnly),
     ("no real clone lists every rejected candidate", TestNoRealCloneFatalListsCandidates),
+    ("AI root prefers existing C:\\AI over later drives", TestAiRootPrefersExistingC),
+    ("AI root skips missing D: and creates on first ready drive", TestAiRootCreatesOnFirstReady),
+    ("AI root search lists AI and repos across ready drives", TestAiRootBuildSearchRoots),
 };
 
 int failures = 0;
@@ -220,6 +223,16 @@ static void TestLauncherDryRuns()
         Assert(fetchFailure.SessionRules.Length == 1
             && !fetchFailure.SessionRules[0].Contains("bobiverse-airc", StringComparison.OrdinalIgnoreCase),
             "failed airc skill fetch left airc instructions in session rules");
+        Assert(noAirc.SessionMetadata.Any(m => m.Contains("\"priorityUserLogin\": \"FixtureUser\"", StringComparison.Ordinal))
+            && aircYes.SessionMetadata.Any(m => m.Contains("\"priorityUserLogin\": \"FixtureUser\"", StringComparison.Ordinal)),
+            "dry-run did not record the explicit test-only session owner");
+
+        ScenarioResult missingOwner = RunLauncherScenario(root, launcherExe, cloneRoot, ghDir, grokDir, original,
+            null, false, hoursUser: null, expectedExit: 2);
+        Assert(missingOwner.Stdout.Contains("Priority USERLOGIN unavailable", StringComparison.Ordinal)
+            && missingOwner.Stdout.Contains("No default login is used", StringComparison.Ordinal)
+            && missingOwner.SessionMetadata.Length == 0,
+            "missing session owner did not fail closed");
     }
     finally
     {
@@ -283,6 +296,51 @@ static void TestNoRealCloneFatalListsCandidates()
         && fatal.Contains("D:\\ai\\agentic_fomprep", StringComparison.Ordinal)
         && fatal.Contains("C:\\ai\\agentic_fomprep", StringComparison.Ordinal),
         "FATAL must name every candidate and why it was rejected");
+}
+
+static void TestAiRootPrefersExistingC()
+{
+    var existing = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { @"C:\AI" };
+    string created = "";
+    string root = AiRoot.Resolve(
+        driveReady: c => c is 'C' or 'E',
+        exists: p => existing.Contains(p),
+        create: p => created = p);
+    Assert(string.Equals(root, Path.GetFullPath(@"C:\AI"), StringComparison.OrdinalIgnoreCase),
+        "should prefer existing C:\\AI when C and E are ready and D is missing");
+    Assert(created == "", "must not create when an AI root already exists");
+}
+
+static void TestAiRootCreatesOnFirstReady()
+{
+    string created = "";
+    string root = AiRoot.Resolve(
+        driveReady: c => c is 'C' or 'E',
+        exists: _ => false,
+        create: p => created = p);
+    Assert(string.Equals(created, @"C:\AI", StringComparison.OrdinalIgnoreCase),
+        "with no existing AI folder, create on first ready drive (C) even when E also exists");
+    Assert(string.Equals(root, Path.GetFullPath(@"C:\AI"), StringComparison.OrdinalIgnoreCase),
+        "resolved root should be C:\\AI");
+}
+
+static void TestAiRootBuildSearchRoots()
+{
+    string[] roots = AiRoot.BuildSearchRoots(
+        @"C:\AI",
+        driveReady: c => c is 'C' or 'E',
+        exists: p => p.Equals(@"C:\AI", StringComparison.OrdinalIgnoreCase)
+            || p.Equals(@"E:\AI", StringComparison.OrdinalIgnoreCase)
+            || p.Equals(@"E:\repos", StringComparison.OrdinalIgnoreCase));
+    Assert(roots.Length >= 3, "expected preferred + E:\\AI + E:\\repos");
+    Assert(string.Equals(roots[0], Path.GetFullPath(@"C:\AI"), StringComparison.OrdinalIgnoreCase),
+        "preferred clone root must be first");
+    Assert(roots.Any(r => r.Equals(Path.GetFullPath(@"E:\AI"), StringComparison.OrdinalIgnoreCase)),
+        "must include other ready AI roots");
+    Assert(roots.Any(r => r.Equals(Path.GetFullPath(@"E:\repos"), StringComparison.OrdinalIgnoreCase)),
+        "must include existing repos roots");
+    Assert(!roots.Any(r => r.StartsWith(@"D:\", StringComparison.OrdinalIgnoreCase)),
+        "must not invent paths on drives that are not ready");
 }
 
 static void TestDiscoveryFailure()
@@ -507,7 +565,8 @@ static FileStream PrepareConnectionFile(string root, string canary)
 }
 
 static ScenarioResult RunLauncherScenario(string root, string launcherExe, string cloneRoot,
-    string ghDir, string grokDir, string originalConfig, string? aircArgs, bool failSkillFetch)
+    string ghDir, string grokDir, string originalConfig, string? aircArgs, bool failSkillFetch,
+    string? hoursUser = "FixtureUser", int expectedExit = 0)
 {
     string scenario = Path.Combine(root, "scenario-" + Guid.NewGuid().ToString("N"));
     string home = Path.Combine(scenario, "home");
@@ -530,6 +589,11 @@ static ScenarioResult RunLauncherScenario(string root, string launcherExe, strin
         "--passwords-dir", Path.Combine(root, "passwords"), "--no-pause", "--no-fuel-check",
     })
         start.ArgumentList.Add(arg);
+    if (!string.IsNullOrWhiteSpace(hoursUser))
+    {
+        start.ArgumentList.Add("--hours-user");
+        start.ArgumentList.Add(hoursUser);
+    }
     if (!string.IsNullOrWhiteSpace(aircArgs))
         foreach (string arg in aircArgs.Split(' ', StringSplitOptions.RemoveEmptyEntries)) start.ArgumentList.Add(arg);
     start.Environment["USERPROFILE"] = home;
@@ -548,11 +612,23 @@ static ScenarioResult RunLauncherScenario(string root, string launcherExe, strin
     process.WaitForExit();
     string stdout = stdoutTask.GetAwaiter().GetResult();
     string stderr = stderrTask.GetAwaiter().GetResult();
-    Assert(process.ExitCode == 0, $"published launcher dry run exited {process.ExitCode}: {stdout}\n{stderr}");
+    Assert(process.ExitCode == expectedExit, $"published launcher dry run exited {process.ExitCode}: {stdout}\n{stderr}");
+    if (expectedExit != 0)
+    {
+        string sessionsDirEarly = Path.Combine(local, "PriorityAgent", "sessions");
+        bool wroteIdentity = Directory.Exists(sessionsDirEarly)
+            && Directory.GetDirectories(sessionsDirEarly).Any(dir => File.Exists(Path.Combine(dir, "identity.json")));
+        Assert(!wroteIdentity, "missing session owner still wrote identity.json");
+        return new ScenarioResult(stdout, stderr, File.ReadAllBytes(config), Array.Empty<string>(), Array.Empty<string>(), Array.Empty<string>(), Array.Empty<string>());
+    }
+    Assert(!string.IsNullOrWhiteSpace(hoursUser), "successful dry-run has no explicit session owner");
 
     string sessionsDir = Path.Combine(local, "PriorityAgent", "sessions");
     string[] sessionDirs = Directory.Exists(sessionsDir) ? Directory.GetDirectories(sessionsDir) : Array.Empty<string>();
     Assert(sessionDirs.Length == 1, $"expected one real launcher session, found {sessionDirs.Length}");
+    string identity = File.ReadAllText(Path.Combine(sessionDirs[0], "identity.json"));
+    Assert(identity.Contains(hoursUser!, StringComparison.Ordinal) && !identity.Contains("SimonB", StringComparison.Ordinal),
+        "identity.json did not keep the explicit test-only session owner");
     string[] rules = sessionDirs.Select(d => File.ReadAllText(Path.Combine(d, "rules.md"))).ToArray();
     string[] metadata = sessionDirs.Select(d => File.ReadAllText(Path.Combine(d, "launch.json"))).ToArray();
     string[] aircFiles = Directory.Exists(Path.Combine(sessionDirs[0], "airc"))

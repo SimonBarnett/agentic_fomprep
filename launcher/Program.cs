@@ -24,10 +24,12 @@ static class Program
     static bool DryRun, ListOnly, Smoke, General, NoPause, NoFuel;
     static bool? AircArg;
     static string? CustomerArg, ProjectArg, CheckHoursDir, SessionArg;
-    static string? AircConsoleArg;
-    static string CloneRoot = Environment.GetEnvironmentVariable("PRIORITY_AGENT_ROOT") ?? @"D:\ai";
+    static string? AircConsoleArg, HoursUserArg, HoursEntryIdArg;
+    /// <summary>Explicit --root / PRIORITY_AGENT_ROOT; null means auto-resolve X:\AI.</summary>
+    static string? CloneRootOverride = Environment.GetEnvironmentVariable("PRIORITY_AGENT_ROOT");
+    static string CloneRoot = "";
     static string PasswordsDir = Environment.GetEnvironmentVariable("PRIORITY_AGENT_PASSWORDS") ?? @"C:\passwords";
-    static readonly string[] SearchRoots = { @"D:\ai", @"C:\ai", @"D:\repos", @"C:\repos" };
+    static string[] SearchRoots = Array.Empty<string>();
     static string LogFile = "";
     static int Fails;
 
@@ -73,7 +75,7 @@ static class Program
                 case "--general": General = true; break;
                 case "--customer": CustomerArg = Next(); break;
                 case "--project": ProjectArg = Next(); break;
-                case "--root": CloneRoot = Next(); break;
+                case "--root": CloneRootOverride = Next(); break;
                 case "--no-pause": NoPause = true; break;
                 case "--no-fuel-check": NoFuel = true; break;
                 case "--airc": AircArg = true; break;
@@ -82,6 +84,8 @@ static class Program
                 case "--passwords-dir": PasswordsDir = Next(); break;
                 case "--check-hours": CheckHoursDir = Next(); break;
                 case "--session": SessionArg = Next(); break;
+                case "--hours-user": HoursUserArg = Next(); break;
+                case "--hours-entry-id": HoursEntryIdArg = Next(); break;
                 case "-h": case "--help": case "/?": Help(); return 0;
                 default: Err($"Unknown argument: {args[i]}"); Help(); return 2;
             }
@@ -103,6 +107,30 @@ static class Program
         if (AircConsoleArg != null) logArgs = logArgs.Replace(AircConsoleArg, "<airc-console>", StringComparison.OrdinalIgnoreCase);
         Log($"=== start args: {logArgs}");
 
+        // AI workspace root: --root / PRIORITY_AGENT_ROOT, else find or create X:\AI (C→D→E…Z).
+        if (!string.IsNullOrWhiteSpace(CloneRootOverride))
+        {
+            CloneRoot = Path.GetFullPath(CloneRootOverride.Trim());
+            if (!Directory.Exists(CloneRoot))
+            {
+                Info($"creating clone root {CloneRoot}");
+                Directory.CreateDirectory(CloneRoot);
+            }
+        }
+        else
+        {
+            bool created = false;
+            CloneRoot = AiRoot.Resolve(create: p =>
+            {
+                Info($"creating AI root {p}");
+                Directory.CreateDirectory(p);
+                created = true;
+            });
+            if (!created) Info($"AI root: {CloneRoot}");
+        }
+        SearchRoots = AiRoot.BuildSearchRoots(CloneRoot);
+        Log($"clone root: {CloneRoot}; search: {string.Join(", ", SearchRoots)}");
+
         string? git = Which("git.exe", Environment.GetEnvironmentVariable("PRIORITY_AGENT_TEST_GIT"),
             @"C:\Program Files\Git\cmd\git.exe", @"D:\Program Files\Git\cmd\git.exe");
         string? gh = Which("gh.exe", Environment.GetEnvironmentVariable("PRIORITY_AGENT_TEST_GH"),
@@ -115,9 +143,11 @@ static class Program
 
         if (CheckHoursDir != null)
         {
-            if (SessionArg == null) { Err("--check-hours needs --session <id or short tag>"); return 2; }
-            Header($"Hours check: {CheckHoursDir} session:{Short(SessionArg)}");
-            bool ok = HoursCheck(CheckHoursDir, Short(SessionArg), new[] { DateTime.Now }, out string det);
+            if (string.IsNullOrWhiteSpace(SessionArg)) { Err("--check-hours needs --session <full uuid>"); return 2; }
+            string checkSessionDir = Path.Combine(localAppData, "PriorityAgent", "sessions", SessionArg);
+            Header("Hours check session " + SessionArg);
+            Info("hours check uses the webhook list, not " + CheckHoursDir);
+            bool ok = RunHoursGate(SessionArg, checkSessionDir, CustomerArg ?? "", ProjectArg ?? "", out string det);
             Check(ok, det); Summary(); Pause(); return ok ? 0 : 1;
         }
 
@@ -184,6 +214,24 @@ static class Program
                 else if (pick != "0" && pick != "") { Err("Invalid choice."); Pause(); return 2; }
             }
             if (project != null) projectDir = Path.Combine(custDir, project);
+            if (project != null && !BobHours.IsAuthoritativeProjectFolder(project))
+                Warn("project folder '" + project + "' is not an SCxxxxxx or SOxxxxxx id. Left unchanged. Hours for this folder stay unresolved until an authoritative id is evidenced.");
+        }
+        BobHours.CustomerHoursConfig? hoursConfig = null;
+        if (cust != null && project != null && projectDir != null && BobHours.IsAuthoritativeProjectFolder(project))
+        {
+            string? hoursText = null;
+            string? projectText = null;
+            string hoursPath = Path.Combine(custDir!, "hours.json");
+            string projectPath = Path.Combine(projectDir, "project.md");
+            if (File.Exists(hoursPath)) hoursText = File.ReadAllText(hoursPath);
+            if (File.Exists(projectPath)) projectText = File.ReadAllText(projectPath);
+            var loaded = BobHours.ReadCustomerHoursConfig(cust.Name, project, hoursText, projectText);
+            if (!loaded.Ok) { Err(loaded.Detail); Pause(); return 2; }
+            hoursConfig = loaded;
+            Info("hours routing customer " + loaded.Customer + " project " + loaded.Project
+                + " booking " + (loaded.PriorityProject.Length == 0 ? "(none)" : loaded.PriorityProject)
+                + " wbs " + loaded.WbsStatus + " (not sent on the hours report)");
         }
         if (ListOnly) { Summary(); Pause(); return Fails == 0 ? 0 : 1; }
 
@@ -268,23 +316,41 @@ static class Program
         string sessionId = Guid.NewGuid().ToString();
         string sessShort = Short(sessionId);
         DateTime launchedAt = DateTime.Now;
-        string hoursRepoDir = custDir ?? fomprep;
         string hoursRepo = cust?.FullName ?? $"{Owner}/{FomprepRepo}";
-        string hoursWt = Path.Combine(Path.GetDirectoryName(hoursRepoDir)!, Path.GetFileName(hoursRepoDir) + "-hours");
         string pwFile = cust != null ? Path.Combine(PasswordsDir, $"{cust.Name.ToLowerInvariant()}-connections.txt") : Path.Combine(PasswordsDir, "<repo>-connections.txt");
+        string sessDirEarly = Path.Combine(Path.GetDirectoryName(logDir)!, "sessions");
+        string sessionDirEarly = Path.Combine(sessDirEarly, sessionId);
+        string hoursEntryFile = Path.Combine(sessionDirEarly, "hours-entry.json");
         var vars = new Dictionary<string, string>
         {
             ["LEVEL"] = level, ["FOMPREP_DIR"] = fomprep, ["WORK_DIR"] = workDir,
             ["CUSTOMER"] = cust?.Name ?? "(none - general Priority)", ["CUSTOMER_REPO"] = cust?.FullName ?? "(none)",
             ["CUSTOMER_DIR"] = custDir ?? "(none)", ["PROJECT"] = project ?? "(none)", ["PROJECT_DIR"] = projectDir ?? "(none - ask Simon)",
             ["PASSWORDS_FILE"] = pwFile, ["SESSION"] = sessionId, ["SESSION_SHORT"] = sessShort,
-            ["HOURS_REPO"] = hoursRepo, ["HOURS_REPO_DIR"] = hoursRepoDir, ["HOURS_WORKTREE"] = hoursWt,
+            ["HOURS_REPO"] = hoursRepo, ["HOURS_REPO_DIR"] = custDir ?? fomprep, ["HOURS_ENTRY_FILE"] = hoursEntryFile,
             ["TODAY"] = launchedAt.ToString("yyyy-MM-dd"),
         };
         string rules = LoadRules(fomprep, out string rulesSrc);
-        string sessDir = Path.Combine(Path.GetDirectoryName(logDir)!, "sessions");
-        string sessionDir = Path.Combine(sessDir, sessionId);
+        string sessionDir = sessionDirEarly;
         Directory.CreateDirectory(sessionDir);
+        string? requestedUser = string.IsNullOrWhiteSpace(HoursUserArg) ? null : HoursUserArg.Trim();
+        if (requestedUser == null && !Console.IsInputRedirected)
+        {
+            string typed = Ask("Priority USERLOGIN for this session: ");
+            requestedUser = string.IsNullOrWhiteSpace(typed) ? null : typed.Trim();
+        }
+        var sessionOwner = BobHours.BindSessionOwner(ReadSessionOwner(sessionDir), requestedUser);
+        if (!sessionOwner.Ok || string.IsNullOrEmpty(sessionOwner.UserLogin))
+        {
+            Err(sessionOwner.Detail + " Pass --hours-user for this launch. No default login is used.");
+            Pause();
+            return 2;
+        }
+        if (ReadSessionOwner(sessionDir) == null)
+            WriteSessionOwner(sessionDir, sessionOwner.UserLogin);
+        if (hoursConfig is { } routing)
+            WriteHoursRouting(sessionDir, sessionOwner.UserLogin, routing);
+        vars["PRIORITY_USER"] = sessionOwner.UserLogin;
         AircSessionFiles? aircFiles = null;
         if (airc && aircConsole != null)
         {
@@ -301,7 +367,7 @@ static class Program
             bool connectionsExist = AircSupport.ConnectionFileExists(pwFile);
             Check(connectionsExist, AircSupport.ConnectionFileStatus(cust.Name, pwFile, connectionsExist));
         }
-        Info($"hours: {hoursRepo} branch 'hours' -> hours/{launchedAt:yyyy-MM-dd}.md, tag session:{sessShort} (mandatory; checked on exit)");
+        Info($"hours: session owner {sessionOwner.UserLogin}; idempotency_key priority-agent-{sessionId}; persist the returned id at {hoursEntryFile}");
 
         var brief = new StringBuilder();
         brief.AppendLine($"Priority agent session {sessionId} (launched {DateTime.Now:yyyy-MM-dd HH:mm} on {Environment.MachineName}).");
@@ -320,15 +386,22 @@ static class Program
         brief.AppendLine("Read first (those that exist): " + string.Join("; ", readFirst));
         brief.Append(Smoke
             ? "SMOKE TEST: do not read or change any file and do not contact any customer system. You may call the priority-catalog tool list_catalog once (read-only, local). Reply in at most 8 lines: the context level, customer, project; the priority-catalog tools you have and whether that server is connected (with the skill count list_catalog returned); whether Priority skills are visible; and what your launcher rules say about connecting to this customer's systems. Then stop."
-            : $"Follow the launcher rules (harvest rule, secrets, MANDATORY hours with tag session:{sessShort} on the hours branch of {hoursRepo}). Then briefly confirm the context and ask Simon what to work on.");
+            : $"Follow the launcher rules (harvest rule, secrets, MANDATORY hours webhook idempotency_key priority-agent-{sessionId}). Then briefly confirm the context and ask Simon what to work on.");
 
         string rulesFile = Path.Combine(sessionDir, "rules.md");
         AircSupport.WriteSessionMetadata(sessionDir, rules, new
-        { sessionId, level, customer = cust?.FullName, project, workDir, fomprep, grok, airc, aircConsole, dryRun = DryRun, smoke = Smoke, at = DateTime.Now });
+        { sessionId, level, customer = cust?.FullName, project, priorityUserLogin = sessionOwner.UserLogin, workDir, fomprep, grok, airc, aircConsole, dryRun = DryRun, smoke = Smoke, at = DateTime.Now });
 
-        string hoursPrompt = $"HOURS NOT REPORTED. Priority agents MUST report their hours. Before anything else, write and push the hours lines for session {sessionId} now, " +
-            $"following the launcher rules: at least one dev line and one test line (human-equivalent, each with an evidence link ending session:{sessShort}), appended to hours/YYYY-MM-DD.md " +
-            $"on the 'hours' branch of {hoursRepo} (worktree {hoursWt}), from hours/_template.md. Push to origin hours, confirm, then stop.";
+        string routeCustomer = hoursConfig?.Customer ?? cust?.Name ?? "";
+        string routeProject = hoursConfig?.Project ?? project ?? "";
+        string hoursCustomer = routeCustomer.Length == 0 ? "Leave customer empty. " : "customer " + routeCustomer + ". ";
+        string hoursProject = routeProject.Length == 0 ? "Leave project empty. " : "project " + routeProject + " (the folder name). ";
+        string hoursPrompt = "HOURS NOT REPORTED. Priority agents MUST report their hours on https://bob.ntsa.uk/bob/v1/hours. "
+            + "Reuse idempotency_key priority-agent-" + sessionId + ". "
+            + "on_behalf_of is " + sessionOwner.UserLogin + " for this session only. " + hoursCustomer + hoursProject
+            + "Do not send priority_project or wbs. Booking stays in project.md. "
+            + "Persist that same login with the returned id in " + hoursEntryFile + ". "
+            + "Do not invent start, end, or duration. Do not book Priority. Then stop.";
         var gargs = AircSupport.BuildGrokArguments(workDir, sessionId, rules, brief.ToString(), Smoke);
         var resumeArgs = new List<string> { "--cwd", workDir, "--resume", sessionId, "--trust", "--rules", rules, hoursPrompt };
         EnsureCommandLineSize(grok, gargs, "Grok launch");
@@ -358,8 +431,8 @@ static class Program
         if (Smoke)
         {
             Check(code == 0, "smoke launch exit code 0");
-            bool ok = HoursCheck(hoursRepoDir, sessShort, new[] { launchedAt, DateTime.Now }, out string det);
-            Info($"hours enforcement probe (smoke writes no hours, so 'missing' is expected): {det}");
+            bool ok = RunHoursGate(sessionId, sessionDir, hoursConfig?.Customer ?? cust?.Name ?? "", hoursConfig?.Project ?? project ?? "", out string det);
+            Info($"hours enforcement probe (smoke writes no hours, so a missing id is expected and no live POST is made): {det}");
             Info(ok ? "hours present" : "-> a real session would now be relaunched with the hours prompt (--resume " + sessionId + ")");
             Summary(); Pause(); return code;
         }
@@ -368,7 +441,7 @@ static class Program
         for (int attempt = 1; ; attempt++)
         {
             Header("[5] Hours check (mandatory)");
-            if (HoursCheck(hoursRepoDir, sessShort, new[] { launchedAt, DateTime.Now }, out string det)) { Check(true, det); break; }
+            if (RunHoursGate(sessionId, sessionDir, hoursConfig?.Customer ?? cust?.Name ?? "", hoursConfig?.Project ?? project ?? "", out string det)) { Check(true, det); break; }
             Color(ConsoleColor.Red, "\n  ################################################################");
             Color(ConsoleColor.Red, "  ##  HOURS NOT REPORTED - Priority agents MUST report their hours ##");
             Color(ConsoleColor.Red, "  ################################################################");
@@ -396,35 +469,174 @@ static class Program
 
     static string Short(string session) => session.Replace("-", "")[..Math.Min(8, session.Replace("-", "").Length)].ToLowerInvariant();
 
-    // Today's hours file on origin/hours must have a dev line and a test line tagged session:<short>, each with evidence.
-    static bool HoursCheck(string repoDir, string sessShort, IEnumerable<DateTime> days, out string detail)
+    // Issue #278: one closed webhook entry. Fixture env never contacts the network.
+    // A live GET is a single attempt with no retry. Non-success is delivery unverified.
+    static bool RunHoursGate(string sessionId, string? sessionDir, string expectedCustomer, string expectedProject, out string detail)
     {
-        int frc = RunTo(Git, repoDir, "fetch", "--quiet", "origin", "+refs/heads/hours:refs/remotes/origin/hours");
-        if (frc != 0) { detail = $"no 'hours' branch on origin for {repoDir} (or fetch failed)"; return false; }
-        string tag = "session:" + sessShort;
-        var files = new List<string>();
-        bool dev = false, test = false; int lines = 0;
-        foreach (var d in days.Select(x => x.ToString("yyyy-MM-dd")).Distinct())
+        ReadPersistedHours(sessionDir, out string fileId, out string fileStart, out string fileOwner);
+        string? persistedOwner = sessionDir == null ? null : ReadSessionOwner(sessionDir);
+        var owner = BobHours.BindSessionOwner(persistedOwner, HoursUserArg);
+        if (string.IsNullOrEmpty(persistedOwner))
         {
-            var (rc, txt, _) = Capture(Git, repoDir, "show", $"origin/hours:hours/{d}.md");
-            if (rc != 0) continue;
-            files.Add($"hours/{d}.md");
-            foreach (var raw in txt.Split('\n'))
-            {
-                string l = raw.Trim();
-                if (!l.StartsWith('|') || !l.Contains(tag, StringComparison.OrdinalIgnoreCase)) continue;
-                var c = l.Trim('|').Split('|').Select(x => x.Trim()).ToArray();
-                if (c.Length < 6 || !decimal.TryParse(c[3], System.Globalization.NumberStyles.Number, System.Globalization.CultureInfo.InvariantCulture, out _)) continue;
-                string evidence = Regex.Replace(c[5], Regex.Escape(tag), "", RegexOptions.IgnoreCase).Trim(' ', ',', ';', '-', '·');
-                if (evidence.Length == 0) continue;
-                lines++;
-                if (c[2].Equals("dev", StringComparison.OrdinalIgnoreCase)) dev = true;
-                if (c[2].Equals("test", StringComparison.OrdinalIgnoreCase)) test = true;
-            }
+            detail = "session owner unavailable. No request sent.";
+            return false;
         }
-        if (files.Count == 0) { detail = $"no hours/{string.Join(" or ", days.Select(x => x.ToString("yyyy-MM-dd")).Distinct())}.md on origin/hours"; return false; }
-        detail = $"{string.Join(",", files)} on origin/hours: {lines} line(s) tagged {tag} (dev:{(dev ? "yes" : "NO")}, test:{(test ? "yes" : "NO")})";
-        return dev && test;
+        if (!owner.Ok)
+        {
+            detail = owner.Detail + " No request sent.";
+            return false;
+        }
+        if (fileOwner.Length > 0 && !string.Equals(fileOwner, owner.UserLogin, StringComparison.Ordinal))
+        {
+            detail = "hours entry owner does not match session owner. No request sent.";
+            return false;
+        }
+        string user = owner.UserLogin;
+        ReadHoursRouting(sessionDir, out string routedCustomer, out string routedProject, out string routedOwner);
+        if (routedOwner.Length > 0 && !string.Equals(routedOwner, user, StringComparison.Ordinal))
+        {
+            detail = "hours routing owner does not match session owner. No request sent.";
+            return false;
+        }
+        string entryId = (HoursEntryIdArg ?? Environment.GetEnvironmentVariable("PRIORITY_AGENT_HOURS_ENTRY_ID") ?? "").Trim();
+        if (entryId.Length == 0) entryId = fileId;
+        var expect = new BobHoursExpect(
+            BobHours.IdempotencyKeyForSession(sessionId),
+            entryId,
+            user,
+            routedCustomer.Length > 0 ? routedCustomer : expectedCustomer ?? "",
+            routedProject.Length > 0 ? routedProject : expectedProject ?? "");
+        var pre = BobHours.Precheck(expect);
+        if (!pre.Ok) { detail = pre.Detail + " No request sent."; return false; }
+
+        string? fixture = Environment.GetEnvironmentVariable("PRIORITY_AGENT_HOURS_JSON");
+        string json;
+        if (!string.IsNullOrWhiteSpace(fixture))
+        {
+            if (!File.Exists(fixture)) { detail = "hours fixture missing. No request sent."; return false; }
+            json = File.ReadAllText(fixture);
+        }
+        else
+        {
+            DateTimeOffset? started = BobHours.TryParseInstant(fileStart, out var parsedStart) ? parsedStart : null;
+            var window = BobHours.WindowForStart(started, DateTimeOffset.UtcNow);
+            string query = BobHours.BuildListQuery(user, window.FromDay, window.ToDay);
+            if (!TryFetchHoursList(query, out json, out detail)) return false;
+        }
+        var result = BobHours.Evaluate(json, expect);
+        detail = result.Detail;
+        return result.Ok;
+    }
+
+    static void ReadPersistedHours(string? sessionDir, out string id, out string start, out string owner)
+    {
+        id = "";
+        start = "";
+        owner = "";
+        if (string.IsNullOrEmpty(sessionDir)) return;
+        string path = Path.Combine(sessionDir, "hours-entry.json");
+        if (!File.Exists(path)) return;
+        try
+        {
+            using var doc = JsonDocument.Parse(File.ReadAllText(path));
+            if (doc.RootElement.TryGetProperty("id", out var idEl) && idEl.ValueKind == JsonValueKind.String)
+                id = (idEl.GetString() ?? "").Trim();
+            if (doc.RootElement.TryGetProperty("start", out var startEl) && startEl.ValueKind == JsonValueKind.String)
+                start = (startEl.GetString() ?? "").Trim();
+            if (doc.RootElement.TryGetProperty("on_behalf_of", out var ownerEl) && ownerEl.ValueKind == JsonValueKind.String)
+                owner = (ownerEl.GetString() ?? "").Trim();
+        }
+        catch { }
+    }
+
+    static string? ReadSessionOwner(string sessionDir)
+    {
+        string path = Path.Combine(sessionDir, "identity.json");
+        if (!File.Exists(path)) return null;
+        try
+        {
+            using var doc = JsonDocument.Parse(File.ReadAllText(path));
+            if (doc.RootElement.TryGetProperty("priorityUserLogin", out var user) && user.ValueKind == JsonValueKind.String)
+                return (user.GetString() ?? "").Trim();
+        }
+        catch { }
+        return null;
+    }
+
+    static void WriteSessionOwner(string sessionDir, string userLogin)
+    {
+        Directory.CreateDirectory(sessionDir);
+        string path = Path.Combine(sessionDir, "identity.json");
+        if (File.Exists(path)) return;
+        File.WriteAllText(path, JsonSerializer.Serialize(new Dictionary<string, string>
+        {
+            ["priorityUserLogin"] = userLogin,
+        }));
+    }
+
+    static void WriteHoursRouting(string sessionDir, string userLogin, BobHours.CustomerHoursConfig routing)
+    {
+        Directory.CreateDirectory(sessionDir);
+        string path = Path.Combine(sessionDir, "hours-routing.json");
+        if (File.Exists(path)) return;
+        File.WriteAllText(path, JsonSerializer.Serialize(new Dictionary<string, string>
+        {
+            ["on_behalf_of"] = userLogin,
+            ["customer"] = routing.Customer,
+            ["project"] = routing.Project,
+            ["priority_project"] = routing.PriorityProject,
+            ["wbs_status"] = routing.WbsStatus,
+        }));
+    }
+
+    static void ReadHoursRouting(string? sessionDir, out string customer, out string project, out string owner)
+    {
+        customer = "";
+        project = "";
+        owner = "";
+        if (string.IsNullOrEmpty(sessionDir)) return;
+        string path = Path.Combine(sessionDir, "hours-routing.json");
+        if (!File.Exists(path)) return;
+        try
+        {
+            using var doc = JsonDocument.Parse(File.ReadAllText(path));
+            if (doc.RootElement.ValueKind != JsonValueKind.Object) return;
+            customer = RoutingString(doc.RootElement, "customer");
+            project = RoutingString(doc.RootElement, "project");
+            owner = RoutingString(doc.RootElement, "on_behalf_of");
+        }
+        catch { }
+    }
+
+    static string RoutingString(JsonElement obj, string name)
+    {
+        if (!obj.TryGetProperty(name, out var value) || value.ValueKind != JsonValueKind.String)
+            return "";
+        return (value.GetString() ?? "").Trim();
+    }
+
+    static bool TryFetchHoursList(string query, out string json, out string detail)
+    {
+        json = "";
+        string url = "https://bob.ntsa.uk/bob/v1/hours?" + query;
+        try
+        {
+            using var http = new HttpClient { Timeout = TimeSpan.FromSeconds(8) };
+            using var resp = http.GetAsync(url).GetAwaiter().GetResult();
+            if (!resp.IsSuccessStatusCode)
+            {
+                detail = "hours GET HTTP " + (int)resp.StatusCode + "; delivery unverified; no retry";
+                return false;
+            }
+            json = resp.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+            detail = "";
+            return true;
+        }
+        catch (Exception ex)
+        {
+            detail = "hours GET unavailable; delivery unverified; no retry (" + ex.GetType().Name + ")";
+            return false;
+        }
     }
 
     // ------------------------------------------------------------------ git / gh
@@ -792,6 +1004,7 @@ static class Program
         Header("Needs Haitch");
         Console.WriteLine("  " + msg);
         Console.WriteLine("  The launcher does not create customer repos or project folders. Haitch does.");
+        Console.WriteLine("  Customer setup template: launcher/customer-setup (SC/SO folder, project.md, webhook hours).");
         Console.WriteLine("  Run the launcher again once it exists.");
         try
         {
@@ -899,12 +1112,21 @@ PriorityAgent.exe [options]
   --dry-run             do everything except change grok config / customer clones and start the agent;
                         prints the exact grok command line
   --smoke               real setup + one brief single-turn Grok launch that makes no changes
-  --root <dir>          clone root for repos new to this machine (default D:\ai, env PRIORITY_AGENT_ROOT)
+  --root <dir>          clone root for repos new to this machine (default: first existing X:\AI on C->D->E..Z,
+                        else create \AI on the first ready drive in that order; env PRIORITY_AGENT_ROOT)
   --no-fuel-check       skip the Bob fuel report check
   --no-pause            don't wait for Enter before closing
   --passwords-dir <dir> where <repo>-connections.txt lives (<repo> = GitHub repo name, lowercase) (default C:\passwords, env PRIORITY_AGENT_PASSWORDS);
                         the launcher only checks the file exists, never reads it
-  --check-hours <repo> --session <id>
-                        only run the mandatory hours check for a session against <repo>'s origin/hours
+  --check-hours <ignored-repo-dir> --session <full uuid>
+                        webhook hours gate for that session (not a git hours ref)
+  --hours-user <USERLOGIN>
+                        Priority USERLOGIN for this launch only. Required when input is
+                        not a terminal. Not read from the OS user or a shared default.
+                        An existing session keeps the login in its identity.json.
+  --hours-entry-id <h_...>
+                        persisted receiver id (else hours-entry.json or PRIORITY_AGENT_HOURS_ENTRY_ID)
+  PRIORITY_AGENT_HOURS_JSON
+                        fixture file for the list body; when set, no HTTP request is made
 ");
 }

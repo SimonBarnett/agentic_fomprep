@@ -1,0 +1,6 @@
+{
+  "name": "priority-service-desk-shipping-site-vat",
+  "title": "Shipping-site VAT overrides the customer VAT",
+  "description": "New sales orders inherit VAT from the default shipping site, not from the customer financial parameters. Correct the site after finance agrees. Do not prescribe a tax code or rewrite history.",
+  "version": "1.0.0"
+}

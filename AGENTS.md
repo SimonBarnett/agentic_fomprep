@@ -26,7 +26,7 @@ Start with CWD at the **repo root**. Project skills load from `.grok/skills/`
 
 ## Clone path (Priority Agent launcher)
 
-The launcher prefers `D:\ai\agentic_fomprep`, then also searches `C:\ai`, `D:\repos`, and `C:\repos` (override with `--root` / `PRIORITY_AGENT_ROOT`). Only a real git clone (`.git` present, origin `SimonBarnett/agentic_fomprep`) counts. An **empty stub** at `D:\ai\agentic_fomprep` (directory exists, no `.git`) is skipped; use the resolved `FOMPREP_DIR` / session cwd for `git pull`, or reclone / point `--root` at the working tree (often `C:\ai\agentic_fomprep`). Details: `launcher/README.md`.
+The launcher resolves an **AI root**: existing `X:\AI` on ready drives **C: → D: → E: … Z:**, or creates `\AI` on the first ready drive in that order (override with `--root` / `PRIORITY_AGENT_ROOT`). It then prefers `<AI root>\agentic_fomprep` and also searches other `X:\AI` / `X:\repos` roots. Only a real git clone (`.git` present, origin `SimonBarnett/agentic_fomprep`) counts. An **empty stub** (directory exists, no `.git`) is skipped; use the resolved `FOMPREP_DIR` / session cwd for `git pull`, or reclone / point `--root` at the working tree. Details: `launcher/README.md`.
 
 ## What this agent owns
 
@@ -38,6 +38,7 @@ The launcher prefers `D:\ai\agentic_fomprep`, then also searches `C:\ai`, `D:\re
 | Shells | `priority-version-revision-discipline`, `priority-shell-compile`, `priority-shell-install` |
 | Procedures | `priority-procedure-prep` |
 | OData / MCP | `priority-odata-dev`, `priority-mcp-*` |
+| SaaS WCF | `priority-saas-wcf` (Bearer Web SDK), `priority-saas-oidc-login` (token first) |
 | UAT kernel | `priority-uat-orchestrator`, `priority-uat-wcf` |
 | Hours (generic) | `priority-hours-*` (except named handoffs) |
 | Quotes | `priority-price-quotation-create` |
@@ -108,6 +109,7 @@ Replay / assert: `tools/Assert-FomprepMainAutoMerge.ps1`. Details:
 |------|--------|
 | Prepare one form | `src\Prepare-NamedForm.ps1 -Name <ENAME>` |
 | Prepare one procedure | `src\Prepare-NamedProcedure.ps1 -Name <ENAME>` |
+| SaaS Web SDK (Bearer) | `v2\apps\priority-saas-wcf\bin\priority-wcf.mjs` (allowlist + token file) |
 | Last named-form result | `tools\Get-LastFormPrepResult.ps1` |
 | Sync Grok skills | `tools\Sync-PriorityGrokSkills.ps1` |
 | Catalog gate | `v2\tools\Test-PriorityCatalog.ps1` |

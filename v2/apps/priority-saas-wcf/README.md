@@ -1,0 +1,108 @@
+# Priority SaaS WCF client
+
+Allowlist-gated **priority-web-sdk** client for **Priority Cloud / SaaS**.
+Used by PriorityAgent after an OIDC Bearer token exists (`priority-saas-oidc-login`).
+
+## Auth (Phase 1)
+
+1. Obtain tokens with skill `priority-saas-oidc-login` (PKCE + MFA).
+2. Store under `C:\passwords\<id>-oauth-tokens.json` (outside git):
+
+```json
+{
+  "access_token": "...",
+  "refresh_token": "...",
+  "expires_in": 1800,
+  "obtained_at": "2026-11-08T18:00:00.000Z"
+}
+```
+
+(`expires_at` ISO is also accepted. Write UTF-8 **without BOM** — PowerShell `Set-Content` BOM is stripped by the client but avoid it.)
+
+3. Or set env `PRIORITY_SAAS_TOKEN` for the process only.
+
+The Web SDK `login({ accessToken })` sends that token as the WCF UsernameToken password.
+Login **url** is the tenant probe `wcf` value (`…/wcf/service.svc`), not the host alone.
+
+## Allowlist-gated
+
+Local file (default `%USERPROFILE%\.priority-saas-wcf\instances.json`, override
+`PRIORITY_SAAS_WCF_INSTANCES` or `--instances`):
+
+```json
+{
+  "instances": [
+    {
+      "id": "customer-saas-dev",
+      "host": "p.priority-connect.online",
+      "tenant": "<tenant>",
+      "company": "<DNAME>",
+      "user": "<user>",
+      "tokenFile": "C:\\passwords\\customer-saas-oauth-tokens.json",
+      "language": 3,
+      "allowLive": false
+    }
+  ]
+}
+```
+
+Copy from `instances.example.json`. Never put passwords or tokens in the allowlist.
+Unknown / missing instance → exit 2, no SaaS call.
+
+## Install
+
+```powershell
+cd v2\apps\priority-saas-wcf
+npm ci
+```
+
+## CLI
+
+```powershell
+node bin\priority-wcf.mjs probe   --instance customer-saas-dev
+node bin\priority-wcf.mjs session --instance customer-saas-dev
+node bin\priority-wcf.mjs session --instance customer-saas-dev --form CUSTOMERS
+node bin\priority-wcf.mjs form start --instance customer-saas-dev --form CUSTOMERS
+node bin\priority-wcf.mjs form rows  --instance customer-saas-dev --form CUSTOMERS
+node bin\priority-wcf.mjs form set   --instance customer-saas-dev --form CUSTOMERS --filter "{\"field\":\"CUSTNAME\",\"fromval\":\"X\"}" --fields "{\"EMAIL\":\"a@b.c\"}"
+node bin\priority-wcf.mjs form save  --instance customer-saas-dev --form CUSTOMERS --filter "..." --fields "{...}"
+```
+
+Writes (`form set` / `form save`) require `allowLive: true` on the row (and operator approval).
+
+## Phase 2: prepare + proc
+
+```powershell
+node bin\priority-wcf.mjs prepare form --instance customer-saas-dev --name MYFORM
+node bin\priority-wcf.mjs prepare procedure --instance customer-saas-dev --name MYPROC
+node bin\priority-wcf.mjs prepare report --instance customer-saas-dev --name MYREP
+node bin\priority-wcf.mjs proc start --instance customer-saas-dev --name SOMEPROC [--ptype P]
+```
+
+- Form prep: `EFORM` + `FORMPREPDRCT2`, then scrape `FORMPREPERRS`.
+- Procedure/report prep: `EXEC` + `REPPREPDIRECT2`.
+- `prepare` is a write (`allowLive: true` required).
+- SaaS success gate: when `odataBase` is set on the allowlist row, re-read UPD/LASTPREPDATE-style fields via OData (`PRIORITY_SAAS_ODATA_PAT` or Bearer). Without SQL or OData, `walkOk` may be true but `preparedClaim` stays false (`gate.status=unavailable`). Use `--no-gate` only for walk diagnostics.
+
+
+## CAST IRON
+
+- Never invent host, tenant, company DNAME, or WCF URL.
+- Never log or commit tokens / passwords / OTPs.
+- SaaS REST `formStart` 404 is not proof auth failed; use this Web SDK path.
+- OIDC MFA stays in `priority-saas-oidc-login`; this client only consumes the token.
+- OIDC user needs **API License** for WCF login. If login returns API License, tick REST on the user (approved env) or use PAT + OData/MCP for dictionary work.
+- For FORMTRIG/EFORM inventory on Cloud, prefer PAT OData / MCP over this client.
+
+## Tests
+
+```powershell
+npm test
+```
+
+## Related
+
+- Skill: `priority-saas-wcf` (catalog + `.grok/skills` after sync)
+- OIDC: `priority-saas-oidc-login`, `docs/skill-sources/programming/SAAS_OIDC_LOGIN.md`
+- On-prem password formprep: `src/Prepare-NamedForm.ps1` (unchanged)
+- airc Priority verbs: bobiverse `airc/priority-worker` (fleet console; CredMan on-prem)

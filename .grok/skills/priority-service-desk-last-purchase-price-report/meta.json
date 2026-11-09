@@ -1,0 +1,6 @@
+{
+  "name": "priority-service-desk-last-purchase-price-report",
+  "title": "Last purchase price report from Part Catalogue Report Generator",
+  "description": "Use Part Catalogue Report Generator for stored last purchase price and date on R-type parts, then add the menu entry. Do not recalculate or publish prices. Field ids were not in the call.",
+  "version": "1.0.0"
+}

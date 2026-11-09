@@ -100,7 +100,7 @@ Do not call `odata_get` on `mcp-priority.ntsa.uk`. That host has no ERP. Write r
 
 Issue type: a GET returns no lead tasks even though the same records are on the form. Adding the installed language code brought them back. This is not a privilege change and not proof that every empty result is a language problem.
 
-Known route shape from the call, 2026-10-19 14:22 BST: put the language code after the ini file, separated by a comma, then the company and entity. Supplier note 2026-10-20 12:40 BST: always send the language the Priority system uses. In that note, 2 is British English and 3 is American English. Use the installed language. Do not hardcode 2 on an American English company. The existing filter stayed. At 14:40 BST the customer confirmed the API returned results. Opened 2026-10-19. Host, ini name, company, and user filters are omitted.
+Known route shape from the call, 2026-10-19 14:22 BST: put the language code after the ini file, separated by a comma, then the company and entity. Supplier note 2026-10-20 12:40 BST: always send the language the Priority system uses. In that note, 2 is British English and 3 is American English. Use the installed language. Do not hardcode 2 on an American English company. The existing filter stayed. At 14:40 BST the customer confirmed the API returned results. Opened 2026-10-15 11:33 BST; fix confirmed 2026-10-19 14:40 BST. Host, ini name, company, and user filters are omitted.
 
 The backend reason is unknown. SC263253 was withdrawn and is not this fix.
 

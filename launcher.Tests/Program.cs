@@ -81,12 +81,16 @@ static void TestSaasAllowlistAndRules()
             && rules.Contains("bob.ntsa.uk/bob/v1/intake", StringComparison.Ordinal)
             && rules.Contains("Report-FomprepIntakeIssue", StringComparison.Ordinal)
             && rules.Contains("Invoke-FomprepHarvest", StringComparison.Ordinal)
+            && rules.Contains("agentic_fomprep", StringComparison.Ordinal)
+            && rules.Contains("SO/SC", StringComparison.Ordinal)
+            && rules.Contains("gh issue create", StringComparison.Ordinal)
+            && rules.Contains("Never", StringComparison.Ordinal)
             && rules.Contains("WINRUN", StringComparison.Ordinal)
             && rules.Contains("#6026", StringComparison.Ordinal)
             && !rules.Contains("DCCLISTEN", StringComparison.Ordinal)
             && !rules.Contains("{{WCF_SECTION}}", StringComparison.Ordinal)
             && !rules.Contains("{{AIRC_SECTION}}", StringComparison.Ordinal),
-            "rules must name fom-prep client + harvest and forbid old paths");
+            "rules must name fom-prep client + harvest destinations and forbid old paths");
         Assert(rules.StartsWith("before", StringComparison.Ordinal) && rules.EndsWith("after", StringComparison.Ordinal),
             "template bookends lost");
     }
@@ -138,6 +142,12 @@ static void TestReadmeWcfOnly()
         && readme.Contains("priority-saas-wcf", StringComparison.Ordinal)
         && readme.Contains("tokenFile", StringComparison.Ordinal),
         "README must document fom-prep priority-wcf.mjs allowlist");
+    Assert(!Regex.IsMatch(readme, "[\\x00-\\x08\\x0B\\x0C\\x0E-\\x1F]"),
+        "README must not contain C0 control characters (BEL/BS/VT)");
+    Assert(readme.Contains("host, tenant, company", StringComparison.Ordinal)
+        && readme.Contains("bin/priority-wcf.mjs", StringComparison.Ordinal)
+        && readme.Contains("v2/apps/priority-saas-wcf", StringComparison.Ordinal),
+        "README SaaS field names / client path must be intact");
     Assert(!readme.Contains("\"mode\": \"direct\"", StringComparison.Ordinal)
         && !readme.Contains("\"mode\": \"relay\"", StringComparison.Ordinal),
         "README must not show bobiverse direct/relay as the client route");

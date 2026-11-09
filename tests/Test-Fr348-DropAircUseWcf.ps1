@@ -28,6 +28,8 @@ Gate 'rules-version-ge-7' ($m.Success -and [int]$m.Groups[1].Value -ge 7) "rules
 
 $readme = Get-Content -LiteralPath (Join-Path $launcher 'README.md') -Raw
 Gate 'readme-wcf' ($readme -match 'priority-wcf.mjs' -and $readme -match 'tokenFile' -and $readme -match 'priority-saas-wcf') 'README missing fom-prep WCF allowlist'
+Gate 'readme-no-c0' (-not [regex]::IsMatch($readme, '[\x00-\x08\x0B\x0C\x0E-\x1F]')) 'README has C0 control chars (BEL/BS/VT) corrupting words'
+Gate 'readme-saas-words' ($readme -match 'host, tenant, company' -and $readme -match 'bin/priority-wcf' -and $readme -match 'v2/apps/priority-saas-wcf') 'README SaaS field names / client path corrupted'
 Gate 'readme-no-airc-opt' ($readme -notmatch 'airc_consoles' -and $readme -notmatch 'Does this session need airc' -and $readme -notmatch 'bobiverse-airc-commands') 'README still documents old airc discovery path'
 Gate 'readme-no-6026-route' ($readme -notmatch '"mode": "direct"' -and $readme -notmatch '"mode": "relay"') 'README still shows bobiverse direct/relay as the route'
 
@@ -35,6 +37,8 @@ $wcf = Get-Content -LiteralPath (Join-Path $launcher 'WcfSupport.cs') -Raw
 Gate 'client-path-const' ($wcf -match 'ClientPath = "v2/apps/priority-saas-wcf/bin/priority-wcf.mjs"') 'ClientPath const missing'
 Gate 'rules-forbid-6026-py' ($wcf -match 'priority_wcf\.py' -and $wcf -match '#6026') 'rules must explicitly forbid bobiverse priority_wcf.py'
 Gate 'harvest-rules' ($wcf -match 'bob.ntsa.uk/bob/v1/intake' -and $wcf -match 'Report-FomprepIntakeIssue' -and $wcf -match 'Invoke-FomprepHarvest') 'WcfSupport rules must include harvest-on-client'
+Gate 'harvest-destinations' ($wcf -match 'agentic_fomprep' -and $wcf -match 'customer' -and ($wcf -match 'SO/SC' -or $wcf -match 'SO\\SC')) 'WcfSupport harvest must name generic/customer/SO-SC destinations'
+Gate 'harvest-no-gh-direct' ($wcf -match 'gh issue create' -and $wcf -match 'Never') 'WcfSupport must forbid direct gh issue/pr create for harvest'
 Gate 'legacy-warn' ($wcf -match 'airc_console' -and $wcf -match 'ignored') 'WcfSupport must warn on legacy airc fields'
 Gate 'no-creds-in-json' (($wcf -match 'Never' -or $wcf -match 'never') -and ($wcf -match 'tokenFile' -or $wcf -match 'PRIORITY_SAAS_TOKEN')) 'WcfSupport must say tokens stay out of JSON'
 Gate 'reject-6026-shape' ($wcf -match 'serverUrl' -and $wcf -match '#6026') 'WcfSupport must reject serverUrl/mode rows'

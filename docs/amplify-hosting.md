@@ -139,7 +139,7 @@ build.
 | `notifications/initialized`, `initialized` | `204` empty body |
 | `ping` | empty result |
 | `tools/list` | `list_catalog`, `get_skill`, `get_instance_schema`, `get_runner_files`, `resolve_skills`, `get_dag_index`, `get_dag_node`, `get_skill_dag` (FR #354) |
-| `tools/call` | those eight tools |
+| `tools/call` | those eight tools; `get_skill` returns `{ name, title, version, skillMd, required, topic }` (FR #361) |
 | `resources/list`, `resources/read` | `skill://<id>` markdown |
 
 A JSON array (batched JSON-RPC) is rejected. There is no SSE `GET`, no
@@ -199,7 +199,7 @@ again at `https://mcp.ntsa.uk` after the certificate is issued.
 2. `POST /mcp` `initialize` returns `protocolVersion` `2024-11-05` and `serverInfo.name` `mcp-priority`.
 3. `tools/call` `list_catalog` returns `host` `https://mcp.ntsa.uk` (or the amplifyapp.com host before DNS) and a non-empty `skills` array that includes `priority-formprep`.
 4. The same response does not offer `prepare_form`, `compile_shell`, `install_shell`, or `odata_get`.
-5. `get_skill` with `name` `priority-formprep` returns markdown.
+5. `get_skill` with `name` `priority-formprep` returns JSON with `skillMd` and a `required` array of DAG-derived skill ids (FR #361; may be empty when the skill topic has no depends_on parents).
 6. `tools/call` `resolve_skills` with `task` `form prep UAT` returns a non-empty `skills` array (FR #354).
 7. `get_dag_node` with a known skill id succeeds; unknown id returns an error result.
 8. `get_runner_files` with `path` `../meta.json` returns an error result.

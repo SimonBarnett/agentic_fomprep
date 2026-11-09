@@ -3,12 +3,13 @@ import { catalogPublicOrigin } from './public-origin';
 import {
   getDagIndex,
   getDagNode,
+  getRequiredSkillIds,
   getSkillDagPage,
   resolveSkills,
 } from './skill-dag';
 
 const PROTOCOL = '2024-11-05';
-const SERVER = { name: 'mcp-priority', version: '1.1.0' };
+const SERVER = { name: 'mcp-priority', version: '1.1.1' };
 
 const TOOLS = [
   {
@@ -20,7 +21,7 @@ const TOOLS = [
   {
     name: 'get_skill',
     description:
-      'Return SKILL.md for a catalog skill. Pass name when more than one skill exists. Default skill today: priority-formprep.',
+      'Return a catalog skill leaflet plus required skill ids from the skills DAG (FR #361). JSON: name, title, version, skillMd, required[], topic. Pass name when more than one skill exists.',
     inputSchema: {
       type: 'object',
       properties: { name: { type: 'string', description: 'Skill folder / meta.name' } },
@@ -136,7 +137,24 @@ function callTool(name: string, args: Record<string, unknown> | undefined, origi
   if (name === 'get_skill') {
     const got = needSkill(skillName);
     if (!got.ok) return { isError: true, ...textResult(got.error) };
-    return textResult(got.skill.skillMd);
+    let required: string[] = [];
+    let topic: string | null = null;
+    try {
+      required = getRequiredSkillIds(got.skill.id);
+      const node = getDagNode('skill:' + got.skill.id);
+      if (node.ok) topic = typeof node.node.topic === 'string' ? node.node.topic : null;
+    } catch {
+      required = [];
+      topic = null;
+    }
+    return jsonResult({
+      name: got.skill.id,
+      title: got.skill.meta.title,
+      version: got.skill.meta.version,
+      skillMd: got.skill.skillMd,
+      required,
+      topic,
+    });
   }
 
   if (name === 'get_instance_schema') {
@@ -237,7 +255,7 @@ export function handleMcp(body: unknown, origin = catalogPublicOrigin()): unknow
         capabilities: { tools: {}, resources: {} },
         serverInfo: SERVER,
         instructions:
-          'Catalog + skills DAG. list_catalog / get_skill for leaflets; resolve_skills for bounded DAG pick; get_dag_index / get_dag_node / get_skill_dag for audits. Prepare forms locally. Do not expect prepare_form on this host.',
+          'Catalog + skills DAG. list_catalog / get_skill (leaflet + required[] from DAG) for skills; resolve_skills for bounded DAG pick; get_dag_index / get_dag_node / get_skill_dag for audits. Prepare forms locally. Do not expect prepare_form on this host.',
       },
     };
   }

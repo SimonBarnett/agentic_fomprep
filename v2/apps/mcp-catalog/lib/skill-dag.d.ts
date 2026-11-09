@@ -27,3 +27,4 @@ export function getSkillDagPage(
   pageSize?: number,
 ): Record<string, unknown>;
 export function resetDagCache(): void;
+export function getRequiredSkillIds(skillName: string): string[];

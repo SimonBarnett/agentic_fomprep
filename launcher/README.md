@@ -150,11 +150,11 @@ PriorityAgent.exe --customer rees --project SC263182 --airc-console flamingo_con
 PriorityAgent.exe --customer rees --project SC263182 --no-airc
 PriorityAgent.exe --dry-run --customer rees --project SC263182   show everything, change nothing, print the grok command
 PriorityAgent.exe --smoke --customer rees --project SC263182     real setup + one brief no-tools single-turn launch
-PriorityAgent.exe --check-hours D:\ai\rees --session <uuid>      run only the hours check
+PriorityAgent.exe --check-hours C:\AI\rees --session <uuid>      run only the hours check (path under the resolved AI root)
 PriorityAgent.exe --mcp-catalog [<catalog dir>]                 fallback stdio catalog MCP (env PRIORITY_CATALOG_DIR)
 ```
 
-Other options: `--root <dir>` (clone root, default `D:\ai`, env `PRIORITY_AGENT_ROOT`),
+Other options: `--root <dir>` (clone root; default: first existing `X:\AI` on C:->Z:, else create `\AI` on the first ready drive; env `PRIORITY_AGENT_ROOT`),
 `--passwords-dir <dir>`, `--no-fuel-check`, `--no-pause`.
 
 Requirements: `git`, `gh` (logged in as SimonBarnett) and the Grok CLI (`%USERPROFILE%\.grok\bin\grok.exe`).

@@ -30,6 +30,7 @@ Gate 'readme-ai-order' ($rd -match '(?i)C:.*D:.*E:') 'README documents C then D 
 Gate 'readme-create' ($rd -match '(?i)creat') 'README documents create when missing'
 Gate 'readme-use-fomprep-dir' ($rd -match 'FOMPREP_DIR' -or $rd -match '\{\{FOMPREP_DIR\}\}') 'README: use resolved FOMPREP_DIR'
 Gate 'agents-clone-path' ($ag -match '(?i)clone' -and ($ag -match '(?i)\\\\AI' -or $ag -match 'PRIORITY_AGENT_ROOT' -or $ag -match 'FOMPREP_DIR' -or $ag -match 'AI root')) 'AGENTS.md notes AI root / clone path'
+Gate 'readme-no-default-d-ai' ($readme -notmatch '(?i)clone root, default ``D:\\ai``') 'README --root default is not hardcoded D:\\ai'
 if ($failed -gt 0) { Write-Host "Test-Fr225-LauncherClonePath FAIL ($failed)"; exit 1 }
 Write-Host 'Test-Fr225-LauncherClonePath PASS'
 exit 0

@@ -61,7 +61,7 @@ public static class AiRoot
         }
 
         throw new InvalidOperationException(
-            "No ready drive C:..Z: found to use or create \\AI.");
+            "No ready drive C:..Z: found to use or create \\AI. Use --root <dir> or PRIORITY_AGENT_ROOT.");
     }
 
     /// <summary>

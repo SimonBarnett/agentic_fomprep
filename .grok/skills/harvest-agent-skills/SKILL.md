@@ -176,3 +176,4 @@ books use `harvest-agent-skills` pointing at their home.)
 - Custom SQLI queue columns must not be named PART/SERIAL/SERN; use QPART-style names
 - agentic_fomprep UAT #0: confirm open issues/PRs clear, run tests/Test-*.ps1 + Test-PriorityCatalog on main, SKIP live Form Prep without connections file, docs/UAT-LOG PR then gh release create uat-YYYY-MM-DD
 - OData GET empty while form shows rows: try installed language code after ini (comma); do not hardcode British English 2; omit host/credentials from harvest
+- Service-desk training checkpoint issues are receipts: when a later checkpoint (#328) supersedes an earlier one (#317) and cited skill PRs are all MERGED, close the earlier checkpoint as Duplicate of the later issue and DONE FR with the covering merged PR URL; do not open a second implement PR.

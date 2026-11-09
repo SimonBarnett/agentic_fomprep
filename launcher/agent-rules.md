@@ -124,3 +124,11 @@ Before you stop:
 - Append the project `log.md` evidence when a project is selected.
 - Summarise what changed and where: general Priority change, customer repo, project folder, hours entry id.
 - List anything that needs Simon or Haitch.
+
+## Skills DAG + customer overlay (FR #354; FR #362)
+
+- Prefer public MCP resolve_skills on https://mcp.ntsa.uk/mcp for generic Priority skills (bounded).
+- Customer-private lessons stay in the customer repo overlay (repo-root .grok/skills, SO/SC folder markdown).
+- Merge on the seat with tools/priority-skill-dag/Resolve-WithOverlay.ps1 (or resolve-with-overlay.mjs).
+  Never POST overlay paths, lesson bodies, or customer-private text to mcp.ntsa.uk - only the task string (+limits).
+

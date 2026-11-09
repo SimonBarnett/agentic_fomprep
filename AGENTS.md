@@ -132,3 +132,5 @@ Agents **not** started in this CWD (referred skillbook / Mode B) follow
 `docs/skillbook-referral.md`: load `harvest-priority-skills` /
 `harvest-agent-skills` plus needed `priority-*` leaflets, and still file to
 `SimonBarnett/agentic_fomprep` via Bobiverse intake.
+
+- **Customer overlay (FR #362):** merge public `resolve_skills` with local customer `.grok/skills` + SO/SC lessons via `tools/priority-skill-dag/Resolve-WithOverlay.ps1`; never POST overlay content to mcp.ntsa.uk.

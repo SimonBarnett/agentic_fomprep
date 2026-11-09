@@ -201,6 +201,15 @@ again at `https://mcp.ntsa.uk` after the certificate is issued.
 4. The same response does not offer `prepare_form`, `compile_shell`, `install_shell`, or `odata_get`.
 5. `get_skill` with `name` `priority-formprep` returns JSON with `skillMd` and a `required` array of DAG-derived skill ids (FR #361; may be empty when the skill topic has no depends_on parents).
 6. `tools/call` `resolve_skills` with `task` `form prep UAT` returns a non-empty `skills` array (FR #354).
+
+### Customer overlay (FR #362 / #354 acceptance 8)
+
+Public `resolve_skills` on mcp.ntsa.uk stays generic-only. Customer lessons and skills stay in the
+customer repo (`.grok/skills/` at repo root; SO/SC markdown under `SCxxxxxx` / `SOxxxxxx`) and are
+merged **on the seat** via `tools/priority-skill-dag/resolve-with-overlay.mjs` (or
+`Resolve-WithOverlay.ps1`). Only `{ task, maxLessons?, maxSkills?, maxBytes? }` is POSTed to MCP —
+never overlay paths or bodies. Unit gate: `v2/apps/mcp-catalog/lib/customer-overlay.test.mjs`.
+
 7. `get_dag_node` with a known skill id succeeds; unknown id returns an error result.
 8. `get_runner_files` with `path` `../meta.json` returns an error result.
 9. `GET /` shows the same origin in the `grok mcp add` example.

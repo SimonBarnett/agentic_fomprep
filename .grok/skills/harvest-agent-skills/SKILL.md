@@ -189,3 +189,4 @@ books use `harvest-agent-skills` pointing at their home.)
 - After a schema change on a record type, grep the whole product for old field names before DONE; unit string-gates on WcfSupport alone miss Program.cs compile breaks that only show in dotnet publish CI.
 - MCP get_skill should return skillMd plus required skill ids from DAG depends_on and topic-dependency skills (exclude same-topic peers); stack get_skill follow-ups on the open DAG tip (fr-354) and note manual issue close when base is not main.
 - After Amplify deploys mcp-catalog DAG tools, run npm run smoke:live (scripts/smoke-mcp-live.mjs) against mcp.ntsa.uk and record evidence in docs/amplify-hosting.md Live evidence (FR #364).
+- Seat-side resolve_skills overlay: merge public MCP with local customer .grok/skills + SO/SC markdown; never POST overlay; normalizeMcpToolsUrl accepts https://mcp.ntsa.uk or .../mcp.

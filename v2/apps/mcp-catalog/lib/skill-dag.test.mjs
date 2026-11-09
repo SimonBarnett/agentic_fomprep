@@ -7,6 +7,7 @@ import test from 'node:test';
 import {
   getDagIndex,
   getDagNode,
+  getRequiredSkillIds,
   getSkillDagPage,
   resetDagCache,
   resolveSkills,
@@ -93,4 +94,23 @@ test('get_dag_index is slim relative to dag.json', () => {
   // Index may still be large; must not embed full lesson bodies
   assert.ok(!indexJson.includes('"content"'));
   assert.ok(dagBytes > 1_000_000);
+});
+
+test('getRequiredSkillIds returns DAG required catalog skill ids', () => {
+  ensureData();
+  const formprep = getRequiredSkillIds('priority-formprep');
+  assert.ok(Array.isArray(formprep));
+  // programming topic has no depends_on parents in the current DAG
+  assert.deepEqual(formprep, []);
+
+  const bare = getRequiredSkillIds('priority-mcp-setup');
+  const prefixed = getRequiredSkillIds('skill:priority-mcp-setup');
+  assert.deepEqual(bare, prefixed);
+  assert.ok(bare.length > 0, 'integrations topic should pull install-upgrade/system-admin skills');
+  assert.ok(bare.includes('priority-ops-system-admin') || bare.includes('priority-ops-install-upgrade'));
+  assert.ok(!bare.includes('priority-mcp-setup'));
+  assert.ok(!bare.some((id) => id.startsWith('skill:')));
+
+  assert.deepEqual(getRequiredSkillIds(''), []);
+  assert.deepEqual(getRequiredSkillIds('skill:does-not-exist-fr361'), []);
 });

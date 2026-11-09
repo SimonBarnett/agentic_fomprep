@@ -96,6 +96,10 @@ try {
     'get_skill',
     'get_instance_schema',
     'get_runner_files',
+    'resolve_skills',
+    'get_dag_index',
+    'get_dag_node',
+    'get_skill_dag',
   ]), 'GET /mcp tools', discoverBody.tools);
 
   const options = await raw('OPTIONS', '/mcp');
@@ -109,7 +113,7 @@ try {
 
   const tools = JSON.parse((await rpc('tools/list')).text);
   const names = tools.result.tools.map((tool) => tool.name);
-  assert(names.join(',') === 'list_catalog,get_skill,get_instance_schema,get_runner_files', 'tools/list', names);
+  assert(names.join(',') === 'list_catalog,get_skill,get_instance_schema,get_runner_files,resolve_skills,get_dag_index,get_dag_node,get_skill_dag', 'tools/list', names);
 
   const listed = JSON.parse((await rpc('tools/call', { name: 'list_catalog', arguments: {} })).text);
   const listedText = listed.result.content[0].text;
@@ -120,7 +124,10 @@ try {
   assert(!listedText.includes('prepare_form'), 'list_catalog does not publish prepare_form');
 
   const skill = JSON.parse((await rpc('tools/call', { name: 'get_skill', arguments: { name: 'priority-formprep' } })).text);
-  assert(skill.result.content[0].text.includes('FORMPREP'), 'get_skill returns the leaflet');
+  const skillPayload = JSON.parse(skill.result.content[0].text);
+  assert(skillPayload.name === 'priority-formprep', 'get_skill name', skillPayload.name);
+  assert(typeof skillPayload.skillMd === 'string' && skillPayload.skillMd.includes('FORMPREP'), 'get_skill skillMd leaflet');
+  assert(Array.isArray(skillPayload.required), 'get_skill required array (FR #361)');
 
   const traversal = JSON.parse((await rpc('tools/call', {
     name: 'get_runner_files',

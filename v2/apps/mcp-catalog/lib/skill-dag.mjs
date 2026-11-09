@@ -421,6 +421,44 @@ export function getSkillDagPage(cursor, pageSize = 50) {
   };
 }
 
+
+/**
+ * Catalog skill ids required by a skill, from DAG edges.
+ * - Transitive depends_on targets that are skill:* nodes (direct skill deps).
+ * - Skills that load topics in the depends_on closure of this skill's topic
+ *   (excludes peers on the same topic).
+ * Returns bare catalog names (no skill: prefix), sorted unique.
+ */
+export function getRequiredSkillIds(skillName) {
+  const { deps, skillTopics } = loadDag();
+  const raw = String(skillName || '').trim();
+  if (!raw) return [];
+  const key = raw.startsWith('skill:') ? raw : ('skill:' + raw);
+  const out = new Set();
+
+  const stack = [...(deps.get(key) || [])];
+  const seen = new Set();
+  while (stack.length) {
+    const n = stack.pop();
+    if (!n || seen.has(n)) continue;
+    seen.add(n);
+    if (n.startsWith('skill:')) out.add(n.slice('skill:'.length));
+    for (const d of deps.get(n) || []) stack.push(d);
+  }
+
+  const topic = skillTopics.get(key);
+  if (topic) {
+    const topics = expandTopics([topic], deps, 2);
+    topics.delete(topic);
+    for (const [sk, t] of skillTopics.entries()) {
+      if (!topics.has(t) || sk === key || !sk.startsWith('skill:')) continue;
+      out.add(sk.slice('skill:'.length));
+    }
+  }
+
+  return [...out].sort((a, b) => a.localeCompare(b));
+}
+
 export function resetDagCache() {
   cached = null;
 }

@@ -242,7 +242,7 @@ static class Program
         foreach (string warning in wcfConfig.LegacyAircWarnings)
             Warn(warning);
         if (wcfConfig.Instances.Count == 0)
-            Info("wcf: no SaaS allowlist instances (default %USERPROFILE%\.priority-saas-wcf\instances.json or .priority-agent.json); agent will ask Simon if Priority work needs one");
+            Info("wcf: no SaaS allowlist instances (default %USERPROFILE%/.priority-saas-wcf/instances.json or .priority-agent.json); agent will ask Simon if Priority work needs one");
         else
         {
             Info($"wcf: {wcfConfig.Instances.Count} instance(s) from {wcfConfig.SourcePath}");

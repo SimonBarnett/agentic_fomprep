@@ -317,9 +317,9 @@ static class Program
         brief.AppendLine($"General Priority repo: {fomprep} (SimonBarnett/agentic_fomprep @ {GitOut(fomprep, "rev-parse", "--short", "HEAD")}); MCP server '{McpName}' and its .grok/skills are loaded.");
         if (wcfConfig.Instances.Count > 0)
         {
-            brief.AppendLine("Priority WCF client (bobiverse priority_wcf.py): use configured instances below; never airc shell, WINRUN, web SDK or OData for Priority work.");
+            brief.AppendLine("Priority WCF client (fom-prep priority-wcf.mjs / priority-saas-wcf): use allowlist instances; never airc shell, WINRUN, raw web SDK, OData, or bobiverse priority_wcf.py (#6026).");
             foreach (var inst in wcfConfig.Instances)
-                brief.AppendLine($"  WCF {inst.Id}: {inst.ServerUrl} mode={inst.Mode}");
+                brief.AppendLine($"  WCF {inst.Id}: host={inst.Host} tenant={inst.Tenant} allowLive={inst.AllowLive}");
         }
         if (cust != null) brief.AppendLine($"Customer: {cust.Name} = {cust.FullName}, clone {custDir}. Connection secrets (never commit/echo): {pwFile}.");
         if (project != null) brief.AppendLine($"Project / service call: {project} at {projectDir}.");
@@ -332,7 +332,7 @@ static class Program
             : $"Follow the launcher rules (harvest rule, secrets, WCF client, MANDATORY hours webhook idempotency_key priority-agent-{sessionId}). Then briefly confirm the context and ask Simon what to work on.");
 
         string rulesFile = Path.Combine(sessionDir, "rules.md");
-        var wcfMeta = wcfConfig.Instances.Select(i => new { id = i.Id, serverUrl = i.ServerUrl, mode = i.Mode }).ToArray();
+        var wcfMeta = wcfConfig.Instances.Select(i => new { id = i.Id, host = i.Host, tenant = i.Tenant, company = i.Company, allowLive = i.AllowLive }).ToArray();
         LauncherSupport.WriteSessionMetadata(sessionDir, rules, new
         {
             sessionId,

@@ -46,7 +46,7 @@ with the right context.
      an existing clone under any searched `X:\AI` or `X:\repos` is reused.
    - **Project / service call**: one of the customer repo's top-level folders, skipping dot-folders.
      cwd is that folder.
-5. It loads **Priority SaaS WCF allowlist** rows (FR #348): default %USERPROFILE%\.priority-saas-wcf\instances.json (env PRIORITY_SAAS_WCF_INSTANCES), or a wcfInstancesPath / SaaS-shaped list in .priority-agent.json (project overrides customer). Each row has id, host, 	enant, company, user, 	okenFile, llowLive (see 2/apps/priority-saas-wcf/instances.example.json). Credentials and tokens are never stored there. The launcher writes a session-only wcf-instances.json and injects instructions for in/priority-wcf.mjs + skill priority-saas-wcf (not bobiverse #6026 priority_wcf.py). Legacy irc / irc_console fields still load without error and print a warning that they are ignored. --airc, --no-airc and --airc-console are rejected with a clear "removed; use the WCF client" message.
+5. It loads **Priority SaaS WCF allowlist** rows (FR #348): default %USERPROFILE%\.priority-saas-wcf\instances.json (env PRIORITY_SAAS_WCF_INSTANCES), or a wcfInstancesPath / SaaS-shaped list in .priority-agent.json (project overrides customer). Each row has id, host, tenant, company, user, tokenFile, allowLive (see v2/apps/priority-saas-wcf/instances.example.json). Credentials and tokens are never stored there. The launcher writes a session-only wcf-instances.json and injects instructions for bin/priority-wcf.mjs + skill priority-saas-wcf (not bobiverse #6026 priority_wcf.py). Legacy airc / airc_console fields still load without error and print a warning that they are ignored. --airc, --no-airc and --airc-console are rejected with a clear "removed; use the WCF client" message.
 6. **New customer / new project** never creates anything. It prints `Ask Haitch: new customer repo for X`
    or `Ask Haitch: new project folder Y in <repo>`, copies the line to the clipboard and exits. Haitch creates it
    from `launcher/customer-setup`. A project folder must already be an authoritative `SCxxxxxx` or `SOxxxxxx`.
@@ -92,11 +92,11 @@ Logs go to `%LOCALAPPDATA%\PriorityAgent\logs`. Per-session `launch.json` and th
 
 ## WCF configuration (FR #348)
 
-The client is fom-prep 2/apps/priority-saas-wcf (in/priority-wcf.mjs), skill priority-saas-wcf.
+The client is fom-prep v2/apps/priority-saas-wcf (bin/priority-wcf.mjs), skill priority-saas-wcf.
 Allowlist default: %USERPROFILE%\.priority-saas-wcf\instances.json (override PRIORITY_SAAS_WCF_INSTANCES).
-Copy from 2/apps/priority-saas-wcf/instances.example.json:
+Copy from v2/apps/priority-saas-wcf/instances.example.json:
 
-`json
+``json
 {
   "instances": [
     {
@@ -111,17 +111,17 @@ Copy from 2/apps/priority-saas-wcf/instances.example.json:
     }
   ]
 }
-`
+``
 
 Optional project/customer .priority-agent.json may set wcfInstancesPath to that file, or embed the same
 SaaS-shaped wcf / instances array (project overrides customer). **Never** put passwords or tokens in
-these files. Tokens come from 	okenFile or process env PRIORITY_SAAS_TOKEN (see priority-saas-oidc-login).
+these files. Tokens come from tokenFile or process env PRIORITY_SAAS_TOKEN (see priority-saas-oidc-login).
 
 Rows that look like bobiverse #6026 (serverUrl + mode direct|relay) are ignored with a warning.
 
-Legacy keys irc and irc_console are ignored with a warning. The launcher does not open DCC and
+Legacy keys airc and airc_console are ignored with a warning. The launcher does not open DCC and
 does not send airc shell PRIVMSGs. Agent rules require priority-wcf.mjs for Priority work and require
-a harvest through Bobiverse intake (	ools\\Report-FomprepIntakeIssue.ps1 / Invoke-FomprepHarvest.ps1)
+a harvest through Bobiverse intake (tools\Report-FomprepIntakeIssue.ps1 / Invoke-FomprepHarvest.ps1)
 after every client session.
 
 

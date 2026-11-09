@@ -51,7 +51,7 @@ read it.
 | preBuild | `npm ci --include=dev --no-audit --fund=false` |
 | build | `npm run build` |
 
-`npm run build` is `next build` followed by `node scripts/check-catalog-trace.mjs`.
+`npm run build` is `node scripts/sync-skill-dag.mjs` (copy `docs/skill-sources/medatech-network/_dag` into `data/`), `next build`, `check-catalog-trace.mjs` (catalog + `data/dag.json` traced), and `check-dag.mjs` (catalog↔DAG sync + public-safe scan).
 The check fails the build if `catalog/` was not traced into the server bundle,
 if the build is a static export, or if `output: 'standalone'` reappears.
 The spec then deletes `.next/cache`. That cache is not used at runtime.
@@ -138,8 +138,8 @@ build.
 | `initialize` | Protocol `2024-11-05`, `serverInfo.name` `mcp-priority`, tools capability only |
 | `notifications/initialized`, `initialized` | `204` empty body |
 | `ping` | empty result |
-| `tools/list` | `list_catalog`, `get_skill`, `get_instance_schema`, `get_runner_files` |
-| `tools/call` | those four tools |
+| `tools/list` | `list_catalog`, `get_skill`, `get_instance_schema`, `get_runner_files`, `resolve_skills`, `get_dag_index`, `get_dag_node`, `get_skill_dag` (FR #354) |
+| `tools/call` | those eight tools |
 | `resources/list`, `resources/read` | `skill://<id>` markdown |
 
 A JSON array (batched JSON-RPC) is rejected. There is no SSE `GET`, no
@@ -195,17 +195,19 @@ grab-only clients this host is for.
 Run these against the default `*.amplifyapp.com` URL before changing DNS, then
 again at `https://mcp.ntsa.uk` after the certificate is issued.
 
-1. `GET /mcp` returns HTTP 200, `cache-control: no-store`, and the four tool names.
+1. `GET /mcp` returns HTTP 200, `cache-control: no-store`, and the eight tool names (includes `resolve_skills`).
 2. `POST /mcp` `initialize` returns `protocolVersion` `2024-11-05` and `serverInfo.name` `mcp-priority`.
 3. `tools/call` `list_catalog` returns `host` `https://mcp.ntsa.uk` (or the amplifyapp.com host before DNS) and a non-empty `skills` array that includes `priority-formprep`.
 4. The same response does not offer `prepare_form`, `compile_shell`, `install_shell`, or `odata_get`.
 5. `get_skill` with `name` `priority-formprep` returns markdown.
-6. `get_runner_files` with `path` `../meta.json` returns an error result.
-7. `GET /` shows the same origin in the `grok mcp add` example.
-8. A local `priority-catalog` stdio registration still answers without using the website.
+6. `tools/call` `resolve_skills` with `task` `form prep UAT` returns a non-empty `skills` array (FR #354).
+7. `get_dag_node` with a known skill id succeeds; unknown id returns an error result.
+8. `get_runner_files` with `path` `../meta.json` returns an error result.
+9. `GET /` shows the same origin in the `grok mcp add` example.
+10. A local `priority-catalog` stdio registration still answers without using the website.
 
 Verified with Node 20.19.5 (the Amplify `nvm use 20` runtime) in
-`v2/apps/mcp-catalog`: `npm test` (4 passing), `npm run build` (dynamic `/`
+`v2/apps/mcp-catalog`: `npm test` (public-origin + skill-dag), `npm run build` (dynamic `/`
 and `/mcp`, 202 traced catalog files, 69 `SKILL.md` files, no standalone
 output), and `npm run smoke`. Smoke boots `next start` on port 3456 and checks
 the list above, including a forged `Host: evil.example` and `Host: mcp.ntsa.uk`.

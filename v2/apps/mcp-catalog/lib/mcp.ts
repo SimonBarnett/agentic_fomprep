@@ -1,8 +1,14 @@
 import { getSkill, listSkills, readRunnerFile, type SkillRecord } from './catalog';
 import { catalogPublicOrigin } from './public-origin';
+import {
+  getDagIndex,
+  getDagNode,
+  getSkillDagPage,
+  resolveSkills,
+} from './skill-dag';
 
 const PROTOCOL = '2024-11-05';
-const SERVER = { name: 'mcp-priority', version: '1.0.0' };
+const SERVER = { name: 'mcp-priority', version: '1.1.0' };
 
 const TOOLS = [
   {
@@ -39,6 +45,51 @@ const TOOLS = [
       properties: {
         name: { type: 'string' },
         path: { type: 'string', description: 'Relative path under runner/' },
+      },
+      additionalProperties: false,
+    },
+  },
+  {
+    name: 'resolve_skills',
+    description:
+      'Bounded skills DAG resolve for a task (same contract as Resolve-SkillDag.ps1). Returns scored skills and lessons within maxLessons/maxSkills/maxBytes. Prefer this over get_skill_dag.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        task: { type: 'string', description: 'Natural-language task or query' },
+        maxLessons: { type: 'number' },
+        maxSkills: { type: 'number' },
+        maxBytes: { type: 'number' },
+        allowLarge: { type: 'boolean' },
+      },
+      required: ['task'],
+      additionalProperties: false,
+    },
+  },
+  {
+    name: 'get_dag_index',
+    description: 'Slim skills DAG index (ids, types, titles). Agents must not load full dag.json.',
+    inputSchema: { type: 'object', properties: {}, additionalProperties: false },
+  },
+  {
+    name: 'get_dag_node',
+    description: 'One DAG node by id, with incident edges.',
+    inputSchema: {
+      type: 'object',
+      properties: { id: { type: 'string', description: 'Node id (e.g. skill:priority-formprep)' } },
+      required: ['id'],
+      additionalProperties: false,
+    },
+  },
+  {
+    name: 'get_skill_dag',
+    description:
+      'Page through the full skills DAG for audits. Prefer resolve_skills for normal agent work. cursor is a numeric offset string from the previous page.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        cursor: { type: 'string', description: 'Opaque offset from previous nextCursor' },
+        pageSize: { type: 'number', description: '1..200, default 50' },
       },
       additionalProperties: false,
     },
@@ -111,6 +162,59 @@ function callTool(name: string, args: Record<string, unknown> | undefined, origi
     });
   }
 
+  if (name === 'resolve_skills') {
+    const task = typeof a.task === 'string' ? a.task : '';
+    if (!task.trim()) return { isError: true, ...textResult('task required') };
+    try {
+      return jsonResult(
+        resolveSkills(task, {
+          maxLessons: typeof a.maxLessons === 'number' ? a.maxLessons : undefined,
+          maxSkills: typeof a.maxSkills === 'number' ? a.maxSkills : undefined,
+          maxBytes: typeof a.maxBytes === 'number' ? a.maxBytes : undefined,
+          allowLarge: Boolean(a.allowLarge),
+        }),
+      );
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : String(e);
+      return { isError: true, ...textResult(msg) };
+    }
+  }
+
+  if (name === 'get_dag_index') {
+    try {
+      return jsonResult(getDagIndex());
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : String(e);
+      return { isError: true, ...textResult(msg) };
+    }
+  }
+
+  if (name === 'get_dag_node') {
+    const id = typeof a.id === 'string' ? a.id : '';
+    if (!id.trim()) return { isError: true, ...textResult('id required') };
+    try {
+      const got = getDagNode(id);
+      if (!got.ok) return { isError: true, ...textResult(got.error) };
+      return jsonResult(got);
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : String(e);
+      return { isError: true, ...textResult(msg) };
+    }
+  }
+
+  if (name === 'get_skill_dag') {
+    const cursor = typeof a.cursor === 'string' ? a.cursor : undefined;
+    const pageSize = typeof a.pageSize === 'number' ? a.pageSize : undefined;
+    try {
+      const page = getSkillDagPage(cursor, pageSize);
+      if (page.ok === false) return { isError: true, ...textResult(String(page.error)) };
+      return jsonResult(page);
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : String(e);
+      return { isError: true, ...textResult(msg) };
+    }
+  }
+
   return { isError: true, ...textResult(`unknown tool ${name}`) };
 }
 
@@ -133,7 +237,7 @@ export function handleMcp(body: unknown, origin = catalogPublicOrigin()): unknow
         capabilities: { tools: {}, resources: {} },
         serverInfo: SERVER,
         instructions:
-          'Catalog only. list_catalog then get_skill. Prepare forms locally from user instances.json. Do not expect prepare_form on this host.',
+          'Catalog + skills DAG. list_catalog / get_skill for leaflets; resolve_skills for bounded DAG pick; get_dag_index / get_dag_node / get_skill_dag for audits. Prepare forms locally. Do not expect prepare_form on this host.',
       },
     };
   }

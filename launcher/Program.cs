@@ -242,12 +242,12 @@ static class Program
         foreach (string warning in wcfConfig.LegacyAircWarnings)
             Warn(warning);
         if (wcfConfig.Instances.Count == 0)
-            Info("wcf: no instances in .priority-agent.json (agent will ask Simon if Priority work needs one)");
+            Info("wcf: no SaaS allowlist instances (default %USERPROFILE%\.priority-saas-wcf\instances.json or .priority-agent.json); agent will ask Simon if Priority work needs one");
         else
         {
             Info($"wcf: {wcfConfig.Instances.Count} instance(s) from {wcfConfig.SourcePath}");
             foreach (var inst in wcfConfig.Instances)
-                Console.WriteLine($"  - {inst.Id}  {inst.ServerUrl}  mode={inst.Mode}");
+                Console.WriteLine($"  - {inst.Id}  host={inst.Host} tenant={inst.Tenant} allowLive={inst.AllowLive}");
         }
         Log($"wcf instances: {wcfConfig.Instances.Count} from {wcfConfig.SourcePath ?? "(none)"}");
 

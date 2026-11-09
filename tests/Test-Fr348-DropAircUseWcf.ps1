@@ -18,6 +18,7 @@ $prog = Get-Content -LiteralPath (Join-Path $launcher 'Program.cs') -Raw
 Gate 'reject-airc-flag' ($prog -match '--airc-console' -and $prog -match 'RemovedAircMessage') 'Program.cs must reject --airc-console'
 Gate 'no-dcc-write' ($prog -notmatch 'WriteSessionFiles' -and $prog -notmatch 'DCCLISTEN') 'Program.cs must not write DCC session files'
 Gate 'loads-wcf' ($prog -match 'WcfSupport\.LoadConfig' -and $prog -match 'RenderSessionRules') 'Program.cs must load WCF config'
+Gate 'prog-saas-console' ($prog -match 'inst\.Host' -and $prog -match 'inst\.Tenant' -and $prog -notmatch 'inst\.ServerUrl' -and $prog -notmatch 'inst\.Mode') 'Program.cs must print SaaS host/tenant, not ServerUrl/Mode'
 Gate 'brief-mjs' ($prog -match 'priority-wcf.mjs' -and $prog -match 'priority-saas-wcf') 'Program brief must cite priority-wcf.mjs'
 
 $rules = Get-Content -LiteralPath (Join-Path $launcher 'agent-rules.md') -Raw

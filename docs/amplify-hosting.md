@@ -206,6 +206,31 @@ again at `https://mcp.ntsa.uk` after the certificate is issued.
 9. `GET /` shows the same origin in the `grok mcp add` example.
 10. A local `priority-catalog` stdio registration still answers without using the website.
 
+## Live evidence (FR #364)
+
+After PR #358 merged and Amplify redeployed, flamingo seat `flamingo-45296` ran the
+public smoke against `https://mcp.ntsa.uk` (FR #354 acceptance #5).
+
+Re-run any time:
+
+```bash
+cd v2/apps/mcp-catalog
+npm run smoke:live
+# or: SMOKE_MCP_ORIGIN=https://mcp.ntsa.uk node scripts/smoke-mcp-live.mjs
+```
+
+Recorded **2026-11-09T19:21:57Z** (UTC):
+
+| Check | Result |
+| --- | --- |
+| `GET /mcp` tools | eight names including `resolve_skills`, `get_dag_node`, `get_skill_dag` |
+| `initialize` | `protocolVersion` `2024-11-05`, `serverInfo` `mcp-priority` `@1.1.0` |
+| `resolve_skills` task `form prep UAT` | non-empty `skills`: `priority-form-prep-after-sql-change`, `priority-formprep`, `priority-formprep-shadow-tables`, `priority-form-engineering`, `priority-dictionary-sql` |
+| `get_dag_node` `skill:priority-formprep` | `ok: true` |
+| `get_dag_node` unknown id | `isError` with `unknown dag node 'skill:does-not-exist-fr364'` |
+
+No product fix required; live endpoint matched unit/build gates from #358.
+
 Verified with Node 20.19.5 (the Amplify `nvm use 20` runtime) in
 `v2/apps/mcp-catalog`: `npm test` (public-origin + skill-dag), `npm run build` (dynamic `/`
 and `/mcp`, 202 traced catalog files, 69 `SKILL.md` files, no standalone

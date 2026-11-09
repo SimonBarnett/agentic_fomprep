@@ -187,3 +187,4 @@ books use `harvest-agent-skills` pointing at their home.)
 - Priority Agent launcher FR that cites bobiverse #6026 means the merged priority_wcf.py client (#6035): drop airc launcher option, pass per-instance serverUrl+mode, never store creds in .priority-agent.json; --airc-console exits with removed message.
 - MRB README/docs: reject C0 BEL/BS/VT in changed .md; string-contains gates on tokenFile can PASS via a clean JSON example while prose is corrupted --- pin contiguous SaaS words and a no-C0 regex.
 - After a schema change on a record type, grep the whole product for old field names before DONE; unit string-gates on WcfSupport alone miss Program.cs compile breaks that only show in dotnet publish CI.
+- Never hostile-review a PR this seat opened; after ACK on self-MRB, GIVEUP with reason self-MRB and leave MRB for a sibling seat (FR #2604).

@@ -6,10 +6,17 @@ with the right context.
 ## What it does on every start
 
 1. It **fast-forwards SimonBarnett/agentic_fomprep**.
-   - Default preferred path: `D:\ai\agentic_fomprep` (`--root` / `PRIORITY_AGENT_ROOT`, default `D:\ai`).
-     Search order after that: `C:\ai`, `D:\repos`, `C:\repos`. A directory counts as a clone only when it has a `.git` folder and `origin` matches `SimonBarnett/agentic_fomprep`.
-   - **Empty stub:** if `D:\ai\agentic_fomprep` exists but is **not** a git clone (for example only a `.grok` folder, no `.git`), the launcher skips it and uses another clean clone such as `C:\ai\agentic_fomprep`. Agents must use the resolved `{{FOMPREP_DIR}}` / session cwd for `git pull` --- never hardcode `D:\ai\agentic_fomprep`.
-   - Operator choices when the preferred path is a stub: (1) rename/remove the stub and `gh repo clone SimonBarnett/agentic_fomprep D:\ai\agentic_fomprep`, or (2) set `PRIORITY_AGENT_ROOT=C:\ai` / `--root C:\ai` and keep the real clone under `C:\ai\agentic_fomprep`.
+   - **AI root:** unless `--root` / `PRIORITY_AGENT_ROOT` is set, the launcher looks for `X:\AI` on ready
+     drives in order **C: → D: → E: … Z:**. If none exists, it **creates** `\AI` on the first ready drive
+     in that same order (so a machine with only `C:` gets `C:\AI`; a missing `D:` is never chosen).
+   - Preferred clone path is `<AI root>\agentic_fomprep`. Search roots after that: every existing `X:\AI`
+     and `X:\repos` on ready drives. A directory counts as a clone only when it has a `.git` folder and
+     `origin` matches `SimonBarnett/agentic_fomprep`.
+   - **Empty stub:** if the preferred path exists but is **not** a git clone (for example only a `.grok`
+     folder, no `.git`), the launcher skips it and uses another clean clone under a searched root.
+     Agents must use the resolved `{{FOMPREP_DIR}}` / session cwd for `git pull` --- never hardcode a drive letter.
+   - Operator choices when the preferred path is a stub: (1) rename/remove the stub and reclone into the
+     resolved AI root, or (2) set `PRIORITY_AGENT_ROOT` / `--root` to the folder that holds the real clone.
    - It does `fetch --prune`, then `merge --ff-only`, but only when the clone is on `main` and clean.
      A valid clone with uncommitted changes is still usable: the launcher warns and skips the pull.
      It never resets local work and never aborts only because the clone is dirty. An empty stub
@@ -35,8 +42,8 @@ with the right context.
    It uses the REST API through `gh api`, with no search-index lag.
 4. You pick one of three contexts:
    - **General Priority**: cwd is the agentic_fomprep clone.
-   - **Customer**: cwd is the customer clone. A repo new to the machine is cloned into `D:\ai\<repo>`;
-     an existing clone in `D:\ai`, `C:\ai` or `D:\repos` is reused.
+   - **Customer**: cwd is the customer clone. A repo new to the machine is cloned into `<AI root>\<repo>`;
+     an existing clone under any searched `X:\AI` or `X:\repos` is reused.
    - **Project / service call**: one of the customer repo's top-level folders, skipping dot-folders.
      cwd is that folder.
 5. It asks whether this session needs airc. Connected `*_console` nicks are listed from the Bob
@@ -166,11 +173,11 @@ PriorityAgent.exe --customer rees --project SC263182 --airc-console flamingo_con
 PriorityAgent.exe --customer rees --project SC263182 --no-airc
 PriorityAgent.exe --dry-run --customer rees --project SC263182   show everything, change nothing, print the grok command
 PriorityAgent.exe --smoke --customer rees --project SC263182     real setup + one brief no-tools single-turn launch
-PriorityAgent.exe --check-hours D:\ai\rees --session <uuid>      run only the hours check
+PriorityAgent.exe --check-hours C:\AI\rees --session <uuid>      run only the hours check (path under the resolved AI root)
 PriorityAgent.exe --mcp-catalog [<catalog dir>]                 fallback stdio catalog MCP (env PRIORITY_CATALOG_DIR)
 ```
 
-Other options: `--root <dir>` (clone root, default `D:\ai`, env `PRIORITY_AGENT_ROOT`),
+Other options: `--root <dir>` (clone root; default: first existing `X:\AI` on C:->Z:, else create `\AI` on the first ready drive; env `PRIORITY_AGENT_ROOT`),
 `--passwords-dir <dir>`, `--no-fuel-check`, `--no-pause`.
 
 Requirements: `git`, `gh` (logged in as SimonBarnett) and the Grok CLI (`%USERPROFILE%\.grok\bin\grok.exe`).

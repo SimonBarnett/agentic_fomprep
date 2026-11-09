@@ -26,7 +26,7 @@ Start with CWD at the **repo root**. Project skills load from `.grok/skills/`
 
 ## Clone path (Priority Agent launcher)
 
-The launcher prefers `D:\ai\agentic_fomprep`, then also searches `C:\ai`, `D:\repos`, and `C:\repos` (override with `--root` / `PRIORITY_AGENT_ROOT`). Only a real git clone (`.git` present, origin `SimonBarnett/agentic_fomprep`) counts. An **empty stub** at `D:\ai\agentic_fomprep` (directory exists, no `.git`) is skipped; use the resolved `FOMPREP_DIR` / session cwd for `git pull`, or reclone / point `--root` at the working tree (often `C:\ai\agentic_fomprep`). Details: `launcher/README.md`.
+The launcher resolves an **AI root**: existing `X:\AI` on ready drives **C: → D: → E: … Z:**, or creates `\AI` on the first ready drive in that order (override with `--root` / `PRIORITY_AGENT_ROOT`). It then prefers `<AI root>\agentic_fomprep` and also searches other `X:\AI` / `X:\repos` roots. Only a real git clone (`.git` present, origin `SimonBarnett/agentic_fomprep`) counts. An **empty stub** (directory exists, no `.git`) is skipped; use the resolved `FOMPREP_DIR` / session cwd for `git pull`, or reclone / point `--root` at the working tree. Details: `launcher/README.md`.
 
 ## What this agent owns
 

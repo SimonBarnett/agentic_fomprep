@@ -184,3 +184,4 @@ books use `harvest-agent-skills` pointing at their home.)
 - Root .gitignore must list .bobiverse-seat and **/ .bobiverse-seat so harvest/MRB tips cannot commit Bobiverse job seat markers; document in harvest-agent-skills Do-not + Write tip (FR #349 / PR #350).
 - PowerShell (?m)$ gates against gitignore must normalize CRLF (or use \r?$) before match; ASCII pin scripts UTF-8 no BOM (WinPS 5.1: non-ASCII scripts need a UTF-8 BOM).
 - Public mcp-catalog must sync docs/_dag into data/ at build, trace data/dag.json, expose resolve_skills matching resolve_dag.py, and fail build on catalog↔DAG drift or secret-like DAG content; repair conflict-marker corruption in dag.json before sync.
+- Priority Agent launcher FR that cites bobiverse #6026 means the merged priority_wcf.py client (#6035): drop airc launcher option, pass per-instance serverUrl+mode, never store creds in .priority-agent.json; --airc-console exits with removed message.

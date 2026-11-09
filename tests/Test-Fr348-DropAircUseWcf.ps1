@@ -47,6 +47,10 @@ Gate 'reject-6026-shape' ($wcf -match 'serverUrl' -and $wcf -match '#6026') 'Wcf
 $csproj = Get-Content -LiteralPath (Join-Path $launcher 'PriorityAgent.csproj') -Raw
 Gate 'csproj-no-airc-embed' ($csproj -notmatch 'airc-dcc') 'csproj still embeds airc-dcc.md'
 
+
+$wf = Get-Content -LiteralPath (Join-Path $repo '.github\workflows\launcher-release.yml') -Raw
+Gate 'launcher-release-no-airc-help' ($wf -match '--dry-run' -and $wf -match 'Help still lists removed option' -and $wf -notmatch 'Help does not list \$option') 'launcher-release.yml must forbid airc in help and require --dry-run'
+
 if ($failed -gt 0) { Write-Host "Test-Fr348-DropAircUseWcf FAIL ($failed)"; exit 1 }
 Write-Host 'Test-Fr348-DropAircUseWcf PASS'
 exit 0

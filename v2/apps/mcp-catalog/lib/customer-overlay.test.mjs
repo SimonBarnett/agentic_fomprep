@@ -7,6 +7,7 @@ import {
   assertPublicSafeArgs,
   buildPublicResolvePayload,
   mergeResolve,
+  normalizeMcpToolsUrl,
   resolveWithOverlay,
   scanOverlay,
 } from './customer-overlay.mjs';
@@ -123,4 +124,12 @@ test('resolveWithOverlay never POSTs overlay content to fetchPublic', async () =
   } finally {
     fs.rmSync(root, { recursive: true, force: true });
   }
+});
+
+test('normalizeMcpToolsUrl accepts base or /mcp form', () => {
+  assert.equal(normalizeMcpToolsUrl('https://mcp.ntsa.uk'), 'https://mcp.ntsa.uk/mcp');
+  assert.equal(normalizeMcpToolsUrl('https://mcp.ntsa.uk/'), 'https://mcp.ntsa.uk/mcp');
+  assert.equal(normalizeMcpToolsUrl('https://mcp.ntsa.uk/mcp'), 'https://mcp.ntsa.uk/mcp');
+  assert.equal(normalizeMcpToolsUrl('https://mcp.ntsa.uk/mcp/'), 'https://mcp.ntsa.uk/mcp');
+  assert.throws(() => normalizeMcpToolsUrl(''));
 });

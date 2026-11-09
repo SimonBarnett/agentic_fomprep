@@ -4,7 +4,8 @@
  *
  * Usage:
  *   node tools/priority-skill-dag/resolve-with-overlay.mjs --task "..." [--overlay <customerRepo>] [--project SCxxxxxx]
- *     [--mcp-url https://mcp.ntsa.uk/mcp] [--public-json path|-]
+ *     [--mcp-url https://mcp.ntsa.uk] [--public-json path|-]
+ *   --mcp-url accepts base host or .../mcp (normalized).
  *
  * Only {task, max*} are sent to the public MCP. Overlay never leaves the seat.
  */
@@ -14,7 +15,7 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const overlayMod = path.resolve(here, '../../v2/apps/mcp-catalog/lib/customer-overlay.mjs');
-const { resolveWithOverlay, buildPublicResolvePayload } = await import(pathToFileURL(overlayMod).href);
+const { resolveWithOverlay, buildPublicResolvePayload, normalizeMcpToolsUrl } = await import(pathToFileURL(overlayMod).href);
 
 function arg(name, fallback = null) {
   const i = process.argv.indexOf(name);
@@ -41,14 +42,14 @@ const maxSkills = Number(arg('--max-skills') || 5);
 const maxBytes = Number(arg('--max-bytes') || 24000);
 
 async function fetchFromMcp(payload) {
-  const url = mcpUrl.replace(/\/$/, '');
+  const url = normalizeMcpToolsUrl(mcpUrl);
   const body = {
     jsonrpc: '2.0',
     id: 1,
     method: 'tools/call',
     params: { name: 'resolve_skills', arguments: payload },
   };
-  const res = await fetch(`${url}/mcp`, {
+  const res = await fetch(url, {
     method: 'POST',
     headers: { 'content-type': 'application/json', accept: 'application/json' },
     body: JSON.stringify(body),

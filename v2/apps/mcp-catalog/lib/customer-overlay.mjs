@@ -57,6 +57,18 @@ export function assertPublicSafeArgs(args, forbiddenSubstrings = []) {
   return true;
 }
 
+
+/**
+ * Normalize a public MCP base or tools URL to the POST /mcp endpoint.
+ * Accepts https://mcp.ntsa.uk or https://mcp.ntsa.uk/mcp (either form).
+ */
+export function normalizeMcpToolsUrl(url) {
+  let u = String(url || '').trim().replace(/\/+$/, '');
+  if (!u) throw new Error('mcp url required');
+  if (!/\/mcp$/i.test(u)) u = u + '/mcp';
+  return u;
+}
+
 function tokenize(query) {
   return String(query || '')
     .toLowerCase()

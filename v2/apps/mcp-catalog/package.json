@@ -8,6 +8,7 @@
     "stdio": "node stdio.mjs",
     "test": "node --test lib/public-origin.test.mjs lib/skill-dag.test.mjs",
     "smoke": "node scripts/smoke-mcp.mjs",
+    "smoke:live": "node scripts/smoke-mcp-live.mjs",
     "sync-dag": "node scripts/sync-skill-dag.mjs",
     "check-dag": "node scripts/check-dag.mjs"
   },

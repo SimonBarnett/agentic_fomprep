@@ -1,22 +1,17 @@
 using PriorityAgent;
-using System.Diagnostics;
 using System.Text;
+using System.Text.Json;
+using System.Text.RegularExpressions;
 
 var checks = new List<(string Name, Action Run)>
 {
-    ("project config overrides customer config", TestConfigPrecedence),
-    ("CLI decisions override config", TestDecisionOverrides),
-    ("console discovery filters and selects", TestConsoleSelection),
-    ("unverified configured consoles retain airc; absent console disables it", TestDiscoveryFailure),
-    ("Bob report airc_consoles parsing", TestReportParsing),
-    ("console channel from digest details / shop / wonderland", TestConsoleChannelResolution),
-    ("Discover uses injectable fetch / fixture file", TestDiscoverInjection),
-    ("verified session rules cite Bob report not NAMES", TestVerifiedBobReportRules),
-    ("airc=no renders no airc context", TestNoAircContext),
-    ("airc=yes writes session-only skills and DCC", TestAircContext),
-    ("realistic airc skills stay off the command line", TestCommandLineSize),
-    ("published launcher dry runs preserve config and protect connection canaries", TestLauncherDryRuns),
-    ("README documents Bob report airc_consoles discovery", TestReadmeAircDiscovery),
+    ("project wcf overrides customer; legacy airc warns", TestWcfConfigPrecedenceAndLegacy),
+    ("direct and relay modes load and render", TestDirectAndRelayModes),
+    ("session instances file has no secrets", TestSessionInstancesNoSecrets),
+    ("airc source files and template are gone", TestAircFilesGone),
+    ("README documents WCF client only", TestReadmeWcfOnly),
+    ("agent-rules use WCF_SECTION not AIRC_SECTION", TestAgentRulesWcfPlaceholder),
+    ("command line size guard still works", TestCommandLineSize),
     ("dirty clone plus stub uses the dirty clone", TestDirtyClonePreferredOverStub),
     ("dirty clone only is usable", TestDirtyCloneOnly),
     ("no real clone lists every rejected candidate", TestNoRealCloneFatalListsCandidates),
@@ -33,96 +28,134 @@ foreach (var (name, run) in checks)
 }
 return failures == 0 ? 0 : 1;
 
-static void TestConfigPrecedence()
+static void TestWcfConfigPrecedenceAndLegacy()
 {
     string root = NewTemp();
     try
     {
         string customer = Path.Combine(root, "customer"), project = Path.Combine(customer, "project");
         Directory.CreateDirectory(project);
-        File.WriteAllText(Path.Combine(customer, ".priority-agent.json"), """{"airc":true,"airc_console":"flamingo_console"}""");
-        File.WriteAllText(Path.Combine(project, ".priority-agent.json"), """{"airc":false}""");
-        AircConfig config = AircSupport.LoadConfig(project, customer);
-        Assert(config.Enabled == false, "project airc value did not override customer");
-        Assert(config.Console == "flamingo_console", "customer console should be inherited when project omits it");
-        Assert(config.EnabledSource == Path.Combine(project, ".priority-agent.json"), "wrong airc config source");
-        Assert(config.ConsoleSource == Path.Combine(customer, ".priority-agent.json"), "wrong console config source");
+        File.WriteAllText(Path.Combine(customer, ".priority-agent.json"),
+            """{"airc":true,"airc_console":"flamingo_console","wcf":[{"id":"cust","serverUrl":"https://cust.example.invalid","mode":"direct"}]}""");
+        File.WriteAllText(Path.Combine(project, ".priority-agent.json"),
+            """{"airc":false,"wcf":[{"id":"proj","serverUrl":"https://proj.example.invalid","mode":"relay"}]}""");
+        WcfConfig config = WcfSupport.LoadConfig(project, customer);
+        Assert(config.Instances.Count == 1 && config.Instances[0].Id == "proj", "project wcf must replace customer");
+        Assert(config.Instances[0].Mode == "relay", "project relay mode lost");
+        Assert(config.LegacyAircWarnings.Count >= 1, "legacy airc fields must warn");
+        Assert(config.LegacyAircWarnings.Any(w => w.Contains("ignored", StringComparison.OrdinalIgnoreCase)),
+            "legacy warning must say ignored");
+
+        // Customer-only with legacy keys still loads and warns; does not enable airc anything.
+        WcfConfig customerOnly = WcfSupport.LoadConfig(null, customer);
+        Assert(customerOnly.Instances.Count == 1 && customerOnly.Instances[0].Id == "cust", "customer wcf lost");
+        Assert(customerOnly.LegacyAircWarnings.Count >= 1, "customer legacy airc must warn");
     }
     finally { DeleteTempDirectory(root); }
 }
 
-static void TestDecisionOverrides()
-{
-    Assert(!AircSupport.ResolveEnabled(false, false, true, false, null), "--no-airc did not override config");
-    Assert(AircSupport.ResolveEnabled(true, false, false, false, null), "--airc did not override config");
-    Assert(AircSupport.ResolveEnabled(null, true, false, false, null), "--airc-console did not enable airc");
-    Assert(!AircSupport.ResolveEnabled(null, false, null, false, null), "non-interactive default should be no");
-    Assert(!AircSupport.ResolveEnabled(null, false, false, false, null), "non-interactive false config was ignored");
-    Assert(AircSupport.ResolveEnabled(null, false, true, false, null), "non-interactive config default was ignored");
-    Assert(!AircSupport.ResolveEnabled(null, false, true, true, configured => false), "interactive prompt could not override config");
-    Assert(AircSupport.ResolveEnabled(null, false, false, true, configured => true), "interactive prompt could not opt in over config");
-}
-
-static void TestConsoleSelection()
-{
-    var consoles = AircSupport.NormalizeConsoles(new[] { "@flamingo_console", "win-mpre8vi4u6u_console", "user_consolex", "flamingo_console" });
-    Assert(consoles.SequenceEqual(new[] { "flamingo_console", "win-mpre8vi4u6u_console" }), "invalid or duplicate console was included");
-    string? selected = AircSupport.ChooseConsole(consoles, "win-mpre8vi4u6u_console", null, false, null);
-    Assert(selected == "win-mpre8vi4u6u_console", "configured connected console was not preselected");
-    selected = AircSupport.ChooseConsole(consoles, "win-mpre8vi4u6u_console", null, true,
-        (available, preferred) => available.Contains(preferred!) ? "flamingo_console" : null);
-    Assert(selected == "flamingo_console", "interactive selection could not override the preselection");
-    selected = AircSupport.ChooseConsole(consoles, null, "flamingo_console", false, null);
-    Assert(selected == "flamingo_console", "CLI console override was not selected");
-    Assert(AircSupport.ChooseConsole(Array.Empty<string>(), null, null, false, null) == null, "empty list selected a console");
-    Assert(AircSupport.MachineFromConsole("flamingo_console") == "flamingo", "machine id extraction failed");
-    Assert(AircSupport.MachineChannelsFromReport("""{"machines":{"flamingo":{},"bad/name":{},"win-mpre8vi4u6u":{}}}""")
-        .SequenceEqual(new[] { "#flamingo", "#win-mpre8vi4u6u" }), "report machine channels were not validated");
-    Assert(AircSupport.MachineFromConsole("name_console\n") == null, "console regex accepted a trailing newline");
-    Assert(!AircSupport.MachineChannelsFromReport("""{"machines":{"name\n":{}}}""").Any(),
-        "machine validation accepted a trailing newline");
-    var names = AircSupport.ConsolesFromNames(new[]
-    {
-        ":irc 353 test = #wonderland :@flamingo_console +visitor",
-        ":irc 353 test = #flamingo :win-mpre8vi4u6u_console",
-    });
-    Assert(names.SequenceEqual(new[] { "flamingo_console", "win-mpre8vi4u6u_console" }), "IRC NAMES parser failed");
-}
-
-static void TestNoAircContext()
-{
-    string template = File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "fixtures", "agent-rules.md"));
-    string rendered = AircSupport.RenderSessionRules(template, false, null, "", null);
-    Assert(rendered.Contains("Priority agent rules") && rendered.Contains("Harvest rule"), "non-airc template content missing");
-    Assert(!rendered.Contains("bobiverse-airc", StringComparison.OrdinalIgnoreCase), "airc skills appeared when disabled");
-    Assert(!rendered.Contains("_console", StringComparison.OrdinalIgnoreCase), "console instructions appeared when disabled");
-    Assert(!rendered.Contains("DCCLISTEN", StringComparison.Ordinal), "DCC instructions appeared when disabled");
-}
-
-static void TestAircContext()
+static void TestDirectAndRelayModes()
 {
     string root = NewTemp();
     try
     {
-        string fixtureRoot = Path.Combine(AppContext.BaseDirectory, "fixtures");
-        string commands = File.ReadAllText(Path.Combine(fixtureRoot, "bobiverse-airc-commands", "SKILL.md"));
-        string architecture = File.ReadAllText(Path.Combine(fixtureRoot, "bobiverse-airc", "SKILL.md"));
-        string dcc = File.ReadAllText(Path.Combine(fixtureRoot, "airc-dcc.md"));
-        AircSessionFiles files = AircSupport.WriteSessionFiles(root, new[] { commands, architecture }, dcc, "testbox_console");
-        string rendered = AircSupport.RenderSessionRules("{{AIRC_SECTION}}", true, "testbox_console", "GitHub @ test-sha", files);
-        Assert(File.ReadAllText(files.CommandsSkill) == commands && File.ReadAllText(files.ArchitectureSkill) == architecture,
-            "both airc skill files were not written");
-        Assert(rendered.Contains(files.CommandsSkill) && rendered.Contains(files.ArchitectureSkill)
-            && rendered.Contains(files.DccGuide), "session rule paths were not included");
-        Assert(rendered.Contains("verified from the Bob report", StringComparison.Ordinal)
-            && !rendered.Contains("IRC NAMES", StringComparison.Ordinal),
-            "verified airc rules must cite Bob report, not IRC NAMES");
-        string renderedDcc = File.ReadAllText(files.DccGuide);
-        Assert(renderedDcc.Contains("DCCLISTEN") && renderedDcc.Contains("testbox_console"), "DCC guidance was not targeted");
-        Assert(!rendered.Contains("Fixture troubleshooting content"), "troubleshooting content should not be loaded");
-        Assert(rendered.Contains("bobiverse-airc-troubleshooting/SKILL.md"), "troubleshooting path reference missing");
+        string dir = Path.Combine(root, "cust");
+        Directory.CreateDirectory(dir);
+        File.WriteAllText(Path.Combine(dir, ".priority-agent.json"), """
+            {
+              "wcf": [
+                { "id": "saas", "serverUrl": "https://prioritydev.example.invalid/", "mode": "direct" },
+                { "id": "hrs", "url": "http://priority.lan.example.invalid", "mode": "relay" },
+                { "id": "bad", "serverUrl": "ftp://nope.example.invalid", "mode": "direct" },
+                { "id": "badmode", "serverUrl": "https://ok.example.invalid", "mode": "warp" }
+              ]
+            }
+            """);
+        WcfConfig config = WcfSupport.LoadConfig(null, dir);
+        Assert(config.Instances.Count == 3, $"expected 3 valid instances, got {config.Instances.Count}");
+        Assert(config.Instances.Any(i => i.Id == "saas" && i.Mode == "direct"
+            && i.ServerUrl == "https://prioritydev.example.invalid"), "direct instance wrong");
+        Assert(config.Instances.Any(i => i.Id == "hrs" && i.Mode == "relay"), "relay instance wrong");
+        Assert(config.Instances.Any(i => i.Id == "badmode" && i.Mode == "direct"), "bad mode must fall back to direct");
+
+        string file = WcfSupport.WriteSessionInstancesFile(root, config.Instances);
+        string rules = WcfSupport.RenderSessionRules("before{{WCF_SECTION}}after", config.Instances, file);
+        Assert(rules.Contains("Priority WCF client", StringComparison.Ordinal)
+            && rules.Contains("mode=`direct`", StringComparison.Ordinal)
+            && rules.Contains("mode=`relay`", StringComparison.Ordinal)
+            && rules.Contains("priority_wcf.py", StringComparison.Ordinal)
+            && rules.Contains("WINRUN", StringComparison.Ordinal)
+            && rules.Contains("OData", StringComparison.Ordinal)
+            && !rules.Contains("DCCLISTEN", StringComparison.Ordinal)
+            && !rules.Contains("{{WCF_SECTION}}", StringComparison.Ordinal)
+            && !rules.Contains("{{AIRC_SECTION}}", StringComparison.Ordinal),
+            "rules must cover WCF direct/relay and forbid old paths");
+        Assert(rules.StartsWith("before", StringComparison.Ordinal) && rules.EndsWith("after", StringComparison.Ordinal),
+            "template bookends lost");
     }
     finally { DeleteTempDirectory(root); }
+}
+
+static void TestSessionInstancesNoSecrets()
+{
+    string root = NewTemp();
+    try
+    {
+        var instances = new[]
+        {
+            new WcfInstance("dev", "https://prioritydev.example.invalid", "direct"),
+        };
+        string path = WcfSupport.WriteSessionInstancesFile(root, instances);
+        string text = File.ReadAllText(path);
+        Assert(!Regex.IsMatch(text, @"password|credentialTarget|Bearer\s+[A-Za-z0-9_-]{20,}|secret",
+            RegexOptions.IgnoreCase), "session wcf file must not look like secrets");
+        using var doc = JsonDocument.Parse(text);
+        Assert(doc.RootElement.GetProperty("instances")[0].GetProperty("serverUrl").GetString()
+            == "https://prioritydev.example.invalid", "serverUrl missing from session file");
+        Assert(doc.RootElement.GetProperty("instances")[0].GetProperty("mode").GetString() == "direct",
+            "mode missing from session file");
+    }
+    finally { DeleteTempDirectory(root); }
+}
+
+static void TestAircFilesGone()
+{
+    string launcherDir = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "launcher"));
+    if (!Directory.Exists(launcherDir))
+        launcherDir = Path.GetFullPath(Path.Combine(Directory.GetCurrentDirectory(), "launcher"));
+    Assert(Directory.Exists(launcherDir), $"launcher dir not found near tests ({launcherDir})");
+    Assert(WcfSupport.AircSourceFilesGone(launcherDir),
+        "AircSupport.cs / AircConsoleDiscovery.cs / airc-dcc.md must be removed from launcher/");
+    Assert(!File.Exists(Path.Combine(launcherDir, "AircSupport.cs")), "AircSupport.cs still present");
+    Assert(File.Exists(Path.Combine(launcherDir, "WcfSupport.cs")), "WcfSupport.cs missing");
+}
+
+static void TestReadmeWcfOnly()
+{
+    string readme = File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "fixtures", "launcher-README.md"));
+    Assert(readme.Contains("WCF", StringComparison.Ordinal) && readme.Contains("priority_wcf", StringComparison.OrdinalIgnoreCase)
+        || readme.Contains("serverUrl", StringComparison.Ordinal),
+        "README must document WCF serverUrl / client");
+    Assert(readme.Contains("\"mode\": \"direct\"", StringComparison.Ordinal)
+        && readme.Contains("\"mode\": \"relay\"", StringComparison.Ordinal),
+        "README must show direct and relay examples");
+    Assert(!readme.Contains("airc_consoles", StringComparison.Ordinal)
+        && !readme.Contains("Does this session need airc", StringComparison.Ordinal)
+        && !readme.Contains("bobiverse-airc-commands", StringComparison.Ordinal),
+        "README must not document the old airc discovery / session skills path");
+    Assert(readme.Contains("removed", StringComparison.OrdinalIgnoreCase)
+        || readme.Contains("ignored", StringComparison.OrdinalIgnoreCase),
+        "README should mention legacy airc ignore / removed flags");
+}
+
+static void TestAgentRulesWcfPlaceholder()
+{
+    string rules = File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "fixtures", "agent-rules.md"));
+    Assert(rules.Contains("{{WCF_SECTION}}", StringComparison.Ordinal), "agent-rules need {{WCF_SECTION}}");
+    Assert(!rules.Contains("{{AIRC_SECTION}}", StringComparison.Ordinal), "agent-rules must drop {{AIRC_SECTION}}");
+    Assert(Regex.IsMatch(rules, @"rules-version:\s*(\d+)")
+        && int.Parse(Regex.Match(rules, @"rules-version:\s*(\d+)").Groups[1].Value) >= 7,
+        "rules-version must bump with WCF section");
 }
 
 static void TestCommandLineSize()
@@ -130,134 +163,17 @@ static void TestCommandLineSize()
     string root = NewTemp();
     try
     {
-        string commands = "# bobiverse-airc-commands\n" + string.Concat(Enumerable.Repeat("Remote command protocol and safe diagnostics. ", 260));
-        string architecture = "# bobiverse-airc\n" + string.Concat(Enumerable.Repeat("Console architecture and channel operations. ", 260));
-        Assert(commands.Length + architecture.Length >= 23_000, "large skill fixtures must total at least 23 KB");
-        string dcc = File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "fixtures", "airc-dcc.md"));
-        AircSessionFiles files = AircSupport.WriteSessionFiles(root, new[] { commands, architecture }, dcc, "testbox_console");
-        string rules = AircSupport.RenderSessionRules(
-            File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "fixtures", "agent-rules.md")),
-            true, "testbox_console", "GitHub @ test-sha", files);
-        var args = AircSupport.BuildGrokArguments(root, Guid.NewGuid().ToString(), rules,
-            "Priority session with airc context " + new string('x', 500), false);
-        int length = AircSupport.WindowsCommandLineLength("C:\\Program Files\\Grok\\grok.exe", args);
-        Assert(length < 32_000, $"assembled command line is {length} characters");
-        bool rejectedOversize = false;
-        try { AircSupport.ValidateWindowsCommandLine("grok.exe", new[] { new string('x', 32_001) }, "test launch"); }
-        catch (InvalidOperationException ex) { rejectedOversize = ex.Message.Contains("test launch command line", StringComparison.Ordinal); }
-        Assert(rejectedOversize, "oversized command line did not fail clearly");
-        Assert(!args.Contains(commands) && !args.Contains(architecture), "large airc skill text was passed on argv");
-        Assert(File.ReadAllText(files.CommandsSkill).Length + File.ReadAllText(files.ArchitectureSkill).Length >= 23_000,
-            "large skill files were not written in full");
+        string rules = WcfSupport.RenderSessionRules("{{WCF_SECTION}}",
+            new[] { new WcfInstance("dev", "https://prioritydev.example.invalid", "direct") },
+            Path.Combine(root, "wcf-instances.json"));
+        var args = LauncherSupport.BuildGrokArguments(root, Guid.NewGuid().ToString(), rules,
+            "Priority session " + new string('x', 500), false);
+        int length = LauncherSupport.WindowsCommandLineLength("C:\\Program Files\\Grok\\grok.exe", args);
+        Assert(length < LauncherSupport.MaxWindowsCommandLineLength, "WCF rules blew the argv budget");
+        try { LauncherSupport.ValidateWindowsCommandLine("grok.exe", new[] { new string('x', 32_001) }, "test launch"); Assert(false, "expected throw"); }
+        catch (InvalidOperationException) { /* expected */ }
     }
     finally { DeleteTempDirectory(root); }
-}
-
-static void TestLauncherDryRuns()
-{
-    string? launcherExe = Environment.GetEnvironmentVariable("PRIORITY_AGENT_TEST_EXE");
-    string? fakeCli = Environment.GetEnvironmentVariable("PRIORITY_AGENT_TEST_CLI_DIR");
-    if (string.IsNullOrWhiteSpace(launcherExe) || string.IsNullOrWhiteSpace(fakeCli))
-    {
-        Console.WriteLine("SKIP launcher integration tests (set PRIORITY_AGENT_TEST_EXE and PRIORITY_AGENT_TEST_CLI_DIR)");
-        return;
-    }
-
-    string root = NewTemp();
-    try
-    {
-        string reportFixture = Path.Combine(root, "report.json");
-        File.WriteAllText(reportFixture, """{"airc_consoles":["testbox_console","flamingo_console"]}""");
-        Environment.SetEnvironmentVariable("PRIORITY_AGENT_AIRC_REPORT_JSON", reportFixture);
-        string cloneRoot = Path.Combine(root, "root");
-        CreateClone(root, "SimonBarnett", "agentic_fomprep", Path.Combine(cloneRoot, "agentic_fomprep"),
-            new Dictionary<string, string>
-            {
-                ["AGENTS.md"] = "# Test agent\n",
-                ["launcher/agent-rules.md"] = "# Priority rules\n\n{{AIRC_SECTION}}\n",
-                [".grok/skills/test/SKILL.md"] = "# Test skill\n",
-            });
-        CreateClone(root, "SimonBarnett", "fixture", Path.Combine(cloneRoot, "fixture"),
-            new Dictionary<string, string> { ["SC263182/README.md"] = "# Integration project\n" });
-        string aircFixture = Path.Combine(root, "airc");
-        Directory.CreateDirectory(aircFixture);
-        File.WriteAllText(Path.Combine(aircFixture, "bobiverse-airc-commands.md"), "# Commands skill\n");
-        File.WriteAllText(Path.Combine(aircFixture, "bobiverse-airc.md"), "# Architecture skill\n");
-        string cliRoot = Path.Combine(root, "cli");
-        string ghDir = Path.Combine(cliRoot, "gh");
-        string grokDir = Path.Combine(cliRoot, "grok");
-        CopyFakeCli(fakeCli, ghDir, "gh.exe");
-        CopyFakeCli(fakeCli, grokDir, "grok.exe");
-        CopyGitExecutable(ghDir);
-
-        string prioritySkills = Path.Combine(cloneRoot, "agentic_fomprep", ".grok", "skills").Replace('\\', '/');
-        string original = $"[skills]\npaths = [\"{prioritySkills}\", \"C:/bobiverse/airc/.grok/skills\"]\n";
-        const string canary = "do-not-read-or-print-this-canary";
-        ScenarioResult noAirc;
-        using (PrepareConnectionFile(root, canary))
-            noAirc = RunLauncherScenario(root, launcherExe, cloneRoot, ghDir, grokDir, original, null, false);
-        AssertScenarioClean(noAirc, canary, original, "airc=no");
-        Assert(noAirc.Stdout.Contains("bobiverse airc skills path", StringComparison.OrdinalIgnoreCase),
-            "airc=no did not print the global-config warning");
-        Assert(noAirc.SessionRules.All(r => !r.Contains("bobiverse-airc", StringComparison.OrdinalIgnoreCase)
-            && !r.Contains("DCCLISTEN", StringComparison.Ordinal)), "airc=no session contained airc guidance");
-
-        ScenarioResult aircYes = RunLauncherScenario(root, launcherExe, cloneRoot, ghDir, grokDir, original,
-            "--airc-console testbox_console", false);
-        AssertScenarioClean(aircYes, canary, original, "airc=yes");
-        Assert(aircYes.Stdout.Contains("airc: using testbox_console", StringComparison.OrdinalIgnoreCase)
-            && !aircYes.Stdout.Contains("console not verified", StringComparison.OrdinalIgnoreCase),
-            "launcher should use digest-verified console without unverified fallback");
-        Assert(aircYes.SessionRules.Length == 1
-            && aircYes.SessionRules[0].Contains("verified from the Bob report", StringComparison.Ordinal)
-            && aircYes.SessionRules[0].Contains("bobiverse-airc-commands", StringComparison.Ordinal)
-            && aircYes.AircFiles.Select(File.ReadAllText).Any(f => f.Contains("DCCLISTEN", StringComparison.Ordinal)),
-            "airc=yes did not write Bob-report-verified session-only airc rules");
-        Assert(aircYes.AircFiles.Length == 3, "airc files were not confined to the session airc folder");
-
-        ScenarioResult fetchFailure = RunLauncherScenario(root, launcherExe, cloneRoot, ghDir, grokDir, original,
-            "--airc-console testbox_console", true);
-        AssertScenarioClean(fetchFailure, canary, original, "airc skill fetch failure");
-        Assert(fetchFailure.Stdout.Contains("airc: no (continuing without airc)", StringComparison.Ordinal),
-            "non-interactive airc skill fetch failure did not continue without airc");
-        Assert(fetchFailure.SessionRules.Length == 1
-            && !fetchFailure.SessionRules[0].Contains("bobiverse-airc", StringComparison.OrdinalIgnoreCase),
-            "failed airc skill fetch left airc instructions in session rules");
-        Assert(noAirc.SessionMetadata.Any(m => m.Contains("\"priorityUserLogin\": \"FixtureUser\"", StringComparison.Ordinal))
-            && aircYes.SessionMetadata.Any(m => m.Contains("\"priorityUserLogin\": \"FixtureUser\"", StringComparison.Ordinal)),
-            "dry-run did not record the explicit test-only session owner");
-
-        ScenarioResult missingOwner = RunLauncherScenario(root, launcherExe, cloneRoot, ghDir, grokDir, original,
-            null, false, hoursUser: null, expectedExit: 2);
-        Assert(missingOwner.Stdout.Contains("Priority USERLOGIN unavailable", StringComparison.Ordinal)
-            && missingOwner.Stdout.Contains("No default login is used", StringComparison.Ordinal)
-            && missingOwner.SessionMetadata.Length == 0,
-            "missing session owner did not fail closed");
-    }
-    finally
-    {
-        Environment.SetEnvironmentVariable("PRIORITY_AGENT_AIRC_REPORT_JSON", null);
-        DeleteTempDirectory(root);
-    }
-}
-
-static void TestReadmeAircDiscovery()
-{
-    string readme = File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "fixtures", "launcher-README.md"));
-    Assert(readme.Contains("airc_consoles", StringComparison.Ordinal),
-        "README must document Bob report airc_consoles discovery");
-    Assert(readme.Contains("airc_console_details", StringComparison.Ordinal),
-        "README must document airc_console_details channel resolution (FR #263)");
-    Assert(readme.Contains("#wonderland", StringComparison.Ordinal),
-        "README must document #wonderland default for non-shop consoles");
-    Assert(readme.Contains("console not verified", StringComparison.Ordinal),
-        "README must document the unverified configured-console fallback when the report is unavailable");
-    Assert(!readme.Contains("the Bob report does not list connected customer consoles", StringComparison.Ordinal),
-        "README still claims the Bob report does not list connected consoles");
-    Assert(!readme.Contains("then uses a read-only IRC `NAMES` lookup", StringComparison.Ordinal),
-        "README numbered flow must not claim a live NAMES picker");
-    Assert(readme.Contains("uncommitted changes is still usable", StringComparison.Ordinal),
-        "README must say a dirty agentic_fomprep clone is usable");
 }
 
 static void TestDirtyClonePreferredOverStub()
@@ -343,387 +259,6 @@ static void TestAiRootBuildSearchRoots()
         "must not invent paths on drives that are not ready");
 }
 
-static void TestDiscoveryFailure()
-{
-    string root = NewTemp();
-    try
-    {
-        foreach (var discovery in new[]
-        {
-            AircConsoleDiscoveryResult.AvailableWith(Array.Empty<string>()),
-            AircConsoleDiscoveryResult.Unavailable("IRC server requires authentication")
-        })
-        {
-            bool configuredSelected = AircSupport.TrySelectListedConsole(true, discovery, "configured_console", null,
-                false, null, out string? configuredConsole, out string configuredReason);
-            Assert(configuredSelected && configuredConsole == "configured_console", "configured console was not trusted when listing was unavailable or empty");
-            Assert(configuredReason.StartsWith("console not verified:", StringComparison.Ordinal), "configured console was not marked unverified");
-
-            bool explicitSelected = AircSupport.TrySelectListedConsole(true, discovery, "configured_console", "explicit_console",
-                false, null, out string? explicitConsole, out string explicitReason);
-            Assert(explicitSelected && explicitConsole == "explicit_console", "CLI console override was not trusted when listing was unavailable or empty");
-            Assert(explicitReason.StartsWith("console not verified:", StringComparison.Ordinal), "CLI console was not marked unverified");
-
-            AircSessionFiles configuredFiles = AircSupport.WriteSessionFiles(Path.Combine(root, Guid.NewGuid().ToString("N")),
-                new[] { "airc commands", "airc architecture" }, "DCCLISTEN for {{AIRC_CONSOLE}}", configuredConsole!);
-            string configuredRules = AircSupport.RenderSessionRules(
-                File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "fixtures", "agent-rules.md")),
-                true, configuredConsole, "local fixture", configuredFiles,
-                consoleVerified: false, consoleSource: ".priority-agent.json");
-            Assert(configuredRules.Contains(configuredConsole!) && configuredRules.Contains(configuredFiles.DccGuide)
-                && File.ReadAllText(configuredFiles.DccGuide).Contains(configuredConsole!),
-                "configured console discovery fallback did not load airc session context");
-            Assert(configuredRules.Contains("selected from .priority-agent.json and was not verified as connected", StringComparison.Ordinal)
-                && !configuredRules.Contains("read-only IRC NAMES lookup", StringComparison.Ordinal),
-                "unverified console provenance was described as a NAMES lookup");
-
-            bool noneSelected = AircSupport.TrySelectListedConsole(true, discovery, null, null,
-                false, null, out string? noneConsole, out string noConsoleReason);
-            Assert(!noneSelected && noneConsole == null && !string.IsNullOrWhiteSpace(noConsoleReason),
-                "airc should be disabled with a warning reason when discovery has no console and no nick is configured");
-            string noAircRules = AircSupport.RenderSessionRules(
-                File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "fixtures", "agent-rules.md")),
-                false, null, "", null);
-            Assert(!noAircRules.Contains("bobiverse-airc", StringComparison.OrdinalIgnoreCase)
-                && !noAircRules.Contains("_console", StringComparison.OrdinalIgnoreCase)
-                && !noAircRules.Contains("DCCLISTEN", StringComparison.Ordinal),
-                "no-console fallback left airc instructions enabled");
-        }
-    }
-    finally { DeleteTempDirectory(root); }
-    Assert(!AircSupport.TrySelectListedConsole(true, AircConsoleDiscoveryResult.Unavailable("listing unavailable"),
-        "bad nick", null, false, null, out _, out _), "invalid configured nick was trusted");
-    Assert(!AircSupport.IsValidConsole("name_console PRIVMSG #channel"), "strict console validation accepted an injected suffix");
-}
-
-static void TestReportParsing()
-{
-    var present = AircConsoleDiscovery.ParseReport(
-        """{"airc_consoles":["@flamingo_console","win-mpre8vi4u6u_console","visitor"]}""");
-    Assert(present.Available && present.Consoles.SequenceEqual(new[] { "flamingo_console", "win-mpre8vi4u6u_console" }),
-        "present airc_consoles was not normalized");
-
-    var empty = AircConsoleDiscovery.ParseReport("""{"airc_consoles":[]}""");
-    Assert(empty.Available && empty.Consoles.Count == 0, "empty airc_consoles must be Available with zero consoles");
-
-    var missing = AircConsoleDiscovery.ParseReport("""{"machines":{"flamingo":{"pcent":{}}}}""");
-    Assert(!missing.Available && missing.Error.Contains("no airc_consoles", StringComparison.OrdinalIgnoreCase),
-        "missing airc_consoles without console_nicks must be Unavailable");
-
-    var fromNicks = AircConsoleDiscovery.ParseReport(
-        """{"machines":{"flamingo":{"console_nicks":["flamingo_console"]},"x":{"console_nicks":["bad"]}}}""");
-    Assert(fromNicks.Available && fromNicks.Consoles.SequenceEqual(new[] { "flamingo_console" }),
-        "console_nicks fallback did not collect valid *_console nicks");
-
-    var badJson = AircConsoleDiscovery.ParseReport("{not-json");
-    Assert(!badJson.Available && badJson.Error.Contains("invalid", StringComparison.OrdinalIgnoreCase),
-        "bad JSON must be Unavailable");
-}
-
-static void TestConsoleChannelResolution()
-{
-    // Digest details win (customer console must not invent #<stem>).
-    var withDetails = AircConsoleDiscovery.ParseReport(
-        """
-        {
-          "airc_consoles":["hrs-priority-de_console","flamingo_console"],
-          "airc_console_details":[
-            {"nick":"hrs-priority-de_console","machine":"hrs-priority-de","channel":"#wonderland"},
-            {"nick":"flamingo_console","machine":"flamingo","channel":"#flamingo"}
-          ]
-        }
-        """);
-    Assert(withDetails.Available
-        && withDetails.ChannelsByNick["hrs-priority-de_console"] == "#wonderland"
-        && withDetails.ChannelsByNick["flamingo_console"] == "#flamingo",
-        "airc_console_details channels were not parsed");
-    Assert(AircSupport.ChannelForConsole("hrs-priority-de_console", withDetails.ChannelsByNick) == "#wonderland",
-        "digest channel=#wonderland must win for hrs-priority-de_console");
-    Assert(AircSupport.ChannelForConsole("flamingo_console", withDetails.ChannelsByNick) == "#flamingo",
-        "shop digest channel must win for flamingo_console");
-
-    // Shop stem fallback when details omit the nick.
-    Assert(AircSupport.ChannelForConsole("flamingo_console") == "#flamingo", "shop flamingo must use #flamingo");
-    Assert(AircSupport.ChannelForConsole("marchhare_console") == "#marchhare", "shop marchhare must use #marchhare");
-    Assert(AircSupport.ChannelForConsole("redqueen_console") == "#redqueen", "shop redqueen must use #redqueen");
-
-    // Non-shop with missing channel defaults to #wonderland (never #<truncated-stem>).
-    Assert(AircSupport.ChannelForConsole("hrs-priority-de_console") == "#wonderland",
-        "customer console without digest channel must default to #wonderland");
-    Assert(AircSupport.ChannelForConsole("hrs-priority-de_console") != "#hrs-priority-de",
-        "must not invent #hrs-priority-de from the nick stem");
-
-    // Picker shows channel next to nick.
-    Assert(AircSupport.FormatConsolePickerLine("hrs-priority-de_console", null, withDetails.ChannelsByNick)
-            == "hrs-priority-de_console (#wonderland)",
-        "picker line must show digest channel");
-    Assert(AircSupport.FormatConsolePickerLine("flamingo_console", "flamingo_console")
-            == "flamingo_console (#flamingo) (configured)",
-        "picker line must show shop channel and configured tag");
-
-    // Session rules use resolved channel, not always #<stem>.
-    string root = NewTemp();
-    try
-    {
-        AircSessionFiles files = AircSupport.WriteSessionFiles(root,
-            new[] { "commands", "architecture" }, "DCC {{AIRC_CONSOLE}}", "hrs-priority-de_console");
-        string rules = AircSupport.RenderSessionRules("{{AIRC_SECTION}}", true, "hrs-priority-de_console",
-            "GitHub @ test", files, channelsByNick: withDetails.ChannelsByNick);
-        Assert(rules.Contains("on channel `#wonderland`", StringComparison.Ordinal)
-            && !rules.Contains("on channel `#hrs-priority-de`", StringComparison.Ordinal),
-            "session rules must use digest/wonderland channel for customer console");
-    }
-    finally { DeleteTempDirectory(root); }
-}
-
-static void TestDiscoverInjection()
-{
-    // CI launcher-release exports PRIORITY_AGENT_AIRC_REPORT_JSON for dry-runs.
-    // Explicit fetch must still win (MRB #259); clear/restore around fixture-only path.
-    string? priorFixture = Environment.GetEnvironmentVariable("PRIORITY_AGENT_AIRC_REPORT_JSON");
-    try
-    {
-        var ok = AircConsoleDiscovery.Discover(
-            reportUrl: "https://example.invalid/report",
-            fetch: (_, _) => """{"airc_consoles":["testbox_console"]}""");
-        Assert(ok.Available && ok.Consoles.SequenceEqual(new[] { "testbox_console" }),
-            "injectable fetch did not return AvailableWith");
-
-        // Even when a process fixture is present, explicit fetch overrides it.
-        string leakRoot = NewTemp();
-        try
-        {
-            string leakPath = Path.Combine(leakRoot, "ci-leak-report.json");
-            File.WriteAllText(leakPath, """{"airc_consoles":["testbox_console","flamingo_console"]}""");
-            Environment.SetEnvironmentVariable("PRIORITY_AGENT_AIRC_REPORT_JSON", leakPath);
-            var overrides = AircConsoleDiscovery.Discover(
-                reportUrl: "https://example.invalid/report",
-                fetch: (_, _) => """{"airc_consoles":["testbox_console"]}""");
-            Assert(overrides.Available && overrides.Consoles.SequenceEqual(new[] { "testbox_console" }),
-                "explicit fetch must override PRIORITY_AGENT_AIRC_REPORT_JSON (CI leak)");
-        }
-        finally { DeleteTempDirectory(leakRoot); }
-
-        var fail = AircConsoleDiscovery.Discover(
-            reportUrl: "https://example.invalid/report",
-            fetch: (_, _) => throw new HttpRequestException("connection refused"));
-        Assert(!fail.Available && fail.Error.Contains("unavailable", StringComparison.OrdinalIgnoreCase),
-            "fetch failure must keep unverified fallback Unavailable");
-
-        string root = NewTemp();
-        try
-        {
-            string path = Path.Combine(root, "fixture-report.json");
-            File.WriteAllText(path, """{"airc_consoles":["fixture_console"]}""");
-            Environment.SetEnvironmentVariable("PRIORITY_AGENT_AIRC_REPORT_JSON", path);
-            // No fetch arg: fixture env supplies the body (production dry-run path).
-            var fromFile = AircConsoleDiscovery.Discover();
-            Assert(fromFile.Available && fromFile.Consoles.SequenceEqual(new[] { "fixture_console" }),
-                "PRIORITY_AGENT_AIRC_REPORT_JSON fixture was ignored");
-        }
-        finally
-        {
-            DeleteTempDirectory(root);
-        }
-    }
-    finally
-    {
-        Environment.SetEnvironmentVariable("PRIORITY_AGENT_AIRC_REPORT_JSON", priorFixture);
-    }
-}
-
-static void TestVerifiedBobReportRules()
-{
-    string root = NewTemp();
-    try
-    {
-        AircSessionFiles files = AircSupport.WriteSessionFiles(root,
-            new[] { "commands", "architecture" }, "DCC {{AIRC_CONSOLE}}", "flamingo_console");
-        string verified = AircSupport.RenderSessionRules("{{AIRC_SECTION}}", true, "flamingo_console",
-            "local", files, consoleVerified: true);
-        Assert(verified.Contains("verified from the Bob report", StringComparison.Ordinal)
-            && !verified.Contains("NAMES", StringComparison.Ordinal),
-            "verified rules must cite Bob report");
-        string unverified = AircSupport.RenderSessionRules("{{AIRC_SECTION}}", true, "flamingo_console",
-            "local", files, consoleVerified: false, consoleSource: "--airc-console");
-        Assert(unverified.Contains("selected from --airc-console and was not verified as connected", StringComparison.Ordinal),
-            "unverified rules text drifted");
-    }
-    finally { DeleteTempDirectory(root); }
-}
-
-static FileStream PrepareConnectionFile(string root, string canary)
-{
-    string passwords = Path.Combine(root, "passwords");
-    Directory.CreateDirectory(passwords);
-    var file = new FileStream(Path.Combine(passwords, "fixture-connections.txt"),
-        FileMode.Create, FileAccess.ReadWrite, FileShare.None);
-    byte[] content = Encoding.UTF8.GetBytes(canary);
-    file.Write(content);
-    file.Flush();
-    return file;
-}
-
-static ScenarioResult RunLauncherScenario(string root, string launcherExe, string cloneRoot,
-    string ghDir, string grokDir, string originalConfig, string? aircArgs, bool failSkillFetch,
-    string? hoursUser = "FixtureUser", int expectedExit = 0)
-{
-    string scenario = Path.Combine(root, "scenario-" + Guid.NewGuid().ToString("N"));
-    string home = Path.Combine(scenario, "home");
-    string local = Path.Combine(scenario, "local");
-    Directory.CreateDirectory(Path.Combine(home, ".grok"));
-    Directory.CreateDirectory(local);
-    string config = Path.Combine(home, ".grok", "config.toml");
-    File.WriteAllText(config, originalConfig);
-    var start = new ProcessStartInfo(launcherExe)
-    {
-        UseShellExecute = false,
-        RedirectStandardOutput = true,
-        RedirectStandardError = true,
-        RedirectStandardInput = true,
-        WorkingDirectory = cloneRoot,
-    };
-    foreach (string arg in new[]
-    {
-        "--dry-run", "--customer", "fixture", "--project", "SC263182", "--root", cloneRoot,
-        "--passwords-dir", Path.Combine(root, "passwords"), "--no-pause", "--no-fuel-check",
-    })
-        start.ArgumentList.Add(arg);
-    if (!string.IsNullOrWhiteSpace(hoursUser))
-    {
-        start.ArgumentList.Add("--hours-user");
-        start.ArgumentList.Add(hoursUser);
-    }
-    if (!string.IsNullOrWhiteSpace(aircArgs))
-        foreach (string arg in aircArgs.Split(' ', StringSplitOptions.RemoveEmptyEntries)) start.ArgumentList.Add(arg);
-    start.Environment["USERPROFILE"] = home;
-    start.Environment["HOME"] = home;
-    start.Environment["LOCALAPPDATA"] = local;
-    start.Environment["XDG_DATA_HOME"] = local;
-    start.Environment["PATH"] = string.Join(Path.PathSeparator, new[] { ghDir, grokDir, start.Environment["PATH"] ?? "" });
-    start.Environment["PRIORITY_AGENT_TEST_GH"] = Path.Combine(ghDir, "gh.exe");
-    start.Environment["PRIORITY_AGENT_TEST_GROK"] = Path.Combine(grokDir, "grok.exe");
-    start.Environment["FAKE_GH_FAIL_SKILLS"] = failSkillFetch ? "1" : "0";
-    start.Environment["FAKE_GROK_COMMAND"] = launcherExe + " --mcp-catalog";
-    start.Environment["FAKE_AIRC_FIXTURE_DIR"] = Path.Combine(root, "airc");
-    using Process process = Process.Start(start) ?? throw new InvalidOperationException("Could not start published launcher");
-    Task<string> stdoutTask = process.StandardOutput.ReadToEndAsync();
-    Task<string> stderrTask = process.StandardError.ReadToEndAsync();
-    process.WaitForExit();
-    string stdout = stdoutTask.GetAwaiter().GetResult();
-    string stderr = stderrTask.GetAwaiter().GetResult();
-    Assert(process.ExitCode == expectedExit, $"published launcher dry run exited {process.ExitCode}: {stdout}\n{stderr}");
-    if (expectedExit != 0)
-    {
-        string sessionsDirEarly = Path.Combine(local, "PriorityAgent", "sessions");
-        bool wroteIdentity = Directory.Exists(sessionsDirEarly)
-            && Directory.GetDirectories(sessionsDirEarly).Any(dir => File.Exists(Path.Combine(dir, "identity.json")));
-        Assert(!wroteIdentity, "missing session owner still wrote identity.json");
-        return new ScenarioResult(stdout, stderr, File.ReadAllBytes(config), Array.Empty<string>(), Array.Empty<string>(), Array.Empty<string>(), Array.Empty<string>());
-    }
-    Assert(!string.IsNullOrWhiteSpace(hoursUser), "successful dry-run has no explicit session owner");
-
-    string sessionsDir = Path.Combine(local, "PriorityAgent", "sessions");
-    string[] sessionDirs = Directory.Exists(sessionsDir) ? Directory.GetDirectories(sessionsDir) : Array.Empty<string>();
-    Assert(sessionDirs.Length == 1, $"expected one real launcher session, found {sessionDirs.Length}");
-    string identity = File.ReadAllText(Path.Combine(sessionDirs[0], "identity.json"));
-    Assert(identity.Contains(hoursUser!, StringComparison.Ordinal) && !identity.Contains("SimonB", StringComparison.Ordinal),
-        "identity.json did not keep the explicit test-only session owner");
-    string[] rules = sessionDirs.Select(d => File.ReadAllText(Path.Combine(d, "rules.md"))).ToArray();
-    string[] metadata = sessionDirs.Select(d => File.ReadAllText(Path.Combine(d, "launch.json"))).ToArray();
-    string[] aircFiles = Directory.Exists(Path.Combine(sessionDirs[0], "airc"))
-        ? Directory.GetFiles(Path.Combine(sessionDirs[0], "airc"), "*", SearchOption.AllDirectories)
-        : Array.Empty<string>();
-    string logDir = Path.Combine(local, "PriorityAgent", "logs");
-    string[] logs = Directory.Exists(logDir) ? Directory.GetFiles(logDir).Select(File.ReadAllText).ToArray() : Array.Empty<string>();
-    return new ScenarioResult(stdout, stderr, File.ReadAllBytes(config), rules, metadata, aircFiles, logs);
-}
-
-static void AssertScenarioClean(ScenarioResult result, string canary, string originalConfig, string scenario)
-{
-    Assert(result.Config.SequenceEqual(Encoding.UTF8.GetBytes(originalConfig)),
-        $"{scenario} changed config.toml");
-    string[] artifacts = new[] { result.Stdout, result.Stderr }.Concat(result.SessionRules)
-        .Concat(result.SessionMetadata).Concat(result.Logs).ToArray();
-    Assert(artifacts.All(x => !x.Contains(canary, StringComparison.Ordinal)),
-        $"{scenario} exposed the connection-file canary in output or launcher artifacts");
-}
-
-static void CopyFakeCli(string sourceDir, string destinationDir, string exeName)
-{
-    Directory.CreateDirectory(destinationDir);
-    foreach (string file in Directory.GetFiles(sourceDir))
-    {
-        string name = Path.GetFileName(file);
-        if (name.EndsWith(".exe", StringComparison.OrdinalIgnoreCase) || name.Equals("FakeCli", StringComparison.Ordinal))
-            name = exeName;
-        string destination = Path.Combine(destinationDir, name);
-        File.Copy(file, destination, true);
-        if (!OperatingSystem.IsWindows() && (name.EndsWith(".exe", StringComparison.OrdinalIgnoreCase) || name == exeName))
-            File.SetUnixFileMode(destination, UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute
-                | UnixFileMode.GroupRead | UnixFileMode.GroupExecute | UnixFileMode.OtherRead | UnixFileMode.OtherExecute);
-    }
-}
-
-static void CopyGitExecutable(string destinationDir)
-{
-    if (OperatingSystem.IsWindows()) return;
-    foreach (string directory in (Environment.GetEnvironmentVariable("PATH") ?? "").Split(Path.PathSeparator))
-    {
-        string source = Path.Combine(directory.Trim('"'), "git");
-        if (!File.Exists(source)) continue;
-        string destination = Path.Combine(destinationDir, "git.exe");
-        File.Copy(source, destination, true);
-        if (!OperatingSystem.IsWindows())
-            File.SetUnixFileMode(destination, UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute
-                | UnixFileMode.GroupRead | UnixFileMode.GroupExecute | UnixFileMode.OtherRead | UnixFileMode.OtherExecute);
-        return;
-    }
-    throw new InvalidOperationException("Could not locate git for launcher integration test");
-}
-
-static void CreateClone(string root, string owner, string repo, string clonePath, Dictionary<string, string> files)
-{
-    string seed = Path.Combine(root, "seed", owner, repo);
-    string remote = Path.Combine(root, "remote", owner, repo + ".git");
-    Directory.CreateDirectory(seed);
-    Directory.CreateDirectory(Path.GetDirectoryName(remote)!);
-    RunGit(root, "init", "--bare", remote);
-    RunGit(seed, "init", "-b", "main");
-    RunGit(seed, "config", "user.email", "test@example.invalid");
-    RunGit(seed, "config", "user.name", "Integration Test");
-    foreach ((string path, string content) in files)
-    {
-        string target = Path.Combine(seed, path.Replace('/', Path.DirectorySeparatorChar));
-        Directory.CreateDirectory(Path.GetDirectoryName(target)!);
-        File.WriteAllText(target, content);
-    }
-    RunGit(seed, "add", ".");
-    RunGit(seed, "commit", "-m", "fixture");
-    RunGit(seed, "remote", "add", "origin", remote);
-    RunGit(seed, "push", "-u", "origin", "main");
-    RunGit(root, "--git-dir", remote, "symbolic-ref", "HEAD", "refs/heads/main");
-    Directory.CreateDirectory(Path.GetDirectoryName(clonePath)!);
-    RunGit(root, "clone", remote, clonePath);
-    RunGit(clonePath, "remote", "set-url", "origin", Path.GetFullPath(remote).Replace('\\', '/'));
-}
-
-static void RunGit(string cwd, params string[] args)
-{
-    var start = new ProcessStartInfo("git")
-    {
-        WorkingDirectory = cwd,
-        RedirectStandardOutput = true,
-        RedirectStandardError = true,
-    };
-    foreach (string arg in args) start.ArgumentList.Add(arg);
-    using Process process = Process.Start(start) ?? throw new InvalidOperationException("Could not start git");
-    string stdout = process.StandardOutput.ReadToEnd();
-    string stderr = process.StandardError.ReadToEnd();
-    process.WaitForExit();
-    if (process.ExitCode != 0) throw new InvalidOperationException($"git {string.Join(' ', args)} failed: {stdout}\n{stderr}");
-}
-
 static string NewTemp()
 {
     string path = Path.Combine(Path.GetTempPath(), "priority-agent-tests-" + Guid.NewGuid().ToString("N"));
@@ -758,6 +293,3 @@ static void Assert(bool condition, string message)
 {
     if (!condition) throw new InvalidOperationException(message);
 }
-
-sealed record ScenarioResult(string Stdout, string Stderr, byte[] Config, string[] SessionRules,
-    string[] SessionMetadata, string[] AircFiles, string[] Logs);

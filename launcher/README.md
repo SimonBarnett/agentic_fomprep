@@ -46,16 +46,12 @@ with the right context.
      an existing clone under any searched `X:\AI` or `X:\repos` is reused.
    - **Project / service call**: one of the customer repo's top-level folders, skipping dot-folders.
      cwd is that folder.
-5. It asks whether this session needs airc. Connected `*_console` nicks are listed from the Bob
-   digest report (`GET https://bob.ntsa.uk/bob/v1/report` → top-level `airc_consoles`, optional
-   `airc_console_details` with `channel`, or per-machine `console_nicks`) with a short timeout and no
-   credentials. Interactive mode offers a numbered picker showing each nick and its target channel
-   (configured nick preselected). Non-interactive: `--airc-console` must be in the list, or a single
-   console is auto-picked. Channel resolution: digest `channel` when present; else `#<stem>` for
-   registered shop consoles only; else `#wonderland`. If the report fetch fails or the field is
-   missing, a valid configured / `--airc-console` nick is still trusted with a "console not verified"
-   note. With no nick and no listing, the launcher warns and offers to continue without airc. It
-   never sends a PRIVMSG during discovery.
+5. It loads **Priority WCF instances** from `.priority-agent.json` (project file overrides customer).
+   Each instance has `id`, `serverUrl`, and `mode` (`direct` or `relay`). Credentials are never stored
+   there. The launcher writes a session-only `wcf-instances.json` and injects WCF client instructions
+   into the agent rules (bobiverse `priority_wcf.py`, FR #6035 / #6026). Legacy `airc` / `airc_console`
+   fields still load without error and print a warning that they are ignored. `--airc`, `--no-airc`
+   and `--airc-console` are rejected with a clear "removed; use the WCF client" message.
 6. **New customer / new project** never creates anything. It prints `Ask Haitch: new customer repo for X`
    or `Ask Haitch: new project folder Y in <repo>`, copies the line to the clipboard and exits. Haitch creates it
    from `launcher/customer-setup`. A project folder must already be an authoritative `SCxxxxxx` or `SOxxxxxx`.
@@ -99,42 +95,28 @@ with the right context.
 
 Logs go to `%LOCALAPPDATA%\PriorityAgent\logs`. Per-session `launch.json` and the rendered rules go to `...\sessions`.
 
-## airc configuration and session skills
+## WCF configuration (FR #348)
 
-The launcher prompts `Does this session need airc? [y/N]` after the customer/project context is selected.
-Project settings override customer settings; the project file is `<project>/.priority-agent.json`,
-falling back to `<customer>/.priority-agent.json`. The `airc` value is the interactive prompt's default;
-the user can still choose either answer. Non-interactive and smoke runs use the configured value:
+Project settings override customer settings. The project file is `<project>/.priority-agent.json`,
+falling back to `<customer>/.priority-agent.json`:
 
 ```json
 {
-  "airc": true,
-  "airc_console": "flamingo_console"
+  "wcf": [
+    { "id": "saas-dev", "serverUrl": "https://prioritydev.example.invalid", "mode": "direct" },
+    { "id": "hrs-lan", "serverUrl": "http://priority.internal.example.invalid", "mode": "relay" }
+  ]
 }
 ```
 
-`airc` is optional and defaults to no. `airc_console` is an optional preferred connected nick. Non-interactive
-and smoke runs use the config value or no; they never prompt. `--airc` and `--no-airc` override the config,
-and `--airc-console <nick>` enables airc and selects that connected console.
+`mode` is `direct` (reachable HTTPS host) or `relay` (same bobiverse WCF client via on-LAN airc transport
+for internal-only servers). An empty or missing list is fine; the agent rules then say to ask Simon.
+Aliases: top-level `wcfInstances`, or `wcf.instances`, or a single `wcf` object. Also accept `url` /
+`server_url` for the host. **Never** put passwords, CredMan targets, or tokens in this file.
 
-When enabled, the launcher writes only `bobiverse-airc-commands`, `bobiverse-airc`, and DCC guidance into
-`%LOCALAPPDATA%\PriorityAgent\sessions\<session>\airc\`. Rendered rules point to those files so their contents
-stay off the Windows command line. The airc skills path is never added to global Grok config (the existing
-Priority skills path is unchanged). Troubleshooting is referenced by path and is not preloaded. If a bobiverse
-airc skills path is already in the global Grok config, the launcher warns without editing it.
-
-Connected consoles come from the Bob digest report (bobiverse #5204 / PR #5469 / #5947): credential-free
-`airc_consoles` (preferred) or `machines.*.console_nicks`, plus optional `airc_console_details`
-(`[{nick, machine, channel}]`). The target IRC channel is taken from `airc_console_details[].channel`
-when present. Otherwise registered shop consoles (`flamingo`, `marchhare`, `redqueen`) keep
-`#<stem>`; every other console defaults to `#wonderland` (customer consoles must not invent
-`#hrs-priority-de` from a truncated nick). The interactive picker shows `(#channel)` next to each
-nick. Session rules say the pick was verified from the Bob report when discovery succeeds. If the
-report is unreachable or those fields are missing, a valid configured / `--airc-console` nick is
-trusted with a visible "console not verified" note (channel still follows the shop / `#wonderland`
-rules). Without a configured nick, unavailable or empty discovery warns and offers to continue
-without airc. Tests may override the report via `PRIORITY_AGENT_AIRC_REPORT_JSON` (fixture file) or
-`PRIORITY_AGENT_REPORT_URL`.
+Legacy keys `airc` and `airc_console` are ignored with a warning. The launcher does not open DCC and
+does not send airc shell PRIVMSGs. Agent instructions require the Priority WCF client path for tables,
+procedures, forms, reports, interfaces and prepare work --- not airc shell, WINRUN, web SDK or OData.
 
 ## Agent rules (summary; full text in `agent-rules.md`)
 
@@ -168,9 +150,6 @@ PriorityAgent.exe --list                           customers (topic priority-cus
 PriorityAgent.exe --list --customer rees           + its project folders
 PriorityAgent.exe --customer rees --project SC263182
 PriorityAgent.exe --general
-PriorityAgent.exe --customer rees --project SC263182 --airc
-PriorityAgent.exe --customer rees --project SC263182 --airc-console flamingo_console
-PriorityAgent.exe --customer rees --project SC263182 --no-airc
 PriorityAgent.exe --dry-run --customer rees --project SC263182   show everything, change nothing, print the grok command
 PriorityAgent.exe --smoke --customer rees --project SC263182     real setup + one brief no-tools single-turn launch
 PriorityAgent.exe --check-hours C:\AI\rees --session <uuid>      run only the hours check (path under the resolved AI root)
@@ -200,7 +179,7 @@ cd launcher
 ```
 
 The Windows workflow also runs the published executable through dry-run integration scenarios with isolated
-profiles and fake GitHub/Grok CLIs, checking config preservation, session-only airc files, and connection-file
+profiles and fake GitHub/Grok CLIs, checking config preservation, WCF session instance files, and connection-file
 canary handling. The `Launcher release` workflow runs on launcher pull requests and `main` pushes for validation;
 it publishes a GitHub **pre-release** with `PriorityAgent.exe` and its `.sha256` file for `launcher-v*` tags or a
 manual dispatch from `main`. A `launcher-vX.Y.Z` tag stamps banner / FileVersion `X.Y.Z` / `X.Y.Z.0` and

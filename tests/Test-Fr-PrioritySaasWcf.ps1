@@ -28,6 +28,22 @@ Gate 'refuse-no-file' ($al -match 'no_instances_file') 'allowlist refuses missin
 Gate 'no-invent' ($rd -match '(?i)never invent' -or $sk -match '(?i)never invent') 'docs say never invent host/tenant'
 Gate 'oidc-first' ($rd -match 'priority-saas-oidc-login' -and $sk -match 'priority-saas-oidc-login') 'points at OIDC skill'
 Gate 'no-hardcoded-d-ai' ($bin -notmatch 'D:\\ai' -and $al -notmatch 'D:\\ai') 'no hardcoded D:\ai'
+# Phase 2 FR #339
+$prepLib = Join-Path $root 'lib\prepare.mjs'
+$procLib = Join-Path $root 'lib\proc.mjs'
+$gateLib = Join-Path $root 'lib\gate.mjs'
+$walkLib = Join-Path $root 'lib\proc-walk.mjs'
+Gate 'prepare-lib' (Test-Path -LiteralPath $prepLib) 'prepare.mjs'
+Gate 'proc-lib' (Test-Path -LiteralPath $procLib) 'proc.mjs'
+Gate 'gate-lib' (Test-Path -LiteralPath $gateLib) 'gate.mjs'
+Gate 'walk-lib' (Test-Path -LiteralPath $walkLib) 'proc-walk.mjs'
+Gate 'prepare-cli' ($bin -match 'cmdPrepare' -and $bin -match 'prepare form') 'CLI prepare form'
+Gate 'proc-cli' ($bin -match 'cmdProc' -and $bin -match 'proc start') 'CLI proc start'
+Gate 'no-phase2-stub' ($bin -notmatch 'not_implemented') 'prepare/proc implemented'
+Gate 'formprep-errs' ((Test-Path $prepLib) -and ([IO.File]::ReadAllText($prepLib) -match 'FORMPREPERRS')) 'FORMPREPERRS scrape'
+Gate 'prepared-claim' ((Test-Path $prepLib) -and ([IO.File]::ReadAllText($prepLib) -match 'preparedClaim')) 'preparedClaim gate'
+$docsTxt = if (Test-Path $docs) { [IO.File]::ReadAllText($docs) } else { '' }
+Gate 'phase2-docs' ($rd -match 'Phase 2' -and $docsTxt -match 'prepare form') 'README/docs Phase 2'
 $dagIndex = Join-Path $repo 'docs\skill-sources\medatech-network\_dag\dag-index.json'
 Gate 'dag-index' (Test-Path -LiteralPath $dagIndex) $dagIndex
 if (Test-Path -LiteralPath $dagIndex) {

@@ -2,9 +2,10 @@
 name: priority-saas-wcf
 description: >
   Allowlist-gated Priority SaaS Web SDK (WCF) client for PriorityAgent:
-  Bearer accessToken login, tenant probe, form start/rows/set/save/subform.
+  Bearer accessToken login, tenant probe, form start/rows/set/save/subform,
+  prepare form|procedure|report, FORMPREPERRS, proc start, SaaS OData gate.
   Use when: SaaS WCF, Cloud Web SDK, priority-wcf.mjs, formStart SaaS,
-  connect SaaS Priority, accessToken WCF, /priority-saas-wcf.
+  connect SaaS Priority, accessToken WCF, prepare SaaS, /priority-saas-wcf.
 ---
 
 # Priority SaaS WCF client
@@ -19,8 +20,8 @@ Grab from catalog MCP (`get_skill` with `name=priority-saas-wcf`).
 
 Need a **deterministic** Web SDK session against Priority **SaaS / Cloud**
 (`p.priority-connect.online` or regional host) to **open/edit business forms**
-or (Phase 2) prepare form/procedure/report. On-prem CredMan password path stays
-`priority-formprep` / `src/Prepare-NamedForm.ps1`.
+or **prepare form/procedure/report** / run `proc start`. On-prem CredMan password
+path stays `priority-formprep` / `src/Prepare-NamedForm.ps1`.
 
 For Cloud **dictionary / trigger** archaeology (`EFORM`, `FORMTRIG`, SEARCH-ALL-FIELD
 bodies), prefer **REST PAT + OData** (`priority-odata-dev`) or **Priority Cloud MCP**
@@ -45,6 +46,10 @@ bodies), prefer **REST PAT + OData** (`priority-odata-dev`) or **Priority Cloud 
 4. `node bin/priority-wcf.mjs probe --instance <id>`
 5. `node bin/priority-wcf.mjs session --instance <id>`
 6. Form verbs: `form start|rows|set|save|subform` with `--form <ENAME>`.
+7. Prepare: `prepare form|procedure|report --name <ENAME>` (needs `allowLive`).
+   Success = walk ended **and** independent gate (`odataBase` OData UPD/LASTPREPDATE
+   when SQL unavailable). Without gate, `preparedClaim` stays false.
+8. Proc: `proc start --name <ENAME> [--ptype P]`.
 
 ## Related
 

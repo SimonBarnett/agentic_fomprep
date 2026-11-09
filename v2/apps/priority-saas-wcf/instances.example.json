@@ -9,7 +9,8 @@
       "user": "user@example.com",
       "tokenFile": "C:\\passwords\\example-saas-oauth-tokens.json",
       "language": 3,
-      "allowLive": false
+      "allowLive": false,
+      "odataBase": ""
     }
   ]
 }

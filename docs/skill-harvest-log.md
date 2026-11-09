@@ -203,3 +203,4 @@ Expanded `priority-uat-wcf` (skill-source + catalog meta **1.2.0**) from CE Day 
 - MCP `form_update` requires `root_records` (not `root_form`).
 - Updated `API_LICENCE_WCF.md` + catalog `priority-api-licence-wcf` / `priority-mcp-forms`.
 - Source: SaaS WCF Live smoke after API License tick (generic). Folded into PR #338.
+- 2026-11-09 (FR #339): Phase 2 `priority-saas-wcf` prepare form|procedure|report + FORMPREPERRS + proc start + SaaS OData gate (`odataBase`); never preparedClaim without gate.

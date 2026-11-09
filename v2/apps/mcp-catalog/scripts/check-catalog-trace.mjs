@@ -41,4 +41,13 @@ for (const rel of traces) {
   process.stdout.write(`catalog-trace: ${rel} files=${catalog.length} skills=${skills.length}\n`);
 }
 
+const mcpNft = path.join(appRoot, '.next/server/app/mcp/route.js.nft.json');
+if (fs.existsSync(mcpNft)) {
+  const nft = JSON.parse(fs.readFileSync(mcpNft, 'utf8'));
+  const files = Array.isArray(nft.files) ? nft.files : [];
+  const dag = files.some((item) => String(item).replace(/\\/g, '/').includes('data/dag.json'));
+  if (!dag) fail('mcp route nft did not trace data/dag.json');
+  process.stdout.write('catalog-trace: data/dag.json traced\n');
+}
+
 process.stdout.write('catalog-trace: ok\n');

@@ -29,7 +29,16 @@ export async function GET(req: NextRequest) {
       origin: requestOrigin(req),
       transport: 'POST JSON-RPC to /mcp',
       protocolVersion: '2024-11-05',
-      tools: ['list_catalog', 'get_skill', 'get_instance_schema', 'get_runner_files'],
+      tools: [
+        'list_catalog',
+        'get_skill',
+        'get_instance_schema',
+        'get_runner_files',
+        'resolve_skills',
+        'get_dag_index',
+        'get_dag_node',
+        'get_skill_dag',
+      ],
       note: 'This host does not prepare Priority forms. stdio is not served here.',
     },
     { headers: responseHeaders }

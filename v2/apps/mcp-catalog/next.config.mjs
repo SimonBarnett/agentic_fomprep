@@ -5,8 +5,8 @@ const nextConfig = {
   // packages the traced files; it does not deploy output: 'standalone'.
   experimental: {
     outputFileTracingIncludes: {
-      '/': ['./catalog/**/*'],
-      '/mcp': ['./catalog/**/*'],
+      '/': ['./catalog/**/*', './data/**/*'],
+      '/mcp': ['./catalog/**/*', './data/**/*'],
     },
   },
   async headers() {

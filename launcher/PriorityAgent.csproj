@@ -20,6 +20,5 @@
   </PropertyGroup>
   <ItemGroup>
     <EmbeddedResource Include="agent-rules.md" LogicalName="agent-rules.md" />
-    <EmbeddedResource Include="airc-dcc.md" LogicalName="airc-dcc.md" />
   </ItemGroup>
 </Project>

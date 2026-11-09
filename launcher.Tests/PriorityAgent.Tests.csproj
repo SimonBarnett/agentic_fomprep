@@ -7,13 +7,12 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Remove="FakeCli/**/*.cs" />
-    <Compile Include="../launcher/AircSupport.cs" Link="AircSupport.cs" />
-    <Compile Include="../launcher/AircConsoleDiscovery.cs" Link="AircConsoleDiscovery.cs" />
+    <Compile Include="../launcher/WcfSupport.cs" Link="WcfSupport.cs" />
+    <Compile Include="../launcher/LauncherSupport.cs" Link="LauncherSupport.cs" />
     <Compile Include="../launcher/CloneResolve.cs" Link="CloneResolve.cs" />
     <Compile Include="../launcher/AiRoot.cs" Link="AiRoot.cs" />
     <None Include="fixtures/**/*" CopyToOutputDirectory="PreserveNewest" />
     <None Include="../launcher/agent-rules.md" Link="fixtures/agent-rules.md" CopyToOutputDirectory="PreserveNewest" />
-    <None Include="../launcher/airc-dcc.md" Link="fixtures/airc-dcc.md" CopyToOutputDirectory="PreserveNewest" />
     <None Include="../launcher/README.md" Link="fixtures/launcher-README.md" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 </Project>

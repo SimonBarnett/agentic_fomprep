@@ -68,4 +68,22 @@ UNIQUE(COL1,COL2)
 EOF
 ```
 
+Table title and every column title (quoted labels) must be **≤ 20 characters**.
+
 After shell install / SQL CREATE, verify physical unique indexes have `ignore_dup_key = 1`. See CE `C:\Priority\system\upgrades\8311.sh` / Day Works `shells/8357.sh`.
+
+## WINDBI: add column to existing table
+
+```
+FOR TABLE <TNAME> INSERT
+COLNAME(TYPE,width,'Title <=20 chars');
+```
+
+Example:
+
+```
+FOR TABLE ORDERITEMS INSERT
+ZPVL_PREFORIGINUK(CHAR,1,'Pref Origin UK?');
+```
+
+Do **not** use `CHANGE TABLE … ADD` for this. See `CREATE_TABLE.md` §5–§6.

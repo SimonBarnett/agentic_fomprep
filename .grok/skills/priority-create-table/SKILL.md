@@ -3,9 +3,10 @@ name: priority-create-table
 description: >
   Create Priority custom tables the Tabula-safe way: physical CREATE + unique
   index IGNORE_DUP_KEY=ON, COLUMNS.SIZE never 0 (CHAR SIZE=WIDTH; REAL/INT=8),
+  WINDBI table/column titles <= 20 chars, add columns with FOR TABLE INSERT,
   then CATALOG/INDEXES/T$EXEC bootstrap. Use when Form Generator says "Table X
   is missing column Y", Ignore Duplicate Values names a new table, SQL table
-  bootstrap, or /priority-create-table.
+  bootstrap, FOR TABLE INSERT, or /priority-create-table.
 ---
 
 # Priority create table (Tabula-safe)
@@ -30,6 +31,10 @@ Grab from catalog MCP `https://mcp-priority.ntsa.uk/mcp` (`get_skill` with `name
 5. Dictionary inserts stay IDENTITY-safe (`priority-dictionary-sql`).
 6. After physical+dict: Form Generator FCLMN paint, then Named Form Prep
    (`UPD=N` + `LASTPREPDATE` advanced).
+7. **WINDBI / DBI titles ≤ 20 characters** for the table title and every
+   column title (quoted labels).
+8. **Add a column** on an existing table in WINDBI with
+   `FOR TABLE <T> INSERT` + column line(s). Do **not** use `CHANGE TABLE … ADD`.
 
 ## Minimal physical + SIZE
 
@@ -47,6 +52,15 @@ VALUES (@tab, 1, N'EDITID', N'INT', 13, 8, N'Edit (ID)');
 INSERT INTO COLUMNS ([T$TABLE], POS, CNAME, TYPE, WIDTH, SIZE, TITLE)
 VALUES (@tab, 2, N'GUID', N'CHAR', 64, 64, N'GUID');
 ```
+
+## WINDBI add column (existing table)
+
+```
+FOR TABLE ORDERITEMS INSERT
+ZPVL_PREFORIGINUK(CHAR,1,'Pref Origin UK?');
+```
+
+Title ≤ 20 chars. Then Form Generator paint + Form Prep.
 
 ## Related
 

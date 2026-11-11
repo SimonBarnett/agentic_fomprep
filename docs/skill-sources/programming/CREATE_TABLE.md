@@ -60,6 +60,26 @@ See `DICTIONARY_SQL.md`. Short path:
 Hand SQL bootstrap is a DEV bridge. Ship via Version Revision TAKE* /
 Prepare-emitted DBI when possible (`VERSION_REVISION.md`).
 
+### 5. WINDBI titles ≤ 20 characters (CAST IRON)
+
+In WINDBI / shell DBI `CREATE TABLE` and column definitions, the **table
+title** and every **column title** (the quoted label after the type) must be
+**at most 20 characters**. Longer titles fail or truncate. Prefer short
+labels (e.g. `Pref Origin UK?`, not `Preferential Origin UK?`).
+
+### 6. Add a column with `FOR TABLE … INSERT` (WINDBI)
+
+To add a column to an **existing** table in the WINDBI SQL interpreter, do
+**not** use `CHANGE TABLE … ADD` or raw `ALTER TABLE`. Use:
+
+```
+FOR TABLE ORDERITEMS INSERT
+ZPVL_PREFORIGINUK(CHAR,1,'Pref Origin UK?');
+```
+
+Same type syntax as `CREATE TABLE` column lines. Title ≤ 20 chars. Then paint
+the column on the form (Form Generator) and Form Prep.
+
 ## Heal existing bad table
 
 ```sql

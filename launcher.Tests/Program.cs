@@ -21,6 +21,7 @@ var checks = new List<(string Name, Action Run)>
     ("saved MEDATECH empty answer binds MEDATECH; prompt has [MEDATECH] not OS user", TestSavedLoginEmptyAnswer),
     ("--hours-user OTHER wins over saved MEDATECH", TestHoursUserWinsOverSaved),
     ("MRB-434: space login and access_token row are not suggested", TestInvalidSavedLoginIgnored),
+    ("FR-387: --hours-user OTHERUSER vs whoami MEDATECH exits 2 and does not start grok", TestHoursUserDisagreesWithWhoami),
 };
 
 int failures = 0;
@@ -326,6 +327,37 @@ static void TestInvalidSavedLoginIgnored()
         Assert(LastUserFile.ReadUserLogin("saas2") == "OKUSER", "valid sibling key must still read");
         Assert(LastUserFile.ChooseRequestedUser(null, "", LastUserFile.ReadUserLogin("saas1")) == null,
             "empty Enter must not bind a refused login");
+    }
+    finally
+    {
+        Environment.SetEnvironmentVariable(LastUserFile.EnvPath, previous);
+        DeleteTempDirectory(root);
+    }
+}
+
+static void TestHoursUserDisagreesWithWhoami()
+{
+    string root = NewTemp();
+    string? previous = Environment.GetEnvironmentVariable(LastUserFile.EnvPath);
+    try
+    {
+        string path = Path.Combine(root, "last-user.json");
+        string original = """{"saas1":{"userLogin":"MEDATECH","company":"CO","identifiedAt":"2026-11-12T00:00:00Z","source":"whoami"}}""";
+        File.WriteAllText(path, original);
+        Environment.SetEnvironmentVariable(LastUserFile.EnvPath, path);
+        string? whoami = LastUserFile.ReadUserLogin("saas1");
+        Assert(whoami == "MEDATECH", "whoami fixture must be MEDATECH");
+        LastUserFile.GrokStartCount = 0;
+        var check = LastUserFile.CheckFlagAgainstWhoami("OTHERUSER", whoami);
+        Assert(!check.Ok && check.ExitCode == 2, check.Detail);
+        Assert(check.Detail.Contains("OTHERUSER", StringComparison.Ordinal)
+            && check.Detail.Contains("MEDATECH", StringComparison.Ordinal), check.Detail);
+        if (check.Ok)
+            LastUserFile.NoteGrokStart();
+        Assert(LastUserFile.GrokStartCount == 0, "grok start count must stay 0");
+        Assert(File.ReadAllText(path) == original, "last-user.json must still contain MEDATECH");
+        Assert(File.ReadAllText(path).Contains("MEDATECH", StringComparison.Ordinal), "MEDATECH must remain");
+        Assert(!File.ReadAllText(path).Contains("OTHERUSER", StringComparison.Ordinal), "flag must not be written");
     }
     finally
     {

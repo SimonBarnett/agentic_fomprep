@@ -1,0 +1,6 @@
+{
+  "name": "priority-service-desk-numeration-fiscal-year-constant",
+  "title": "New-year document prefixes did not open because numeration followed the calendar year",
+  "description": "Open Numeration Templates did not produce the new-year document prefix in one company because the DocumentNumeration constant was 0 (calendar year). Setting it to 1 (fiscal year) and rerunning the procedure created documents with the new prefix.",
+  "version": "1.0.0"
+}

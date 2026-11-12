@@ -21,6 +21,11 @@ var checks = new List<(string Name, Action Run)>
     ("saved MEDATECH empty answer binds MEDATECH; prompt has [MEDATECH] not OS user", TestSavedLoginEmptyAnswer),
     ("--hours-user OTHER wins over saved MEDATECH", TestHoursUserWinsOverSaved),
     ("MRB-434: space login and access_token row are not suggested", TestInvalidSavedLoginIgnored),
+    ("session metadata userLoginSource saved on empty Enter", TestSessionSourceSaved),
+    ("--hours-user matching whoami records flag", TestSessionSourceFlagMatchesWhoami),
+    ("MRB-439 hostile: typed login is client even when equals saved", TestSessionSourceTypedIsClient),
+    ("MRB-439 hostile: identity has no token keys", TestSessionIdentityNoSecrets),
+    ("MRB-444 hostile: hours-routing has on_behalf_of not user and no token keys", TestHoursRoutingNoSecrets),
     ("FR-387: --hours-user OTHERUSER vs whoami MEDATECH exits 2 and does not start grok", TestHoursUserDisagreesWithWhoami),
     ("MRB-438: matching --hours-user continues; missing whoami does not block", TestHoursUserMatchesOrAbsentWhoami),
 };
@@ -334,6 +339,75 @@ static void TestInvalidSavedLoginIgnored()
         Environment.SetEnvironmentVariable(LastUserFile.EnvPath, previous);
         DeleteTempDirectory(root);
     }
+}
+
+static void TestSessionSourceSaved()
+{
+    string root = NewTemp();
+    try
+    {
+        Assert(SessionLoginMeta.ClassifySource(null, "", "MEDATECH") == SessionLoginMeta.SourceSaved,
+            "empty Enter must classify saved");
+        SessionLoginMeta.WriteIdentity(root, "MEDATECH", SessionLoginMeta.SourceSaved);
+        using var id = JsonDocument.Parse(File.ReadAllText(Path.Combine(root, "identity.json")));
+        Assert(id.RootElement.GetProperty("priorityUserLogin").GetString() == "MEDATECH", "login");
+        Assert(id.RootElement.GetProperty("userLoginSource").GetString() == "saved", "source");
+        var routing = new BobHours.CustomerHoursConfig(true, "", "cust", "SC1", "", "", "ok");
+        SessionLoginMeta.WriteHoursRoutingLogin(root, "MEDATECH", routing);
+        using var hours = JsonDocument.Parse(File.ReadAllText(Path.Combine(root, "hours-routing.json")));
+        Assert(hours.RootElement.GetProperty("on_behalf_of").GetString() == "MEDATECH", "hours login");
+        Assert(!hours.RootElement.TryGetProperty("user", out _), "must not rename webhook user field");
+    }
+    finally { DeleteTempDirectory(root); }
+}
+
+static void TestSessionSourceFlagMatchesWhoami()
+{
+    Assert(SessionLoginMeta.ClassifySource("MEDATECH", "", "MEDATECH") == SessionLoginMeta.SourceFlag,
+        "matching --hours-user must still be flag");
+}
+
+static void TestSessionSourceTypedIsClient()
+{
+    Assert(SessionLoginMeta.ClassifySource(null, "MEDATECH", "MEDATECH") == SessionLoginMeta.SourceClient,
+        "typed answer must be client even when it matches saved");
+    Assert(SessionLoginMeta.ClassifySource(null, "OTHER", "MEDATECH") == SessionLoginMeta.SourceClient,
+        "typed OTHER must be client");
+}
+
+static void TestSessionIdentityNoSecrets()
+{
+    string root = NewTemp();
+    try
+    {
+        SessionLoginMeta.WriteIdentity(root, "MEDATECH", SessionLoginMeta.SourceFlag);
+        string text = File.ReadAllText(Path.Combine(root, "identity.json"));
+        Assert(!text.Contains("access_token", StringComparison.Ordinal)
+            && !text.Contains("refresh_token", StringComparison.Ordinal)
+            && !text.Contains("password", StringComparison.OrdinalIgnoreCase),
+            "identity must not look like secrets: " + text);
+        Assert(text.Contains("\"userLoginSource\":\"flag\"", StringComparison.Ordinal)
+            || text.Contains("\"userLoginSource\": \"flag\"", StringComparison.Ordinal),
+            "source flag missing: " + text);
+    }
+    finally { DeleteTempDirectory(root); }
+}
+
+static void TestHoursRoutingNoSecrets()
+{
+    string root = NewTemp();
+    try
+    {
+        var routing = new BobHours.CustomerHoursConfig(true, "", "cust", "SC1", "", "", "ok");
+        SessionLoginMeta.WriteHoursRoutingLogin(root, "MEDATECH", routing);
+        string text = File.ReadAllText(Path.Combine(root, "hours-routing.json"));
+        Assert(text.Contains("on_behalf_of", StringComparison.Ordinal), text);
+        Assert(!text.Contains("\"user\"", StringComparison.Ordinal), "must not rename webhook user field: " + text);
+        Assert(!text.Contains("access_token", StringComparison.Ordinal)
+            && !text.Contains("password", StringComparison.OrdinalIgnoreCase),
+            "hours-routing must not look like secrets: " + text);
+    }
+    finally { DeleteTempDirectory(root); }
 }
 
 static void TestHoursUserDisagreesWithWhoami()

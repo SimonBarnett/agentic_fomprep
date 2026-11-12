@@ -16,9 +16,18 @@ import { runPrepare } from '../lib/prepare.mjs';
 import { runProcStart } from '../lib/proc.mjs';
 import { resolveWhoami } from '../lib/whoami.mjs';
 import { emit, fail, ok, redact } from '../lib/json-out.mjs';
+import {
+  loadRequestFile,
+  fieldsFromRequestOrFlag,
+  rawJsonFromRequestOrFlag,
+  stringFromRequestOrFlag,
+} from '../lib/request-file.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '..');
+
+/** FR #389: loaded --request JSON; keys override matching flags. */
+let requestDoc = null;
 
 function arg(name, fallback = '') {
   const i = process.argv.indexOf(name);
@@ -28,6 +37,14 @@ function arg(name, fallback = '') {
 
 function hasFlag(name) {
   return process.argv.includes(name);
+}
+
+function reqString(key, cliFlag, fallback = '') {
+  return stringFromRequestOrFlag(requestDoc, key, arg(cliFlag, ''), fallback);
+}
+
+function reqRawJson(key, cliFlag) {
+  return rawJsonFromRequestOrFlag(requestDoc, key, arg(cliFlag, ''));
 }
 
 /** Top-level summary (FR-008: keep this; use help <verb> for one screen). */
@@ -45,6 +62,7 @@ Object kinds: table, form, report, procedure, interface.
   table   (see: help table)
   interface (see: help interface)
   report  (see: help report)
+  Any verb: --request <path>  UTF-8 JSON; keys fields|filter|inputs|name|form|subform override flags
   help
   help <verb>   form|prepare|proc|table|interface|report
 
@@ -57,6 +75,7 @@ CAST IRON: never invent host/tenant/company; never log tokens.
 OIDC first: skill priority-saas-oidc-login -> token file -> this client.
 Prepare success on SaaS requires an independent gate (OData when odataBase set);
 without it walkOk may be true but preparedClaim stays false.
+Request files stay outside the repo (temp / profile); never commit them.
 `;
   process.stdout.write(text);
   process.exitCode = 0;
@@ -135,11 +154,6 @@ function helpTopic(topic) {
   }
   process.stdout.write(text);
   process.exitCode = 0;
-}
-
-function parseFieldsJson(raw) {
-  if (!raw) return {};
-  return JSON.parse(raw);
 }
 
 function parseFilter(raw) {
@@ -253,7 +267,7 @@ async function cmdWhoami() {
 }
 
 async function cmdSession() {
-  const formName = arg('--form', '');
+  const formName = reqString('form', '--form', '');
   return withSession(async ({ instance, session }) => {
     const messages = [];
     let formSmoke = null;
@@ -298,8 +312,8 @@ async function openFilteredForm(session, instance, formName, filterRaw, messages
 }
 
 async function cmdForm(sub) {
-  const formName = arg('--form');
-  if (!formName) return fail('form_required', { need: '--form <ENAME>' });
+  const formName = reqString('form', '--form');
+  if (!formName) return fail('form_required', { need: '--form <ENAME> or request.form' });
   const write = sub === 'set' || sub === 'save';
   return withSession(
     async ({ instance, session, dump }) => {
@@ -307,8 +321,8 @@ async function cmdForm(sub) {
       let form;
       try {
         if (sub === 'subform') {
-          const childName = arg('--subform');
-          if (!childName) return fail('subform_required', { need: '--subform <ENAME>' });
+          const childName = reqString('subform', '--subform');
+          if (!childName) return fail('subform_required', { need: '--subform <ENAME> or request.subform' });
           form = await formStart(session.priority, formName, instance.company, { messages });
           const child = await formStartSubForm(form, childName, { messages });
           let rows = null;
@@ -326,7 +340,8 @@ async function cmdForm(sub) {
           });
         }
 
-        form = await openFilteredForm(session, instance, formName, arg('--filter'), messages);
+        const filterRaw = reqRawJson('filter', '--filter');
+        form = await openFilteredForm(session, instance, formName, filterRaw, messages);
 
         if (sub === 'start') {
           const cols = form.columns ? Object.keys(form.columns) : [];
@@ -343,15 +358,15 @@ async function cmdForm(sub) {
         }
 
         if (sub === 'set' || sub === 'save') {
-          const fields = parseFieldsJson(arg('--fields', '{}'));
+          const fields = fieldsFromRequestOrFlag(requestDoc, arg('--fields', '{}'));
           if (Object.keys(fields).length < 1) {
             await safeEnd(form);
-            return fail('fields_required', { need: '--fields JSON object' });
+            return fail('fields_required', { need: '--fields JSON object or request.fields' });
           }
           const got = await formGetRows(form, 1);
-          if (got.count < 1 && arg('--filter')) {
+          if (got.count < 1 && filterRaw) {
             await safeEnd(form);
-            return fail('no_rows_for_filter', { form: formName, filter: arg('--filter') });
+            return fail('no_rows_for_filter', { form: formName, filter: filterRaw });
           }
           if (got.count >= 1 && typeof form.setActiveRow === 'function') {
             await form.setActiveRow(Number(got.rows[0]._idx));
@@ -394,8 +409,9 @@ async function cmdForm(sub) {
 }
 
 async function cmdPrepare(kind) {
-  const name = arg('--name') || arg('--form');
-  if (!name) return fail('name_required', { need: '--name <ENAME>' });
+  const name =
+    reqString('name', '--name') || reqString('form', '--form') || arg('--form');
+  if (!name) return fail('name_required', { need: '--name <ENAME> or request.name' });
   const k = String(kind || '').toLowerCase();
   if (!['form', 'procedure', 'report'].includes(k)) {
     return fail('prepare_kind_required', { need: 'prepare form|procedure|report', got: kind });
@@ -441,8 +457,8 @@ async function cmdProc(sub) {
   if (sub !== 'start') {
     return fail('proc_sub_required', { need: 'start', got: sub });
   }
-  const name = arg('--name') || arg('--proc');
-  if (!name) return fail('name_required', { need: '--name <ENAME>' });
+  const name = reqString('name', '--name') || arg('--proc');
+  if (!name) return fail('name_required', { need: '--name <ENAME> or request.name' });
   return withSession(
     async ({ instance, session, dump, tokenSource }) => {
       const result = await runProcStart(session, instance, name, {
@@ -476,6 +492,15 @@ async function main() {
     if (topic) return helpTopic(topic);
     return usage();
   }
+
+  // FR #389: load --request before any verb that may login.
+  const requestPath = arg('--request', '');
+  if (requestPath) {
+    const loaded = loadRequestFile(requestPath);
+    if (!loaded.ok) return fail(loaded.reason || 'request_invalid', loaded, 2);
+    requestDoc = loaded.doc;
+  }
+
   if (verb === 'probe') return cmdProbe();
   if (verb === 'session') return cmdSession();
   if (verb === 'whoami') return cmdWhoami();

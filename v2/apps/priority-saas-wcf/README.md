@@ -101,7 +101,9 @@ before login. Do not copy request files into the repo.
 
 `form rows --filter` (or request-file `filter`) calls SDK `setSearchFilter` once then `getRows` from 1. Missing filter is the unfiltered read. Writes stay on `form set` / `form save`.
 
-Writes (`form set` / `form save`) require `allowLive: true` on the row (and operator approval).
+Writes (`form set` / `form save` / `form action`) require `allowLive: true` on the row (and operator approval).
+`form action --form <ENAME> --name <activation>` runs one named activation (e.g. SAVE) and returns the
+message-handler list. `allowLive: false` is refused before login.
 
 ## Phase 2: prepare + proc
 

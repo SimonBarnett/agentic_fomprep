@@ -293,11 +293,13 @@ static class Program
             return flagWhoami.ExitCode;
         }
         string? requestedUser = LastUserFile.ChooseRequestedUser(HoursUserArg, null, null);
+        string typed = "";
         if (requestedUser == null && !Console.IsInputRedirected)
         {
-            string typed = Ask(LastUserFile.FormatPrompt(savedLogin));
+            typed = Ask(LastUserFile.FormatPrompt(savedLogin));
             requestedUser = LastUserFile.ChooseRequestedUser(HoursUserArg, typed, savedLogin);
         }
+        string userLoginSource = SessionLoginMeta.ClassifySource(HoursUserArg, typed, savedLogin);
         var sessionOwner = BobHours.BindSessionOwner(ReadSessionOwner(sessionDir), requestedUser);
         if (!sessionOwner.Ok || string.IsNullOrEmpty(sessionOwner.UserLogin))
         {
@@ -306,9 +308,9 @@ static class Program
             return 2;
         }
         if (ReadSessionOwner(sessionDir) == null)
-            WriteSessionOwner(sessionDir, sessionOwner.UserLogin);
+            SessionLoginMeta.WriteIdentity(sessionDir, sessionOwner.UserLogin, userLoginSource);
         if (hoursConfig is { } routing)
-            WriteHoursRouting(sessionDir, sessionOwner.UserLogin, routing);
+            SessionLoginMeta.WriteHoursRoutingLogin(sessionDir, sessionOwner.UserLogin, routing);
         vars["PRIORITY_USER"] = sessionOwner.UserLogin;
         string? wcfInstancesFile = null;
         if (wcfConfig.Instances.Count > 0)
@@ -521,32 +523,6 @@ static class Program
         }
         catch { }
         return null;
-    }
-
-    static void WriteSessionOwner(string sessionDir, string userLogin)
-    {
-        Directory.CreateDirectory(sessionDir);
-        string path = Path.Combine(sessionDir, "identity.json");
-        if (File.Exists(path)) return;
-        File.WriteAllText(path, JsonSerializer.Serialize(new Dictionary<string, string>
-        {
-            ["priorityUserLogin"] = userLogin,
-        }));
-    }
-
-    static void WriteHoursRouting(string sessionDir, string userLogin, BobHours.CustomerHoursConfig routing)
-    {
-        Directory.CreateDirectory(sessionDir);
-        string path = Path.Combine(sessionDir, "hours-routing.json");
-        if (File.Exists(path)) return;
-        File.WriteAllText(path, JsonSerializer.Serialize(new Dictionary<string, string>
-        {
-            ["on_behalf_of"] = userLogin,
-            ["customer"] = routing.Customer,
-            ["project"] = routing.Project,
-            ["priority_project"] = routing.PriorityProject,
-            ["wbs_status"] = routing.WbsStatus,
-        }));
     }
 
     static void ReadHoursRouting(string? sessionDir, out string customer, out string project, out string owner)

@@ -179,7 +179,7 @@ PriorityAgent.exe --mcp-catalog [<catalog dir>]                 fallback stdio c
 Other options: `--root <dir>` (clone root; default: first existing `X:\AI` on C:->Z:, else create `\AI` on the first ready drive; env `PRIORITY_AGENT_ROOT`),
 `--passwords-dir <dir>`, `--no-fuel-check`, `--no-pause`.
 
-Requirements: `git`, `gh` (logged in as SimonBarnett) and the Grok CLI (`%USERPROFILE%\.grok\bin\grok.exe`).
+Requirements: `git`, `gh` (logged in as SimonBarnett) and a coding CLI. Grok is `%USERPROFILE%\.grok\bin\grok.exe`. Cursor is `%LOCALAPPDATA%\cursor-agent\agent.cmd` (never `%USERPROFILE%\.grok\bin\agent.exe`). OpenCode is `%USERPROFILE%\.opencode\bin\opencode.exe`. Official installers run as the interactive user only (FR #568); tests fake those commands and do not hit the network.
 
 Optional execute plugins (formprep, compile, install, odata) need node and `instances.json`, so the launcher doesn't install them:
 `grok plugin marketplace add SimonBarnett/agentic_fomprep`, then `grok plugin install priority-formprep --trust` (and so on).

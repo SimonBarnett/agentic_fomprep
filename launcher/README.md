@@ -90,6 +90,11 @@ with the right context.
 
 Logs go to `%LOCALAPPDATA%\PriorityAgent\logs`. Per-session `launch.json` and the rendered rules go to `...\sessions`.
 
+A successful whoami (FR #384) writes `%USERPROFILE%\.priority-agent\last-user.json` (UTF-8 without BOM),
+keyed by instance id (`saas1`, ...). Each value is `userLogin`, `company`, `identifiedAt`, `source`.
+A login that fails `BobHours.IsPriorityUserLogin` (for example a space) is refused and the file is left unchanged.
+The file never stores `access_token`, `refresh_token`, or `password` keys. The launcher prompt is unchanged (FR-03).
+
 ## WCF configuration (FR #348)
 
 The client is fom-prep v2/apps/priority-saas-wcf (bin/priority-wcf.mjs), skill priority-saas-wcf.

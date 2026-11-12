@@ -15,6 +15,7 @@ import { formStart, formGetRows, formSetFields, formSave, formStartSubForm } fro
 import { runPrepare } from '../lib/prepare.mjs';
 import { runProcStart } from '../lib/proc.mjs';
 import { emit, fail, ok, redact } from '../lib/json-out.mjs';
+import { rememberWhoami } from '../lib/last-user.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '..');
@@ -41,6 +42,7 @@ function usage() {
   form subform --instance <id> --form <PARENT> --subform <CHILD> [--rows]
   prepare form|procedure|report --instance <id> --name <ENAME> [--proc FORMPREPDRCT2|REPPREPDIRECT2] [--no-gate]
   proc start --instance <id> --name <ENAME> [--ptype P|R]
+  whoami --instance <id> [--user <USERLOGIN>]
   help
 
 Env:
@@ -340,6 +342,27 @@ async function cmdPrepare(kind) {
   );
 }
 
+async function cmdWhoami() {
+  return withSession(async ({ instance }) => {
+    const login = arg('--user') || instance.user || '';
+    const saved = rememberWhoami({
+      userProfile: process.env.USERPROFILE || process.env.HOME,
+      instanceId: instance.id,
+      userLogin: login,
+      company: instance.company,
+      source: 'whoami',
+    });
+    if (!saved.ok) return fail('whoami_login_refused', saved);
+    return ok({
+      action: 'whoami',
+      instanceId: instance.id,
+      userLogin: login,
+      company: instance.company,
+      path: saved.path,
+    });
+  });
+}
+
 async function cmdProc(sub) {
   if (sub !== 'start') {
     return fail('proc_sub_required', { need: 'start', got: sub });
@@ -392,7 +415,8 @@ async function main() {
     if (!sub) return fail('proc_sub_required', { need: 'start' });
     return cmdProc(sub);
   }
-  return fail('unknown_verb', { verb, hint: 'probe|session|form|prepare|proc|help' });
+  if (verb === 'whoami') return cmdWhoami();
+  return fail('unknown_verb', { verb, hint: 'probe|session|form|prepare|proc|whoami|help' });
 }
 
 main().catch((e) => {

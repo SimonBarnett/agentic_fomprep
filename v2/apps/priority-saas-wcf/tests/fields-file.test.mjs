@@ -100,3 +100,59 @@ test('CLI BOM --fields-file exits 2 bom_refused before login', () => {
   assert.doesNotMatch(out, /login_connect|Can't connect/i);
   assert.equal(out.includes('FAKE_fields_file_token'), false);
 });
+
+test('MRB-470: form save with --fields-file BOM is not bom_refused', () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'ff-save-'));
+  const file = path.join(dir, 'bom.json');
+  fs.writeFileSync(
+    file,
+    Buffer.concat([Buffer.from([0xef, 0xbb, 0xbf]), Buffer.from('{"EMAIL":"x"}', 'ascii')]),
+  );
+  const instances = path.join(dir, 'instances.json');
+  fs.writeFileSync(
+    instances,
+    JSON.stringify({
+      instances: [
+        {
+          id: 'ff-save',
+          host: 'example.invalid',
+          tenant: 'ten',
+          company: 'co',
+          user: 'u@x.com',
+          allowLive: false,
+          tabulaini: 'tab.ini',
+          wcfUrl: 'https://example.invalid/wcf/service.svc',
+        },
+      ],
+    }),
+  );
+  const run = spawnSync(
+    process.execPath,
+    [
+      BIN,
+      'form',
+      'save',
+      '--instance',
+      'ff-save',
+      '--instances',
+      instances,
+      '--form',
+      'CUSTOMERS',
+      '--fields',
+      '{"EMAIL":"a@b.c"}',
+      '--fields-file',
+      file,
+    ],
+    {
+      encoding: 'utf8',
+      cwd: ROOT,
+      env: { ...process.env, PRIORITY_SAAS_TOKEN: 'FAKESECRET_s3t4u5v6w7x8y9z0a1b2' },
+    },
+  );
+  const out = String(run.stdout || '');
+  const parsed = JSON.parse(out.trim());
+  assert.notEqual(parsed.reason, 'bom_refused', out);
+  assert.equal(parsed.reason, 'live_refused');
+  assert.doesNotMatch(out, /login_connect|Can't connect/i);
+});
+

@@ -26,8 +26,14 @@ import { runPrepare } from '../lib/prepare.mjs';
 import { runProcStart, runProcContinue } from '../lib/proc.mjs';
 import { loadProcTextFile, writeProcTextViaExecForm } from '../lib/proc-text.mjs';
 import { loadInputsFile } from '../lib/inputs-file.mjs';
+import {
+  defaultInterfacePrepPath,
+  loadInterfacePrepConfig,
+} from '../lib/interface-prep.mjs';
 import { resolveWhoami } from '../lib/whoami.mjs';
 import { listCompanies } from '../lib/companies.mjs';
+import { addTableColumn, fetchTableColumns, instanceHasSqlProfile } from '../lib/table.mjs';
+import { checkDictionaryTitle } from '../lib/title-check.mjs';
 import { emit, fail, ok, redact } from '../lib/json-out.mjs';
 import { planDryRun } from '../lib/dry-run.mjs';
 import {
@@ -37,7 +43,6 @@ import {
   stringFromRequestOrFlag,
   loadFieldsFile,
 } from '../lib/request-file.mjs';
-import { checkDictionaryTitle } from '../lib/dictionary-title.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '..');
@@ -76,9 +81,10 @@ Object kinds: table, form, report, procedure, interface.
   whoami  --instance <id>
   companies --instance <id>  (see: help companies)
   form start|rows|set|save|subform|columns|new|delete|action  (see: help form)
-  prepare form|procedure|report --instance <id> --name <ENAME>  (see: help prepare)
+  prepare form|procedure|report|interface --instance <id> --name <ENAME>  (see: help prepare)
   proc start|continue --instance <id>  (see: help proc)
-  table   (see: help table)
+  table columns --instance <id> --name <TNAME>  (see: help table)
+  table column add --instance <id> --name <TNAME> --column <COL> --type <T> --title <title>  (see: help table)
   interface (see: help interface)
   report run --instance <id> --name <ENAME>  (see: help report)
   Any verb: --request <path>  UTF-8 JSON; keys fields|filter|inputs|name|form|subform override flags
@@ -132,8 +138,10 @@ Writes need allowLive: true. Never invent ENAME. Never log tokens.
   prepare form      --instance <id> --name <ENAME> [--proc FORMPREPDRCT2] [--no-gate]
   prepare procedure --instance <id> --name <ENAME> [--proc REPPREPDIRECT2] [--no-gate]
   prepare report    --instance <id> --name <ENAME> [--proc REPPREPDIRECT2] [--no-gate]
+  prepare interface --instance <id> --name <ENAME> [--no-gate]
 
 Prepare is a write (allowLive: true). preparedClaim needs the OData gate when odataBase is set.
+prepare interface reads config/interface-prep.json; empty/missing proc => interface_prep_unknown (no login).
 `,
   proc: `help proc
 
@@ -151,7 +159,7 @@ proc text set writes --file through the EXEC form (allowLive). Does not prepare.
   table column add --instance <id> --name <TNAME> --column <COL> --type <T> --title <title>
   table create  --instance <id> --name <TNAME>  (refuses without SQL profile)
 
-Dictionary title writes check length ≤20 before login (reason title_too_long).
+Column add needs allowLive and sqlProfile. Title longer than 20 is title_too_long before login.
 Never invent host/tenant.
 `,
   interface: `help interface
@@ -559,14 +567,35 @@ async function cmdPrepare(kind) {
     reqString('name', '--name') || reqString('form', '--form') || arg('--form');
   if (!name) return fail('name_required', { need: '--name <ENAME> or request.name' });
   const k = String(kind || '').toLowerCase();
-  if (!['form', 'procedure', 'report'].includes(k)) {
-    return fail('prepare_kind_required', { need: 'prepare form|procedure|report', got: kind });
+  if (!['form', 'procedure', 'report', 'interface'].includes(k)) {
+    return fail('prepare_kind_required', {
+      need: 'prepare form|procedure|report|interface',
+      got: kind,
+    });
   }
+
+  // FR #411 / FR-029: pin interface prep proc from config before any login.
+  let interfaceProc;
+  if (k === 'interface') {
+    const prepPath =
+      arg('--interface-prep', '') || defaultInterfacePrepPath(ROOT);
+    const pinned = loadInterfacePrepConfig(prepPath);
+    if (!pinned.ok) {
+      return fail(pinned.reason || 'interface_prep_unknown', {
+        action: 'prepare.interface',
+        path: pinned.path,
+        detail: pinned.detail,
+        name,
+      }, 2);
+    }
+    interfaceProc = pinned.proc;
+  }
+
   // Prepare mutates dictionary compile state — treat as write.
   return withSession(
     async ({ instance, session, dump, tokenSource, accessToken }) => {
       const result = await runPrepare(session, instance, k, name, {
-        proc: arg('--proc') || undefined,
+        proc: k === 'interface' ? interfaceProc : (arg('--proc') || undefined),
         gate: !hasFlag('--no-gate'),
         accessToken: accessToken || '',
         messages: [],
@@ -580,6 +609,13 @@ async function cmdPrepare(kind) {
           instanceId: instance.id,
           options: result.options,
         });
+      }
+      if (result.reason === 'interface_prep_unknown') {
+        return fail('interface_prep_unknown', {
+          action: 'prepare.' + k,
+          instanceId: instance.id,
+          ...result,
+        }, 2);
       }
       if (!result.walkOk) {
         return fail('prepare_walk_failed', {
@@ -752,51 +788,6 @@ async function cmdProc(sub) {
   );
 }
 
-/**
- * FR #414 / FR-032: title length gate before any dictionary title write.
- * Full column add (sqlProfile / allowLive / SDK) is FR-033 (#415).
- */
-async function cmdTableColumnAdd() {
-  const titlePresent =
-    hasFlag('--title') || (requestDoc != null && Object.prototype.hasOwnProperty.call(requestDoc, 'title'));
-  if (!titlePresent) {
-    return fail('title_required', {
-      action: 'table.column.add',
-      need: '--title <title> or request.title',
-    }, 2);
-  }
-  const title = reqString('title', '--title');
-  const checked = checkDictionaryTitle(title);
-  if (!checked.ok) {
-    return fail(checked.reason, {
-      action: 'table.column.add',
-      title: checked.title,
-      length: checked.length,
-      max: checked.max,
-    }, 2);
-  }
-  // Title OK — column add body ships in FR-033; do not login/SDK here.
-  return fail('table_column_add_not_implemented', {
-    action: 'table.column.add',
-    title: checked.title,
-    length: checked.length,
-    max: checked.max,
-    hint: 'FR-033',
-  }, 2);
-}
-
-async function cmdTable(sub) {
-  if (sub === 'column') {
-    const mode = (process.argv[4] || '').toLowerCase();
-    if (mode === 'add') return cmdTableColumnAdd();
-    return fail('table_column_mode_required', { need: 'add', got: mode || null });
-  }
-  return fail('table_sub_required', {
-    need: 'column add (title gate FR-032); exists|columns|create later',
-    got: sub || null,
-  });
-}
-
 async function cmdReport(sub) {
   if (sub !== 'run') {
     return fail('report_sub_required', { need: 'run', got: sub });
@@ -835,6 +826,66 @@ async function cmdReport(sub) {
         ...result,
         action: 'report.run',
         ptype: 'R',
+      });
+    },
+    { write: true },
+  );
+}
+
+async function cmdTable(sub) {
+  if (sub === 'columns') {
+    const name = reqString('name', '--name');
+    if (!name) return fail('name_required', { need: '--name <TNAME> or request.name' });
+    const picked = await resolveInstance();
+    if (!picked.ok) return fail(picked.reason, picked);
+    const instance = picked.instance;
+    let accessToken = '';
+    const tok = loadAccessToken(instance);
+    if (tok.ok) accessToken = tok.accessToken;
+    const result = await fetchTableColumns(instance, name, { accessToken });
+    if (!result.ok) return fail(result.reason, result);
+    return ok({
+      action: 'table.columns',
+      instanceId: instance.id,
+      table: name,
+      exists: result.exists,
+      columns: result.columns,
+    });
+  }
+  if (sub !== 'column') {
+    return fail('table_sub_required', { need: 'columns|column add', got: sub });
+  }
+  const op = (process.argv[4] || '').toLowerCase();
+  if (op !== 'add') {
+    return fail('table_column_sub_required', { need: 'add', got: op });
+  }
+  const title = reqString('title', '--title');
+  const titleCheck = checkDictionaryTitle(title);
+  if (!titleCheck.ok) return fail(titleCheck.reason, titleCheck, 2);
+  const name = reqString('name', '--name');
+  const column = reqString('column', '--column');
+  const type = reqString('type', '--type');
+  if (!name) return fail('name_required', { need: '--name <TNAME>' });
+  if (!column) return fail('column_required', { need: '--column <COL>' });
+  if (!type) return fail('type_required', { need: '--type <T>' });
+  const picked = await resolveInstance();
+  if (!picked.ok) return fail(picked.reason, picked);
+  if (!instanceHasSqlProfile(picked.instance)) {
+    return fail('table_ddl_needs_sql', { instanceId: picked.instance.id, need: 'sqlProfile' }, 2);
+  }
+  return withSession(
+    async ({ instance, session }) => {
+      const result = await addTableColumn(session, instance, {
+        table: name,
+        column,
+        type,
+        title,
+      });
+      if (!result.ok) return fail(result.reason, result);
+      return ok({
+        action: 'table.column.add',
+        instanceId: instance.id,
+        ...result,
       });
     },
     { write: true },
@@ -891,7 +942,9 @@ async function main() {
   }
   if (verb === 'prepare') {
     const kind = (process.argv[3] || '').toLowerCase();
-    if (!kind) return fail('prepare_kind_required', { need: 'form|procedure|report' });
+    if (!kind) {
+      return fail('prepare_kind_required', { need: 'form|procedure|report|interface' });
+    }
     return cmdPrepare(kind);
   }
   if (verb === 'proc') {
@@ -906,7 +959,7 @@ async function main() {
   }
   if (verb === 'table') {
     const sub = (process.argv[3] || '').toLowerCase();
-    if (!sub) return fail('table_sub_required', { need: 'column add' });
+    if (!sub) return fail('table_sub_required', { need: 'columns|column' });
     return cmdTable(sub);
   }
   return fail('unknown_verb', {

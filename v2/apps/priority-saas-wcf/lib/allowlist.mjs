@@ -100,6 +100,15 @@ function validateRow(row) {
   const odataPrepPath = row.odataPrepPath
     ? String(row.odataPrepPath).trim()
     : (row.odataPrepEntity ? String(row.odataPrepEntity).trim() : '');
+  // FR #415: presence only. Never copy password/connection secrets from sqlProfile.
+  let sqlProfile = null;
+  if (row.sqlProfile === true) sqlProfile = { present: true };
+  else if (typeof row.sqlProfile === 'string' && row.sqlProfile.trim()) {
+    sqlProfile = { name: row.sqlProfile.trim() };
+  } else if (row.sqlProfile && typeof row.sqlProfile === 'object' && !Array.isArray(row.sqlProfile)) {
+    const n = String(row.sqlProfile.name || row.sqlProfile.id || '').trim();
+    sqlProfile = n ? { name: n } : { present: true };
+  }
   return {
     ok: true,
     instance: {
@@ -115,6 +124,7 @@ function validateRow(row) {
       allowLive,
       ...(odataBase ? { odataBase } : {}),
       ...(odataPrepPath ? { odataPrepPath } : {}),
+      ...(sqlProfile ? { sqlProfile } : {}),
       url: `https://${host}`,
       webuiUrl: `https://${host}/webui/${tenant}`,
     },

@@ -91,6 +91,7 @@ IncludeDba=False IncludeCustomer=False
 - priority-service-desk-user-paccount-signup
 - priority-service-desk-webhook-sync-mitigation
 - priority-service-desk-company-timezone-scheduled-reports
+- priority-service-desk-debit-memo-part-account
 - priority-shell-compile
 - priority-shell-install
 - priority-skill-dag

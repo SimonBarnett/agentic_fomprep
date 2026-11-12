@@ -13,7 +13,7 @@ export function verbFromArgv(argv) {
 
 export function verbIsWrite(verb) {
   const v = String(verb || '');
-  if (v === 'form.set' || v === 'form.save') return true;
+  if (v === 'form.set' || v === 'form.save' || v === 'form.delete') return true;
   if (v.startsWith('prepare.')) return true;
   if (v === 'proc.start') return true;
   return false;

@@ -1,0 +1,6 @@
+{
+  "name": "priority-service-desk-form-design-restore",
+  "title": "A form showed data in the wrong fields for one user until its form design was restored",
+  "description": "Customer Sites showed data in the wrong fields for one user in every company. Restoring the form design fixed it. A separate case of a missing sublevel was fixed by hiding and unhiding it in form design.",
+  "version": "1.0.0"
+}

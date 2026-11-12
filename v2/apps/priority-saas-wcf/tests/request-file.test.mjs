@@ -126,3 +126,26 @@ test('CLI broken --request exits 2 request_invalid and does not call login', () 
   assert.doesNotMatch(out, /login_failed|Can't connect|probe_failed|ECONNREFUSED/i);
   assert.doesNotMatch(out, /FAKE_access_token_request_fixture/);
 });
+
+test('MRB-449 hostile: missing path and array root are request_invalid', () => {
+  const missing = loadRequestFile('');
+  assert.equal(missing.ok, false);
+  assert.equal(missing.reason, 'request_invalid');
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'req-arr-'));
+  const file = path.join(dir, 'arr.json');
+  fs.writeFileSync(file, '[1,2]', 'utf8');
+  const arr = loadRequestFile(file);
+  assert.equal(arr.ok, false);
+  assert.equal(arr.reason, 'request_invalid');
+  assert.equal(arr.detail, 'not_object');
+});
+
+test('MRB-449 hostile: UTF-8 BOM stripped; CLI flag used when request omits key', () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'req-bom-'));
+  const file = path.join(dir, 'bom.json');
+  fs.writeFileSync(file, '\ufeff{"form":"CUSTOMERS"}', 'utf8');
+  const loaded = loadRequestFile(file);
+  assert.equal(loaded.ok, true);
+  assert.equal(valueFromRequest(loaded.doc, 'form', 'CLI'), 'CUSTOMERS');
+  assert.deepEqual(fieldsFromRequestOrFlag(loaded.doc, '{"EMAIL":"cli"}'), { EMAIL: 'cli' });
+});

@@ -1,0 +1,6 @@
+{
+  "name": "priority-service-desk-inactive-user-login-error-500",
+  "title": "Error 500 at login was because the user had been made inactive",
+  "description": "A user got Error 500 when logging in. Another user had marked them inactive. Marking them active again let them log in.",
+  "version": "1.0.0"
+}

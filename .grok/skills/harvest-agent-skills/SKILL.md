@@ -191,3 +191,4 @@ books use `harvest-agent-skills` pointing at their home.)
 - After Amplify deploys mcp-catalog DAG tools, run npm run smoke:live (scripts/smoke-mcp-live.mjs) against mcp.ntsa.uk and record evidence in docs/amplify-hosting.md Live evidence (FR #364).
 - Seat-side resolve_skills overlay: merge public MCP with local customer .grok/skills + SO/SC markdown; never POST overlay; normalizeMcpToolsUrl accepts https://mcp.ntsa.uk or .../mcp.
 - Read %USERPROFILE%\.priority-agent\last-user.json by WCF instance id for the interactive USERLOGIN prompt; do not invent the OS account as a default.
+- fail() must emit boolean retryable; true only for login_connect; api_licence and token_expired keep a hint and retryable false.

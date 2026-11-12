@@ -59,6 +59,21 @@ test('help interface stdout contains list', () => {
   assert.match(String(r.stdout || ''), /\blist\b/i);
 });
 
+test('MRB 502: blank ENAME rows are dropped', async () => {
+  const r = await listInterfaces({
+    instance: { id: 'dev', company: 'co' },
+    session: { ok: true, priority: {} },
+    formStart: async () => ({}),
+    formGetRows: async () => ({
+      rows: [{ ENAME: '  ', TITLE: 'skip' }, { ENAME: 'KEEP', TITLE: 'Kept' }],
+    }),
+    safeEnd: async () => {},
+  });
+  assert.equal(r.ok, true);
+  assert.equal(r.interfaces.length, 1);
+  assert.equal(r.interfaces[0].name, 'KEEP');
+});
+
 test('interface list is read-only', () => {
   assert.equal(verbIsWrite('interface.list'), false);
   const live = refuseLiveWrite(

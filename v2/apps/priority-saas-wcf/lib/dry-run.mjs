@@ -17,7 +17,7 @@ export function verbIsWrite(verb, argv = []) {
   // FR #400: form subform --set is a write; bare subform start stays read-only.
   if (v === 'form.subform' && Array.isArray(argv) && argv.includes('--set')) return true;
   if (v.startsWith('prepare.')) return true;
-  if (v === 'proc.start' || v === 'report.run') return true;
+  if (v === 'proc.start' || v === 'proc.continue' || v === 'report.run') return true;
   return false;
 }
 

@@ -16,6 +16,7 @@ import { runPrepare } from '../lib/prepare.mjs';
 import { runProcStart } from '../lib/proc.mjs';
 import { emit, fail, ok, redact } from '../lib/json-out.mjs';
 import { rememberWhoami } from '../lib/last-user.mjs';
+import { resolveWhoami } from '../lib/whoami.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '..');
@@ -42,7 +43,7 @@ function usage() {
   form subform --instance <id> --form <PARENT> --subform <CHILD> [--rows]
   prepare form|procedure|report --instance <id> --name <ENAME> [--proc FORMPREPDRCT2|REPPREPDIRECT2] [--no-gate]
   proc start --instance <id> --name <ENAME> [--ptype P|R]
-  whoami --instance <id> [--user <USERLOGIN>]
+  whoami --instance <id>
   help
 
 Env:
@@ -343,21 +344,32 @@ async function cmdPrepare(kind) {
 }
 
 async function cmdWhoami() {
-  return withSession(async ({ instance }) => {
-    const login = arg('--user') || instance.user || '';
+  return withSession(async ({ instance, session }) => {
+    // FR #384 / MRB #431: persist only an identified Priority USERLOGIN
+    // (login result or USERS), never allowlist OIDC email / --user invent.
+    const r = await resolveWhoami({ instance, session });
+    if (!r.ok) {
+      return fail(r.reason || 'user_unidentified', {
+        action: 'whoami',
+        instanceId: instance.id,
+        detail: r.detail,
+        message: r.message,
+      }, 3);
+    }
     const saved = rememberWhoami({
       userProfile: process.env.USERPROFILE || process.env.HOME,
       instanceId: instance.id,
-      userLogin: login,
+      userLogin: r.userLogin,
       company: instance.company,
-      source: 'whoami',
+      source: r.source || 'whoami',
     });
     if (!saved.ok) return fail('whoami_login_refused', saved);
     return ok({
       action: 'whoami',
       instanceId: instance.id,
-      userLogin: login,
+      userLogin: r.userLogin,
       company: instance.company,
+      source: r.source,
       path: saved.path,
     });
   });

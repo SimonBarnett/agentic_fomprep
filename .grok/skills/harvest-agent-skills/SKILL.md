@@ -204,3 +204,5 @@ books use `harvest-agent-skills` pointing at their home.)
 - Service-desk harvest leaflets: pin grok=catalog SKILL.md, SC ticket, Stop unverified requester, and forbid DB MFA edits; CAT-T59 on untouched files is not a FAIL.
 - After a FIX fold, keep cmdForm const write = on one line so MRB-460/471 source pins still match; include set/save/delete/new/action and subform --set.
 - Classify form.delete as verbIsWrite so --dry-run never looks like a read; empty filter matches must not call deleteRow.
+- FR-003: fake install runners and refuse LocalSystem; never treat .grok\bin\agent.exe as Cursor
+- MSI CLI chooser is a WiX fragment: four radio values grok/cursor/opencode/none, default none, InstallChosenCli only when UILevel > 3 and not none; msiexec /qn never shows the dialog or runs the CLI action.

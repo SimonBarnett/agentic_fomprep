@@ -1,0 +1,9 @@
+id	number	url	title
+FR-001	566	https://github.com/SimonBarnett/agentic_fomprep/issues/566	FR: Pack the Priority Agent MSI
+FR-002	567	https://github.com/SimonBarnett/agentic_fomprep/issues/567	FR: MSI chooser for Grok, Cursor, or OpenCode
+FR-003	568	https://github.com/SimonBarnett/agentic_fomprep/issues/568	FR: User-context CLI installers and detection
+FR-004	569	https://github.com/SimonBarnett/agentic_fomprep/issues/569	FR: Launcher CLI chooser
+FR-005	570	https://github.com/SimonBarnett/agentic_fomprep/issues/570	FR: Launch the chosen CLI
+FR-006	571	https://github.com/SimonBarnett/agentic_fomprep/issues/571	FR: Fake-installer tests stay offline
+FR-007	572	https://github.com/SimonBarnett/agentic_fomprep/issues/572	FR: README and release note for the MSI
+FR-008	573	https://github.com/SimonBarnett/agentic_fomprep/issues/573	FR: Docs park pointer for the Priority Agent MSI

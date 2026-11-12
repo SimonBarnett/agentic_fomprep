@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Priority Agent setup - CLI install failed</title>
+  <style>
+    body { font-family: Segoe UI, sans-serif; background: #f4f5f7; margin: 0; }
+    .window { width: 640px; margin: 32px auto; background: #fff; border: 1px solid #c5c8ce; }
+    header { background: #1f4e79; color: #fff; padding: 14px 18px; }
+    header h1 { font-size: 18px; margin: 0; }
+    main { padding: 18px; }
+    .fail { background: #fdecec; border: 1px solid #e3b4b4; padding: 12px; }
+    .fail h2 { font-size: 16px; margin: 0 0 8px; }
+    .ok { color: #0b6b2f; }
+    footer { padding: 14px 18px; text-align: right; background: #f7f8fa; }
+    button { font-size: 14px; padding: 8px 14px; margin-left: 8px; }
+    button.primary { background: #1f4e79; color: #fff; border: 0; }
+  </style>
+</head>
+<body>
+  <div class="window">
+    <header>
+      <h1>Priority Agent setup</h1>
+    </header>
+    <main>
+      <div class="fail">
+        <h2>Grok CLI install failed</h2>
+        <p>The Grok installer did not leave grok.exe in %USERPROFILE%\.grok\bin. Cursor and OpenCode were not started.</p>
+        <p class="ok">Priority Agent is installed at C:\Program Files\Priority Agent.</p>
+      </div>
+    </main>
+    <footer>
+      <button type="button">Close</button>
+      <button type="button">Pick a different CLI</button>
+      <button class="primary" type="button">Retry Grok</button>
+    </footer>
+  </div>
+</body>
+</html>

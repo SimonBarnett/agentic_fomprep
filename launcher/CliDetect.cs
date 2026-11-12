@@ -1,13 +1,6 @@
 // FR #568: detect Grok / Cursor / OpenCode without mistaking Grok's agent.exe for Cursor.
 namespace PriorityAgent;
 
-public enum CliKind
-{
-    Grok,
-    Cursor,
-    OpenCode,
-}
-
 public sealed record CliDetectResult(CliKind Kind, bool Present, string? Path, string Reason);
 
 public static class CliDetect

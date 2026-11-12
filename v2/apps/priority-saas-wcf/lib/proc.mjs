@@ -1,7 +1,21 @@
 /**
  * SaaS proc start / continue (FR #339) for reports and interfaces.
  */
-import { walkProcSteps } from './proc-walk.mjs';
+import { walkProcSteps, displayUrlOf } from './proc-walk.mjs';
+
+/** FR #408 / FR-026: ended + no urls + no errors => empty success. */
+export function outcomeFromWalk(walk) {
+  const urls = [];
+  for (const s of walk.steps || []) {
+    const u = displayUrlOf(s);
+    if (u) urls.push(u);
+  }
+  const errors = walk.errors || [];
+  const blockers = errors.filter((e) => e.severity === 'Blocker');
+  const empty = walk.ended === true && urls.length === 0 && errors.length === 0;
+  const ok = walk.ended === true && blockers.length === 0;
+  return { ok, empty, urls };
+}
 
 /**
  * @param {object} session - loginSession result
@@ -57,9 +71,11 @@ export async function runProcStart(session, instance, ename, opts = {}) {
       urls: walk.urls || [],
     };
   }
-  const blockers = walk.errors.filter((e) => e.severity === 'Blocker');
+  const outcome = outcomeFromWalk(walk);
   return {
-    ok: walk.ended && blockers.length === 0,
+    ok: outcome.ok,
+    empty: outcome.empty,
+    urls: outcome.urls,
     action: 'proc.start',
     name,
     ptype,

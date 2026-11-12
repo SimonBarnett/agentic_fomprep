@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Priority Agent setup - no CLI</title>
+  <style>
+    body { font-family: Segoe UI, sans-serif; background: #f4f5f7; margin: 0; }
+    .window { width: 640px; margin: 32px auto; background: #fff; border: 1px solid #c5c8ce; }
+    header { background: #1f4e79; color: #fff; padding: 14px 18px; }
+    header h1 { font-size: 18px; margin: 0; }
+    main { padding: 18px; }
+    .ask { font-size: 16px; margin: 0 0 8px; }
+    .note { color: #444; font-size: 14px; }
+    ul { list-style: none; padding: 0; margin: 16px 0; }
+    li { margin: 0 0 8px; }
+    button { font-size: 14px; padding: 8px 14px; margin-right: 8px; }
+    button.choice { background: #fff; border: 1px solid #1f4e79; color: #1f4e79; }
+    footer { padding: 14px 18px; background: #f7f8fa; }
+  </style>
+</head>
+<body>
+  <div class="window">
+    <header>
+      <h1>Priority Agent setup</h1>
+    </header>
+    <main>
+      <p class="ask">No agent CLI was found for this Windows user.</p>
+      <p class="note">Which CLI should we install? Not now still installs Priority Agent and downloads nothing.</p>
+      <ul>
+        <li><button class="choice" type="button">Grok</button> installs grok.exe into %USERPROFILE%\.grok\bin</li>
+        <li><button class="choice" type="button">Cursor</button> installs agent.cmd into %LOCALAPPDATA%\cursor-agent</li>
+        <li><button class="choice" type="button">OpenCode</button> installs the official Windows opencode.exe</li>
+      </ul>
+    </main>
+    <footer>
+      <button type="button">Not now</button>
+    </footer>
+  </div>
+</body>
+</html>

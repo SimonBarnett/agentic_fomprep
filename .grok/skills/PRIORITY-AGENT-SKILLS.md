@@ -94,6 +94,7 @@ IncludeDba=False IncludeCustomer=False
 - priority-service-desk-analytics-multi-company-per-user
 - priority-service-desk-app-redis-services-stopped
 - priority-service-desk-app-user-applications-for-license
+- priority-service-desk-bpm-deleted-status-restore
 - priority-service-desk-closed-so-mrp-flag-demand
 - priority-service-desk-company-timezone-scheduled-reports
 - priority-service-desk-debit-memo-part-account

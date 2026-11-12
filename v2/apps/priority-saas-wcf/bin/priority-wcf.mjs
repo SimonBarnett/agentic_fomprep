@@ -160,6 +160,7 @@ proc text set writes --file through the EXEC form (allowLive). Does not prepare.
   table create  --instance <id> --name <TNAME>  (refuses without SQL profile)
 
 Column add needs allowLive and sqlProfile. Title longer than 20 is title_too_long before login.
+Never invent host/tenant.
 `,
   interface: `help interface
 

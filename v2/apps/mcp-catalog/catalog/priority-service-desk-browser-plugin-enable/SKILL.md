@@ -22,6 +22,7 @@ Known fixes:
 - SC263453, 2026-11-02 11:20 GMT: executive reports were not running, or a white blank screen showed after run, and the plugin was disabled. After enabling the plugin the issue was resolved. Opened 2026-11-02 11:18 GMT.
 - SC263452, 2026-11-02 12:11 GMT: the plugin was disabled for Priority in Chrome. After enabling it, the statements PDF issue was solved. Opened 2026-11-02 09:17 GMT.
 - SC262928, 2026-09-18 16:50 BST: an email action from Priority was not working. Support said to pin the Priority extension in Chrome, click it and make sure it is enabled for the Priority tab, then refresh the page. On 2026-09-21 16:34 BST the customer said it was working now. Opened 2026-09-18 15:40 BST.
+- SC262664, opened 2026-09-01 15:01 BST: purchase demand notifications were not being sent. On a call on 2026-09-16 support found Chrome had silently disabled the plugin's web extension. After it was re-enabled, mail also had to be set to send by Outlook, and then it worked as expected (support note after the call).
 
 Corroboration only: SC263456, 2026-11-04 11:57 GMT, says the shipping-document link issue was solved and was because of the plugin. The exact enable or reinstall action was not recorded. Do not claim the same click. Opened 2026-11-02 10:22 GMT.
 
@@ -43,7 +44,7 @@ The extension is already installed from the approved source. The user, or an adm
 
 ## Verification
 
-Proven: enablement restored executive reports (SC263453), statement PDFs (SC263452) and sending email (SC262928).
+Proven: enablement restored executive reports (SC263453), statement PDFs (SC263452) and sending email (SC262928, SC262664).
 
 Not proven: one click sequence for every browser, the precise action on SC263456, and the retest on SC263047.
 

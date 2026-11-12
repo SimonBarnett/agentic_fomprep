@@ -618,13 +618,7 @@ async function cmdForm(sub) {
     if (!parsed.ok) return fail(parsed.reason, parsed, 2);
     rowsLimit = parsed.limit;
   }
-  const write =
-    sub === 'set' ||
-    sub === 'save' ||
-    sub === 'delete' ||
-    sub === 'new' ||
-    sub === 'action' ||
-    (sub === 'subform' && hasFlag('--set'));
+  const write = sub === 'set' || sub === 'save' || sub === 'delete' || sub === 'new' || sub === 'action' || (sub === 'subform' && hasFlag('--set'));
   return withSession(
     async ({ instance, session, dump }) => {
       const messages = [];

@@ -83,6 +83,7 @@ node bin\priority-wcf.mjs form rows  --instance customer-saas-dev --form CUSTOME
 node bin\priority-wcf.mjs form rows  --instance customer-saas-dev --form CUSTOMERS --filter "{\"field\":\"CUSTNAME\",\"fromval\":\"X\"}"
 node bin\priority-wcf.mjs form set   --instance customer-saas-dev --form CUSTOMERS --filter "{\"field\":\"CUSTNAME\",\"fromval\":\"X\"}" --fields "{\"EMAIL\":\"a@b.c\"}"
 node bin\priority-wcf.mjs form save  --instance customer-saas-dev --form CUSTOMERS --filter "..." --fields "{...}"
+node bin\priority-wcf.mjs form delete --instance customer-saas-dev --form CUSTOMERS --filter "{\"field\":\"CUSTNAME\",\"fromval\":\"X\"}" --confirm
 # Prefer a UTF-8 request file on Windows (no shell quoting). File stays outside the repo.
 # request.json example: { "form": "CUSTOMERS", "fields": { "EMAIL": "a@b.c" }, "filter": { "field": "CUSTNAME", "fromval": "X" } }
 node bin\priority-wcf.mjs form set --instance customer-saas-dev --request C:\temp\request.json
@@ -99,7 +100,7 @@ before login. Do not copy request files into the repo.
 
 `form rows --filter` (or request-file `filter`) calls SDK `setSearchFilter` once then `getRows` from 1. Missing filter is the unfiltered read. Writes stay on `form set` / `form save`.
 
-Writes (`form set` / `form save`) require `allowLive: true` on the row (and operator approval).
+Writes (`form set` / `form save` / `form delete`) require `allowLive: true` on the row (and operator approval). `form delete` requires `--confirm` (missing confirm exits 2 `confirm_required` and does not call delete). `allowLive` false exits 2 `live_refused` before login.
 
 ## Phase 2: prepare + proc
 

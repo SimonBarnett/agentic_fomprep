@@ -11,7 +11,7 @@ import { readAllowlist, selectInstance, refuseLiveWrite, defaultInstancesPath } 
 import { loadAccessToken } from '../lib/token.mjs';
 import { probeTenant } from '../lib/probe.mjs';
 import { loginSession, logout, safeEnd } from '../lib/session.mjs';
-import { formStart, formGetRows, formSetFields, formSave, formStartSubForm, applySearchThenGetRows } from '../lib/form.mjs';
+import { formStart, formGetRows, formSetFields, formSave, formStartSubForm, applySearchThenGetRows, formDeletePositionedRow } from '../lib/form.mjs';
 import { runPrepare } from '../lib/prepare.mjs';
 import { runProcStart } from '../lib/proc.mjs';
 import { resolveWhoami } from '../lib/whoami.mjs';
@@ -338,7 +338,17 @@ async function openFilteredForm(session, instance, formName, filterRaw, messages
 async function cmdForm(sub) {
   const formName = reqString('form', '--form');
   if (!formName) return fail('form_required', { need: '--form <ENAME> or request.form' });
-  const write = sub === 'set' || sub === 'save';
+  if (sub === 'delete' && !hasFlag('--confirm')) {
+    return fail('confirm_required', { need: '--confirm' }, 2);
+  }
+  if (sub === 'delete') {
+    const picked = await resolveInstance();
+    if (!picked.ok) return fail(picked.reason, picked);
+    if (picked.instance.allowLive !== true) {
+      return fail('live_refused', { instanceId: picked.instance.id }, 2);
+    }
+  }
+  const write = sub === 'set' || sub === 'save' || sub === 'delete';
   return withSession(
     async ({ instance, session, dump }) => {
       const messages = [];
@@ -365,6 +375,25 @@ async function cmdForm(sub) {
         }
 
         const filterRaw = reqRawJson('filter', '--filter');
+
+        if (sub === 'delete') {
+          const filter = parseFilter(filterRaw);
+          if (!filter) {
+            return fail('filter_required', { need: '--filter JSON or request.filter' }, 2);
+          }
+          form = await formStart(session.priority, formName, instance.company, { messages });
+          const deleted = await formDeletePositionedRow(form, filter);
+          dump('form-delete.json', { form: formName, deleted, messages });
+          await safeEnd(form);
+          if (!deleted.ok) return fail(deleted.reason || 'form_failed', { form: formName, ...deleted });
+          return ok({
+            action: 'form.delete',
+            instanceId: instance.id,
+            form: formName,
+            deleted: deleted.deleted,
+            messages,
+          });
+        }
 
         if (sub === 'rows') {
           form = await formStart(session.priority, formName, instance.company, { messages });
@@ -554,7 +583,7 @@ async function main() {
   if (verb === 'companies') return cmdCompanies();
   if (verb === 'form') {
     const sub = (process.argv[3] || '').toLowerCase();
-    if (!sub) return fail('form_sub_required', { need: 'start|rows|set|save|subform' });
+    if (!sub) return fail('form_sub_required', { need: 'start|rows|set|save|subform|delete' });
     return cmdForm(sub);
   }
   if (verb === 'prepare') {

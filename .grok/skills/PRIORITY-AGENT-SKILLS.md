@@ -100,6 +100,7 @@ IncludeDba=False IncludeCustomer=False
 - priority-service-desk-mrp-purchase-planning-input
 - priority-service-desk-numeration-fiscal-year-constant
 - priority-service-desk-odata-record-limit-powerbi
+- priority-service-desk-outlook-plugin-mail-not-sending
 - priority-service-desk-pasted-images-slow-text
 - priority-service-desk-privilege-message-disable
 - priority-service-desk-serial-number-renamed-history

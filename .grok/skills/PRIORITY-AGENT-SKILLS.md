@@ -90,7 +90,7 @@ IncludeDba=False IncludeCustomer=False
 - priority-service-desk-ui-language-print
 - priority-service-desk-user-paccount-signup
 - priority-service-desk-webhook-sync-mitigation
-- priority-service-desk-mobile-app-camera-permission
+- priority-service-desk-analytics-multi-company-per-user
 - priority-service-desk-app-redis-services-stopped
 - priority-service-desk-app-user-applications-for-license
 - priority-service-desk-closed-so-mrp-flag-demand
@@ -99,6 +99,7 @@ IncludeDba=False IncludeCustomer=False
 - priority-service-desk-form-design-restore
 - priority-service-desk-grv-not-linked-po-warehouse
 - priority-service-desk-inventory-count-prepare-zero
+- priority-service-desk-mobile-app-camera-permission
 - priority-service-desk-mrp-purchase-planning-input
 - priority-service-desk-numeration-fiscal-year-constant
 - priority-service-desk-odata-record-limit-powerbi

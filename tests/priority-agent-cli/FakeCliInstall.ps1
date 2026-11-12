@@ -35,5 +35,6 @@ function Test-Fr571IsForbiddenInstallerCall {
     if ($t -match '-notmatch') { return $false }
     $hostHit = $t -match 'x\.ai|cursor\.com/install|opencode\.ai'
     if (-not $hostHit) { return $false }
-    return $t -match 'irm\b|iex\b|Invoke-WebRequest|Invoke-RestMethod|\bcurl\b|\bwget\b|Start-Process'
+    # Include iwr (Invoke-WebRequest alias) so CI cannot sneak a live download past the guard.
+    return $t -match 'irm\b|\biwr\b|iex\b|Invoke-WebRequest|Invoke-RestMethod|\bcurl\b|\bwget\b|Start-Process'
 }

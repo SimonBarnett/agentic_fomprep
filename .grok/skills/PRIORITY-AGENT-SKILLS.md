@@ -118,6 +118,7 @@ IncludeDba=False IncludeCustomer=False
 - priority-service-desk-tts-tasks-not-running
 - priority-service-desk-unprepared-forms-reprepare
 - priority-service-desk-upgrade-missing-custom-trigger-code
+- priority-service-desk-vendor-price-list-unit-readd
 - priority-service-desk-wrong-url-error-404
 - priority-shell-compile
 - priority-shell-install

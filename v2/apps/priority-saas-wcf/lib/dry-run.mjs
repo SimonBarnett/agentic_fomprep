@@ -23,6 +23,7 @@ export function verbIsWrite(verb, argv = []) {
   if (v === 'table.column' && Array.isArray(argv) && argv.includes('add')) return true;
   if (v === 'table.create') return true;
   if (v === 'interface.run') return true;
+  if (v === 'interface.map' && Array.isArray(argv) && argv.includes('set')) return true;
   return false;
 }
 

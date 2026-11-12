@@ -12,13 +12,14 @@ Used by PriorityAgent after an OIDC Bearer token exists (`priority-saas-oidc-log
 {
   "access_token": "...",
   "refresh_token": "...",
+  "tokenUrl": "https://example.invalid/auth/oauth2/token",
   "expires_in": 1800,
   "obtained_at": "2026-11-08T18:00:00.000Z"
 }
 ```
 
 (`expires_at` ISO is also accepted. Write UTF-8 **without BOM** — PowerShell `Set-Content` BOM is stripped by the client but avoid it.)
-Past `expires_at` or `obtained_at`+`expires_in` is `token_expired` (`retryable: false`, exit 3) before login. No expiry field still attempts login. Refresh is FR-39.
+Past `expires_at` or `obtained_at`+`expires_in` is `token_expired` (`retryable: false`, exit 3) before login unless the file also has `refresh_token` and `tokenUrl`. Then the client POSTs `grant_type=refresh_token` once, rewrites the file UTF-8 without BOM on HTTP 200, and continues. Missing `tokenUrl` or a non-200 response leaves the file unchanged and returns `token_expired` (hint: re-run `priority-saas-oidc-login`). No expiry field still attempts login.
 
 3. Or set env `PRIORITY_SAAS_TOKEN` for the process only.
 
@@ -136,6 +137,7 @@ node bin\priority-wcf.mjs table column add --instance customer-saas-dev --name T
 node bin\priority-wcf.mjs table create --instance customer-saas-dev --name T1 --request C:\temp\table-cols.json
 node bin\priority-wcf.mjs interface list --instance customer-saas-dev
 node bin\priority-wcf.mjs interface run --instance customer-saas-dev --name MYIFACE --inputs C:\temp\inputs.json
+node bin\priority-wcf.mjs interface map set --instance customer-saas-dev --name MYIFACE --fields-file C:\temp\map.json
 ```
 
 - Form prep: `EFORM` + `FORMPREPDRCT2`, then scrape `FORMPREPERRS`.
@@ -153,8 +155,9 @@ node bin\priority-wcf.mjs interface run --instance customer-saas-dev --name MYIF
 - `table columns --name <TNAME>` is a read-only OData COLUMNS list `{name,type,title}`. Unknown / empty value is `exists: false` `columns: []` exit 0. Does not write the dictionary.
 - `table column add` needs `allowLive: true` and `sqlProfile` on the instance. No `sqlProfile` is `table_ddl_needs_sql` before login. Titles longer than 20 characters are `title_too_long` (FR-32) before login. Does not create a table (FR-34).
 - `table create --name --request <file>` uses the same SQL gate. Request JSON is `{ "columns": [{ "name", "type", "title" }] }` (not a CREATE statement). `allowLive: false` is `live_refused` before login when the instance id looks live.
-- `interface list` is a read of the EXEC catalog and returns `{interfaces:[{name,title}]}`.
+- `interface list` is a read of the EXEC catalog and returns `{interfaces:[{name,title}]}`. It does not run an interface (FR-36).
 - `interface run --name --inputs <file>` is `procStart` with `ptype` I and the FR-21/FR-22 walker (file values on inputFields; two options => needs_input). Mapping edits are FR-37.
+- `interface map set --name --fields-file` field-updates one FORMINTERFACES row. `allowLive: false` is `live_refused` before login. Does not prepare (FR-29).
 
 
 ## CAST IRON

@@ -8,7 +8,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { readAllowlist, selectInstance, refuseLiveWrite, defaultInstancesPath } from '../lib/allowlist.mjs';
-import { loadAccessToken } from '../lib/token.mjs';
+import { resolveAccessToken } from '../lib/token.mjs';
 import { probeTenant } from '../lib/probe.mjs';
 import { loginSession, logout, safeEnd, setConfirmErrors } from '../lib/session.mjs';
 import {
@@ -33,6 +33,7 @@ import {
 import { resolveWhoami } from '../lib/whoami.mjs';
 import { listCompanies } from '../lib/companies.mjs';
 import { listInterfaces } from '../lib/interface-list.mjs';
+import { setInterfaceMap } from '../lib/interface-map.mjs';
 import {
   addTableColumn,
   columnsFromCreateRequest,
@@ -178,10 +179,11 @@ Never invent host/tenant.
 
   interface list   --instance <id>
   interface run    --instance <id> --name <ENAME> --inputs <file>
-  interface map    --instance <id> --name <ENAME> ...
+  interface map set --instance <id> --name <ENAME> --fields-file <path>
 
 interface list is a read of the EXEC catalog: {interfaces:[{name,title}]}.
 interface run uses the proc walker (FR-21/FR-22): ended or needs_input. ptype I. Map is FR-37.
+interface map set writes one FORMINTERFACES row (allowLive). Does not prepare (FR-29).
 Prepare-interface refuses until config/interface-prep.json pins a proc name.
 `,
   report: `help report
@@ -247,7 +249,7 @@ async function withSession(fn, { write = false, needToken = true } = {}) {
   let accessToken = '';
   let tokenSource = 'none';
   if (needToken) {
-    const tok = loadAccessToken(instance);
+    const tok = await resolveAccessToken(instance);
     if (!tok.ok) return fail(tok.reason, { path: tok.path, message: tok.message });
     accessToken = tok.accessToken;
     tokenSource = tok.source;
@@ -286,7 +288,7 @@ async function cmdProbe() {
   const instance = picked.instance;
   let accessToken = '';
   if (hasFlag('--with-token')) {
-    const tok = loadAccessToken(instance);
+    const tok = await resolveAccessToken(instance);
     if (!tok.ok) return fail(tok.reason, { path: tok.path, message: tok.message });
     accessToken = tok.accessToken;
   }
@@ -363,8 +365,39 @@ async function cmdInterface(sub) {
       { write: true },
     );
   }
+  if (sub === 'map') {
+    const op = String(process.argv[4] || '').toLowerCase();
+    if (op !== 'set') {
+      return fail('interface_map_sub_required', { need: 'set', got: op });
+    }
+    const name = reqString('name', '--name');
+    if (!name) return fail('name_required', { need: '--name <ENAME> or request.name' });
+    const fieldsPath = arg('--fields-file', '');
+    const loaded = loadFieldsFile(fieldsPath);
+    if (!loaded.ok) {
+      return fail(loaded.reason || 'fields_file_invalid', loaded, 2);
+    }
+    if (Object.keys(loaded.fields).length < 1) {
+      return fail('fields_required', { need: '--fields-file JSON object' }, 2);
+    }
+    return withSession(
+      async ({ instance, session }) => {
+        const result = await setInterfaceMap(session, instance, {
+          name,
+          fields: loaded.fields,
+        });
+        if (!result.ok) return fail(result.reason, result);
+        return ok({
+          action: 'interface.map.set',
+          instanceId: instance.id,
+          ...result,
+        });
+      },
+      { write: true },
+    );
+  }
   if (sub !== 'list') {
-    return fail('interface_sub_required', { need: 'list|run', got: sub });
+    return fail('interface_sub_required', { need: 'list|run|map set', got: sub });
   }
   return withSession(async ({ instance, session }) => {
     const r = await listInterfaces({ instance, session });
@@ -944,8 +977,9 @@ async function cmdTable(sub) {
     if (!picked.ok) return fail(picked.reason, picked);
     const instance = picked.instance;
     let accessToken = '';
-    const tok = loadAccessToken(instance);
-    if (tok.ok) accessToken = tok.accessToken;
+    const tok = await resolveAccessToken(instance);
+    if (!tok.ok) return fail(tok.reason, { path: tok.path, message: tok.message });
+    accessToken = tok.accessToken;
     const result = await fetchTableExists(instance, name, { accessToken });
     if (!result.ok) return fail(result.reason, result);
     return ok({
@@ -990,8 +1024,9 @@ async function cmdTable(sub) {
     if (!picked.ok) return fail(picked.reason, picked);
     const instance = picked.instance;
     let accessToken = '';
-    const tok = loadAccessToken(instance);
-    if (tok.ok) accessToken = tok.accessToken;
+    const tok = await resolveAccessToken(instance);
+    if (!tok.ok) return fail(tok.reason, { path: tok.path, message: tok.message });
+    accessToken = tok.accessToken;
     const result = await fetchTableColumns(instance, name, { accessToken });
     if (!result.ok) return fail(result.reason, result);
     return ok({
@@ -1119,7 +1154,7 @@ async function main() {
   }
   if (verb === 'interface') {
     const sub = (process.argv[3] || '').toLowerCase();
-    if (!sub) return fail('interface_sub_required', { need: 'list|run' });
+    if (!sub) return fail('interface_sub_required', { need: 'list|run|map' });
     return cmdInterface(sub);
   }
   return fail('unknown_verb', {

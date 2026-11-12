@@ -1,6 +1,7 @@
 /**
- * Dictionary table reads (FR #412 / FR-030) and DDL (FR #415 / FR-033).
- * COLUMNS is OData-only. Column add needs sqlProfile; no SaaS pretend-DDL.
+ * Dictionary table reads (FR #412 / FR-030) and DDL (FR #415 / FR-033, FR #416 / FR-034).
+ * COLUMNS is OData-only. Column add and table create need sqlProfile; no SaaS pretend-DDL.
+ * Never emit a raw CREATE statement from the agent prompt.
  */
 import { checkDictionaryTitle } from './title-check.mjs';
 
@@ -27,6 +28,48 @@ export async function addTableColumn(session, instance, spec = {}) {
   if (!type) return { ok: false, reason: 'type_required' };
   const payload = { table, column, type, title: titleCheck.title };
   const fn = session?.priority?.addTableColumn;
+  if (typeof fn !== 'function') {
+    return { ok: false, reason: 'table_ddl_unsupported' };
+  }
+  await fn(payload);
+  return { ok: true, ...payload };
+}
+
+/**
+ * Structured column list from --request JSON. Never a SQL string.
+ * @returns {{ ok: true, columns: object[] } | { ok: false, reason: string }}
+ */
+export function columnsFromCreateRequest(doc) {
+  const raw = doc && Object.prototype.hasOwnProperty.call(doc, 'columns') ? doc.columns : null;
+  if (!Array.isArray(raw) || raw.length === 0) {
+    return { ok: false, reason: 'columns_required' };
+  }
+  const columns = [];
+  for (const c of raw) {
+    if (!c || typeof c !== 'object' || Array.isArray(c)) {
+      return { ok: false, reason: 'column_invalid' };
+    }
+    const name = String(c.name || c.column || c.CNAME || '').trim();
+    const type = String(c.type || c.CTYPE || '').trim();
+    const title = String(c.title || c.TITLE || '').trim();
+    if (!name || !type) return { ok: false, reason: 'column_invalid' };
+    const col = { name, type };
+    if (title) col.title = title;
+    columns.push(col);
+  }
+  return { ok: true, columns };
+}
+
+export async function createTable(session, instance, spec = {}) {
+  if (!instanceHasSqlProfile(instance)) {
+    return { ok: false, reason: 'table_ddl_needs_sql' };
+  }
+  const table = String(spec.table || spec.name || '').trim();
+  if (!table) return { ok: false, reason: 'name_required' };
+  const columns = Array.isArray(spec.columns) ? spec.columns : [];
+  if (!columns.length) return { ok: false, reason: 'columns_required' };
+  const payload = { table, columns };
+  const fn = session?.priority?.createTable;
   if (typeof fn !== 'function') {
     return { ok: false, reason: 'table_ddl_unsupported' };
   }

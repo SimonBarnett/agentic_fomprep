@@ -32,7 +32,13 @@ import {
 } from '../lib/interface-prep.mjs';
 import { resolveWhoami } from '../lib/whoami.mjs';
 import { listCompanies } from '../lib/companies.mjs';
-import { addTableColumn, fetchTableColumns, instanceHasSqlProfile } from '../lib/table.mjs';
+import {
+  addTableColumn,
+  columnsFromCreateRequest,
+  createTable,
+  fetchTableColumns,
+  instanceHasSqlProfile,
+} from '../lib/table.mjs';
 import { checkDictionaryTitle } from '../lib/title-check.mjs';
 import { emit, fail, ok, redact } from '../lib/json-out.mjs';
 import { planDryRun } from '../lib/dry-run.mjs';
@@ -157,9 +163,10 @@ proc text set writes --file through the EXEC form (allowLive). Does not prepare.
   table exists --instance <id> --name <TNAME>
   table columns --instance <id> --name <TNAME>
   table column add --instance <id> --name <TNAME> --column <COL> --type <T> --title <title>
-  table create  --instance <id> --name <TNAME>  (refuses without SQL profile)
+  table create --instance <id> --name <TNAME> --request <file>
 
-Column add needs allowLive and sqlProfile. Title longer than 20 is title_too_long before login.
+Column add and table create need allowLive and sqlProfile. No sqlProfile is table_ddl_needs_sql before login.
+Request JSON lists columns (name/type/title). Never a raw CREATE. Title longer than 20 is title_too_long before login.
 `,
   interface: `help interface
 
@@ -832,6 +839,34 @@ async function cmdReport(sub) {
 }
 
 async function cmdTable(sub) {
+  if (sub === 'create') {
+    const name = reqString('name', '--name');
+    if (!name) return fail('name_required', { need: '--name <TNAME> or request.name' });
+    const cols = columnsFromCreateRequest(requestDoc);
+    if (!cols.ok) {
+      return fail(cols.reason, { need: '--request JSON with columns[]' }, 2);
+    }
+    const picked = await resolveInstance();
+    if (!picked.ok) return fail(picked.reason, picked);
+    if (!instanceHasSqlProfile(picked.instance)) {
+      return fail('table_ddl_needs_sql', { instanceId: picked.instance.id, need: 'sqlProfile' }, 2);
+    }
+    return withSession(
+      async ({ instance, session }) => {
+        const result = await createTable(session, instance, {
+          table: name,
+          columns: cols.columns,
+        });
+        if (!result.ok) return fail(result.reason, result);
+        return ok({
+          action: 'table.create',
+          instanceId: instance.id,
+          ...result,
+        });
+      },
+      { write: true },
+    );
+  }
   if (sub === 'columns') {
     const name = reqString('name', '--name');
     if (!name) return fail('name_required', { need: '--name <TNAME> or request.name' });
@@ -852,7 +887,7 @@ async function cmdTable(sub) {
     });
   }
   if (sub !== 'column') {
-    return fail('table_sub_required', { need: 'columns|column add', got: sub });
+    return fail('table_sub_required', { need: 'columns|column add|create', got: sub });
   }
   const op = (process.argv[4] || '').toLowerCase();
   if (op !== 'add') {
@@ -958,7 +993,7 @@ async function main() {
   }
   if (verb === 'table') {
     const sub = (process.argv[3] || '').toLowerCase();
-    if (!sub) return fail('table_sub_required', { need: 'columns|column' });
+    if (!sub) return fail('table_sub_required', { need: 'columns|column|create' });
     return cmdTable(sub);
   }
   return fail('unknown_verb', {

@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import fs from 'node:fs';
 import { classifyFailRetry, fail } from '../lib/json-out.mjs';
 
 function captureFail(reason, extra = {}) {
@@ -69,4 +70,17 @@ test('other reasons are not retryable', () => {
   assert.equal(classifyFailRetry('form_required').retryable, false);
   const { parsed } = captureFail('form_required', { need: '--form' });
   assert.equal(parsed.retryable, false);
+});
+
+test('MRB-446: extra.retryable cannot force login_connect false or form_required true', () => {
+  const { parsed: forced } = captureFail('form_required', { retryable: true });
+  assert.equal(forced.retryable, false);
+  const { parsed: login } = captureFail('login_connect', { retryable: false });
+  assert.equal(login.retryable, true);
+});
+
+test('MRB-446: fail() source does not loop retry', () => {
+  const src = fs.readFileSync(new URL('../lib/json-out.mjs', import.meta.url), 'utf8');
+  assert.doesNotMatch(src, /for\s*\(.*retry/);
+  assert.match(src, /No retry inside fail/);
 });

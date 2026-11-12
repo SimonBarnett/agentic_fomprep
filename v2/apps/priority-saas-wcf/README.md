@@ -95,6 +95,7 @@ node bin\priority-wcf.mjs form delete --instance customer-saas-dev --form CUSTOM
 # Prefer a UTF-8 request file on Windows (no shell quoting). File stays outside the repo.
 # request.json example: { "form": "CUSTOMERS", "fields": { "EMAIL": "a@b.c" }, "filter": { "field": "CUSTNAME", "fromval": "X" } }
 node bin\priority-wcf.mjs form set --instance customer-saas-dev --request C:\temp\request.json
+node bin\priority-wcf.mjs form set --instance customer-saas-dev --form CUSTOMERS --fields-file C:\temp\fields.json
 node bin\priority-wcf.mjs batch --instance customer-saas-dev --request C:\temp\batch-reads.json
 ```
 
@@ -114,6 +115,8 @@ A 9th read or a write verb (for example form new) exits 2 before login. One logi
 `companies --instance <id>` is read-only JSON `{companies:[{name,title}]}` and does not require `allowLive`. It does not switch the session company.
 
 `form rows --filter` (or request-file `filter`) calls SDK `setSearchFilter` once then `getRows` from 1. Missing filter is the unfiltered read. `--limit N` (default 50, maximum 500) stops the client after N rows; `--limit 501` exits 2 `limit_too_high` before login.
+
+`--fields-file` on `form set` is UTF-8 JSON (does not change `form save`). A leading UTF-8 BOM exits 2 `bom_refused`. Larger than 1 MiB exits 2 `fields_file_too_large`. The client does not log the file body.
 
 `form subform --set --fields-file` field-updates the child only (`allowLive: true` required). Bare `form subform` (no `--set`) stays read-only.
 

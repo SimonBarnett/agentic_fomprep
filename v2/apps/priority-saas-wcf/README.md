@@ -59,6 +59,8 @@ npm ci
 ## CLI
 
 ```powershell
+node bin\priority-wcf.mjs help
+node bin\priority-wcf.mjs help form
 node bin\priority-wcf.mjs probe   --instance customer-saas-dev
 node bin\priority-wcf.mjs session --instance customer-saas-dev
 node bin\priority-wcf.mjs whoami  --instance customer-saas-dev
@@ -68,6 +70,9 @@ node bin\priority-wcf.mjs form rows  --instance customer-saas-dev --form CUSTOME
 node bin\priority-wcf.mjs form set   --instance customer-saas-dev --form CUSTOMERS --filter "{\"field\":\"CUSTNAME\",\"fromval\":\"X\"}" --fields "{\"EMAIL\":\"a@b.c\"}"
 node bin\priority-wcf.mjs form save  --instance customer-saas-dev --form CUSTOMERS --filter "..." --fields "{...}"
 ```
+
+`help` prints the top-level summary. `help <verb>` prints one screen for
+`form`, `prepare`, `proc`, `table`, `interface`, or `report` (unknown topic exits 2).
 
 Writes (`form set` / `form save`) require `allowLive: true` on the row (and operator approval).
 

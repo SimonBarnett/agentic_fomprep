@@ -30,20 +30,23 @@ function hasFlag(name) {
   return process.argv.includes(name);
 }
 
+/** Top-level summary (FR-008: keep this; use help <verb> for one screen). */
 function usage() {
   const text = `priority-wcf (SaaS Web SDK client)
+
+Object kinds: table, form, report, procedure, interface.
 
   probe   --instance <id> [--with-token]
   session --instance <id> [--form <ENAME>]
   whoami  --instance <id>
-  form start   --instance <id> --form <ENAME>
-  form rows    --instance <id> --form <ENAME> [--from <n>]
-  form set     --instance <id> --form <ENAME> --fields '{"COL":"v"}' [--filter '{"field":"X","fromval":"y"}']
-  form save    --instance <id> --form <ENAME> --fields '{...}' [--filter ...]
-  form subform --instance <id> --form <PARENT> --subform <CHILD> [--rows]
-  prepare form|procedure|report --instance <id> --name <ENAME> [--proc FORMPREPDRCT2|REPPREPDIRECT2] [--no-gate]
-  proc start --instance <id> --name <ENAME> [--ptype P|R]
+  form start|rows|set|save|subform|columns|new|delete|action  (see: help form)
+  prepare form|procedure|report --instance <id> --name <ENAME>  (see: help prepare)
+  proc start --instance <id> --name <ENAME> [--ptype P|R]  (see: help proc)
+  table   (see: help table)
+  interface (see: help interface)
+  report  (see: help report)
   help
+  help <verb>   form|prepare|proc|table|interface|report
 
 Env:
   PRIORITY_SAAS_WCF_INSTANCES  allowlist JSON (default %USERPROFILE%\\.priority-saas-wcf\\instances.json)
@@ -55,6 +58,81 @@ OIDC first: skill priority-saas-oidc-login -> token file -> this client.
 Prepare success on SaaS requires an independent gate (OData when odataBase set);
 without it walkOk may be true but preparedClaim stays false.
 `;
+  process.stdout.write(text);
+  process.exitCode = 0;
+}
+
+const HELP_TOPICS = {
+  form: `help form
+
+Form verbs (one screen):
+
+  form columns --instance <id> --form <ENAME>
+  form rows    --instance <id> --form <ENAME> [--from <n>] [--filter ...]
+  form new     --instance <id> --form <ENAME> --fields '{...}'
+  form delete  --instance <id> --form <ENAME> --filter ... --confirm
+  form action  --instance <id> --form <ENAME> --name <ACT> [--filter ...]
+  form start   --instance <id> --form <ENAME>
+  form set     --instance <id> --form <ENAME> --fields '{...}' [--filter ...]
+  form save    --instance <id> --form <ENAME> --fields '{...}' [--filter ...]
+  form subform --instance <id> --form <PARENT> --subform <CHILD> [--rows]
+
+Writes need allowLive: true. Never invent ENAME. Never log tokens.
+`,
+  prepare: `help prepare
+
+  prepare form      --instance <id> --name <ENAME> [--proc FORMPREPDRCT2] [--no-gate]
+  prepare procedure --instance <id> --name <ENAME> [--proc REPPREPDIRECT2] [--no-gate]
+  prepare report    --instance <id> --name <ENAME> [--proc REPPREPDIRECT2] [--no-gate]
+
+Prepare is a write (allowLive: true). preparedClaim needs the OData gate when odataBase is set.
+`,
+  proc: `help proc
+
+  proc start --instance <id> --name <ENAME> [--ptype P|R]
+
+P = procedure, R = report. Does not prepare; use help prepare for prep verbs.
+`,
+  table: `help table
+
+  table exists --instance <id> --name <TNAME>
+  table columns --instance <id> --name <TNAME>
+  table create  --instance <id> --name <TNAME>  (refuses without SQL profile)
+
+Dictionary reads only until create is allowlisted. Never invent host/tenant.
+`,
+  interface: `help interface
+
+  interface list   --instance <id>
+  interface run    --instance <id> --name <ENAME> --inputs <file>
+  interface map    --instance <id> --name <ENAME> ...
+
+Prepare-interface refuses until config/interface-prep.json pins a proc name.
+`,
+  report: `help report
+
+  report run --instance <id> --name <ENAME>
+    (same as: proc start --ptype R --name <ENAME>)
+
+  prepare report --instance <id> --name <ENAME>
+
+Empty report output is empty, not a failure. See also: help proc, help prepare.
+`,
+};
+
+function helpTopic(topic) {
+  const key = String(topic || '').toLowerCase();
+  if (!key) {
+    usage();
+    return;
+  }
+  const text = HELP_TOPICS[key];
+  if (!text) {
+    return fail('unknown_help_topic', {
+      topic: key,
+      need: Object.keys(HELP_TOPICS).join('|'),
+    });
+  }
   process.stdout.write(text);
   process.exitCode = 0;
 }
@@ -393,7 +471,11 @@ async function cmdProc(sub) {
 
 async function main() {
   const verb = (process.argv[2] || 'help').toLowerCase();
-  if (verb === 'help' || verb === '-h' || verb === '--help') return usage();
+  if (verb === 'help' || verb === '-h' || verb === '--help') {
+    const topic = (process.argv[3] || '').toLowerCase();
+    if (topic) return helpTopic(topic);
+    return usage();
+  }
   if (verb === 'probe') return cmdProbe();
   if (verb === 'session') return cmdSession();
   if (verb === 'whoami') return cmdWhoami();
@@ -412,7 +494,10 @@ async function main() {
     if (!sub) return fail('proc_sub_required', { need: 'start' });
     return cmdProc(sub);
   }
-  return fail('unknown_verb', { verb, hint: 'probe|session|whoami|form|prepare|proc|help' });
+  return fail('unknown_verb', {
+    verb,
+    hint: 'probe|session|whoami|form|prepare|proc|help',
+  });
 }
 
 main().catch((e) => {

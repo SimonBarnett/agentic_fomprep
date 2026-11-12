@@ -1,0 +1,6 @@
+{
+  "name": "priority-service-desk-subform-read-only-status-revisions",
+  "title": "A text subform would open but not accept typing because the document status did not allow revisions",
+  "description": "A user could open a description subform on a document but could not type in it. The document was in a status that did not allow revisions. In a status that allows revisions, editing worked.",
+  "version": "1.0.0"
+}

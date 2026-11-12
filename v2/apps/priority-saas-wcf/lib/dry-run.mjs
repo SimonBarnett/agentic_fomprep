@@ -21,6 +21,7 @@ export function verbIsWrite(verb, argv = []) {
   if (v === 'proc.text' && Array.isArray(argv) && argv.includes('set')) return true;
   if (v === 'table.column' && Array.isArray(argv) && argv.includes('add')) return true;
   if (v === 'table.create') return true;
+  if (v === 'interface.run') return true;
   return false;
 }
 

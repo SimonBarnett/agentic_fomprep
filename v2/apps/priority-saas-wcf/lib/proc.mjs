@@ -69,3 +69,54 @@ export async function runProcStart(session, instance, ename, opts = {}) {
     walkSteps: walk.steps,
   };
 }
+
+/**
+ * Resume after needs_input: restart the procedure and apply --option once.
+ * Does not auto-pick Options[0] for that step.
+ */
+export async function runProcContinue(session, instance, opts = {}) {
+  const fromSnap = opts.fromSnap || {};
+  const option = String(opts.option || '').trim();
+  const name =
+    String(opts.name || '').trim() ||
+    String((fromSnap.proc && fromSnap.proc.name) || '').trim();
+  if (!name) return { ok: false, reason: 'proc_name_required' };
+  if (!option) return { ok: false, reason: 'option_required' };
+  const ptype = String(opts.ptype || fromSnap.ptype || 'P').trim() || 'P';
+  const priority = session.priority;
+  const company = instance.company;
+  let step;
+  try {
+    step = await priority.procStart(name, ptype, null, company);
+  } catch (e) {
+    return {
+      ok: false,
+      reason: 'proc_continue_failed',
+      name,
+      ptype,
+      message: String(e.message || e),
+    };
+  }
+  const walk = await walkProcSteps(step, {
+    nameHint: opts.nameHint || '',
+    inputValues: opts.inputValues,
+    chosenOption: option,
+    maxSteps: opts.maxSteps,
+    deadlineMs: opts.deadlineMs,
+    onStep: opts.onStep,
+    onInput: opts.onInput,
+  });
+  const blockers = walk.errors.filter((e) => e.severity === 'Blocker');
+  return {
+    ok: walk.ended && blockers.length === 0,
+    action: 'proc.continue',
+    name,
+    ptype,
+    option,
+    ended: walk.ended,
+    steps: walk.stepCount,
+    lastType: walk.lastType,
+    errors: walk.errors,
+    walkSteps: walk.steps,
+  };
+}

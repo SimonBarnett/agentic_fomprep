@@ -23,7 +23,7 @@ import {
   formRunAction,
 } from '../lib/form.mjs';
 import { runPrepare } from '../lib/prepare.mjs';
-import { runProcStart } from '../lib/proc.mjs';
+import { runProcStart, runProcContinue } from '../lib/proc.mjs';
 import { loadInputsFile } from '../lib/inputs-file.mjs';
 import { resolveWhoami } from '../lib/whoami.mjs';
 import { listCompanies } from '../lib/companies.mjs';
@@ -75,7 +75,7 @@ Object kinds: table, form, report, procedure, interface.
   companies --instance <id>  (see: help companies)
   form start|rows|set|save|subform|columns|new|delete|action  (see: help form)
   prepare form|procedure|report --instance <id> --name <ENAME>  (see: help prepare)
-  proc start --instance <id> --name <ENAME> [--ptype P|R] [--inputs <file>]  (see: help proc)
+  proc start|continue --instance <id>  (see: help proc)
   table   (see: help table)
   interface (see: help interface)
   report  (see: help report)
@@ -135,10 +135,10 @@ Prepare is a write (allowLive: true). preparedClaim needs the OData gate when od
 `,
   proc: `help proc
 
-  proc start --instance <id> --name <ENAME> [--ptype P|R] [--inputs <file>] [--hint <ename>]
+  proc start    --instance <id> --name <ENAME> [--ptype P|R] [--inputs <file>] [--hint <ename>]
+  proc continue --instance <id> --from <step.json> --option <field> [--inputs <file>]
 
-P = procedure, R = report. --inputs is a UTF-8 JSON map for the first inputFields step.
-Name-hint fill runs only for fields the file did not set. Does not prepare; use help prepare.
+Continue answers a needs_input snapshot. Missing --from exits 2 before login. Does not auto-pick.
 `,
   table: `help table
 
@@ -602,9 +602,68 @@ async function cmdPrepare(kind) {
   );
 }
 
+function loadFromStepFile(filePath) {
+  const p = String(filePath || '').trim();
+  if (!p) return { ok: false, reason: 'from_required' };
+  let text;
+  try {
+    text = fs.readFileSync(p, 'utf8');
+  } catch {
+    return { ok: false, reason: 'from_required', path: p, detail: 'read_failed' };
+  }
+  if (text.charCodeAt(0) === 0xfeff) text = text.slice(1);
+  try {
+    const doc = JSON.parse(text);
+    if (!doc || typeof doc !== 'object' || Array.isArray(doc)) {
+      return { ok: false, reason: 'from_required', path: p, detail: 'not_object' };
+    }
+    return { ok: true, fromSnap: doc, path: p };
+  } catch {
+    return { ok: false, reason: 'from_required', path: p, detail: 'json_parse' };
+  }
+}
+
 async function cmdProc(sub) {
+  if (sub === 'continue') {
+    const fromPath = arg('--from', '');
+    if (!fromPath) {
+      return fail('from_required', { need: '--from <step.json>' }, 2);
+    }
+    const loaded = loadFromStepFile(fromPath);
+    if (!loaded.ok) return fail(loaded.reason, loaded, 2);
+    const option = reqString('option', '--option');
+    if (!option) return fail('option_required', { need: '--option <field>' }, 2);
+    return withSession(
+      async ({ instance, session, dump, tokenSource }) => {
+        const result = await runProcContinue(session, instance, {
+          fromSnap: loaded.fromSnap,
+          option,
+          ptype: arg('--ptype', 'P'),
+          name: reqString('name', '--name') || arg('--proc'),
+          nameHint: arg('--hint', ''),
+          inputValues: procInputValues,
+        });
+        dump('proc.json', result);
+        if (!result.ok) {
+          return fail(result.reason || 'proc_continue_failed', {
+            action: 'proc.continue',
+            instanceId: instance.id,
+            tokenSource,
+            ...result,
+          });
+        }
+        return ok({
+          action: 'proc.continue',
+          instanceId: instance.id,
+          tokenSource,
+          ...result,
+        });
+      },
+      { write: true },
+    );
+  }
   if (sub !== 'start') {
-    return fail('proc_sub_required', { need: 'start', got: sub });
+    return fail('proc_sub_required', { need: 'start|continue', got: sub });
   }
   const name = reqString('name', '--name') || arg('--proc');
   if (!name) return fail('name_required', { need: '--name <ENAME> or request.name' });
@@ -656,7 +715,7 @@ async function main() {
   // FR #403: --inputs JSON map, proc start only (not form / prepare).
   const inputsPath = arg('--inputs', '');
   const procSub = verb === 'proc' ? (process.argv[3] || '').toLowerCase() : '';
-  if (inputsPath && verb === 'proc' && procSub === 'start') {
+  if (inputsPath && verb === 'proc' && (procSub === 'start' || procSub === 'continue')) {
     const loaded = loadInputsFile(inputsPath);
     if (!loaded.ok) {
       return fail(loaded.reason, { path: loaded.path, detail: loaded.detail }, 2);
@@ -699,7 +758,7 @@ async function main() {
   }
   if (verb === 'proc') {
     const sub = (process.argv[3] || '').toLowerCase();
-    if (!sub) return fail('proc_sub_required', { need: 'start' });
+    if (!sub) return fail('proc_sub_required', { need: 'start|continue' });
     return cmdProc(sub);
   }
   return fail('unknown_verb', {

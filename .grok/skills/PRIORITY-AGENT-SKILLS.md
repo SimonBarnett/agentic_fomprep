@@ -90,6 +90,7 @@ IncludeDba=False IncludeCustomer=False
 - priority-service-desk-ui-language-print
 - priority-service-desk-user-paccount-signup
 - priority-service-desk-webhook-sync-mitigation
+- priority-service-desk-outlook-plugin-mail-not-sending
 - priority-shell-compile
 - priority-shell-install
 - priority-skill-dag

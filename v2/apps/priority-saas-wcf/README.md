@@ -49,6 +49,8 @@ Local file (default `%USERPROFILE%\.priority-saas-wcf\instances.json`, override
 Copy from `instances.example.json`. Never put passwords or tokens in the allowlist.
 Unknown / missing instance → exit 2, no SaaS call.
 
+Every `fail()` stdout object includes boolean `retryable` (true only for `login_connect`). `api_licence` and `token_expired` stay `retryable: false` with a `hint` string. This client does not retry.
+
 ## Install
 
 ```powershell

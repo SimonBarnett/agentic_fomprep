@@ -12,18 +12,20 @@ Used by PriorityAgent after an OIDC Bearer token exists (`priority-saas-oidc-log
 {
   "access_token": "...",
   "refresh_token": "...",
+  "tokenUrl": "https://example.invalid/auth/oauth2/token",
   "expires_in": 1800,
   "obtained_at": "2026-11-08T18:00:00.000Z"
 }
 ```
 
 (`expires_at` ISO is also accepted. Write UTF-8 **without BOM** — PowerShell `Set-Content` BOM is stripped by the client but avoid it.)
-Past `expires_at` or `obtained_at`+`expires_in` is `token_expired` (`retryable: false`, exit 3) before login. No expiry field still attempts login. Refresh is FR-39.
+Past `expires_at` or `obtained_at`+`expires_in` is `token_expired` (`retryable: false`, exit 3) before login unless the file also has `refresh_token` and `tokenUrl`. Then the client POSTs `grant_type=refresh_token` once, rewrites the file UTF-8 without BOM on HTTP 200, and continues. Missing `tokenUrl` or a non-200 response leaves the file unchanged and returns `token_expired` (hint: re-run `priority-saas-oidc-login`). No expiry field still attempts login.
 
 3. Or set env `PRIORITY_SAAS_TOKEN` for the process only.
 
 The Web SDK `login({ accessToken })` sends that token as the WCF UsernameToken password.
 Login **url** is the tenant probe `wcf` value (`…/wcf/service.svc`), not the host alone.
+Successful probes cache `wcf` and `tabulaini` for 60 minutes in `%USERPROFILE%\.priority-agent\probe-cache.json` (no token).
 
 ## Allowlist-gated
 

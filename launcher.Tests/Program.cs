@@ -31,6 +31,11 @@ var checks = new List<(string Name, Action Run)>
     ("MRB-438: matching --hours-user continues; missing whoami does not block", TestHoursUserMatchesOrAbsentWhoami),
     ("FR-004 redirected stdin plus saved login binds that login", TestRedirectedSavedLoginBinds),
     ("FR-004 redirected stdin and no saved login exits unavailable", TestRedirectedNoSavedUnavailable),
+    ("FR-568 grok.exe under .grok\\bin is present", TestFr568GrokDetect),
+    ("FR-568 agent.exe under .grok\\bin is not Cursor", TestFr568CursorRejectsGrokAgent),
+    ("FR-568 fake installer is interactive user not LocalSystem", TestFr568InstallerInteractiveUser),
+    ("FR-568 OpenCode URL from fixture html no live network", TestFr568OpenCodeParseFixture),
+    ("MRB-575 OpenCode plan uses $env:USERPROFILE and creates .opencode\\bin", TestMrb575OpenCodePlanPath),
     ("FR-570: resolve exe path matches grok/cursor/opencode choice", TestFr570ResolveExeMatchesChoice),
     ("FR-570: Cursor/OpenCode argv omit Grok MCP flags", TestFr570CursorOpenCodeOmitGrokFlags),
     ("FR-570: unknown help starts with empty argv (work dir only)", TestFr570UnknownHelpWorkDirOnly),
@@ -520,6 +525,20 @@ static void TestRedirectedNoSavedUnavailable()
     Assert(exitCode == 2, "launcher must exit 2");
 }
 
+static void TestFr568GrokDetect()
+{
+    string root = NewTemp();
+    try
+    {
+        string bin = Path.Combine(root, ".grok", "bin");
+        Directory.CreateDirectory(bin);
+        File.WriteAllText(Path.Combine(bin, "grok.exe"), "MZ");
+        var r = CliDetect.DetectGrok(root);
+        Assert(r.Present && r.Path != null && r.Path.EndsWith("grok.exe", StringComparison.OrdinalIgnoreCase), "grok.exe must count");
+    }
+    finally { DeleteTempDirectory(root); }
+}
+
 static void TestFr570ResolveExeMatchesChoice()
 {
     string root = NewTemp();
@@ -557,6 +576,61 @@ static void TestFr570ResolveExeMatchesChoice()
             "opencode choice must resolve to opencode.exe");
     }
     finally { DeleteTempDirectory(root); }
+}
+
+static void TestFr568CursorRejectsGrokAgent()
+{
+    string root = NewTemp();
+    try
+    {
+        string bin = Path.Combine(root, ".grok", "bin");
+        Directory.CreateDirectory(bin);
+        File.WriteAllText(Path.Combine(bin, "agent.exe"), "MZ");
+        var r = CliDetect.DetectCursor(root, Path.Combine(root, "AppData", "Local"));
+        Assert(!r.Present, "Cursor must be missing when only Grok agent.exe exists");
+        Assert(r.Reason.Contains("reject", StringComparison.OrdinalIgnoreCase), r.Reason);
+    }
+    finally { DeleteTempDirectory(root); }
+}
+
+static void TestFr568InstallerInteractiveUser()
+{
+    var seen = new List<CliInstallPlan>();
+    var sys = CliInstall.Run(CliKind.Grok, p => { seen.Add(p); return 0; }, localSystem: true, user: "SYSTEM");
+    Assert(!sys.Ran && sys.LocalSystem, "LocalSystem must not run installer");
+    Assert(seen.Count == 0, "SYSTEM must not invoke runner");
+    var user = CliInstall.Run(CliKind.Cursor, p => { seen.Add(p); return 0; }, localSystem: false, user: "simon");
+    Assert(user.Ran && !user.LocalSystem && user.User == "simon", "interactive user must run");
+    Assert(seen.Count == 1 && seen[0].Arguments.Contains("cursor.com/install", StringComparison.Ordinal), "cursor official irm");
+    Assert(!seen[0].Arguments.Contains("scoop", StringComparison.OrdinalIgnoreCase), "no Scoop");
+}
+
+static void TestFr568OpenCodeParseFixture()
+{
+    string html = """
+        <html><a href="https://github.example.invalid/sst/opencode/releases/download/v1.0.0/opencode-windows-x64.exe">win</a></html>
+        """;
+    string? url = CliInstall.ParseOpenCodeWindowsBinaryUrl(html);
+    Assert(url != null && url.Contains("opencode-windows", StringComparison.OrdinalIgnoreCase), "parse windows binary from page fixture");
+    int net = 0;
+    var r = CliInstall.Run(
+        CliKind.OpenCode,
+        p => { net++; Assert(p.Arguments.Contains(url!, StringComparison.Ordinal), "plan must use parsed url"); return 0; },
+        localSystem: false,
+        user: "simon",
+        openCodeBinaryUrl: url);
+    Assert(r.Ran && net == 1, "fake runner only");
+}
+
+static void TestMrb575OpenCodePlanPath()
+{
+    var plan = CliInstall.Plan(CliKind.OpenCode, "https://github.example.invalid/opencode-windows-x64.exe");
+    Assert(plan.Arguments.Contains("$env:USERPROFILE", StringComparison.Ordinal), "PowerShell profile expansion");
+    Assert(!plan.Arguments.Contains("%USERPROFILE%", StringComparison.Ordinal), "cmd %USERPROFILE% is literal in PowerShell");
+    Assert(plan.Arguments.Contains("New-Item", StringComparison.OrdinalIgnoreCase) &&
+           plan.Arguments.Contains("$env:USERPROFILE\\.opencode\\bin", StringComparison.Ordinal),
+        "must create .opencode\\bin, not Split-Path parent only");
+    Assert(!plan.Arguments.Contains("Split-Path", StringComparison.OrdinalIgnoreCase), "Split-Path of bin only creates .opencode");
 }
 
 static void TestFr570CursorOpenCodeOmitGrokFlags()

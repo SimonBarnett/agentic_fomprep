@@ -192,8 +192,10 @@ Other options: `--root <dir>` (clone root; default: first existing `X:\AI` on C:
 `--passwords-dir <dir>`, `--no-fuel-check`, `--no-pause`.
 
 Requirements: `git`, `gh` (logged in as SimonBarnett). For `--cli grok` (default): Grok CLI
-(`%USERPROFILE%\.grok\bin\grok.exe`). For `--cli cursor`: `%LOCALAPPDATA%\cursor-agent\agent.cmd`.
-For `--cli opencode`: a standalone `opencode.exe` under LocalAppData/home.
+(`%USERPROFILE%\.grok\bin\grok.exe`). For `--cli cursor`: `%LOCALAPPDATA%\cursor-agent\agent.cmd`
+(never `%USERPROFILE%\.grok\bin\agent.exe`). For `--cli opencode`: `%USERPROFILE%\.opencode\bin\opencode.exe`
+or a standalone `opencode.exe` under LocalAppData/home. Official installers run as the interactive user
+only (FR #568); tests fake those commands and do not hit the network.
 
 Optional execute plugins (formprep, compile, install, odata) need node and `instances.json`, so the launcher doesn't install them:
 `grok plugin marketplace add SimonBarnett/agentic_fomprep`, then `grok plugin install priority-formprep --trust` (and so on).

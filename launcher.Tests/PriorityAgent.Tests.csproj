@@ -9,6 +9,8 @@
     <Compile Remove="FakeCli/**/*.cs" />
     <Compile Include="../launcher/WcfSupport.cs" Link="WcfSupport.cs" />
     <Compile Include="../launcher/LauncherSupport.cs" Link="LauncherSupport.cs" />
+    <Compile Include="../launcher/CliKind.cs" Link="CliKind.cs" />
+    <Compile Include="../launcher/CliLaunch.cs" Link="CliLaunch.cs" />
     <Compile Include="../launcher/CloneResolve.cs" Link="CloneResolve.cs" />
     <Compile Include="../launcher/AiRoot.cs" Link="AiRoot.cs" />
     <Compile Include="../launcher/BobHours.cs" Link="BobHours.cs" />

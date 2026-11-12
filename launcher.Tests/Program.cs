@@ -31,6 +31,10 @@ var checks = new List<(string Name, Action Run)>
     ("MRB-438: matching --hours-user continues; missing whoami does not block", TestHoursUserMatchesOrAbsentWhoami),
     ("FR-004 redirected stdin plus saved login binds that login", TestRedirectedSavedLoginBinds),
     ("FR-004 redirected stdin and no saved login exits unavailable", TestRedirectedNoSavedUnavailable),
+    ("FR-570: resolve exe path matches grok/cursor/opencode choice", TestFr570ResolveExeMatchesChoice),
+    ("FR-570: Cursor/OpenCode argv omit Grok MCP flags", TestFr570CursorOpenCodeOmitGrokFlags),
+    ("FR-570: unknown help starts with empty argv (work dir only)", TestFr570UnknownHelpWorkDirOnly),
+    ("FR-570: hours relaunch uses chosen CLI argv shape not hardcoded grok", TestFr570HoursRelaunchChosenCli),
 };
 
 int failures = 0;
@@ -514,6 +518,106 @@ static void TestRedirectedNoSavedUnavailable()
     // Simulated launcher exit code when bind fails (Program returns 2).
     int exitCode = (!bound.Ok || string.IsNullOrEmpty(bound.UserLogin)) ? 2 : 0;
     Assert(exitCode == 2, "launcher must exit 2");
+}
+
+static void TestFr570ResolveExeMatchesChoice()
+{
+    string root = NewTemp();
+    try
+    {
+        string home = Path.Combine(root, "home");
+        string local = Path.Combine(root, "local");
+        Directory.CreateDirectory(Path.Combine(home, ".grok", "bin"));
+        Directory.CreateDirectory(Path.Combine(local, "cursor-agent"));
+        Directory.CreateDirectory(Path.Combine(local, "opencode"));
+        string grokExe = Path.Combine(home, ".grok", "bin", "grok.exe");
+        string cursorCmd = Path.Combine(local, "cursor-agent", "agent.cmd");
+        string openExe = Path.Combine(local, "opencode", "opencode.exe");
+        string grokAgentTrap = Path.Combine(home, ".grok", "bin", "agent.exe");
+        File.WriteAllText(grokExe, "fake");
+        File.WriteAllText(cursorCmd, "@echo off");
+        File.WriteAllText(openExe, "fake");
+        File.WriteAllText(grokAgentTrap, "trap");
+
+        Assert(CliLaunch.TryParseKind("grok", out CliKind gk) && gk == CliKind.Grok, "parse grok");
+        Assert(CliLaunch.TryParseKind("cursor", out CliKind ck) && ck == CliKind.Cursor, "parse cursor");
+        Assert(CliLaunch.TryParseKind("opencode", out CliKind ok) && ok == CliKind.OpenCode, "parse opencode");
+        Assert(!CliLaunch.TryParseKind("claude", out _), "unknown kind must fail");
+
+        string? resolvedGrok = CliLaunch.ResolveExecutable(CliKind.Grok, home, new[] { grokExe });
+        Assert(resolvedGrok != null && resolvedGrok.Equals(Path.GetFullPath(grokExe), StringComparison.OrdinalIgnoreCase),
+            "grok choice must resolve to grok.exe override");
+        string? resolvedCursor = CliLaunch.ResolveExecutable(CliKind.Cursor, home, new[] { cursorCmd });
+        Assert(resolvedCursor != null && resolvedCursor.Equals(Path.GetFullPath(cursorCmd), StringComparison.OrdinalIgnoreCase),
+            "cursor choice must resolve to cursor-agent\\agent.cmd, got " + resolvedCursor);
+        Assert(!resolvedCursor!.Contains(".grok", StringComparison.OrdinalIgnoreCase),
+            "cursor must never pick %USERPROFILE%\\.grok\\bin\\agent.exe");
+        string? resolvedOpen = CliLaunch.ResolveExecutable(CliKind.OpenCode, home, new[] { openExe });
+        Assert(resolvedOpen != null && resolvedOpen.Equals(Path.GetFullPath(openExe), StringComparison.OrdinalIgnoreCase),
+            "opencode choice must resolve to opencode.exe");
+    }
+    finally { DeleteTempDirectory(root); }
+}
+
+static void TestFr570CursorOpenCodeOmitGrokFlags()
+{
+    string work = @"C:\work\project";
+    string helpCursor = "Usage: agent --workspace <dir> --trust --print --resume";
+    string helpOpen = "Usage: opencode --dir <path> [prompt]";
+    var cursorArgs = CliLaunch.BuildArguments(CliKind.Cursor, work, "sess", "rules", "brief", false, helpCursor);
+    var openArgs = CliLaunch.BuildArguments(CliKind.OpenCode, work, "sess", "rules", "brief", false, helpOpen);
+    Assert(!CliLaunch.ArgsContainGrokOnlyFlag(cursorArgs), "cursor argv has Grok flag: " + string.Join(' ', cursorArgs));
+    Assert(!CliLaunch.ArgsContainGrokOnlyFlag(openArgs), "opencode argv has Grok flag: " + string.Join(' ', openArgs));
+    Assert(cursorArgs.Contains("--workspace") && cursorArgs.Contains(work), "cursor should use --workspace when help lists it");
+    Assert(openArgs.Contains("--dir") && openArgs.Contains(work), "opencode should use --dir when help lists it");
+    Assert(!cursorArgs.Contains("--cwd") && !cursorArgs.Contains("--session-id") && !cursorArgs.Contains("--rules"),
+        "cursor must omit Grok MCP launch flags");
+    Assert(!openArgs.Contains("--cwd") && !openArgs.Contains("--session-id") && !openArgs.Contains("--rules"),
+        "opencode must omit Grok MCP launch flags");
+    CliLaunch.AssertNoGrokOnlyFlags(cursorArgs);
+    CliLaunch.AssertNoGrokOnlyFlags(openArgs);
+}
+
+static void TestFr570UnknownHelpWorkDirOnly()
+{
+    string work = @"C:\work\only";
+    var cursorEmpty = CliLaunch.BuildArguments(CliKind.Cursor, work, "s", "r", "brief", false, helpText: "");
+    var openEmpty = CliLaunch.BuildArguments(CliKind.OpenCode, work, "s", "r", "brief", false, helpText: null);
+    var openUnknown = CliLaunch.BuildArguments(CliKind.OpenCode, work, "s", "r", "brief", false, helpText: "no flags documented");
+    Assert(cursorEmpty.Count == 0, "empty cursor help => argv empty (PSI.WorkingDirectory only), got " + cursorEmpty.Count);
+    Assert(openEmpty.Count == 0, "null opencode help => argv empty");
+    Assert(!openUnknown.Contains("--dir") && !openUnknown.Contains("--cwd"),
+        "unknown opencode help must not invent workspace flags");
+    Assert(!CliLaunch.ArgsContainGrokOnlyFlag(cursorEmpty) && !CliLaunch.ArgsContainGrokOnlyFlag(openUnknown),
+        "unknown-help argv must stay free of Grok flags");
+}
+
+static void TestFr570HoursRelaunchChosenCli()
+{
+    string work = @"C:\work\hours";
+    string session = Guid.NewGuid().ToString();
+    string rules = "rules-body";
+    string hoursPrompt = "report your hours now";
+    string helpCursor = "Usage: agent --workspace <dir> --trust --resume";
+    var grokResume = CliLaunch.BuildArguments(CliKind.Grok, work, session, rules, "brief", false, null,
+        hoursRelaunch: true, hoursPrompt: hoursPrompt);
+    var cursorResume = CliLaunch.BuildArguments(CliKind.Cursor, work, session, rules, "brief", false, helpCursor,
+        hoursRelaunch: true, hoursPrompt: hoursPrompt);
+    var openResume = CliLaunch.BuildArguments(CliKind.OpenCode, work, session, rules, "brief", false, "",
+        hoursRelaunch: true, hoursPrompt: hoursPrompt);
+
+    Assert(grokResume.Contains("--resume") && grokResume.Contains(session) && grokResume.Contains("--cwd"),
+        "Grok hours relaunch keeps RunGrok resume shape");
+    Assert(cursorResume.Contains("--resume") || cursorResume.Contains(hoursPrompt),
+        "cursor hours relaunch must use cursor argv, not grok.exe");
+    Assert(!CliLaunch.ArgsContainGrokOnlyFlag(cursorResume), "cursor hours argv must omit Grok flags");
+    Assert(openResume.Count == 0 || !CliLaunch.ArgsContainGrokOnlyFlag(openResume),
+        "opencode hours relaunch with empty help is work-dir-only / no Grok flags");
+    // Hardcoded grok.exe must not appear in non-Grok argv (FR #570 hours loop uses ChosenExe).
+    Assert(!cursorResume.Any(a => a.Contains("grok.exe", StringComparison.OrdinalIgnoreCase)),
+        "cursor hours argv must not hardcode grok.exe");
+    Assert(!openResume.Any(a => a.Contains("grok.exe", StringComparison.OrdinalIgnoreCase)),
+        "opencode hours argv must not hardcode grok.exe");
 }
 
 static string NewTemp()

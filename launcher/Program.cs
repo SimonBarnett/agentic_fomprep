@@ -24,6 +24,11 @@ static class Program
     static bool DryRun, ListOnly, Smoke, General, NoPause, NoFuel;
     static string? CustomerArg, ProjectArg, CheckHoursDir, SessionArg;
     static string? HoursUserArg, HoursEntryIdArg;
+    /// <summary>FR #570: --cli grok|cursor|opencode (default grok until FR-004 chooser lands).</summary>
+    static string? CliArg;
+    static CliKind ChosenCli = CliKind.Grok;
+    static string? ChosenExe;
+    static string? ChosenHelpText;
     /// <summary>Explicit --root / PRIORITY_AGENT_ROOT; null means auto-resolve X:\AI.</summary>
     static string? CloneRootOverride = Environment.GetEnvironmentVariable("PRIORITY_AGENT_ROOT");
     static string CloneRoot = "";
@@ -91,11 +96,21 @@ static class Program
                 case "--session": SessionArg = Next(); break;
                 case "--hours-user": HoursUserArg = Next(); break;
                 case "--hours-entry-id": HoursEntryIdArg = Next(); break;
+                case "--cli": CliArg = Next(); break;
                 case "-h": case "--help": case "/?": Help(); return 0;
                 default: Err($"Unknown argument: {args[i]}"); Help(); return 2;
             }
         }
         if (ListOnly || DryRun || Smoke || CustomerArg != null || General) NoPause |= Console.IsInputRedirected;
+        string? cliRaw = CliArg ?? Environment.GetEnvironmentVariable("PRIORITY_AGENT_CLI");
+        if (!string.IsNullOrWhiteSpace(cliRaw))
+        {
+            if (!CliLaunch.TryParseKind(cliRaw, out ChosenCli))
+            {
+                Err($"Unknown --cli '{cliRaw}' (want grok, cursor, or opencode).");
+                return 2;
+            }
+        }
 
         string localAppData = Environment.GetEnvironmentVariable("LOCALAPPDATA")
             ?? Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
@@ -139,7 +154,13 @@ static class Program
             @"C:\Program Files\GitHub CLI\gh.exe", @"D:\Program Files\GitHub CLI\gh.exe");
         string? grok = Which("grok.exe", Environment.GetEnvironmentVariable("PRIORITY_AGENT_TEST_GROK"),
             Path.Combine(Home, ".grok", "bin", "grok.exe"));
-        Info($"git : {git ?? "MISSING"}\ngh  : {gh ?? "MISSING"}\ngrok: {grok ?? "MISSING"}");
+        ChosenExe = CliLaunch.ResolveExecutable(ChosenCli, Home, new[]
+        {
+            Environment.GetEnvironmentVariable("PRIORITY_AGENT_TEST_CLI"),
+            ChosenCli == CliKind.Grok ? Environment.GetEnvironmentVariable("PRIORITY_AGENT_TEST_GROK") : null,
+            ChosenCli == CliKind.Grok ? grok : null,
+        });
+        Info($"git : {git ?? "MISSING"}\ngh  : {gh ?? "MISSING"}\ncli : {CliLaunch.KindName(ChosenCli)} = {ChosenExe ?? "MISSING"}");
         if (git == null || gh == null) { Err("git and gh are required."); Pause(); return 1; }
         Git = git; Gh = gh;
 
@@ -251,12 +272,29 @@ static class Program
         }
         Log($"wcf instances: {wcfConfig.Instances.Count} from {wcfConfig.SourcePath ?? "(none)"}");
 
-        // ---- 4. grok: register MCP + skills, build brief, launch ----------------------
-        Header("[4] Agent (Grok)");
-        if (grok == null) { Err("grok CLI not found (expected %USERPROFILE%\\.grok\\bin\\grok.exe)."); Pause(); return 1; }
-        EnsureGrokMcp(grok, fomprep);
-        EnsureGrokSkillsPath(skillsDir);
-        if (!NoFuel) FuelCheck();
+        // ---- 4. chosen CLI: register MCP (Grok only) + skills, build brief, launch ----
+        Header("[4] Agent (" + CliLaunch.KindName(ChosenCli) + ")");
+        if (ChosenExe == null)
+        {
+            Err(ChosenCli == CliKind.Grok
+                ? "grok CLI not found (expected %USERPROFILE%\\.grok\\bin\\grok.exe)."
+                : ChosenCli == CliKind.Cursor
+                    ? "Cursor agent not found (expected %LOCALAPPDATA%\\cursor-agent\\agent.cmd)."
+                    : "OpenCode CLI not found (expected a standalone opencode.exe under LocalAppData\\opencode).");
+            Pause();
+            return 1;
+        }
+        if (ChosenCli == CliKind.Grok)
+        {
+            EnsureGrokMcp(ChosenExe, fomprep);
+            EnsureGrokSkillsPath(skillsDir);
+            if (!NoFuel) FuelCheck();
+        }
+        else
+        {
+            Info("FR #570: skipping Grok MCP registration for " + CliLaunch.KindName(ChosenCli));
+            ChosenHelpText = CaptureCliHelp(ChosenExe);
+        }
 
         string level = projectDir != null ? "project" : cust != null ? "customer" : "general";
         string workDir = projectDir ?? custDir ?? fomprep;
@@ -356,7 +394,9 @@ static class Program
             priorityUserLogin = sessionOwner.UserLogin,
             workDir,
             fomprep,
-            grok,
+            cli = CliLaunch.KindName(ChosenCli),
+            cliExe = ChosenExe,
+            grok = ChosenCli == CliKind.Grok ? ChosenExe : null,
             wcf = wcfMeta,
             dryRun = DryRun,
             smoke = Smoke,
@@ -373,22 +413,27 @@ static class Program
             + "Do not send priority_project or wbs. Booking stays in project.md. "
             + "Persist that same login with the returned id in " + hoursEntryFile + ". "
             + "Do not invent start, end, or duration. Do not book Priority. Then stop.";
-        var gargs = LauncherSupport.BuildGrokArguments(workDir, sessionId, rules, brief.ToString(), Smoke);
-        var resumeArgs = new List<string> { "--cwd", workDir, "--resume", sessionId, "--trust", "--rules", rules, hoursPrompt };
-        EnsureCommandLineSize(grok, gargs, "Grok launch");
-        EnsureCommandLineSize(grok, resumeArgs, "Grok hours relaunch");
-        string display = Quote(grok) + " " + string.Join(' ', gargs.Select(a => a == rules ? $"<rules: {rulesFile}>" : Quote(a)));
+        var gargs = CliLaunch.BuildArguments(
+            ChosenCli, workDir, sessionId, rules, brief.ToString(), Smoke, ChosenHelpText);
+        var resumeArgs = CliLaunch.BuildArguments(
+            ChosenCli, workDir, sessionId, rules, brief.ToString(), false, ChosenHelpText,
+            hoursRelaunch: true, hoursPrompt: hoursPrompt);
+        EnsureCommandLineSize(ChosenExe!, gargs, CliLaunch.KindName(ChosenCli) + " launch");
+        EnsureCommandLineSize(ChosenExe!, resumeArgs, CliLaunch.KindName(ChosenCli) + " hours relaunch");
+        string display = Quote(ChosenExe!) + " " + string.Join(' ', gargs.Select(a => a == rules ? $"<rules: {rulesFile}>" : Quote(a)));
         Console.WriteLine("\nLaunch command:\n  " + display.Replace("\r\n", "\\n").Replace("\n", "\\n"));
         Log("launch: " + display);
         Check(Directory.Exists(workDir), $"working directory exists: {workDir}");
-        Console.WriteLine("Hours relaunch command (only if hours are missing on exit):\n  " + Quote(grok) + " " +
+        Console.WriteLine("Hours relaunch command (only if hours are missing on exit):\n  " + Quote(ChosenExe!) + " " +
             string.Join(' ', resumeArgs.Select(a => a == rules ? $"<rules: {rulesFile}>" : Quote(a))));
 
         if (DryRun) { Info("Dry run: agent not started."); Summary(); Pause(); return Fails == 0 ? 0 : 1; }
 
-        if (Smoke) GrokInspect(grok, workDir);
-        Header(Smoke ? "Starting Grok (single-turn smoke)..." : "Starting Grok...");
-        int code = RunGrok(grok, workDir, gargs);
+        if (Smoke && ChosenCli == CliKind.Grok) GrokInspect(ChosenExe!, workDir);
+        Header(Smoke
+            ? $"Starting {CliLaunch.KindName(ChosenCli)} (single-turn smoke)..."
+            : $"Starting {CliLaunch.KindName(ChosenCli)}...");
+        int code = RunChosenCli(ChosenExe!, workDir, gargs);
         if (Smoke)
         {
             Check(code == 0, "smoke launch exit code 0");
@@ -411,22 +456,64 @@ static class Program
             if (Console.IsInputRedirected) { Fails++; Err("non-interactive: cannot relaunch for hours."); break; }
             string ans = Ask($"Relaunching the agent to report hours (attempt {attempt}). Press Enter to continue (type SKIP to override, it gets logged): ");
             if (ans == "SKIP") { Log($"HOURS OVERRIDE: session {sessionId} closed without hours by user"); Warn("hours skipped by override; logged."); Fails++; break; }
-            code = RunGrok(grok, workDir, resumeArgs);
+            // FR #570: hours loop relaunches the chosen CLI, never a hardcoded grok.exe.
+            code = RunChosenCli(ChosenExe!, workDir, resumeArgs);
         }
         Pause();
         return code;
     }
 
-    static int RunGrok(string grok, string workDir, List<string> gargs)
+    static int RunChosenCli(string exe, string workDir, List<string> cliArgs)
     {
-        var psi = new ProcessStartInfo(grok) { UseShellExecute = false, WorkingDirectory = workDir };
-        foreach (var a in gargs) psi.ArgumentList.Add(a);
-        LastUserFile.NoteGrokStart();
+        ProcessStartInfo psi;
+        // Cursor ships as agent.cmd; ArgumentList on a .cmd file needs cmd.exe /c.
+        if (exe.EndsWith(".cmd", StringComparison.OrdinalIgnoreCase)
+            || exe.EndsWith(".bat", StringComparison.OrdinalIgnoreCase))
+        {
+            psi = new ProcessStartInfo("cmd.exe") { UseShellExecute = false, WorkingDirectory = workDir };
+            psi.ArgumentList.Add("/c");
+            psi.ArgumentList.Add(exe);
+        }
+        else
+        {
+            psi = new ProcessStartInfo(exe) { UseShellExecute = false, WorkingDirectory = workDir };
+        }
+        foreach (var a in cliArgs) psi.ArgumentList.Add(a);
+        if (ChosenCli == CliKind.Grok) LastUserFile.NoteGrokStart();
         using var p = Process.Start(psi)!;
         p.WaitForExit();
-        Log($"grok exit {p.ExitCode}");
-        Info($"Grok exited ({p.ExitCode}).");
+        Log($"{CliLaunch.KindName(ChosenCli)} exit {p.ExitCode}");
+        Info($"{CliLaunch.KindName(ChosenCli)} exited ({p.ExitCode}).");
         return p.ExitCode;
+    }
+
+    /// <summary>FR #570: keep RunGrok name for Grok-only callers; forwards to RunChosenCli.</summary>
+    static int RunGrok(string grok, string workDir, List<string> gargs) => RunChosenCli(grok, workDir, gargs);
+
+    static string CaptureCliHelp(string exe)
+    {
+        try
+        {
+            var psi = new ProcessStartInfo(exe)
+            {
+                UseShellExecute = false,
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                CreateNoWindow = true,
+            };
+            psi.ArgumentList.Add("--help");
+            using var p = Process.Start(psi);
+            if (p == null) return "";
+            string stdout = p.StandardOutput.ReadToEnd();
+            string stderr = p.StandardError.ReadToEnd();
+            p.WaitForExit(15_000);
+            return stdout + "\n" + stderr;
+        }
+        catch (Exception ex)
+        {
+            Warn("FR #570: could not read " + exe + " --help (" + ex.GetType().Name + "); starting with work directory only.");
+            return "";
+        }
     }
 
     static string Short(string session) => session.Replace("-", "")[..Math.Min(8, session.Replace("-", "").Length)].ToLowerInvariant();
@@ -966,6 +1053,13 @@ PriorityAgent.exe [options]
                         Not read from the OS user. An existing session keeps identity.json.
   --hours-entry-id <h_...>
                         persisted receiver id (else hours-entry.json or PRIORITY_AGENT_HOURS_ENTRY_ID)
+  --cli grok|cursor|opencode
+                        which agent CLI to start (default grok; env PRIORITY_AGENT_CLI).
+                        Grok keeps RunGrok + MCP registration. Cursor uses
+                        %LOCALAPPDATA%\cursor-agent\agent.cmd; OpenCode uses a
+                        standalone opencode.exe. Cursor/OpenCode never get Grok
+                        MCP flags; --help is read first, else work-dir only.
+                        Hours relaunch uses the same chosen CLI.
   PRIORITY_AGENT_HOURS_JSON
                         fixture file for the list body; when set, no HTTP request is made
 ");

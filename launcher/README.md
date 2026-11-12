@@ -55,8 +55,17 @@ with the right context.
    - Source: the Bob report `machines.<machine>.pcent["grok-chat"]`.
    - Above 0 means the pool is used. 0 or unknown gives a warning and asks before continuing.
    - It never handles keys.
-8. It **starts Grok** in the same console:
-   `grok --cwd <context> --session-id <new uuid> --trust --rules <agent rules> "<context brief>"`.
+8. It **starts the chosen agent CLI** in the same console (FR #570 / FR-005):
+   - **`--cli grok|cursor|opencode`** (env `PRIORITY_AGENT_CLI`; default `grok` until the
+     interactive chooser lands). The selected work directory is always
+     `ProcessStartInfo.WorkingDirectory`.
+   - **Grok** keeps `RunGrok`: `grok --cwd <context> --session-id <new uuid> --trust --rules <agent rules> "<context brief>"`
+     plus MCP registration / fuel checks.
+   - **Cursor** starts `%LOCALAPPDATA%\cursor-agent\agent.cmd` (never `%USERPROFILE%\.grok\bin\agent.exe`).
+     **OpenCode** starts a standalone `opencode.exe`. Neither receives Grok MCP /
+     `--cwd` / `--session-id` / `--rules` flags. The launcher reads `agent --help` /
+     `opencode --help` before adding workspace flags; if those flags are unknown, it
+     starts with the work directory only.
    - The rules come from `launcher/agent-rules.md`. That file is the only reporting
      policy. The exe embeds a copy of it at build time. On launch, `LoadRules` uses the
      clone file when its `rules-version` is at least the embedded copy. Customer repos
@@ -96,7 +105,8 @@ with the right context.
      least the copy embedded in `PriorityAgent.exe`. The embedded copy changes only when the
      exe is rebuilt and published, which this change does not do.
    - If the entry is missing, open, `auto_closed`, or for a different key, the launcher shows a
-     loud red warning and relaunches the same session (`grok --resume <id>`) until the closed
+     loud red warning and relaunches the **same chosen CLI** (Grok: `grok --resume <id>`;
+     Cursor/OpenCode: that CLI's argv, never a hardcoded `grok.exe`) until the closed
      entry matches, or the operator types `SKIP` (logged).
    - `log.md` stays narrative evidence. It is not the hours store. The check does not read a git hours ref.
 
@@ -170,16 +180,20 @@ PriorityAgent.exe --list                           customers (topic priority-cus
 PriorityAgent.exe --list --customer rees           + its project folders
 PriorityAgent.exe --customer rees --project SC263182
 PriorityAgent.exe --general
-PriorityAgent.exe --dry-run --customer rees --project SC263182   show everything, change nothing, print the grok command
+PriorityAgent.exe --dry-run --customer rees --project SC263182   show everything, change nothing, print the launch command
 PriorityAgent.exe --smoke --customer rees --project SC263182     real setup + one brief no-tools single-turn launch
+PriorityAgent.exe --cli cursor --customer rees --project SC263182
 PriorityAgent.exe --check-hours C:\AI\rees --session <uuid>      run only the hours check (path under the resolved AI root)
 PriorityAgent.exe --mcp-catalog [<catalog dir>]                 fallback stdio catalog MCP (env PRIORITY_CATALOG_DIR)
 ```
 
 Other options: `--root <dir>` (clone root; default: first existing `X:\AI` on C:->Z:, else create `\AI` on the first ready drive; env `PRIORITY_AGENT_ROOT`),
+`--cli grok|cursor|opencode` (env `PRIORITY_AGENT_CLI`; default `grok`),
 `--passwords-dir <dir>`, `--no-fuel-check`, `--no-pause`.
 
-Requirements: `git`, `gh` (logged in as SimonBarnett) and the Grok CLI (`%USERPROFILE%\.grok\bin\grok.exe`).
+Requirements: `git`, `gh` (logged in as SimonBarnett). For `--cli grok` (default): Grok CLI
+(`%USERPROFILE%\.grok\bin\grok.exe`). For `--cli cursor`: `%LOCALAPPDATA%\cursor-agent\agent.cmd`.
+For `--cli opencode`: a standalone `opencode.exe` under LocalAppData/home.
 
 Optional execute plugins (formprep, compile, install, odata) need node and `instances.json`, so the launcher doesn't install them:
 `grok plugin marketplace add SimonBarnett/agentic_fomprep`, then `grok plugin install priority-formprep --trust` (and so on).

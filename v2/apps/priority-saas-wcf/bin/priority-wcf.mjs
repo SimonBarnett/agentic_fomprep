@@ -15,6 +15,7 @@ import { formStart, formGetRows, formSetFields, formSave, formStartSubForm } fro
 import { runPrepare } from '../lib/prepare.mjs';
 import { runProcStart } from '../lib/proc.mjs';
 import { resolveWhoami } from '../lib/whoami.mjs';
+import { listCompanies } from '../lib/companies.mjs';
 import { emit, fail, ok, redact } from '../lib/json-out.mjs';
 import {
   loadRequestFile,
@@ -56,6 +57,7 @@ Object kinds: table, form, report, procedure, interface.
   probe   --instance <id> [--with-token]
   session --instance <id> [--form <ENAME>]
   whoami  --instance <id>
+  companies --instance <id>  (see: help companies)
   form start|rows|set|save|subform|columns|new|delete|action  (see: help form)
   prepare form|procedure|report --instance <id> --name <ENAME>  (see: help prepare)
   proc start --instance <id> --name <ENAME> [--ptype P|R]  (see: help proc)
@@ -64,7 +66,7 @@ Object kinds: table, form, report, procedure, interface.
   report  (see: help report)
   Any verb: --request <path>  UTF-8 JSON; keys fields|filter|inputs|name|form|subform override flags
   help
-  help <verb>   form|prepare|proc|table|interface|report
+  help <verb>   form|prepare|proc|table|interface|report|companies
 
 Env:
   PRIORITY_SAAS_WCF_INSTANCES  allowlist JSON (default %USERPROFILE%\\.priority-saas-wcf\\instances.json)
@@ -82,6 +84,13 @@ Request files stay outside the repo (temp / profile); never commit them.
 }
 
 const HELP_TOPICS = {
+  companies: `help companies
+
+  companies --instance <id>
+
+Read-only JSON {companies:[{name,title}]}. Does not require allowLive.
+Does not switch the session company. Never log tokens.
+`,
   form: `help form
 
 Form verbs (one screen):
@@ -263,6 +272,19 @@ async function cmdWhoami() {
     }
     // FR #383 contract: { ok, userLogin, source } only (no token fields).
     return ok({ userLogin: r.userLogin, source: r.source });
+  });
+}
+
+async function cmdCompanies() {
+  return withSession(async ({ instance, session }) => {
+    const r = await listCompanies({ instance, session });
+    if (!r.ok) return fail(r.reason || 'companies_failed', r);
+    return ok({
+      action: 'companies',
+      instanceId: instance.id,
+      companies: r.companies,
+      switched: false,
+    });
   });
 }
 
@@ -504,6 +526,7 @@ async function main() {
   if (verb === 'probe') return cmdProbe();
   if (verb === 'session') return cmdSession();
   if (verb === 'whoami') return cmdWhoami();
+  if (verb === 'companies') return cmdCompanies();
   if (verb === 'form') {
     const sub = (process.argv[3] || '').toLowerCase();
     if (!sub) return fail('form_sub_required', { need: 'start|rows|set|save|subform' });
@@ -521,7 +544,7 @@ async function main() {
   }
   return fail('unknown_verb', {
     verb,
-    hint: 'probe|session|whoami|form|prepare|proc|help',
+    hint: 'probe|session|whoami|companies|form|prepare|proc|help',
   });
 }
 

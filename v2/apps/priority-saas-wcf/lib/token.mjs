@@ -73,3 +73,26 @@ export function loadAccessToken(instance) {
   }
   return { ok: true, accessToken, source: 'tokenFile', path: file };
 }
+
+/**
+ * FR #420 / FR-038: refuse expired tokens before any login call.
+ * @param {object} instance
+ * @param {{ login?: (instance, accessToken) => Promise<unknown> }} [opts]
+ */
+export async function attemptLoginIfTokenFresh(instance, opts = {}) {
+  const tok = loadAccessToken(instance);
+  if (!tok.ok) {
+    return { ...tok, loginCount: 0 };
+  }
+  const login = opts.login;
+  if (typeof login !== 'function') {
+    return { ...tok, loginCount: 0, deferred: true };
+  }
+  const session = await login(instance, tok.accessToken);
+  return {
+    ok: session?.ok !== false,
+    loginCount: 1,
+    session,
+    tokenSource: tok.source,
+  };
+}

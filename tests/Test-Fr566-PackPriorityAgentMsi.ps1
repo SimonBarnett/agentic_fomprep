@@ -27,6 +27,10 @@ if (Test-Path -LiteralPath $wxsPath) {
         $wxs -notmatch 'QtExecCmdLine' -and
         $wxs -notmatch 'CustomAction'
     ) 'no CLI CustomAction in Product.wxs'
+    # MRB #588 hostile pins
+    Gate 'upgrade-code' ($wxs -match 'UpgradeCode\s*=\s*"[0-9A-Fa-f-]{36}"') 'stable UpgradeCode for MajorUpgrade'
+    Gate 'platform-x64' ($wxs -match 'Platform\s*=\s*"x64"') 'Package Platform x64'
+    Gate 'programfiles64' ($wxs -match 'ProgramFiles64Folder') 'INSTALLDIR under ProgramFiles64Folder (not 32-bit ProgramFilesFolder alone)'
 }
 
 $banned = @(

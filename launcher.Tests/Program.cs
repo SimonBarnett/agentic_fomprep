@@ -18,6 +18,8 @@ var checks = new List<(string Name, Action Run)>
     ("AI root prefers existing C:\\AI over later drives", TestAiRootPrefersExistingC),
     ("AI root skips missing D: and creates on first ready drive", TestAiRootCreatesOnFirstReady),
     ("AI root search lists AI and repos across ready drives", TestAiRootBuildSearchRoots),
+    ("saved MEDATECH empty answer binds MEDATECH; prompt has [MEDATECH] not OS user", TestSavedLoginEmptyAnswer),
+    ("--hours-user OTHER wins over saved MEDATECH", TestHoursUserWinsOverSaved),
 };
 
 int failures = 0;
@@ -269,6 +271,42 @@ static void TestAiRootBuildSearchRoots()
         "must include existing repos roots");
     Assert(!roots.Any(r => r.StartsWith(@"D:\", StringComparison.OrdinalIgnoreCase)),
         "must not invent paths on drives that are not ready");
+}
+
+static void TestSavedLoginEmptyAnswer()
+{
+    string root = NewTemp();
+    string? previous = Environment.GetEnvironmentVariable(LastUserFile.EnvPath);
+    try
+    {
+        string path = Path.Combine(root, "last-user.json");
+        File.WriteAllText(path,
+            """{"saas1":{"userLogin":"MEDATECH","company":"CO","identifiedAt":"2026-11-12T00:00:00Z","source":"whoami"}}""");
+        Environment.SetEnvironmentVariable(LastUserFile.EnvPath, path);
+        string? saved = LastUserFile.ReadUserLogin("saas1");
+        Assert(saved == "MEDATECH", "saved login must be MEDATECH");
+        string prompt = LastUserFile.FormatPrompt(saved);
+        Assert(prompt.Contains("[MEDATECH]", StringComparison.Ordinal), prompt);
+        string os = Environment.UserName ?? "";
+        if (!os.Equals("MEDATECH", StringComparison.OrdinalIgnoreCase))
+            Assert(!prompt.Contains(os, StringComparison.OrdinalIgnoreCase), "prompt must not contain OS user " + os);
+        string? requested = LastUserFile.ChooseRequestedUser(null, "", saved);
+        var bound = BobHours.BindSessionOwner(null, requested);
+        Assert(bound.Ok && bound.UserLogin == "MEDATECH", bound.Detail + "/" + bound.UserLogin);
+    }
+    finally
+    {
+        Environment.SetEnvironmentVariable(LastUserFile.EnvPath, previous);
+        DeleteTempDirectory(root);
+    }
+}
+
+static void TestHoursUserWinsOverSaved()
+{
+    string? requested = LastUserFile.ChooseRequestedUser("OTHER", "", "MEDATECH");
+    Assert(requested == "OTHER", "flag must win, got " + requested);
+    var bound = BobHours.BindSessionOwner(null, requested);
+    Assert(bound.Ok && bound.UserLogin == "OTHER", bound.Detail);
 }
 
 static string NewTemp()

@@ -280,11 +280,13 @@ static class Program
         string rules = LoadRules(fomprep, out string rulesSrc);
         string sessionDir = sessionDirEarly;
         Directory.CreateDirectory(sessionDir);
-        string? requestedUser = string.IsNullOrWhiteSpace(HoursUserArg) ? null : HoursUserArg.Trim();
+        string instanceId = wcfConfig.Instances.Count > 0 ? wcfConfig.Instances[0].Id : "";
+        string? savedLogin = LastUserFile.ReadUserLogin(instanceId);
+        string? requestedUser = LastUserFile.ChooseRequestedUser(HoursUserArg, null, null);
         if (requestedUser == null && !Console.IsInputRedirected)
         {
-            string typed = Ask("Priority USERLOGIN for this session: ");
-            requestedUser = string.IsNullOrWhiteSpace(typed) ? null : typed.Trim();
+            string typed = Ask(LastUserFile.FormatPrompt(savedLogin));
+            requestedUser = LastUserFile.ChooseRequestedUser(HoursUserArg, typed, savedLogin);
         }
         var sessionOwner = BobHours.BindSessionOwner(ReadSessionOwner(sessionDir), requestedUser);
         if (!sessionOwner.Ok || string.IsNullOrEmpty(sessionOwner.UserLogin))

@@ -142,3 +142,22 @@ test('allowLive false with --confirm: live_refused before login', () => {
   assert.equal(parsed.reason, 'live_refused');
   assert.doesNotMatch(out, /login_connect|Can't connect/i);
 });
+
+test('MRB-467: empty getRows does not call deleteRow', async () => {
+  const form = fakeForm();
+  form.getRows = async () => ({ CUSTOMERS: {} });
+  const r = await formDeletePositionedRow(form, {
+    or: 0,
+    QueryValues: [{ field: 'CUSTNAME', fromval: 'X', toval: '', op: '=', sort: 0, isdesc: 0 }],
+  });
+  assert.equal(r.ok, false);
+  assert.equal(r.reason, 'no_rows_for_filter');
+  assert.equal(r.deleted, 0);
+  assert.equal(form.counts().deleteRow, 0);
+});
+
+test('MRB-467: verbIsWrite form.delete is true for --dry-run', async () => {
+  const { verbIsWrite } = await import('../lib/dry-run.mjs');
+  assert.equal(verbIsWrite('form.delete'), true);
+  assert.equal(verbIsWrite('form.rows'), false);
+});

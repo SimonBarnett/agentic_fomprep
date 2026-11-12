@@ -1,0 +1,6 @@
+{
+  "name": "priority-service-desk-serial-number-renamed-history",
+  "title": "A serial number missing from the catalogue had been renamed on another record",
+  "description": "An asset in stock did not show in Catalogue of Parts with Serial Numbers because its serial number had been changed to a different value on that record. History of changes showed the rename; the customer changed it back.",
+  "version": "1.0.0"
+}

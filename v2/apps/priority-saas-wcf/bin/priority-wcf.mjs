@@ -14,6 +14,7 @@ import { loginSession, logout, safeEnd } from '../lib/session.mjs';
 import { formStart, formGetRows, formSetFields, formSave, formStartSubForm } from '../lib/form.mjs';
 import { runPrepare } from '../lib/prepare.mjs';
 import { runProcStart } from '../lib/proc.mjs';
+import { resolveWhoami } from '../lib/whoami.mjs';
 import { emit, fail, ok, redact } from '../lib/json-out.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -34,6 +35,7 @@ function usage() {
 
   probe   --instance <id> [--with-token]
   session --instance <id> [--form <ENAME>]
+  whoami  --instance <id>
   form start   --instance <id> --form <ENAME>
   form rows    --instance <id> --form <ENAME> [--from <n>]
   form set     --instance <id> --form <ENAME> --fields '{"COL":"v"}' [--filter '{"field":"X","fromval":"y"}']
@@ -152,6 +154,23 @@ async function cmdProbe() {
     authority: result.authority,
     server: result.server,
     httpStatus: result.httpStatus,
+  });
+}
+
+async function cmdWhoami() {
+  return withSession(async ({ instance, session }) => {
+    const r = await resolveWhoami({ instance, session });
+    if (!r.ok) {
+      // FR #383: unidentified Priority user is exit 3 (not OS username fallback).
+      return fail(r.reason || 'user_unidentified', {
+        action: 'whoami',
+        instanceId: instance.id,
+        detail: r.detail,
+        message: r.message,
+      }, 3);
+    }
+    // FR #383 contract: { ok, userLogin, source } only (no token fields).
+    return ok({ userLogin: r.userLogin, source: r.source });
   });
 }
 
@@ -377,6 +396,7 @@ async function main() {
   if (verb === 'help' || verb === '-h' || verb === '--help') return usage();
   if (verb === 'probe') return cmdProbe();
   if (verb === 'session') return cmdSession();
+  if (verb === 'whoami') return cmdWhoami();
   if (verb === 'form') {
     const sub = (process.argv[3] || '').toLowerCase();
     if (!sub) return fail('form_sub_required', { need: 'start|rows|set|save|subform' });
@@ -392,7 +412,7 @@ async function main() {
     if (!sub) return fail('proc_sub_required', { need: 'start' });
     return cmdProc(sub);
   }
-  return fail('unknown_verb', { verb, hint: 'probe|session|form|prepare|proc|help' });
+  return fail('unknown_verb', { verb, hint: 'probe|session|whoami|form|prepare|proc|help' });
 }
 
 main().catch((e) => {

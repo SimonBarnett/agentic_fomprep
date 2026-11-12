@@ -119,6 +119,7 @@ node bin\priority-wcf.mjs prepare report --instance customer-saas-dev --name MYR
 node bin\priority-wcf.mjs proc start --instance customer-saas-dev --name SOMEPROC [--ptype P] [--inputs C:\temp\inputs.json] [--hint SOMEPROC]
 node bin\priority-wcf.mjs report run --instance customer-saas-dev --name MYREP
 node bin\priority-wcf.mjs proc continue --instance customer-saas-dev --from C:\temp\needs-input.json --option FIELD [--inputs C:\temp\inputs.json]
+node bin\priority-wcf.mjs proc text set --instance customer-saas-dev --name MYPROC --file C:\temp\body.txt
 ```
 
 - Form prep: `EFORM` + `FORMPREPDRCT2`, then scrape `FORMPREPERRS`.
@@ -126,6 +127,7 @@ node bin\priority-wcf.mjs proc continue --instance customer-saas-dev --from C:\t
 - `proc start --inputs <file>` is a UTF-8 JSON map passed as `inputValues` on the first `inputFields` step. Matching EditField names take file values; name-hint fill runs only for fields the file did not set. Option selection is unchanged.
 - `report run --name <ENAME>` is `procStart` with `ptype` R (does not prepare). JSON includes `urls: string[]` from displayUrl steps (`[]` when none).
 - `proc continue --from <step.json> --option <field>` resumes after needs_input with that option field (does not auto-pick). Missing `--from` exits 2 before login. `--inputs` applies on the next `inputFields` step.
+- `proc text set --name <ENAME> --file <path>` writes the file through the EXEC form `TEXT` field (not raw SQL). `allowLive` false is refused before login. Does not prepare.
 - `prepare` is a write (`allowLive: true` required).
 - Ambiguous procedure `inputOptions` (more than one choice, none selected) returns `ok: false` `reason: needs_input` and the option list; the walker does not call `inputOptions`. A single option may still be taken. With `--out`, the step snapshot is written as `needs-input.json` (resume is FR-23).
 - A finished `proc start` with zero `urls` and zero `errors` is `ok: true` `empty: true` (exit 0), not a failure. Blocker errors still return `ok: false`. This does not change the prepare OData gate.

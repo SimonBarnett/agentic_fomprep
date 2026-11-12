@@ -24,6 +24,7 @@ import {
 } from '../lib/form.mjs';
 import { runPrepare } from '../lib/prepare.mjs';
 import { runProcStart, runProcContinue } from '../lib/proc.mjs';
+import { loadProcTextFile, writeProcTextViaExecForm } from '../lib/proc-text.mjs';
 import { loadInputsFile } from '../lib/inputs-file.mjs';
 import { resolveWhoami } from '../lib/whoami.mjs';
 import { listCompanies } from '../lib/companies.mjs';
@@ -137,8 +138,10 @@ Prepare is a write (allowLive: true). preparedClaim needs the OData gate when od
 
   proc start    --instance <id> --name <ENAME> [--ptype P|R] [--inputs <file>] [--hint <ename>]
   proc continue --instance <id> --from <step.json> --option <field> [--inputs <file>]
+  proc text set --instance <id> --name <ENAME> --file <path>
 
 Continue answers a needs_input snapshot. Missing --from exits 2 before login. Does not auto-pick.
+proc text set writes --file through the EXEC form (allowLive). Does not prepare.
 `,
   table: `help table
 
@@ -623,7 +626,50 @@ function loadFromStepFile(filePath) {
   }
 }
 
+async function cmdProcTextSet() {
+  const name = reqString('name', '--name') || arg('--proc');
+  if (!name) return fail('name_required', { need: '--name <ENAME> or request.name' });
+  const filePath = arg('--file', '');
+  const loaded = loadProcTextFile(filePath);
+  if (!loaded.ok) {
+    return fail(loaded.reason, { path: loaded.path, detail: loaded.detail }, 2);
+  }
+  return withSession(
+    async ({ instance, session, dump, tokenSource }) => {
+      const messages = [];
+      const result = await writeProcTextViaExecForm(session, instance, name, loaded.body, {
+        messages,
+      });
+      dump('proc-text-set.json', { name, set: result.set, messages });
+      if (!result.ok) {
+        return fail(result.reason || 'form_failed', {
+          action: 'proc.text.set',
+          instanceId: instance.id,
+          tokenSource,
+          name,
+        });
+      }
+      return ok({
+        action: 'proc.text.set',
+        instanceId: instance.id,
+        name,
+        set: result.set,
+        form: result.form,
+        messages,
+      });
+    },
+    { write: true },
+  );
+}
+
 async function cmdProc(sub) {
+  if (sub === 'text') {
+    const mode = String(process.argv[4] || '').toLowerCase();
+    if (mode !== 'set') {
+      return fail('proc_sub_required', { need: 'start|continue|text set', got: 'text ' + mode });
+    }
+    return cmdProcTextSet();
+  }
   if (sub === 'continue') {
     const fromPath = arg('--from', '');
     if (!fromPath) {
@@ -663,7 +709,7 @@ async function cmdProc(sub) {
     );
   }
   if (sub !== 'start') {
-    return fail('proc_sub_required', { need: 'start|continue', got: sub });
+    return fail('proc_sub_required', { need: 'start|continue|text set', got: sub });
   }
   const name = reqString('name', '--name') || arg('--proc');
   if (!name) return fail('name_required', { need: '--name <ENAME> or request.name' });
@@ -802,7 +848,7 @@ async function main() {
   }
   if (verb === 'proc') {
     const sub = (process.argv[3] || '').toLowerCase();
-    if (!sub) return fail('proc_sub_required', { need: 'start|continue' });
+    if (!sub) return fail('proc_sub_required', { need: 'start|continue|text' });
     return cmdProc(sub);
   }
   if (verb === 'report') {

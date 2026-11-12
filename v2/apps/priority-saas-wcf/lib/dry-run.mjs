@@ -18,6 +18,7 @@ export function verbIsWrite(verb, argv = []) {
   if (v === 'form.subform' && Array.isArray(argv) && argv.includes('--set')) return true;
   if (v.startsWith('prepare.')) return true;
   if (v === 'proc.start' || v === 'proc.continue' || v === 'report.run') return true;
+  if (v === 'proc.text' && Array.isArray(argv) && argv.includes('set')) return true;
   return false;
 }
 

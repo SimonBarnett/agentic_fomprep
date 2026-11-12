@@ -182,6 +182,7 @@ Expanded `priority-uat-wcf` (skill-source + catalog meta **1.2.0**) from CE Day 
 - Source: SaaS WCF Live smoke after API License tick (generic). Folded into PR #338.
 - 2026-11-09 (FR #339): Phase 2 `priority-saas-wcf` prepare form|procedure|report + FORMPREPERRS + proc start + SaaS OData gate (`odataBase`); never preparedClaim without gate.
 - 2026-11-09 (FR #349): gitignore `.bobiverse-seat` / `**/.bobiverse-seat`; harvest-agent-skills: seat markers stay untracked.
+- 2026-11-12: `priority-service-desk-cloud-mfa-method-change`. SC262870: cloud user MFA method change (app to email) could not be done partner-side; supplier changed it. Customer closed. Future requests go via support to the supplier.
 - 2026-11-12: `priority-service-desk-mrp-run-locked-by-scheduler`. SC262717: manual MRP stuck because TTS was running MRP at the same time (procedure locked); avoiding overlap fixed it (customer-verified).
 - 2026-11-12: `priority-service-desk-analytics-multi-company-per-user`. SC262740: analytics report did not run across companies; multi-company selection is per user in the top-right menu; selecting companies fixed it (customer-verified).
 - 2026-11-12: `priority-service-desk-mobile-app-camera-permission`. SC262769: app camera permission read as blocked; full uninstall + device restart + reinstall fixed it (customer-verified).

@@ -90,6 +90,7 @@ IncludeDba=False IncludeCustomer=False
 - priority-service-desk-ui-language-print
 - priority-service-desk-user-paccount-signup
 - priority-service-desk-webhook-sync-mitigation
+- priority-service-desk-cloud-mfa-method-change
 - priority-service-desk-analytics-multi-company-per-user
 - priority-service-desk-app-redis-services-stopped
 - priority-service-desk-app-user-applications-for-license

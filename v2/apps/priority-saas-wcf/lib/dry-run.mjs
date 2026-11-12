@@ -19,10 +19,10 @@ export function verbIsWrite(verb, argv = []) {
   if (v.startsWith('prepare.')) return true;
   if (v === 'proc.start' || v === 'proc.continue' || v === 'report.run') return true;
   // FR #410: proc text set is a write; bare proc text (FR #409) stays read-only.
-  if (v === 'proc.text' && Array.isArray(argv)) {
-    const i = argv.findIndex((a) => String(a).toLowerCase() === 'text');
-    if (i >= 0 && String(argv[i + 1] || '').toLowerCase() === 'set') return true;
-  }
+  if (v === 'proc.text' && Array.isArray(argv) && argv.includes('set')) return true;
+  if (v === 'table.column' && Array.isArray(argv) && argv.includes('add')) return true;
+  if (v === 'table.create') return true;
+  if (v === 'interface.run') return true;
   return false;
 }
 

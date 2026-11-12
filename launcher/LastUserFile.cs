@@ -3,8 +3,9 @@ using System.Text.Json;
 namespace PriorityAgent;
 
 /// <summary>
-/// FR #385 / FR-003: read the user-profile last-user file (written by FR-002)
-/// so the interactive prompt can offer the saved USERLOGIN.
+/// Read the user-profile last-user file (written by FR-002 / #384)
+/// for launcher USERLOGIN resolution (FR-003 interactive suggest, FR-004 non-interactive,
+/// FR-005 / #387 hours-user vs whoami gate).
 /// </summary>
 public static class LastUserFile
 {
@@ -77,6 +78,27 @@ public static class LastUserFile
         if (saved.Length > 0 && BobHours.IsPriorityUserLogin(saved))
             return saved;
         return null;
+    }
+
+
+    /// <summary>
+    /// FR #386 / FR-004: resolve USERLOGIN for launch without calling ReadLine.
+    /// When stdin is redirected, bind the saved login if present; otherwise leave null
+    /// so BindSessionOwner returns Priority USERLOGIN unavailable (exit 2).
+    /// Interactive: empty Enter binds saved (FR-003); typed answer wins; never blocks.
+    /// </summary>
+    public static string? ResolveLaunchUser(
+        string? hoursUserArg,
+        bool inputRedirected,
+        string? savedLogin,
+        string? typedAnswer)
+    {
+        string flag = (hoursUserArg ?? "").Trim();
+        if (flag.Length > 0)
+            return flag;
+        if (inputRedirected)
+            return ChooseRequestedUser(null, null, savedLogin);
+        return ChooseRequestedUser(null, typedAnswer, savedLogin);
     }
 
     public static int GrokStartCount;

@@ -18,10 +18,13 @@ import {
   formSave,
   formStartSubForm,
   formColumnsMeta,
+  formSubformSetFields,
   applySearchThenGetRows,
+  formRunAction,
 } from '../lib/form.mjs';
 import { runPrepare } from '../lib/prepare.mjs';
 import { runProcStart } from '../lib/proc.mjs';
+import { loadInputsFile } from '../lib/inputs-file.mjs';
 import { resolveWhoami } from '../lib/whoami.mjs';
 import { listCompanies } from '../lib/companies.mjs';
 import { emit, fail, ok, redact } from '../lib/json-out.mjs';
@@ -31,6 +34,7 @@ import {
   fieldsFromRequestOrFlag,
   rawJsonFromRequestOrFlag,
   stringFromRequestOrFlag,
+  loadFieldsFile,
 } from '../lib/request-file.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -38,6 +42,8 @@ const ROOT = path.resolve(__dirname, '..');
 
 /** FR #389: loaded --request JSON; keys override matching flags. */
 let requestDoc = null;
+/** FR #403: --inputs JSON map for proc start only. */
+let procInputValues = null;
 
 function arg(name, fallback = '') {
   const i = process.argv.indexOf(name);
@@ -69,7 +75,7 @@ Object kinds: table, form, report, procedure, interface.
   companies --instance <id>  (see: help companies)
   form start|rows|set|save|subform|columns|new|delete|action  (see: help form)
   prepare form|procedure|report --instance <id> --name <ENAME>  (see: help prepare)
-  proc start --instance <id> --name <ENAME> [--ptype P|R]  (see: help proc)
+  proc start --instance <id> --name <ENAME> [--ptype P|R] [--inputs <file>]  (see: help proc)
   table   (see: help table)
   interface (see: help interface)
   report  (see: help report)
@@ -115,6 +121,7 @@ Form verbs (one screen):
   form set     --instance <id> --form <ENAME> --fields '{...}' [--filter ...]
   form save    --instance <id> --form <ENAME> --fields '{...}' [--filter ...]
   form subform --instance <id> --form <PARENT> --subform <CHILD> [--rows]
+  form subform --instance <id> --form <PARENT> --subform <CHILD> --set --fields-file <path>
 
 Writes need allowLive: true. Never invent ENAME. Never log tokens.
 `,
@@ -128,9 +135,10 @@ Prepare is a write (allowLive: true). preparedClaim needs the OData gate when od
 `,
   proc: `help proc
 
-  proc start --instance <id> --name <ENAME> [--ptype P|R]
+  proc start --instance <id> --name <ENAME> [--ptype P|R] [--inputs <file>] [--hint <ename>]
 
-P = procedure, R = report. Does not prepare; use help prepare for prep verbs.
+P = procedure, R = report. --inputs is a UTF-8 JSON map for the first inputFields step.
+Name-hint fill runs only for fields the file did not set. Does not prepare; use help prepare.
 `,
   table: `help table
 
@@ -347,15 +355,87 @@ async function openFilteredForm(session, instance, formName, filterRaw, messages
 async function cmdForm(sub) {
   const formName = reqString('form', '--form');
   if (!formName) return fail('form_required', { need: '--form <ENAME> or request.form' });
-  const write = sub === 'set' || sub === 'save';
+  const write = sub === 'set' || sub === 'save' || sub === 'action' || (sub === 'subform' && hasFlag('--set'));
   return withSession(
     async ({ instance, session, dump }) => {
       const messages = [];
       let form;
       try {
+        if (sub === 'action') {
+          const activation = reqString('name', '--name') || arg('--activation', '');
+          if (!activation) {
+            return fail('activation_required', { need: '--name <activation> or request.name' });
+          }
+          const filterRaw = reqRawJson('filter', '--filter');
+          form = await openFilteredForm(session, instance, formName, filterRaw, messages);
+          if (filterRaw) {
+            const got = await formGetRows(form, 1);
+            if (got.count < 1) {
+              await safeEnd(form);
+              return fail('no_rows_for_filter', { form: formName, filter: filterRaw });
+            }
+            if (typeof form.setActiveRow === 'function') {
+              await form.setActiveRow(Number(got.rows[0]._idx));
+            }
+          }
+          const ran = await formRunAction(form, activation);
+          dump('form-action.json', { form: formName, activation, ran, messages });
+          await safeEnd(form);
+          if (!ran.ok) return fail(ran.reason || 'form_action_failed', { form: formName, ...ran, messages });
+          return ok({
+            action: 'form.action',
+            instanceId: instance.id,
+            form: formName,
+            activation: ran.activation,
+            via: ran.via,
+            messages,
+          });
+        }
+
         if (sub === 'subform') {
           const childName = reqString('subform', '--subform');
           if (!childName) return fail('subform_required', { need: '--subform <ENAME> or request.subform' });
+
+          // FR #400: --set writes the child via fields-file (allowLive gated by write flag).
+          if (hasFlag('--set')) {
+            const fieldsPath = arg('--fields-file', '');
+            let fields = {};
+            if (fieldsPath) {
+              const loaded = loadFieldsFile(fieldsPath);
+              if (!loaded.ok) {
+                return fail(loaded.reason || 'fields_file_invalid', loaded);
+              }
+              fields = loaded.fields;
+            } else {
+              fields = fieldsFromRequestOrFlag(requestDoc, arg('--fields', '{}'));
+            }
+            if (Object.keys(fields).length < 1) {
+              return fail('fields_required', {
+                need: '--fields-file <path> or --fields JSON / request.fields',
+              });
+            }
+            form = await formStart(session.priority, formName, instance.company, { messages });
+            const { child, set } = await formSubformSetFields(form, childName, fields, { messages });
+            dump('subform-set.json', {
+              parent: formName,
+              child: childName,
+              fields: Object.keys(fields),
+              set,
+              messages,
+            });
+            await safeEnd(child);
+            await safeEnd(form);
+            return ok({
+              action: 'form.subform.set',
+              instanceId: instance.id,
+              parent: formName,
+              subform: childName,
+              fields: Object.keys(fields),
+              set,
+              messages,
+            });
+          }
+
           form = await formStart(session.priority, formName, instance.company, { messages });
           const child = await formStartSubForm(form, childName, { messages });
           let rows = null;
@@ -524,6 +604,7 @@ async function cmdProc(sub) {
       const result = await runProcStart(session, instance, name, {
         ptype: arg('--ptype', 'P'),
         nameHint: arg('--hint', ''),
+        inputValues: procInputValues,
       });
       dump('proc.json', result);
       if (!result.ok) {
@@ -554,6 +635,17 @@ async function main() {
     return usage();
   }
 
+  // FR #403: --inputs JSON map, proc start only (not form / prepare).
+  const inputsPath = arg('--inputs', '');
+  const procSub = verb === 'proc' ? (process.argv[3] || '').toLowerCase() : '';
+  if (inputsPath && verb === 'proc' && procSub === 'start') {
+    const loaded = loadInputsFile(inputsPath);
+    if (!loaded.ok) {
+      return fail(loaded.reason, { path: loaded.path, detail: loaded.detail }, 2);
+    }
+    procInputValues = loaded.inputValues;
+  }
+
   // FR #389: load --request before any verb that may login.
   const requestPath = arg('--request', '');
   if (requestPath) {
@@ -579,7 +671,7 @@ async function main() {
   if (verb === 'companies') return cmdCompanies();
   if (verb === 'form') {
     const sub = (process.argv[3] || '').toLowerCase();
-    if (!sub) return fail('form_sub_required', { need: 'start|columns|rows|set|save|subform' });
+    if (!sub) return fail('form_sub_required', { need: 'start|columns|rows|set|save|subform|action' });
     return cmdForm(sub);
   }
   if (verb === 'prepare') {

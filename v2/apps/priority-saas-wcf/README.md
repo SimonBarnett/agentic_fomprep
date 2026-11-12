@@ -115,6 +115,7 @@ node bin\priority-wcf.mjs proc start --instance customer-saas-dev --name SOMEPRO
 - Form prep: `EFORM` + `FORMPREPDRCT2`, then scrape `FORMPREPERRS`.
 - Procedure/report prep: `EXEC` + `REPPREPDIRECT2`.
 - `prepare` is a write (`allowLive: true` required).
+- Ambiguous procedure `inputOptions` (more than one choice, none selected) returns `ok: false` `reason: needs_input` and the option list; the walker does not call `inputOptions`. A single option may still be taken. With `--out`, the step snapshot is written as `needs-input.json` (resume is FR-23).
 - SaaS success gate: when `odataBase` is set on the allowlist row, re-read UPD/LASTPREPDATE-style fields via OData (`PRIORITY_SAAS_ODATA_PAT` or Bearer). Without SQL or OData, `walkOk` may be true but `preparedClaim` stays false (`gate.status=unavailable`). Use `--no-gate` only for walk diagnostics.
 
 

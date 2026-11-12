@@ -37,7 +37,24 @@ export async function runProcStart(session, instance, ename, opts = {}) {
     deadlineMs: opts.deadlineMs,
     onStep: opts.onStep,
     onInput: opts.onInput,
+    onNeedsInput: opts.onNeedsInput,
   });
+  if (walk.reason === 'needs_input') {
+    return {
+      ok: false,
+      reason: 'needs_input',
+      action: 'proc.start',
+      name,
+      ptype,
+      options: walk.options,
+      snapshot: walk.snapshot,
+      ended: false,
+      steps: walk.stepCount,
+      lastType: walk.lastType,
+      errors: walk.errors,
+      walkSteps: walk.steps,
+    };
+  }
   const blockers = walk.errors.filter((e) => e.severity === 'Blocker');
   return {
     ok: walk.ended && blockers.length === 0,

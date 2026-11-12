@@ -111,7 +111,22 @@ export async function walkProcSteps(firstStep, opts = {}) {
     }
     if (type === 'inputOptions') {
       const optionList = (step.input && step.input.Options) || [];
-      const sel = (optionList.find((o) => o.selected) || optionList[0] || {}).field;
+      const selected = optionList.find((o) => o && o.selected);
+      if (optionList.length > 1 && !selected) {
+        if (typeof opts.onNeedsInput === 'function') opts.onNeedsInput(snap);
+        return {
+          ok: false,
+          ended: false,
+          reason: 'needs_input',
+          options: optionList,
+          snapshot: snap,
+          steps,
+          errors,
+          lastType: 'inputOptions',
+          stepCount: n,
+        };
+      }
+      const sel = (selected || optionList[0] || {}).field;
       step = await proc.inputOptions(1, sel);
       continue;
     }

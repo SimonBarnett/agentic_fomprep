@@ -461,8 +461,17 @@ async function cmdPrepare(kind) {
         gate: !hasFlag('--no-gate'),
         accessToken: accessToken || '',
         messages: [],
+        onNeedsInput: (snap) => dump('needs-input.json', snap),
       });
       dump('prepare.json', result);
+      if (result.reason === 'needs_input') {
+        dump('needs-input.json', result.snapshot || { options: result.options });
+        return fail('needs_input', {
+          action: 'prepare.' + k,
+          instanceId: instance.id,
+          options: result.options,
+        });
+      }
       if (!result.walkOk) {
         return fail('prepare_walk_failed', {
           action: 'prepare.' + k,
@@ -501,8 +510,17 @@ async function cmdProc(sub) {
       const result = await runProcStart(session, instance, name, {
         ptype: arg('--ptype', 'P'),
         nameHint: arg('--hint', ''),
+        onNeedsInput: (snap) => dump('needs-input.json', snap),
       });
       dump('proc.json', result);
+      if (result.reason === 'needs_input') {
+        dump('needs-input.json', result.snapshot || { options: result.options });
+        return fail('needs_input', {
+          action: 'proc.start',
+          instanceId: instance.id,
+          options: result.options,
+        });
+      }
       if (!result.ok) {
         return fail(result.reason || 'proc_failed', {
           action: 'proc.start',

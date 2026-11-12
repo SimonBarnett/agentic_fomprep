@@ -24,7 +24,7 @@ import {
 } from '../lib/form.mjs';
 import { runPrepare } from '../lib/prepare.mjs';
 import { runProcStart, runProcContinue } from '../lib/proc.mjs';
-import { loadProcTextFile, writeProcTextViaExecForm } from '../lib/proc-text.mjs';
+import { loadProcTextFile, writeProcTextViaExecForm, readProcTextViaExecForm } from '../lib/proc-text.mjs';
 import { loadInputsFile } from '../lib/inputs-file.mjs';
 import {
   defaultInterfacePrepPath,
@@ -156,8 +156,10 @@ prepare interface reads config/interface-prep.json; empty/missing proc => interf
 
   proc start    --instance <id> --name <ENAME> [--ptype P|R] [--inputs <file>] [--hint <ename>]
   proc continue --instance <id> --from <step.json> --option <field> [--inputs <file>]
+  proc text     --instance <id> --name <ENAME>
   proc text set --instance <id> --name <ENAME> --file <path>
 
+proc text is read-only (EXEC TEXT); allowLive not required. Missing/empty body -> proc_text_missing exit 2.
 Continue answers a needs_input snapshot. Missing --from exits 2 before login. Does not auto-pick.
 proc text set writes --file through the EXEC form (allowLive). Does not prepare.
 `,
@@ -732,6 +734,35 @@ function loadFromStepFile(filePath) {
   }
 }
 
+
+async function cmdProcTextRead() {
+  const name = reqString('name', '--name') || arg('--proc');
+  if (!name) return fail('name_required', { need: '--name <ENAME> or request.name' });
+  return withSession(
+    async ({ instance, session, dump, tokenSource }) => {
+      const messages = [];
+      const result = await readProcTextViaExecForm(session, instance, name, { messages });
+      dump('proc-text.json', { name, ok: result.ok, reason: result.reason, messages });
+      if (!result.ok) {
+        return fail(result.reason || 'proc_text_missing', {
+          action: 'proc.text',
+          instanceId: instance.id,
+          tokenSource,
+          name,
+        }, 2);
+      }
+      return ok({
+        action: 'proc.text',
+        instanceId: instance.id,
+        tokenSource,
+        name: result.name,
+        body: result.body,
+      });
+    },
+    { write: false },
+  );
+}
+
 async function cmdProcTextSet() {
   const name = reqString('name', '--name') || arg('--proc');
   if (!name) return fail('name_required', { need: '--name <ENAME> or request.name' });
@@ -771,10 +802,16 @@ async function cmdProcTextSet() {
 async function cmdProc(sub) {
   if (sub === 'text') {
     const mode = String(process.argv[4] || '').toLowerCase();
-    if (mode !== 'set') {
-      return fail('proc_sub_required', { need: 'start|continue|text set', got: 'text ' + mode });
+    if (mode === 'set') {
+      return cmdProcTextSet();
     }
-    return cmdProcTextSet();
+    if (mode && !mode.startsWith('-')) {
+      return fail('proc_sub_required', {
+        need: 'start|continue|text (read); text set (write FR-028)',
+        got: 'text ' + mode,
+      });
+    }
+    return cmdProcTextRead();
   }
   if (sub === 'continue') {
     const fromPath = arg('--from', '');
@@ -815,7 +852,7 @@ async function cmdProc(sub) {
     );
   }
   if (sub !== 'start') {
-    return fail('proc_sub_required', { need: 'start|continue|text set', got: sub });
+    return fail('proc_sub_required', { need: 'start|continue|text|text set', got: sub });
   }
   const name = reqString('name', '--name') || arg('--proc');
   if (!name) return fail('name_required', { need: '--name <ENAME> or request.name' });

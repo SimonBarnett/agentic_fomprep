@@ -203,3 +203,4 @@ books use `harvest-agent-skills` pointing at their home.)
 - FIX for a CONFLICTING polish PR: merge origin/main onto the assigned head (fr-N), keep both the original verb and later form verbs, push HEAD:assigned-ref, DONE FIX with the assigned PR URL.
 - Service-desk harvest leaflets: pin grok=catalog SKILL.md, SC ticket, Stop unverified requester, and forbid DB MFA edits; CAT-T59 on untouched files is not a FAIL.
 - After a FIX fold, keep cmdForm const write = on one line so MRB-460/471 source pins still match; include set/save/delete/new/action and subform --set.
+- Classify form.delete as verbIsWrite so --dry-run never looks like a read; empty filter matches must not call deleteRow.

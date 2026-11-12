@@ -60,6 +60,8 @@ bodies), prefer **REST PAT + OData** (`priority-odata-dev`) or **Priority Cloud 
    Success = walk ended **and** independent gate (`odataBase` OData UPD/LASTPREPDATE
    when SQL unavailable). Without gate, `preparedClaim` stays false.
 11. Proc: `proc start --name <ENAME> [--ptype P]`.
+12. `proc start` and `prepare` JSON include `urls: string[]` from SDK displayUrl
+    steps (`displayUrlOf`). Missing URLs are `[]`. Do not download those URLs.
 
 ## Related
 

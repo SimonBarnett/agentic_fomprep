@@ -21,6 +21,8 @@ var checks = new List<(string Name, Action Run)>
     ("saved MEDATECH empty answer binds MEDATECH; prompt has [MEDATECH] not OS user", TestSavedLoginEmptyAnswer),
     ("--hours-user OTHER wins over saved MEDATECH", TestHoursUserWinsOverSaved),
     ("MRB-434: space login and access_token row are not suggested", TestInvalidSavedLoginIgnored),
+    ("session metadata userLoginSource saved on empty Enter", TestSessionSourceSaved),
+    ("--hours-user matching whoami records flag", TestSessionSourceFlagMatchesWhoami),
 };
 
 int failures = 0;
@@ -332,6 +334,32 @@ static void TestInvalidSavedLoginIgnored()
         Environment.SetEnvironmentVariable(LastUserFile.EnvPath, previous);
         DeleteTempDirectory(root);
     }
+}
+
+static void TestSessionSourceSaved()
+{
+    string root = NewTemp();
+    try
+    {
+        Assert(SessionLoginMeta.ClassifySource(null, "", "MEDATECH") == SessionLoginMeta.SourceSaved,
+            "empty Enter must classify saved");
+        SessionLoginMeta.WriteIdentity(root, "MEDATECH", SessionLoginMeta.SourceSaved);
+        using var id = JsonDocument.Parse(File.ReadAllText(Path.Combine(root, "identity.json")));
+        Assert(id.RootElement.GetProperty("priorityUserLogin").GetString() == "MEDATECH", "login");
+        Assert(id.RootElement.GetProperty("userLoginSource").GetString() == "saved", "source");
+        var routing = new BobHours.CustomerHoursConfig(true, "", "cust", "SC1", "", "", "ok");
+        SessionLoginMeta.WriteHoursRoutingLogin(root, "MEDATECH", routing);
+        using var hours = JsonDocument.Parse(File.ReadAllText(Path.Combine(root, "hours-routing.json")));
+        Assert(hours.RootElement.GetProperty("on_behalf_of").GetString() == "MEDATECH", "hours login");
+        Assert(!hours.RootElement.TryGetProperty("user", out _), "must not rename webhook user field");
+    }
+    finally { DeleteTempDirectory(root); }
+}
+
+static void TestSessionSourceFlagMatchesWhoami()
+{
+    Assert(SessionLoginMeta.ClassifySource("MEDATECH", "", "MEDATECH") == SessionLoginMeta.SourceFlag,
+        "matching --hours-user must still be flag");
 }
 
 static string NewTemp()

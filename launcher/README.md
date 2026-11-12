@@ -72,7 +72,8 @@ with the right context.
    the Priority USERLOGIN in `on_behalf_of`, the expected customer and project, `status` `closed`,
    and a real start/end.
    - `?user=` and `on_behalf_of` are the USERLOGIN stored in that session's `identity.json`
-     at launch (`--hours-user`, or a prompt when a terminal is attached). When a last-user
+     at launch (`--hours-user`, or a prompt when a terminal is attached). `identity.json`
+     also records `userLoginSource` as `client`, `saved`, or `flag`. When a last-user
      row exists for the selected WCF instance (`%USERPROFILE%\.priority-agent\last-user.json`),
      the prompt is `Priority USERLOGIN [<saved>]:` and Enter binds that login. `--hours-user`
      still wins. The launcher does

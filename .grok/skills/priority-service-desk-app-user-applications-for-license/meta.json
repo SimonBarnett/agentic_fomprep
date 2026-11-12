@@ -1,0 +1,6 @@
+{
+  "name": "priority-service-desk-app-user-applications-for-license",
+  "title": "App login said the user was not an API user until added to Applications for License",
+  "description": "A user logging in to a custom Priority app got a not-an-API-user message. Adding the user to Applications for License let them log in. Work orders only appeared in the app dropdown once released.",
+  "version": "1.0.0"
+}

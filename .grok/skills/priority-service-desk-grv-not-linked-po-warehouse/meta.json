@@ -1,0 +1,6 @@
+{
+  "name": "priority-service-desk-grv-not-linked-po-warehouse",
+  "title": "A GRV had the wrong warehouse because it was not linked to the purchase order",
+  "description": "A goods receipt did not show the warehouse from the purchase order. The GRV was not linked to the purchase order. After linking them, the warehouse was right.",
+  "version": "1.0.0"
+}

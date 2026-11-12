@@ -50,10 +50,13 @@ bodies), prefer **REST PAT + OData** (`priority-odata-dev`) or **Priority Cloud 
 7. `--dry-run` on any verb: prints `instanceId`, `verb`, `write` without login
    (unknown instance still exits 2 / `instance_unknown`). Does not write last-user.json.
 8. Form verbs: `form start|rows|set|save|subform` with `--form <ENAME>`.
-9. Prepare: `prepare form|procedure|report --name <ENAME>` (needs `allowLive`).
+9. Prefer `--request <path>` (UTF-8 JSON) for `fields` / `filter` / `inputs` / `name` /
+   `form` / `subform` so Windows quoting is not required. Invalid JSON exits 2
+   (`request_invalid`) before login. Keep request files outside the repo.
+10. Prepare: `prepare form|procedure|report --name <ENAME>` (needs `allowLive`).
    Success = walk ended **and** independent gate (`odataBase` OData UPD/LASTPREPDATE
    when SQL unavailable). Without gate, `preparedClaim` stays false.
-10. Proc: `proc start --name <ENAME> [--ptype P]`.
+11. Proc: `proc start --name <ENAME> [--ptype P]`.
 
 ## Related
 

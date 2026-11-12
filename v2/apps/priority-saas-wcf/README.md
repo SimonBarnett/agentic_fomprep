@@ -49,6 +49,8 @@ Local file (default `%USERPROFILE%\.priority-saas-wcf\instances.json`, override
 Copy from `instances.example.json`. Never put passwords or tokens in the allowlist.
 Unknown / missing instance → exit 2, no SaaS call.
 
+Every `fail()` stdout object includes boolean `retryable` (true only for `login_connect`). `api_licence` and `token_expired` stay `retryable: false` with a `hint` string. This client does not retry.
+
 ## Install
 
 ```powershell
@@ -59,16 +61,31 @@ npm ci
 ## CLI
 
 ```powershell
+node bin\priority-wcf.mjs help
+node bin\priority-wcf.mjs help form
 node bin\priority-wcf.mjs probe   --instance customer-saas-dev
 node bin\priority-wcf.mjs session --instance customer-saas-dev
 node bin\priority-wcf.mjs whoami  --instance customer-saas-dev
+node bin\priority-wcf.mjs companies --instance customer-saas-dev
 node bin\priority-wcf.mjs form start --instance customer-saas-dev --dry-run
 node bin\priority-wcf.mjs session --instance customer-saas-dev --form CUSTOMERS
 node bin\priority-wcf.mjs form start --instance customer-saas-dev --form CUSTOMERS
 node bin\priority-wcf.mjs form rows  --instance customer-saas-dev --form CUSTOMERS
 node bin\priority-wcf.mjs form set   --instance customer-saas-dev --form CUSTOMERS --filter "{\"field\":\"CUSTNAME\",\"fromval\":\"X\"}" --fields "{\"EMAIL\":\"a@b.c\"}"
 node bin\priority-wcf.mjs form save  --instance customer-saas-dev --form CUSTOMERS --filter "..." --fields "{...}"
+# Prefer a UTF-8 request file on Windows (no shell quoting). File stays outside the repo.
+# request.json example: { "form": "CUSTOMERS", "fields": { "EMAIL": "a@b.c" }, "filter": { "field": "CUSTNAME", "fromval": "X" } }
+node bin\priority-wcf.mjs form set --instance customer-saas-dev --request C:\temp\request.json
 ```
+
+`help` prints the top-level summary. `help <verb>` prints one screen for
+`form`, `prepare`, `proc`, `table`, `interface`, or `report` (unknown topic exits 2).
+
+`--request <path>` reads UTF-8 JSON. Keys `fields`, `filter`, `inputs`, `name`, `form`, `subform`
+override the matching CLI flags when present. Invalid JSON exits 2 with `reason: request_invalid`
+before login. Do not copy request files into the repo.
+
+`companies --instance <id>` is read-only JSON `{companies:[{name,title}]}` and does not require `allowLive`. It does not switch the session company.
 
 Writes (`form set` / `form save`) require `allowLive: true` on the row (and operator approval).
 

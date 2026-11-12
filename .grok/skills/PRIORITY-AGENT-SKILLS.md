@@ -97,6 +97,7 @@ IncludeDba=False IncludeCustomer=False
 - priority-service-desk-inventory-count-prepare-zero
 - priority-service-desk-numeration-fiscal-year-constant
 - priority-service-desk-odata-record-limit-powerbi
+- priority-service-desk-privilege-message-disable
 - priority-service-desk-serial-number-renamed-history
 - priority-service-desk-ssl-acme-renewal-firewall
 - priority-service-desk-wrong-url-error-404

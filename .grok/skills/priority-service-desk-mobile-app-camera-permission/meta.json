@@ -1,0 +1,6 @@
+{
+  "name": "priority-service-desk-mobile-app-camera-permission",
+  "title": "The Priority mobile app said camera permission was not given although it was allowed",
+  "description": "The Priority app would not open the phone camera and said permission was not given, though the phone settings allowed it. A full uninstall, a device restart, then a reinstall fixed it.",
+  "version": "1.0.0"
+}

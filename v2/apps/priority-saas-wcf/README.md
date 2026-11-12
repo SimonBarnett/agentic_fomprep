@@ -18,6 +18,7 @@ Used by PriorityAgent after an OIDC Bearer token exists (`priority-saas-oidc-log
 ```
 
 (`expires_at` ISO is also accepted. Write UTF-8 **without BOM** — PowerShell `Set-Content` BOM is stripped by the client but avoid it.)
+Past `expires_at` or `obtained_at`+`expires_in` is `token_expired` (`retryable: false`, exit 3) before login. No expiry field still attempts login. Refresh is FR-39.
 
 3. Or set env `PRIORITY_SAAS_TOKEN` for the process only.
 

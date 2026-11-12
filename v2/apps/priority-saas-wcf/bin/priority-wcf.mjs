@@ -17,6 +17,7 @@ import {
   formSetFields,
   formSave,
   formStartSubForm,
+  formColumnsMeta,
   formSubformSetFields,
   applySearchThenGetRows,
   formRunAction,
@@ -452,6 +453,21 @@ async function cmdForm(sub) {
           });
         }
 
+        // FR #395: columns from form.columns only — no getRows / no filter.
+        if (sub === 'columns') {
+          form = await formStart(session.priority, formName, instance.company, { messages });
+          const columns = formColumnsMeta(form);
+          dump('form-columns.json', { form: formName, columns, messages });
+          await safeEnd(form);
+          return ok({
+            action: 'form.columns',
+            instanceId: instance.id,
+            form: formName,
+            columns,
+            messages,
+          });
+        }
+
         const filterRaw = reqRawJson('filter', '--filter');
 
         if (sub === 'rows') {
@@ -673,7 +689,7 @@ async function main() {
   if (verb === 'companies') return cmdCompanies();
   if (verb === 'form') {
     const sub = (process.argv[3] || '').toLowerCase();
-    if (!sub) return fail('form_sub_required', { need: 'start|rows|set|save|subform|action' });
+    if (!sub) return fail('form_sub_required', { need: 'start|columns|rows|set|save|subform|action' });
     return cmdForm(sub);
   }
   if (verb === 'prepare') {

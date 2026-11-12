@@ -12,17 +12,20 @@ Used by PriorityAgent after an OIDC Bearer token exists (`priority-saas-oidc-log
 {
   "access_token": "...",
   "refresh_token": "...",
+  "tokenUrl": "https://example.invalid/auth/oauth2/token",
   "expires_in": 1800,
   "obtained_at": "2026-11-08T18:00:00.000Z"
 }
 ```
 
 (`expires_at` ISO is also accepted. Write UTF-8 **without BOM** — PowerShell `Set-Content` BOM is stripped by the client but avoid it.)
+Past `expires_at` or `obtained_at`+`expires_in` is `token_expired` (`retryable: false`, exit 3) before login unless the file also has `refresh_token` and `tokenUrl`. Then the client POSTs `grant_type=refresh_token` once, rewrites the file UTF-8 without BOM on HTTP 200, and continues. Missing `tokenUrl` or a non-200 response leaves the file unchanged and returns `token_expired` (hint: re-run `priority-saas-oidc-login`). No expiry field still attempts login.
 
 3. Or set env `PRIORITY_SAAS_TOKEN` for the process only.
 
 The Web SDK `login({ accessToken })` sends that token as the WCF UsernameToken password.
 Login **url** is the tenant probe `wcf` value (`…/wcf/service.svc`), not the host alone.
+Successful probes cache `wcf` and `tabulaini` for 60 minutes in `%USERPROFILE%\.priority-agent\probe-cache.json` (no token).
 
 ## Allowlist-gated
 
@@ -58,7 +61,7 @@ Unknown / missing instance → exit 2, no SaaS call.
 | exit 3 | `login_failed`, `api_licence`, `login_connect`, `token_expired`, `user_unidentified` |
 | exit 4 | prepare walk finished (`walkOk`) and gate `status` is `unavailable` |
 
-Every `fail()` stdout object includes boolean `retryable` (true only for `login_connect`). `api_licence` and `token_expired` stay `retryable: false` with a `hint` string. This client does not retry.
+Every `fail()` stdout object includes boolean `retryable` (true only for `login_connect`). `api_licence` and `token_expired` stay `retryable: false` with a `hint` string. On login_connect, loginSession waits briefly and calls login once more (FR-040); api_licence is never retried.
 
 ## Install
 
@@ -79,26 +82,52 @@ node bin\priority-wcf.mjs companies --instance customer-saas-dev
 node bin\priority-wcf.mjs form start --instance customer-saas-dev --dry-run
 node bin\priority-wcf.mjs session --instance customer-saas-dev --form CUSTOMERS
 node bin\priority-wcf.mjs form start --instance customer-saas-dev --form CUSTOMERS
+node bin\priority-wcf.mjs form columns --instance customer-saas-dev --form CUSTOMERS
 node bin\priority-wcf.mjs form rows  --instance customer-saas-dev --form CUSTOMERS
 node bin\priority-wcf.mjs form rows  --instance customer-saas-dev --form CUSTOMERS --filter "{\"field\":\"CUSTNAME\",\"fromval\":\"X\"}"
 node bin\priority-wcf.mjs form set   --instance customer-saas-dev --form CUSTOMERS --filter "{\"field\":\"CUSTNAME\",\"fromval\":\"X\"}" --fields "{\"EMAIL\":\"a@b.c\"}"
 node bin\priority-wcf.mjs form save  --instance customer-saas-dev --form CUSTOMERS --filter "..." --fields "{...}"
+node bin\priority-wcf.mjs form new   --instance customer-saas-dev --form CUSTOMERS --fields "{\"CUSTNAME\":\"X\"}"
+node bin\priority-wcf.mjs form new   --instance customer-saas-dev --form CUSTOMERS --fields-file C:\temp\fields.json
+node bin\priority-wcf.mjs form subform --instance customer-saas-dev --form CUSTOMERS --subform CUSTPERSONNEL
+node bin\priority-wcf.mjs form subform --instance customer-saas-dev --form CUSTOMERS --subform CUSTPERSONNEL --set --fields-file C:\temp\fields.json
 node bin\priority-wcf.mjs form delete --instance customer-saas-dev --form CUSTOMERS --filter "{\"field\":\"CUSTNAME\",\"fromval\":\"X\"}" --confirm
 # Prefer a UTF-8 request file on Windows (no shell quoting). File stays outside the repo.
 # request.json example: { "form": "CUSTOMERS", "fields": { "EMAIL": "a@b.c" }, "filter": { "field": "CUSTNAME", "fromval": "X" } }
 node bin\priority-wcf.mjs form set --instance customer-saas-dev --request C:\temp\request.json
+node bin\priority-wcf.mjs batch --instance customer-saas-dev --request C:\temp\batch-reads.json
 ```
 
 `help` prints the top-level summary. `help <verb>` prints one screen for
-`form`, `prepare`, `proc`, `table`, `interface`, or `report` (unknown topic exits 2).
+`form`, `prepare`, `proc`, `table`, `interface`, `report`, or `batch` (unknown topic exits 2).
+
+`--confirm-errors` auto-dismisses SDK error dialogs. By default `messageHandler` does not call `errorConfirm` (warnings and info still auto-confirm). Proc walk is unchanged.
 
 `--request <path>` reads UTF-8 JSON. Keys `fields`, `filter`, `inputs`, `name`, `form`, `subform`
 override the matching CLI flags when present. Invalid JSON exits 2 with `reason: request_invalid`
 before login. Do not copy request files into the repo.
 
+`batch --request` takes `{ "reads": [ { "verb": "whoami" }, ... ] }` (up to 8). Allowed verbs:
+whoami, form columns, form rows, table columns, table exists, companies, proc text, interface list.
+A 9th read or a write verb (for example form new) exits 2 before login. One login for the file.
+
 `companies --instance <id>` is read-only JSON `{companies:[{name,title}]}` and does not require `allowLive`. It does not switch the session company.
 
-`form rows --filter` (or request-file `filter`) calls SDK `setSearchFilter` once then `getRows` from 1. Missing filter is the unfiltered read. Writes stay on `form set` / `form save`.
+`form rows --filter` (or request-file `filter`) calls SDK `setSearchFilter` once then `getRows` from 1. Missing filter is the unfiltered read. `--limit N` (default 50, maximum 500) stops the client after N rows; `--limit 501` exits 2 `limit_too_high` before login.
+
+`form subform --set --fields-file` field-updates the child only (`allowLive: true` required). Bare `form subform` (no `--set`) stays read-only.
+
+Writes (`form set` / `form save` / `form new` / `form action` / `form subform --set`) require `allowLive: true` on the row (and operator approval). `form new` with `allowLive` false exits 2 with `reason: live_refused` before login.
+`form action --form <ENAME> --name <activation>` runs one named activation (e.g. SAVE) and returns the
+message-handler list. `allowLive: false` is refused before login.
+
+Dictionary title writes (WINDBI) check length before login via `checkDictionaryTitle`
+(`lib/title-check.mjs`). Titles longer than 20 characters exit 2 with
+`reason: title_too_long` and never call the SDK. Example gate path:
+
+```powershell
+node bin\priority-wcf.mjs table column add --instance customer-saas-dev --name MYTABLE --column C1 --type CHAR --title "too-long-title-here!!"
+```
 
 Writes (`form set` / `form save` / `form delete`) require `allowLive: true` on the row (and operator approval). `form delete` requires `--confirm` (missing confirm exits 2 `confirm_required` and does not call delete). `allowLive` false exits 2 `live_refused` before login.
 
@@ -108,19 +137,44 @@ Writes (`form set` / `form save` / `form delete`) require `allowLive: true` on t
 node bin\priority-wcf.mjs prepare form --instance customer-saas-dev --name MYFORM
 node bin\priority-wcf.mjs prepare procedure --instance customer-saas-dev --name MYPROC
 node bin\priority-wcf.mjs prepare report --instance customer-saas-dev --name MYREP
-node bin\priority-wcf.mjs proc start --instance customer-saas-dev --name SOMEPROC [--ptype P]
+node bin\priority-wcf.mjs prepare interface --instance customer-saas-dev --name MYIFACE
+node bin\priority-wcf.mjs proc start --instance customer-saas-dev --name SOMEPROC [--ptype P] [--inputs C:\temp\inputs.json] [--hint SOMEPROC]
+node bin\priority-wcf.mjs report run --instance customer-saas-dev --name MYREP
+node bin\priority-wcf.mjs table columns --instance customer-saas-dev --name CUSTOMERS
+node bin\priority-wcf.mjs proc continue --instance customer-saas-dev --from C:\temp\needs-input.json --option FIELD [--inputs C:\temp\inputs.json]
+node bin\priority-wcf.mjs proc text set --instance customer-saas-dev --name MYPROC --file C:\temp\body.txt
+node bin\priority-wcf.mjs table exists --instance customer-saas-dev --name CUSTOMERS
+node bin\priority-wcf.mjs table column add --instance customer-saas-dev --name T1 --column C1 --type CHAR --title Cust
+node bin\priority-wcf.mjs table create --instance customer-saas-dev --name T1 --request C:\temp\table-cols.json
+node bin\priority-wcf.mjs interface list --instance customer-saas-dev
+node bin\priority-wcf.mjs interface run --instance customer-saas-dev --name MYIFACE --inputs C:\temp\inputs.json
+node bin\priority-wcf.mjs interface map set --instance customer-saas-dev --name MYIFACE --fields-file C:\temp\map.json
 ```
 
 - Form prep: `EFORM` + `FORMPREPDRCT2`, then scrape `FORMPREPERRS`.
 - Procedure/report prep: `EXEC` + `REPPREPDIRECT2`.
+- Interface prep: reads `config/interface-prep.json`. Empty/missing `proc` returns `interface_prep_unknown` (exit 2) before login. A pinned non-empty proc runs that prepare walk with the same OData gate as report prep. Do not invent an interface proc ENAME in the shipped config.
+- `proc start --inputs <file>` is a UTF-8 JSON map passed as `inputValues` on the first `inputFields` step. Matching EditField names take file values; name-hint fill runs only for fields the file did not set. Option selection is unchanged.
+- `proc start` and `prepare` JSON include `urls: string[]` from SDK `displayUrl` steps (`displayUrlOf`). Missing URLs are `[]`. The client does not download those URLs.
+- `report run --name <ENAME>` is `procStart` with `ptype` R (does not prepare). JSON includes `urls: string[]` from displayUrl steps (`[]` when none).
+- `proc continue --from <step.json> --option <field>` resumes after needs_input with that option field (does not auto-pick). Missing `--from` exits 2 before login. `--inputs` applies on the next `inputFields` step.
+- `proc text set --name <ENAME> --file <path>` writes the file through the EXEC form `TEXT` field (not raw SQL). `allowLive` false is refused before login. Does not prepare.
 - `prepare` is a write (`allowLive: true` required).
-- SaaS success gate: when `odataBase` is set on the allowlist row, re-read UPD/LASTPREPDATE-style fields via OData (`PRIORITY_SAAS_ODATA_PAT` or Bearer). Without SQL or OData, `walkOk` may be true but `preparedClaim` stays false (`gate.status=unavailable`). Use `--no-gate` only for walk diagnostics.
+- Ambiguous procedure `inputOptions` (more than one choice, none selected) returns `ok: false` `reason: needs_input` and the option list; the walker does not call `inputOptions`. A single option may still be taken. With `--out`, the step snapshot is written as `needs-input.json` (resume is FR-23).
+- A finished `proc start` with zero `urls` and zero `errors` is `ok: true` `empty: true` (exit 0), not a failure. Blocker errors still return `ok: false`. This does not change the prepare OData gate.
+- `table exists --name <TNAME>` is a read-only OData TABLES GET `{name, exists}`. A miss is `exists: false` exit 0. Does not create.
+- `table columns --name <TNAME>` is a read-only OData COLUMNS list `{name,type,title}`. Unknown / empty value is `exists: false` `columns: []` exit 0. Does not write the dictionary.
+- `table column add` needs `allowLive: true` and `sqlProfile` on the instance. No `sqlProfile` is `table_ddl_needs_sql` before login. Titles longer than 20 characters are `title_too_long` (FR-32) before login. Does not create a table (FR-34).
+- `table create --name --request <file>` uses the same SQL gate. Request JSON is `{ "columns": [{ "name", "type", "title" }] }` (not a CREATE statement). `allowLive: false` is `live_refused` before login when the instance id looks live.
+- `interface list` is a read of the EXEC catalog and returns `{interfaces:[{name,title}]}`. It does not run an interface (FR-36).
+- `interface run --name --inputs <file>` is `procStart` with `ptype` I and the FR-21/FR-22 walker (file values on inputFields; two options => needs_input). Mapping edits are FR-37.
+- `interface map set --name --fields-file` field-updates one FORMINTERFACES row. `allowLive: false` is `live_refused` before login. Does not prepare (FR-29).
 
 
 ## CAST IRON
 
 - Never invent host, tenant, company DNAME, or WCF URL.
-- Never log or commit tokens / passwords / OTPs.
+- Never log or commit tokens / passwords / OTPs. Login error JSON redacts `Bearer …` and `access_token=` values (FR-044).
 - SaaS REST `formStart` 404 is not proof auth failed; use this Web SDK path.
 - OIDC MFA stays in `priority-saas-oidc-login`; this client only consumes the token.
 - OIDC user needs **API License** for WCF login. If login returns API License, tick REST on the user (approved env) or use PAT + OData/MCP for dictionary work.
@@ -138,3 +192,7 @@ npm test
 - OIDC: `priority-saas-oidc-login`, `docs/skill-sources/programming/SAAS_OIDC_LOGIN.md`
 - On-prem password formprep: `src/Prepare-NamedForm.ps1` (unchanged)
 - airc Priority verbs: bobiverse `airc/priority-worker` (fleet console; CredMan on-prem)
+
+### proc text (FR #409)
+
+`proc text --instance <id> --name <ENAME>` reads EXEC `TEXT` as `{name, body}` (read-only; `allowLive` not required). Missing or empty body exits 2 with `proc_text_missing`. Write is FR-028 (`proc text set`).

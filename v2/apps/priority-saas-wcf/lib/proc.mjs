@@ -1,7 +1,21 @@
 /**
  * SaaS proc start / continue (FR #339) for reports and interfaces.
  */
-import { walkProcSteps } from './proc-walk.mjs';
+import { walkProcSteps, displayUrlOf } from './proc-walk.mjs';
+
+/** FR #408 / FR-026: ended + no urls + no errors => empty success. */
+export function outcomeFromWalk(walk) {
+  const urls = [];
+  for (const s of walk.steps || []) {
+    const u = displayUrlOf(s);
+    if (u) urls.push(u);
+  }
+  const errors = walk.errors || [];
+  const blockers = errors.filter((e) => e.severity === 'Blocker');
+  const empty = walk.ended === true && urls.length === 0 && errors.length === 0;
+  const ok = walk.ended === true && blockers.length === 0;
+  return { ok, empty, urls };
+}
 
 /**
  * @param {object} session - loginSession result
@@ -33,6 +47,78 @@ export async function runProcStart(session, instance, ename, opts = {}) {
   const nameHint = opts.nameHint || '';
   const walk = await walkProcSteps(step, {
     nameHint,
+    inputValues: opts.inputValues,
+    maxSteps: opts.maxSteps,
+    deadlineMs: opts.deadlineMs,
+    onStep: opts.onStep,
+    onInput: opts.onInput,
+    onNeedsInput: opts.onNeedsInput,
+  });
+  if (walk.reason === 'needs_input') {
+    return {
+      ok: false,
+      reason: 'needs_input',
+      action: 'proc.start',
+      name,
+      ptype,
+      options: walk.options,
+      snapshot: walk.snapshot,
+      ended: false,
+      steps: walk.stepCount,
+      lastType: walk.lastType,
+      errors: walk.errors,
+      walkSteps: walk.steps,
+      urls: walk.urls || [],
+    };
+  }
+  const outcome = outcomeFromWalk(walk);
+  return {
+    ok: outcome.ok,
+    empty: outcome.empty,
+    urls: outcome.urls,
+    action: 'proc.start',
+    name,
+    ptype,
+    ended: walk.ended,
+    steps: walk.stepCount,
+    lastType: walk.lastType,
+    errors: walk.errors,
+    walkSteps: walk.steps,
+    urls: walk.urls || [],
+  };
+}
+
+/**
+ * Resume after needs_input: restart the procedure and apply --option once.
+ * Does not auto-pick Options[0] for that step.
+ */
+export async function runProcContinue(session, instance, opts = {}) {
+  const fromSnap = opts.fromSnap || {};
+  const option = String(opts.option || '').trim();
+  const name =
+    String(opts.name || '').trim() ||
+    String((fromSnap.proc && fromSnap.proc.name) || '').trim();
+  if (!name) return { ok: false, reason: 'proc_name_required' };
+  if (!option) return { ok: false, reason: 'option_required' };
+  const ptype = String(opts.ptype || fromSnap.ptype || 'P').trim() || 'P';
+  const priority = session.priority;
+  const company = instance.company;
+  let step;
+  try {
+    step = await priority.procStart(name, ptype, null, company);
+  } catch (e) {
+    return {
+      ok: false,
+      reason: 'proc_continue_failed',
+      name,
+      ptype,
+      message: String(e.message || e),
+    };
+  }
+  const walk = await walkProcSteps(step, {
+    nameHint: opts.nameHint || '',
+    inputValues: opts.inputValues,
+    chosenOption: option,
     maxSteps: opts.maxSteps,
     deadlineMs: opts.deadlineMs,
     onStep: opts.onStep,
@@ -41,9 +127,10 @@ export async function runProcStart(session, instance, ename, opts = {}) {
   const blockers = walk.errors.filter((e) => e.severity === 'Blocker');
   return {
     ok: walk.ended && blockers.length === 0,
-    action: 'proc.start',
+    action: 'proc.continue',
     name,
     ptype,
+    option,
     ended: walk.ended,
     steps: walk.stepCount,
     lastType: walk.lastType,

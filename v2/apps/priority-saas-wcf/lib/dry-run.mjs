@@ -11,11 +11,19 @@ export function verbFromArgv(argv) {
   return verb;
 }
 
-export function verbIsWrite(verb) {
+export function verbIsWrite(verb, argv = []) {
   const v = String(verb || '');
-  if (v === 'form.set' || v === 'form.save') return true;
+  if (v === 'form.set' || v === 'form.save' || v === 'form.action' || v === 'form.delete' || v === 'form.new') return true;
+  // FR #400: form subform --set is a write; bare subform start stays read-only.
+  if (v === 'form.subform' && Array.isArray(argv) && argv.includes('--set')) return true;
   if (v.startsWith('prepare.')) return true;
-  if (v === 'proc.start') return true;
+  if (v === 'proc.start' || v === 'proc.continue' || v === 'report.run') return true;
+  // FR #410: proc text set is a write; bare proc text (FR #409) stays read-only.
+  if (v === 'proc.text' && Array.isArray(argv) && argv.includes('set')) return true;
+  if (v === 'table.column' && Array.isArray(argv) && argv.includes('add')) return true;
+  if (v === 'table.create') return true;
+  if (v === 'interface.run') return true;
+  if (v === 'interface.map' && Array.isArray(argv) && argv.includes('set')) return true;
   return false;
 }
 
@@ -25,20 +33,21 @@ export function planDryRun(argv, { instancesPath } = {}) {
   const instanceId = flagValue(argv, '--instance');
   const allow = readAllowlist(pathArg);
   const picked = selectInstance(allow, instanceId);
+  const write = verbIsWrite(verb, argv);
   if (!picked.ok) {
     return {
       ok: false,
       reason: picked.reason || 'instance_unknown',
       instanceId: instanceId || picked.instanceId || '',
       verb,
-      write: verbIsWrite(verb),
+      write,
     };
   }
   return {
     ok: true,
     instanceId: picked.instance.id,
     verb,
-    write: verbIsWrite(verb),
+    write,
   };
 }
 

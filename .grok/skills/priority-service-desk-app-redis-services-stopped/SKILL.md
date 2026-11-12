@@ -13,7 +13,7 @@ Authority: `docs/skill-sources/medatech-network/service-desk/app-redis-services-
 
 Issue type: nobody can log in to an on-premise or partner-hosted Priority.
 
-Known: on 2026-09-16 08:43 BST support recorded that the system was down and no one could log in, because the Priority App service and the Priority Redis service were stopped. Support restarted them and the system was back up. Support asked the hosting provider why the services had stopped and whether there was a scheduled restart. On 2026-10-14 support closed the call as resolved. Server names are not stored. Why the services stopped is not recorded.
+Known: on 2026-09-16 08:43 BST support recorded that the system was down and no one could log in, because the Priority App service and the Priority Redis service were stopped. Support restarted them and the system was back up. Support asked the hosting provider why the services had stopped and whether there was a scheduled restart. On 2026-10-14 support closed the call as resolved. Server names are not stored. Why the services stopped is not recorded. Second example: SC262824, 2026-09-14 08:59 BST, another customer could not log in because the Priority App service and the Priority Redis service were not running; support restarted them and the issue was sorted.
 
 This is for on-premise or partner-hosted servers. For Priority cloud, raise it with the supplier instead.
 
@@ -27,7 +27,7 @@ This is for on-premise or partner-hosted servers. For Priority cloud, raise it w
 
 ## Verification
 
-Proven: after the two services were restarted the system was back up (SC262863, support-verified).
+Proven: after the two services were restarted the system was back up (SC262863 and SC262824, support-verified).
 
 Not proven: why the services stopped.
 

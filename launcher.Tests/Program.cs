@@ -341,7 +341,6 @@ static void TestInvalidSavedLoginIgnored()
     }
 }
 
-<<<<<<< HEAD
 static void TestSessionSourceSaved()
 {
     string root = NewTemp();

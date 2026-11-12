@@ -79,6 +79,7 @@ node bin\priority-wcf.mjs companies --instance customer-saas-dev
 node bin\priority-wcf.mjs form start --instance customer-saas-dev --dry-run
 node bin\priority-wcf.mjs session --instance customer-saas-dev --form CUSTOMERS
 node bin\priority-wcf.mjs form start --instance customer-saas-dev --form CUSTOMERS
+node bin\priority-wcf.mjs form columns --instance customer-saas-dev --form CUSTOMERS
 node bin\priority-wcf.mjs form rows  --instance customer-saas-dev --form CUSTOMERS
 node bin\priority-wcf.mjs form rows  --instance customer-saas-dev --form CUSTOMERS --filter "{\"field\":\"CUSTNAME\",\"fromval\":\"X\"}"
 node bin\priority-wcf.mjs form set   --instance customer-saas-dev --form CUSTOMERS --filter "{\"field\":\"CUSTNAME\",\"fromval\":\"X\"}" --fields "{\"EMAIL\":\"a@b.c\"}"
@@ -116,12 +117,14 @@ node bin\priority-wcf.mjs prepare form --instance customer-saas-dev --name MYFOR
 node bin\priority-wcf.mjs prepare procedure --instance customer-saas-dev --name MYPROC
 node bin\priority-wcf.mjs prepare report --instance customer-saas-dev --name MYREP
 node bin\priority-wcf.mjs proc start --instance customer-saas-dev --name SOMEPROC [--ptype P] [--inputs C:\temp\inputs.json] [--hint SOMEPROC]
+node bin\priority-wcf.mjs proc continue --instance customer-saas-dev --from C:\temp\needs-input.json --option FIELD [--inputs C:\temp\inputs.json]
 ```
 
 - Form prep: `EFORM` + `FORMPREPDRCT2`, then scrape `FORMPREPERRS`.
 - Procedure/report prep: `EXEC` + `REPPREPDIRECT2`.
 - `proc start --inputs <file>` is a UTF-8 JSON map passed as `inputValues` on the first `inputFields` step. Matching EditField names take file values; name-hint fill runs only for fields the file did not set. Option selection is unchanged.
 - `proc start` and `prepare` JSON include `urls: string[]` from SDK `displayUrl` steps (`displayUrlOf`). Missing URLs are `[]`. The client does not download those URLs.
+- `proc continue --from <step.json> --option <field>` resumes after needs_input with that option field (does not auto-pick). Missing `--from` exits 2 before login. `--inputs` applies on the next `inputFields` step.
 - `prepare` is a write (`allowLive: true` required).
 - Ambiguous procedure `inputOptions` (more than one choice, none selected) returns `ok: false` `reason: needs_input` and the option list; the walker does not call `inputOptions`. A single option may still be taken. With `--out`, the step snapshot is written as `needs-input.json` (resume is FR-23).
 - SaaS success gate: when `odataBase` is set on the allowlist row, re-read UPD/LASTPREPDATE-style fields via OData (`PRIORITY_SAAS_ODATA_PAT` or Bearer). Without SQL or OData, `walkOk` may be true but `preparedClaim` stays false (`gate.status=unavailable`). Use `--no-gate` only for walk diagnostics.

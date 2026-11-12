@@ -29,6 +29,29 @@ export async function formStart(priority, ename, company, { messages = [] } = {}
   return form;
 }
 
+/**
+ * FR #395 / FR-013: field names + types from form.columns only (never getRows).
+ * @returns {{ name: string, type: string }[]}
+ */
+export function formColumnsMeta(form) {
+  const cols = form?.columns;
+  if (!cols || typeof cols !== 'object') return [];
+  const out = [];
+  for (const [name, meta] of Object.entries(cols)) {
+    const n = String(name || '').trim();
+    if (!n || n === 'undefined') continue;
+    let type = '';
+    if (meta != null && typeof meta === 'object' && !Array.isArray(meta)) {
+      const t = meta.type ?? meta.datatype ?? meta.dataType ?? meta.fieldType;
+      if (t != null && t !== '') type = String(t);
+    } else if (typeof meta === 'string' || typeof meta === 'number') {
+      type = String(meta);
+    }
+    out.push({ name: n, type });
+  }
+  return out;
+}
+
 export async function formGetRows(form, fromRow = 1) {
   const rows = await form.getRows(fromRow);
   return rowsFromGetRows(rows, form?.name);

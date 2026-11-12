@@ -108,6 +108,7 @@ export async function walkProcSteps(firstStep, opts = {}) {
   let ended = false;
   let n = 0;
   let appliedInputValues = false;
+  let appliedChosenOption = false;
 
   while (step && Date.now() < deadline && n < maxSteps) {
     n += 1;
@@ -137,23 +138,31 @@ export async function walkProcSteps(firstStep, opts = {}) {
     }
     if (type === 'inputOptions') {
       const optionList = (step.input && step.input.Options) || [];
-      const selected = optionList.find((o) => o && o.selected);
-      if (optionList.length > 1 && !selected) {
-        if (typeof opts.onNeedsInput === 'function') opts.onNeedsInput(snap);
-        return {
-          ok: false,
-          ended: false,
-          reason: 'needs_input',
-          options: optionList,
-          snapshot: snap,
-          steps,
-          errors,
-          lastType: 'inputOptions',
-          stepCount: n,
-          urls: collectStepUrls(steps),
-        };
+      let sel;
+      // FR #405: continue --option applies once (does not auto-pick).
+      if (!appliedChosenOption && opts.chosenOption) {
+        sel = String(opts.chosenOption);
+        appliedChosenOption = true;
+      } else {
+        // FR #404: multi-option with none selected -> needs_input (do not pick Options[0]).
+        const selected = optionList.find((o) => o && o.selected);
+        if (optionList.length > 1 && !selected) {
+          if (typeof opts.onNeedsInput === 'function') opts.onNeedsInput(snap);
+          return {
+            ok: false,
+            ended: false,
+            reason: 'needs_input',
+            options: optionList,
+            snapshot: snap,
+            steps,
+            errors,
+            lastType: 'inputOptions',
+            stepCount: n,
+            urls: collectStepUrls(steps),
+          };
+        }
+        sel = (selected || optionList[0] || {}).field;
       }
-      const sel = (selected || optionList[0] || {}).field;
       step = await proc.inputOptions(1, sel);
       continue;
     }

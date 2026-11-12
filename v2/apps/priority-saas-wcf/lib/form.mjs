@@ -121,6 +121,27 @@ export async function formSave(form) {
   throw new Error('form has no saveRow/invoke Save');
 }
 
+/** FR #398 / FR-016: one positioned row; caller must already have --confirm. */
+export async function formDeletePositionedRow(form, filter, { getRows } = {}) {
+  if (filter) await form.setSearchFilter(filter);
+  const fetch = getRows || formGetRows;
+  const got = await fetch(form, 1);
+  if (!got || got.count < 1) {
+    return { ok: false, reason: 'no_rows_for_filter', deleted: 0 };
+  }
+  if (typeof form.setActiveRow === 'function') {
+    await form.setActiveRow(Number(got.rows[0]._idx));
+  }
+  if (typeof form.deleteRow === 'function') {
+    await form.deleteRow();
+  } else if (typeof form.invoke === 'function') {
+    await form.invoke('Delete');
+  } else {
+    throw new Error('form has no deleteRow/invoke Delete');
+  }
+  return { ok: true, deleted: 1 };
+}
+
 /** FR #397 / FR-015: one new row. newRow (or startRow) once, then fieldUpdate, then saveRow(1). */
 export async function formInsertRow(form, fields) {
   if (typeof form.newRow === 'function') {

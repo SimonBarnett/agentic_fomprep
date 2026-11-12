@@ -91,6 +91,7 @@ node bin\priority-wcf.mjs form new   --instance customer-saas-dev --form CUSTOME
 node bin\priority-wcf.mjs form new   --instance customer-saas-dev --form CUSTOMERS --fields-file C:\temp\fields.json
 node bin\priority-wcf.mjs form subform --instance customer-saas-dev --form CUSTOMERS --subform CUSTPERSONNEL
 node bin\priority-wcf.mjs form subform --instance customer-saas-dev --form CUSTOMERS --subform CUSTPERSONNEL --set --fields-file C:\temp\fields.json
+node bin\priority-wcf.mjs form delete --instance customer-saas-dev --form CUSTOMERS --filter "{\"field\":\"CUSTNAME\",\"fromval\":\"X\"}" --confirm
 # Prefer a UTF-8 request file on Windows (no shell quoting). File stays outside the repo.
 # request.json example: { "form": "CUSTOMERS", "fields": { "EMAIL": "a@b.c" }, "filter": { "field": "CUSTNAME", "fromval": "X" } }
 node bin\priority-wcf.mjs form set --instance customer-saas-dev --request C:\temp\request.json
@@ -127,6 +128,8 @@ Dictionary title writes (WINDBI) check length before login via `checkDictionaryT
 ```powershell
 node bin\priority-wcf.mjs table column add --instance customer-saas-dev --name MYTABLE --column C1 --type CHAR --title "too-long-title-here!!"
 ```
+
+Writes (`form set` / `form save` / `form delete`) require `allowLive: true` on the row (and operator approval). `form delete` requires `--confirm` (missing confirm exits 2 `confirm_required` and does not call delete). `allowLive` false exits 2 `live_refused` before login.
 
 ## Phase 2: prepare + proc
 

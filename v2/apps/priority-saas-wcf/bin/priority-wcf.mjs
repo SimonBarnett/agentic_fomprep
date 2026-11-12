@@ -22,6 +22,7 @@ import {
   applySearchThenGetRows,
   formRunAction,
   formInsertRow,
+  formDeletePositionedRow,
   parseFormRowsLimit,
 } from '../lib/form.mjs';
 import { runPrepare } from '../lib/prepare.mjs';
@@ -629,7 +630,10 @@ function fieldsForFormWrite() {
 async function cmdForm(sub) {
   const formName = reqString('form', '--form');
   if (!formName) return fail('form_required', { need: '--form <ENAME> or request.form' });
-  if (sub === 'new') {
+  if (sub === 'delete' && !hasFlag('--confirm')) {
+    return fail('confirm_required', { need: '--confirm' }, 2);
+  }
+  if (sub === 'delete' || sub === 'new') {
     const picked = await resolveInstance();
     if (!picked.ok) return fail(picked.reason, picked);
     if (picked.instance.allowLive !== true) {
@@ -646,7 +650,13 @@ async function cmdForm(sub) {
     if (!parsed.ok) return fail(parsed.reason, parsed, 2);
     rowsLimit = parsed.limit;
   }
-  const write = sub === 'set' || sub === 'save' || sub === 'new' || sub === 'action' || (sub === 'subform' && hasFlag('--set'));
+  const write =
+    sub === 'set' ||
+    sub === 'save' ||
+    sub === 'delete' ||
+    sub === 'new' ||
+    sub === 'action' ||
+    (sub === 'subform' && hasFlag('--set'));
   return withSession(
     async ({ instance, session, dump }) => {
       const messages = [];
@@ -780,6 +790,25 @@ async function cmdForm(sub) {
         }
 
         const filterRaw = reqRawJson('filter', '--filter');
+
+        if (sub === 'delete') {
+          const filter = parseFilter(filterRaw);
+          if (!filter) {
+            return fail('filter_required', { need: '--filter JSON or request.filter' }, 2);
+          }
+          form = await formStart(session.priority, formName, instance.company, { messages });
+          const deleted = await formDeletePositionedRow(form, filter);
+          dump('form-delete.json', { form: formName, deleted, messages });
+          await safeEnd(form);
+          if (!deleted.ok) return fail(deleted.reason || 'form_failed', { form: formName, ...deleted });
+          return ok({
+            action: 'form.delete',
+            instanceId: instance.id,
+            form: formName,
+            deleted: deleted.deleted,
+            messages,
+          });
+        }
 
         if (sub === 'rows') {
           form = await formStart(session.priority, formName, instance.company, { messages });
@@ -1323,7 +1352,10 @@ async function main() {
   if (verb === 'companies') return cmdCompanies();
   if (verb === 'form') {
     const sub = (process.argv[3] || '').toLowerCase();
-    if (!sub) return fail('form_sub_required', { need: 'start|columns|rows|set|save|subform|new|action' });
+    if (!sub)
+      return fail('form_sub_required', {
+        need: 'start|columns|rows|set|save|subform|new|delete|action',
+      });
     return cmdForm(sub);
   }
   if (verb === 'prepare') {

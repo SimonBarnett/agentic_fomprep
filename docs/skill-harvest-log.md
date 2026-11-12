@@ -182,4 +182,4 @@ Expanded `priority-uat-wcf` (skill-source + catalog meta **1.2.0**) from CE Day 
 - Source: SaaS WCF Live smoke after API License tick (generic). Folded into PR #338.
 - 2026-11-09 (FR #339): Phase 2 `priority-saas-wcf` prepare form|procedure|report + FORMPREPERRS + proc start + SaaS OData gate (`odataBase`); never preparedClaim without gate.
 - 2026-11-09 (FR #349): gitignore `.bobiverse-seat` / `**/.bobiverse-seat`; harvest-agent-skills: seat markers stay untracked.
-- 2026-11-12: `priority-service-desk-odata-record-limit-powerbi`. SC263022: Power BI OData stopped loading customers past a point after upgrade. A system constant capped API retrieval at 7000 records; raised to 30000 and customer said it worked. Constant name not recorded.
+- 2026-11-12: `priority-service-desk-odata-record-limit-powerbi`. SC263022: Power BI OData stopped loading customers past a point after upgrade. A system constant capped API retrieval at 7000 records; raised to 30000 and customer said it worked. Constant name not recorded. SC262930 corroboration: 2000-record API cap after cloud move; support raised MAXAPILINES to 10,000; retest not recorded.

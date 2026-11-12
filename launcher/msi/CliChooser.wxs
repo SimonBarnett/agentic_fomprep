@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  FR-002 / agentic_fomprep#567: interactive MSI CLI chooser (Grok, Cursor, OpenCode, Not now).
+  Product.wxs (FR-001) should UIRef Id="PriorityAgentCliChooserUI" and compile this fragment.
+  msiexec /qn: no dialog (InstallUISequence skipped) and InstallChosenCli absent (UILevel > 3).
+  Real installer downloads are FR-003; this action only records the pending choice.
+-->
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+  <Fragment>
+    <!-- Default Not now: install completes with no CLI download. -->
+    <Property Id="PRIORITYAGENT_CLI" Value="none" Secure="yes" />
+
+    <RadioButtonGroup Property="PRIORITYAGENT_CLI">
+      <RadioButton Value="grok" X="0" Y="0" Width="320" Height="18" Text="Grok" />
+      <RadioButton Value="cursor" X="0" Y="20" Width="320" Height="18" Text="Cursor" />
+      <RadioButton Value="opencode" X="0" Y="40" Width="320" Height="18" Text="OpenCode" />
+      <RadioButton Value="none" X="0" Y="60" Width="320" Height="18" Text="Not now" />
+    </RadioButtonGroup>
+
+    <UI Id="PriorityAgentCliChooserUI">
+      <Dialog Id="CliChooserDlg" Width="370" Height="270" Title="Priority Agent - choose a CLI">
+        <Control Id="Title" Type="Text" X="15" Y="10" Width="340" Height="30" Transparent="yes" NoPrefix="yes"
+                 Text="{\WixUI_Font_Title}Choose an agent CLI" />
+        <Control Id="Description" Type="Text" X="15" Y="50" Width="340" Height="40" Transparent="yes" NoPrefix="yes"
+                 Text="Install exactly one of Grok, Cursor, or OpenCode for Priority Agent, or pick Not now to finish without downloading." />
+        <Control Id="CliRadio" Type="RadioButtonGroup" X="20" Y="100" Width="330" Height="90"
+                 Property="PRIORITYAGENT_CLI" Text="CLI" />
+        <Control Id="Back" Type="PushButton" X="180" Y="243" Width="56" Height="17" Text="Back">
+          <Publish Event="NewDialog" Value="WelcomeDlg">1</Publish>
+        </Control>
+        <Control Id="Next" Type="PushButton" X="236" Y="243" Width="56" Height="17" Default="yes" Text="Next">
+          <Publish Event="NewDialog" Value="VerifyReadyDlg">1</Publish>
+        </Control>
+        <Control Id="Cancel" Type="PushButton" X="304" Y="243" Width="56" Height="17" Cancel="yes" Text="Cancel">
+          <Publish Event="SpawnDialog" Value="CancelDlg">1</Publish>
+        </Control>
+      </Dialog>
+
+      <!-- Full UI only; msiexec /qn never shows this dialog. -->
+      <InstallUISequence>
+        <Show Dialog="CliChooserDlg" After="WelcomeDlg">NOT Installed AND NOT REMOVE~="ALL"</Show>
+      </InstallUISequence>
+    </UI>
+
+    <!-- FR-002 stub: record choice for FR-003. Absent when silent (UILevel 2 = /qn). -->
+    <CustomAction Id="InstallChosenCli" Property="PRIORITYAGENT_CLI_PENDING"
+                  Value="[PRIORITYAGENT_CLI]" Execute="immediate" Return="check" />
+
+    <InstallExecuteSequence>
+      <!-- UILevel > 3 => reduced/full UI. /qn is UILevel=2 so this Custom is absent. Not now (none) skips. -->
+      <Custom Action="InstallChosenCli" After="InstallFiles">
+        UILevel &gt; 3 AND PRIORITYAGENT_CLI &lt;&gt; "none" AND NOT REMOVE~="ALL"
+      </Custom>
+    </InstallExecuteSequence>
+  </Fragment>
+</Wix>

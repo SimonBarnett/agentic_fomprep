@@ -206,3 +206,4 @@ books use `harvest-agent-skills` pointing at their home.)
 - Classify form.delete as verbIsWrite so --dry-run never looks like a read; empty filter matches must not call deleteRow.
 - FR-003: fake install runners and refuse LocalSystem; never treat .grok\bin\agent.exe as Cursor
 - MSI CLI chooser is a WiX fragment: four radio values grok/cursor/opencode/none, default none, InstallChosenCli only when UILevel > 3 and not none; msiexec /qn never shows the dialog or runs the CLI action.
+- CI Priority Agent CLI tests use in-memory fake installers; a guard fails any test line that irm/IWR/curl-calls x.ai, cursor.com/install, or opencode.ai.

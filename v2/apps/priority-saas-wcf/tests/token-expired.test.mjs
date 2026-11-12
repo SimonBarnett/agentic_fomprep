@@ -1,6 +1,6 @@
 /**
  * FR #420 / FR-038: expired access token fails closed before login.
- * Offline fixtures only — no live SaaS. Refresh is FR-39.
+ * Offline fixtures only — no live SaaS. Refresh (when tokenUrl is set) is FR-039.
  */
 import test from 'node:test';
 import assert from 'node:assert/strict';

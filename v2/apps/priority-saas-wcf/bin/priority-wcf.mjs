@@ -11,7 +11,15 @@ import { readAllowlist, selectInstance, refuseLiveWrite, defaultInstancesPath } 
 import { loadAccessToken } from '../lib/token.mjs';
 import { probeTenant } from '../lib/probe.mjs';
 import { loginSession, logout, safeEnd } from '../lib/session.mjs';
-import { formStart, formGetRows, formSetFields, formSave, formStartSubForm, applySearchThenGetRows } from '../lib/form.mjs';
+import {
+  formStart,
+  formGetRows,
+  formSetFields,
+  formSave,
+  formStartSubForm,
+  applySearchThenGetRows,
+  formRunAction,
+} from '../lib/form.mjs';
 import { runPrepare } from '../lib/prepare.mjs';
 import { runProcStart } from '../lib/proc.mjs';
 import { resolveWhoami } from '../lib/whoami.mjs';
@@ -338,12 +346,43 @@ async function openFilteredForm(session, instance, formName, filterRaw, messages
 async function cmdForm(sub) {
   const formName = reqString('form', '--form');
   if (!formName) return fail('form_required', { need: '--form <ENAME> or request.form' });
-  const write = sub === 'set' || sub === 'save';
+  const write = sub === 'set' || sub === 'save' || sub === 'action';
   return withSession(
     async ({ instance, session, dump }) => {
       const messages = [];
       let form;
       try {
+        if (sub === 'action') {
+          const activation = reqString('name', '--name') || arg('--activation', '');
+          if (!activation) {
+            return fail('activation_required', { need: '--name <activation> or request.name' });
+          }
+          const filterRaw = reqRawJson('filter', '--filter');
+          form = await openFilteredForm(session, instance, formName, filterRaw, messages);
+          if (filterRaw) {
+            const got = await formGetRows(form, 1);
+            if (got.count < 1) {
+              await safeEnd(form);
+              return fail('no_rows_for_filter', { form: formName, filter: filterRaw });
+            }
+            if (typeof form.setActiveRow === 'function') {
+              await form.setActiveRow(Number(got.rows[0]._idx));
+            }
+          }
+          const ran = await formRunAction(form, activation);
+          dump('form-action.json', { form: formName, activation, ran, messages });
+          await safeEnd(form);
+          if (!ran.ok) return fail(ran.reason || 'form_action_failed', { form: formName, ...ran, messages });
+          return ok({
+            action: 'form.action',
+            instanceId: instance.id,
+            form: formName,
+            activation: ran.activation,
+            via: ran.via,
+            messages,
+          });
+        }
+
         if (sub === 'subform') {
           const childName = reqString('subform', '--subform');
           if (!childName) return fail('subform_required', { need: '--subform <ENAME> or request.subform' });
@@ -554,7 +593,7 @@ async function main() {
   if (verb === 'companies') return cmdCompanies();
   if (verb === 'form') {
     const sub = (process.argv[3] || '').toLowerCase();
-    if (!sub) return fail('form_sub_required', { need: 'start|rows|set|save|subform' });
+    if (!sub) return fail('form_sub_required', { need: 'start|rows|set|save|subform|action' });
     return cmdForm(sub);
   }
   if (verb === 'prepare') {

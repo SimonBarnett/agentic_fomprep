@@ -22,7 +22,9 @@ import {
 import { runPrepare } from '../lib/prepare.mjs';
 import { runProcStart } from '../lib/proc.mjs';
 import { resolveWhoami } from '../lib/whoami.mjs';
+import { listCompanies } from '../lib/companies.mjs';
 import { emit, fail, ok, redact } from '../lib/json-out.mjs';
+import { planDryRun } from '../lib/dry-run.mjs';
 import {
   loadRequestFile,
   fieldsFromRequestOrFlag,
@@ -54,22 +56,26 @@ function reqRawJson(key, cliFlag) {
   return rawJsonFromRequestOrFlag(requestDoc, key, arg(cliFlag, ''));
 }
 
+/** Top-level summary (FR-008: keep this; use help <verb> for one screen). */
 function usage() {
   const text = `priority-wcf (SaaS Web SDK client)
+
+Object kinds: table, form, report, procedure, interface.
 
   probe   --instance <id> [--with-token]
   session --instance <id> [--form <ENAME>]
   whoami  --instance <id>
-  form start   --instance <id> --form <ENAME>
-  form columns --instance <id> --form <ENAME>
-  form rows    --instance <id> --form <ENAME> [--from <n>]
-  form set     --instance <id> --form <ENAME> --fields '{"COL":"v"}' [--filter '{"field":"X","fromval":"y"}']
-  form save    --instance <id> --form <ENAME> --fields '{...}' [--filter ...]
-  form subform --instance <id> --form <PARENT> --subform <CHILD> [--rows]
-  prepare form|procedure|report --instance <id> --name <ENAME> [--proc FORMPREPDRCT2|REPPREPDIRECT2] [--no-gate]
-  proc start --instance <id> --name <ENAME> [--ptype P|R]
+  companies --instance <id>  (see: help companies)
+  form start|rows|set|save|subform|columns|new|delete|action  (see: help form)
+  prepare form|procedure|report --instance <id> --name <ENAME>  (see: help prepare)
+  proc start --instance <id> --name <ENAME> [--ptype P|R]  (see: help proc)
+  table   (see: help table)
+  interface (see: help interface)
+  report  (see: help report)
   Any verb: --request <path>  UTF-8 JSON; keys fields|filter|inputs|name|form|subform override flags
+  --dry-run               resolve instance + verb; print instanceId, verb, write; no login
   help
+  help <verb>   form|prepare|proc|table|interface|report|companies
 
 Env:
   PRIORITY_SAAS_WCF_INSTANCES  allowlist JSON (default %USERPROFILE%\\.priority-saas-wcf\\instances.json)
@@ -82,6 +88,88 @@ Prepare success on SaaS requires an independent gate (OData when odataBase set);
 without it walkOk may be true but preparedClaim stays false.
 Request files stay outside the repo (temp / profile); never commit them.
 `;
+  process.stdout.write(text);
+  process.exitCode = 0;
+}
+
+const HELP_TOPICS = {
+  companies: `help companies
+
+  companies --instance <id>
+
+Read-only JSON {companies:[{name,title}]}. Does not require allowLive.
+Does not switch the session company. Never log tokens.
+`,
+  form: `help form
+
+Form verbs (one screen):
+
+  form columns --instance <id> --form <ENAME>
+  form rows    --instance <id> --form <ENAME> [--from <n>] [--filter ...]
+  form new     --instance <id> --form <ENAME> --fields '{...}'
+  form delete  --instance <id> --form <ENAME> --filter ... --confirm
+  form action  --instance <id> --form <ENAME> --name <ACT> [--filter ...]
+  form start   --instance <id> --form <ENAME>
+  form set     --instance <id> --form <ENAME> --fields '{...}' [--filter ...]
+  form save    --instance <id> --form <ENAME> --fields '{...}' [--filter ...]
+  form subform --instance <id> --form <PARENT> --subform <CHILD> [--rows]
+
+Writes need allowLive: true. Never invent ENAME. Never log tokens.
+`,
+  prepare: `help prepare
+
+  prepare form      --instance <id> --name <ENAME> [--proc FORMPREPDRCT2] [--no-gate]
+  prepare procedure --instance <id> --name <ENAME> [--proc REPPREPDIRECT2] [--no-gate]
+  prepare report    --instance <id> --name <ENAME> [--proc REPPREPDIRECT2] [--no-gate]
+
+Prepare is a write (allowLive: true). preparedClaim needs the OData gate when odataBase is set.
+`,
+  proc: `help proc
+
+  proc start --instance <id> --name <ENAME> [--ptype P|R]
+
+P = procedure, R = report. Does not prepare; use help prepare for prep verbs.
+`,
+  table: `help table
+
+  table exists --instance <id> --name <TNAME>
+  table columns --instance <id> --name <TNAME>
+  table create  --instance <id> --name <TNAME>  (refuses without SQL profile)
+
+Dictionary reads only until create is allowlisted. Never invent host/tenant.
+`,
+  interface: `help interface
+
+  interface list   --instance <id>
+  interface run    --instance <id> --name <ENAME> --inputs <file>
+  interface map    --instance <id> --name <ENAME> ...
+
+Prepare-interface refuses until config/interface-prep.json pins a proc name.
+`,
+  report: `help report
+
+  report run --instance <id> --name <ENAME>
+    (same as: proc start --ptype R --name <ENAME>)
+
+  prepare report --instance <id> --name <ENAME>
+
+Empty report output is empty, not a failure. See also: help proc, help prepare.
+`,
+};
+
+function helpTopic(topic) {
+  const key = String(topic || '').toLowerCase();
+  if (!key) {
+    usage();
+    return;
+  }
+  const text = HELP_TOPICS[key];
+  if (!text) {
+    return fail('unknown_help_topic', {
+      topic: key,
+      need: Object.keys(HELP_TOPICS).join('|'),
+    });
+  }
   process.stdout.write(text);
   process.exitCode = 0;
 }
@@ -193,6 +281,19 @@ async function cmdWhoami() {
     }
     // FR #383 contract: { ok, userLogin, source } only (no token fields).
     return ok({ userLogin: r.userLogin, source: r.source });
+  });
+}
+
+async function cmdCompanies() {
+  return withSession(async ({ instance, session }) => {
+    const r = await listCompanies({ instance, session });
+    if (!r.ok) return fail(r.reason || 'companies_failed', r);
+    return ok({
+      action: 'companies',
+      instanceId: instance.id,
+      companies: r.companies,
+      switched: false,
+    });
   });
 }
 
@@ -432,7 +533,11 @@ async function cmdProc(sub) {
 
 async function main() {
   const verb = (process.argv[2] || 'help').toLowerCase();
-  if (verb === 'help' || verb === '-h' || verb === '--help') return usage();
+  if (verb === 'help' || verb === '-h' || verb === '--help') {
+    const topic = (process.argv[3] || '').toLowerCase();
+    if (topic) return helpTopic(topic);
+    return usage();
+  }
 
   // FR #389: load --request before any verb that may login.
   const requestPath = arg('--request', '');
@@ -442,9 +547,21 @@ async function main() {
     requestDoc = loaded.doc;
   }
 
+  // FR #391: resolve instance + verb without login.
+  if (hasFlag('--dry-run')) {
+    const plan = planDryRun(process.argv);
+    if (!plan.ok) return fail(plan.reason, plan);
+    return ok({
+      instanceId: plan.instanceId,
+      verb: plan.verb,
+      write: plan.write,
+    });
+  }
+
   if (verb === 'probe') return cmdProbe();
   if (verb === 'session') return cmdSession();
   if (verb === 'whoami') return cmdWhoami();
+  if (verb === 'companies') return cmdCompanies();
   if (verb === 'form') {
     const sub = (process.argv[3] || '').toLowerCase();
     if (!sub) return fail('form_sub_required', { need: 'start|columns|rows|set|save|subform' });
@@ -460,7 +577,10 @@ async function main() {
     if (!sub) return fail('proc_sub_required', { need: 'start' });
     return cmdProc(sub);
   }
-  return fail('unknown_verb', { verb, hint: 'probe|session|whoami|form|prepare|proc|help' });
+  return fail('unknown_verb', {
+    verb,
+    hint: 'probe|session|whoami|companies|form|prepare|proc|help',
+  });
 }
 
 main().catch((e) => {

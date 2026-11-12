@@ -182,3 +182,4 @@ Expanded `priority-uat-wcf` (skill-source + catalog meta **1.2.0**) from CE Day 
 - Source: SaaS WCF Live smoke after API License tick (generic). Folded into PR #338.
 - 2026-11-09 (FR #339): Phase 2 `priority-saas-wcf` prepare form|procedure|report + FORMPREPERRS + proc start + SaaS OData gate (`odataBase`); never preparedClaim without gate.
 - 2026-11-09 (FR #349): gitignore `.bobiverse-seat` / `**/.bobiverse-seat`; harvest-agent-skills: seat markers stay untracked.
+- 2026-11-12: `priority-service-desk-inventory-count-prepare-zero`. SC263014: user could not zero a part stock by inventory count because the count was not prepared. Prepare Count for the part, leave count 0, approve. Customer confirmed they forgot the prep.

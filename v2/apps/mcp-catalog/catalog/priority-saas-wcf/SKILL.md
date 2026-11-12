@@ -48,10 +48,13 @@ bodies), prefer **REST PAT + OData** (`priority-odata-dev`) or **Priority Cloud 
 5. `node bin/priority-wcf.mjs session --instance <id>`
 6. `node bin/priority-wcf.mjs whoami --instance <id>` -> `{ok,userLogin,source}` (`login` or `users`); never OS user; exit 3 = `user_unidentified`.
 7. Form verbs: `form start|rows|set|save|subform` with `--form <ENAME>`.
-8. Prepare: `prepare form|procedure|report --name <ENAME>` (needs `allowLive`).
+8. Prefer `--request <path>` (UTF-8 JSON) for `fields` / `filter` / `inputs` / `name` /
+   `form` / `subform` so Windows quoting is not required. Invalid JSON exits 2
+   (`request_invalid`) before login. Keep request files outside the repo.
+9. Prepare: `prepare form|procedure|report --name <ENAME>` (needs `allowLive`).
    Success = walk ended **and** independent gate (`odataBase` OData UPD/LASTPREPDATE
    when SQL unavailable). Without gate, `preparedClaim` stays false.
-9. Proc: `proc start --name <ENAME> [--ptype P]`.
+10. Proc: `proc start --name <ENAME> [--ptype P]`.
 
 ## Related
 

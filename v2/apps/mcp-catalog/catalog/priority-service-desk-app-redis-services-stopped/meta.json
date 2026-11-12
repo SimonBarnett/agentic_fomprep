@@ -1,0 +1,6 @@
+{
+  "name": "priority-service-desk-app-redis-services-stopped",
+  "title": "No one could log in because the Priority app and Redis services had stopped",
+  "description": "An on-premise hosted Priority was down for all users. The Priority App service and the Priority Redis service had stopped. Restarting them brought the system back; the cause of the stop went to the hosting provider.",
+  "version": "1.0.0"
+}

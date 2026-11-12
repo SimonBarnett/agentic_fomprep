@@ -33,6 +33,8 @@ test('prepareKindDefaults procedure and report', () => {
   assert.equal(prepareKindDefaults('procedure').catalogForm, 'EXEC');
   assert.equal(prepareKindDefaults('procedure').proc, 'REPPREPDIRECT2');
   assert.equal(prepareKindDefaults('report').catalogForm, 'EXEC');
+  assert.equal(prepareKindDefaults('interface').catalogForm, 'EXEC');
+  assert.equal(prepareKindDefaults('interface').proc, '');
   assert.throws(() => prepareKindDefaults('nope'), /unknown_prepare_kind/);
 });
 
@@ -191,6 +193,26 @@ test('evaluatePrepGate fails when lastprep did not advance', () => {
   );
   assert.equal(r.ok, false);
   assert.equal(r.status, 'lastprep_unchanged');
+});
+
+test('S4 two-option step nothing selected: needs_input and no inputOptions', async () => {
+  let calls = 0;
+  const proc = {
+    inputOptions: async () => {
+      calls += 1;
+      return { type: 'end', proc };
+    },
+  };
+  const r = await walkProcSteps(
+    {
+      type: 'inputOptions',
+      proc,
+      input: { Options: [{ field: 'A' }, { field: 'B' }] },
+    },
+    { maxSteps: 5, deadlineMs: 5000 },
+  );
+  assert.equal(calls, 0);
+  assert.equal(r.reason, 'needs_input');
 });
 
 test('gateUnavailable when no SQL/OData', () => {

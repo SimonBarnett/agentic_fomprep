@@ -4,6 +4,8 @@ Issue type: the mobile service-visit app errors until the app build is updated a
 
 Known: on 2026-10-28 16:46 GMT support recorded that after upgrading the version and doing the user registration, the error was not seen and the user logged in. The build named in that upgrade was 183.2.79. Opened 2026-10-28 16:44 GMT.
 
+Related example, SC262514 (opened 2026-08-19, closed 2026-09-25): a mobile app problem with work orders and kits could not be repeated by support. The customer then realised all their apps had been taken off auto-update; after they updated the Priority app it worked. In that case an app update alone was enough, with no new registration recorded. So check the installed app is current, and whether auto-update is off, before deeper investigation.
+
 Unknown: the exact prior version, and whether the update alone or the registration alone was sufficient. They were not isolated. Do not treat 183.2.79 as the build to install on a later date. Check the current supported server and app pair first.
 
 Different incident: after a server move, a regenerated registration QR restored the app (`priority-service-desk-mobile-migration-qr`). Do not skip the version check and only regenerate a QR, or the reverse.

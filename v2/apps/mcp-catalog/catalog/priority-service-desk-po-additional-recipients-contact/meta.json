@@ -1,0 +1,6 @@
+{
+  "name": "priority-service-desk-po-additional-recipients-contact",
+  "title": "Purchase orders went to only one vendor contact until additional recipients were defined",
+  "description": "A customer could not get purchase orders sent to more than one vendor contact. There were no additional recipients defined on the contact. After defining them, sending worked.",
+  "version": "1.0.0"
+}

@@ -179,8 +179,8 @@ Never invent host/tenant.
   interface map    --instance <id> --name <ENAME> ...
 
 interface list is a read of the EXEC catalog: {interfaces:[{name,title}]}.
+interface run uses the proc walker (FR-21/FR-22): ended or needs_input. ptype I. Map is FR-37.
 Prepare-interface refuses until config/interface-prep.json pins a proc name.
-Run and map are later FRs.
 `,
   report: `help report
 
@@ -321,8 +321,48 @@ async function cmdWhoami() {
 }
 
 async function cmdInterface(sub) {
+  if (sub === 'run') {
+    const name = reqString('name', '--name') || arg('--proc');
+    if (!name) return fail('name_required', { need: '--name <ENAME> or request.name' });
+    return withSession(
+      async ({ instance, session, dump, tokenSource }) => {
+        const result = await runProcStart(session, instance, name, {
+          ptype: 'I',
+          nameHint: arg('--hint', ''),
+          inputValues: procInputValues,
+          onNeedsInput: (snap) => dump('needs-input.json', snap),
+        });
+        dump('interface.json', result);
+        if (result.reason === 'needs_input') {
+          dump('needs-input.json', result.snapshot || { options: result.options });
+          return fail('needs_input', {
+            action: 'interface.run',
+            instanceId: instance.id,
+            options: result.options,
+            urls: result.urls || [],
+          });
+        }
+        if (!result.ok) {
+          return fail(result.reason || 'interface_run_failed', {
+            action: 'interface.run',
+            instanceId: instance.id,
+            tokenSource,
+            ...result,
+          });
+        }
+        return ok({
+          instanceId: instance.id,
+          tokenSource,
+          ...result,
+          action: 'interface.run',
+          ptype: 'I',
+        });
+      },
+      { write: true },
+    );
+  }
   if (sub !== 'list') {
-    return fail('interface_sub_required', { need: 'list', got: sub });
+    return fail('interface_sub_required', { need: 'list|run', got: sub });
   }
   return withSession(async ({ instance, session }) => {
     const r = await listInterfaces({ instance, session });
@@ -974,10 +1014,15 @@ async function main() {
     return usage();
   }
 
-  // FR #403: --inputs JSON map, proc start only (not form / prepare).
+  // FR #403 / FR #418: --inputs JSON map for proc start/continue and interface run.
   const inputsPath = arg('--inputs', '');
   const procSub = verb === 'proc' ? (process.argv[3] || '').toLowerCase() : '';
-  if (inputsPath && verb === 'proc' && (procSub === 'start' || procSub === 'continue')) {
+  const ifaceSub = verb === 'interface' ? (process.argv[3] || '').toLowerCase() : '';
+  if (
+    inputsPath &&
+    ((verb === 'proc' && (procSub === 'start' || procSub === 'continue')) ||
+      (verb === 'interface' && ifaceSub === 'run'))
+  ) {
     const loaded = loadInputsFile(inputsPath);
     if (!loaded.ok) {
       return fail(loaded.reason, { path: loaded.path, detail: loaded.detail }, 2);
@@ -1037,7 +1082,7 @@ async function main() {
   }
   if (verb === 'interface') {
     const sub = (process.argv[3] || '').toLowerCase();
-    if (!sub) return fail('interface_sub_required', { need: 'list' });
+    if (!sub) return fail('interface_sub_required', { need: 'list|run' });
     return cmdInterface(sub);
   }
   return fail('unknown_verb', {

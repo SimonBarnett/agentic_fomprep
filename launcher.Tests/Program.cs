@@ -7,6 +7,7 @@ var checks = new List<(string Name, Action Run)>
 {
     ("project wcf overrides customer; legacy airc warns", TestWcfConfigPrecedenceAndLegacy),
     ("saas allowlist loads and renders priority-wcf.mjs rules", TestSaasAllowlistAndRules),
+    ("FR-045: rules example uses whoami and --request; empty USERLOGIN accepts saved; no 'No default login is used'", TestFr045RulesWhoamiAndSavedPrompt),
     ("session instances file has no secrets", TestSessionInstancesNoSecrets),
     ("airc source files and template are gone", TestAircFilesGone),
     ("README documents WCF client only", TestReadmeWcfOnly),
@@ -105,8 +106,30 @@ static void TestSaasAllowlistAndRules()
             "rules must name fom-prep client + harvest destinations and forbid old paths");
         Assert(rules.StartsWith("before", StringComparison.Ordinal) && rules.EndsWith("after", StringComparison.Ordinal),
             "template bookends lost");
+        Assert(rules.Contains("whoami", StringComparison.Ordinal)
+            && rules.Contains("--request", StringComparison.Ordinal),
+            "FR-045: RenderSessionRules example must use whoami and --request");
+        Assert(!rules.Contains("No default login is used", StringComparison.Ordinal),
+            "FR-045: rules must not say No default login is used");
     }
     finally { DeleteTempDirectory(root); }
+}
+
+static void TestFr045RulesWhoamiAndSavedPrompt()
+{
+    string rules = WcfSupport.RenderSessionRules(
+        "{{WCF_SECTION}}",
+        new[] { new WcfInstance("dev", "p.priority-connect.online", "ten", "CO", "u@e", "C:\\tok\\t.json", 3, false, "") },
+        null);
+    Assert(rules.Contains("whoami", StringComparison.Ordinal), "rendered section must mention whoami");
+    Assert(rules.Contains("--request", StringComparison.Ordinal), "rendered section must mention --request");
+    Assert(
+        rules.Contains("Priority USERLOGIN", StringComparison.Ordinal)
+        && (rules.Contains("empty", StringComparison.OrdinalIgnoreCase) || rules.Contains("Enter", StringComparison.Ordinal))
+        && rules.Contains("saved", StringComparison.OrdinalIgnoreCase),
+        "section must state an empty Priority USERLOGIN answer accepts the saved login");
+    Assert(!rules.Contains("No default login is used", StringComparison.Ordinal),
+        "rendered section must not contain the sentence No default login is used");
 }
 
 static void TestSessionInstancesNoSecrets()

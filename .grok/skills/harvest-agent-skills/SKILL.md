@@ -198,3 +198,6 @@ books use `harvest-agent-skills` pointing at their home.)
 - error dialogs stay for the agent unless --confirm-errors; wire CLI setConfirmErrors(hasFlag) plus tests that count errorConfirm 0/1.
 - form action --form ENAME --name ACT needs allowLive; refuseLiveWrite before login; return message-handler list from activateStart/invoke
 - interface run is procStart ptype I with FR-21/FR-22 walker; --inputs on inputFields; two options needs_input; write so allowLive required
+- A BPM status missing from the flow chart that already exists on create is often deleted; restore it from the deleted-status list via the + icon; do not insert in tables.
+- Stacked service-desk harvests conflict on PRIORITY-AGENT-SKILLS and skill-harvest-log; keep every sibling skill name when folding.
+- FIX for a CONFLICTING polish PR: merge origin/main onto the assigned head (fr-N), keep both the original verb and later form verbs, push HEAD:assigned-ref, DONE FIX with the assigned PR URL.

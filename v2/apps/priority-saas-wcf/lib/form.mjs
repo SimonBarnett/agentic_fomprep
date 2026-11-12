@@ -57,11 +57,40 @@ export async function formGetRows(form, fromRow = 1) {
   return rowsFromGetRows(rows, form?.name);
 }
 
+/** FR-043 / #425: form rows --limit, default 50, max 500. */
+export const FORM_ROWS_DEFAULT_LIMIT = 50;
+export const FORM_ROWS_MAX_LIMIT = 500;
+
+export function parseFormRowsLimit(raw) {
+  if (raw === '' || raw == null) {
+    return { ok: true, limit: FORM_ROWS_DEFAULT_LIMIT, defaulted: true };
+  }
+  const n = Number(raw);
+  if (!Number.isFinite(n)) {
+    return { ok: false, reason: 'limit_too_high', got: raw, max: FORM_ROWS_MAX_LIMIT };
+  }
+  const i = Math.trunc(n);
+  if (i > FORM_ROWS_MAX_LIMIT) {
+    return { ok: false, reason: 'limit_too_high', limit: i, max: FORM_ROWS_MAX_LIMIT };
+  }
+  if (i < 1) {
+    return { ok: false, reason: 'limit_too_high', limit: i, max: FORM_ROWS_MAX_LIMIT };
+  }
+  return { ok: true, limit: i };
+}
+
+function applyRowLimit(got, limit) {
+  if (limit == null) return got;
+  const rows = Array.isArray(got.rows) ? got.rows.slice(0, limit) : [];
+  return { ...got, rows, count: rows.length, limit };
+}
+
 /**
  * FR #396 / FR-014: optional one SDK search, then getRows (default from 1).
  * Missing filter skips setSearchFilter (unfiltered read).
+ * FR-043: optional limit slices the client-side row list.
  */
-export async function applySearchThenGetRows(form, filter, { fromRow = 1, getRows } = {}) {
+export async function applySearchThenGetRows(form, filter, { fromRow = 1, getRows, limit } = {}) {
   let searchCalls = 0;
   if (filter) {
     await form.setSearchFilter(filter);
@@ -69,7 +98,7 @@ export async function applySearchThenGetRows(form, filter, { fromRow = 1, getRow
   }
   const fetch = getRows || formGetRows;
   const got = await fetch(form, fromRow);
-  return { ...got, searchCalls };
+  return applyRowLimit({ ...got, searchCalls }, limit);
 }
 
 export async function formSetFields(form, fields) {
@@ -88,6 +117,48 @@ export async function formSave(form) {
   if (typeof form.invoke === 'function') {
     await form.invoke('Save');
     return { saved: true, via: 'invoke:Save' };
+  }
+  throw new Error('form has no saveRow/invoke Save');
+}
+
+/** FR #398 / FR-016: one positioned row; caller must already have --confirm. */
+export async function formDeletePositionedRow(form, filter, { getRows } = {}) {
+  if (filter) await form.setSearchFilter(filter);
+  const fetch = getRows || formGetRows;
+  const got = await fetch(form, 1);
+  if (!got || got.count < 1) {
+    return { ok: false, reason: 'no_rows_for_filter', deleted: 0 };
+  }
+  if (typeof form.setActiveRow === 'function') {
+    await form.setActiveRow(Number(got.rows[0]._idx));
+  }
+  if (typeof form.deleteRow === 'function') {
+    await form.deleteRow();
+  } else if (typeof form.invoke === 'function') {
+    await form.invoke('Delete');
+  } else {
+    throw new Error('form has no deleteRow/invoke Delete');
+  }
+  return { ok: true, deleted: 1 };
+}
+
+/** FR #397 / FR-015: one new row. newRow (or startRow) once, then fieldUpdate, then saveRow(1). */
+export async function formInsertRow(form, fields) {
+  if (typeof form.newRow === 'function') {
+    await form.newRow();
+  } else if (typeof form.startRow === 'function') {
+    await form.startRow(1);
+  } else {
+    throw new Error('form has no newRow/startRow');
+  }
+  const set = await formSetFields(form, fields);
+  if (typeof form.saveRow === 'function') {
+    await form.saveRow(1);
+    return { set: set.set, saved: true, via: 'saveRow' };
+  }
+  if (typeof form.invoke === 'function') {
+    await form.invoke('Save');
+    return { set: set.set, saved: true, via: 'invoke:Save' };
   }
   throw new Error('form has no saveRow/invoke Save');
 }

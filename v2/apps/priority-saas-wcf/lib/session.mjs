@@ -1,7 +1,8 @@
 import { createRequire } from 'node:module';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { probeTenant } from './probe.mjs';
+import { probeTenant, probeTenantCached } from './probe.mjs';
+import { redact } from './json-out.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const require = createRequire(path.join(__dirname, '..', 'package.json'));
@@ -71,6 +72,9 @@ export async function resolveTabulaini(instance, accessToken, { probe } = {}) {
   return { ok: true, tabulaini: p.tabulaini, source: 'probe', probe: p };
 }
 
+/** FR-040 / #422: brief pause before the single login_connect retry. */
+export const LOGIN_CONNECT_RETRY_MS = 400;
+
 function classifyLoginError(message) {
   const m = String(message || '');
   if (/API License/i.test(m) || /flag the user as having an API/i.test(m)) {
@@ -91,7 +95,12 @@ function classifyLoginError(message) {
 export async function loginSession(instance, accessToken, opts = {}) {
   const probe =
     opts.probe ||
-    (await probeTenant(instance, { accessToken }));
+    (await probeTenantCached(instance, {
+      accessToken,
+      fetchImpl: opts.fetchImpl,
+      cachePath: opts.cachePath,
+      now: opts.now,
+    }));
   const iniRes = await resolveTabulaini(instance, accessToken, { probe });
   if (!iniRes.ok) return iniRes;
   if (!iniRes.tabulaini) {
@@ -107,16 +116,42 @@ export async function loginSession(instance, accessToken, opts = {}) {
     devicename: opts.devicename,
     url: urlRes.url,
   });
+  // FR-040 / #422: one brief retry only for login_connect (not api_licence / login_failed).
+  const retryMs =
+    Number.isFinite(opts.loginConnectRetryMs) && opts.loginConnectRetryMs >= 0
+      ? opts.loginConnectRetryMs
+      : LOGIN_CONNECT_RETRY_MS;
+  const sleeper =
+    typeof opts.sleep === 'function'
+      ? opts.sleep
+      : (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
   let loginResult = null;
-  try {
-    loginResult = await priority.login(config);
-  } catch (e) {
-    const msg = String(e?.message || e);
-    const cls = classifyLoginError(msg);
+  let loginAttempts = 0;
+  let lastFail = null;
+  for (let attempt = 1; attempt <= 2; attempt++) {
+    loginAttempts = attempt;
+    try {
+      loginResult = await priority.login(config);
+      lastFail = null;
+      break;
+    } catch (e) {
+      const msg = String(e?.message || e);
+      const cls = classifyLoginError(msg);
+      lastFail = { e, msg, cls };
+      if (cls.reason === 'login_connect' && attempt < 2) {
+        await sleeper(retryMs);
+        continue;
+      }
+      break;
+    }
+  }
+  if (lastFail) {
+    const { e, msg, cls } = lastFail;
     return {
       ok: false,
       reason: cls.reason,
-      message: msg,
+      message: redact(msg),
       hint: cls.hint,
       type: e?.type || null,
       code: e?.code || null,
@@ -125,6 +160,7 @@ export async function loginSession(instance, accessToken, opts = {}) {
       loginUrl: urlRes.url,
       loginUrlSource: urlRes.source,
       probe: probe?.ok ? { wcf: probe.wcf, tabulaini: probe.tabulaini } : null,
+      loginAttempts,
     };
   }
   return {
@@ -137,8 +173,11 @@ export async function loginSession(instance, accessToken, opts = {}) {
     url: urlRes.url,
     loginUrlSource: urlRes.source,
     probe: probe?.ok ? probe : iniRes.probe || null,
+    loginAttempts,
   };
 }
+
+
 let confirmErrors = false;
 
 /** FR #401 / FR-019: errorConfirm only when --confirm-errors (or setConfirmErrors(true)). */

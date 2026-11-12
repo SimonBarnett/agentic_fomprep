@@ -8,7 +8,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { readAllowlist, selectInstance, refuseLiveWrite, defaultInstancesPath } from '../lib/allowlist.mjs';
-import { loadAccessToken } from '../lib/token.mjs';
+import { resolveAccessToken } from '../lib/token.mjs';
 import { probeTenant } from '../lib/probe.mjs';
 import { loginSession, logout, safeEnd, setConfirmErrors } from '../lib/session.mjs';
 import {
@@ -21,6 +21,9 @@ import {
   formSubformSetFields,
   applySearchThenGetRows,
   formRunAction,
+  formInsertRow,
+  formDeletePositionedRow,
+  parseFormRowsLimit,
 } from '../lib/form.mjs';
 import { runPrepare } from '../lib/prepare.mjs';
 import { runProcStart, runProcContinue } from '../lib/proc.mjs';
@@ -31,8 +34,10 @@ import {
   loadInterfacePrepConfig,
 } from '../lib/interface-prep.mjs';
 import { resolveWhoami } from '../lib/whoami.mjs';
+import { rememberWhoami } from '../lib/last-user.mjs';
 import { listCompanies } from '../lib/companies.mjs';
 import { listInterfaces } from '../lib/interface-list.mjs';
+import { setInterfaceMap } from '../lib/interface-map.mjs';
 import {
   addTableColumn,
   columnsFromCreateRequest,
@@ -44,12 +49,13 @@ import {
 import { checkDictionaryTitle } from '../lib/title-check.mjs';
 import { emit, fail, ok, redact } from '../lib/json-out.mjs';
 import { planDryRun } from '../lib/dry-run.mjs';
+import { validateBatchRequest } from '../lib/batch.mjs';
+import { loadFieldsFile } from '../lib/fields-file.mjs';
 import {
   loadRequestFile,
   fieldsFromRequestOrFlag,
   rawJsonFromRequestOrFlag,
   stringFromRequestOrFlag,
-  loadFieldsFile,
 } from '../lib/request-file.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -57,6 +63,8 @@ const ROOT = path.resolve(__dirname, '..');
 
 /** FR #389: loaded --request JSON; keys override matching flags. */
 let requestDoc = null;
+/** FR #402: --fields-file object for form set only (not form save). */
+let fieldsFileFields = null;
 /** FR #403: --inputs JSON map for proc start only. */
 let procInputValues = null;
 
@@ -96,11 +104,12 @@ Object kinds: table, form, report, procedure, interface.
   table column add --instance <id> --name <TNAME> --column <COL> --type <T> --title <title>  (see: help table)
   interface (see: help interface)
   report run --instance <id> --name <ENAME>  (see: help report)
+  batch --request <file> --instance <id>  (see: help batch)
   Any verb: --request <path>  UTF-8 JSON; keys fields|filter|inputs|name|form|subform override flags
   --dry-run               resolve instance + verb; print instanceId, verb, write; no login
   --confirm-errors        auto-dismiss SDK error dialogs (default: leave them for the agent)
   help
-  help <verb>   form|prepare|proc|table|interface|report|companies
+  help <verb>   form|prepare|proc|table|interface|report|companies|batch
 
 Env:
   PRIORITY_SAAS_WCF_INSTANCES  allowlist JSON (default %USERPROFILE%\\.priority-saas-wcf\\instances.json)
@@ -118,6 +127,17 @@ Request files stay outside the repo (temp / profile); never commit them.
 }
 
 const HELP_TOPICS = {
+  batch: `help batch
+
+  batch --request <file> --instance <id>
+
+  Request JSON: { "reads": [ { "verb": "whoami" }, ... ] }
+  Allowed: whoami, form columns, form rows, table columns, table exists,
+  companies, proc text, interface list.
+  Maximum 8 reads. A 9th or any write verb (for example form new) exits 2
+  before login (batch_too_many / batch_write_refused).
+  One login for the whole file. Writes stay single-verb.
+`,
   companies: `help companies
 
   companies --instance <id>
@@ -130,12 +150,12 @@ Does not switch the session company. Never log tokens.
 Form verbs (one screen):
 
   form columns --instance <id> --form <ENAME>
-  form rows    --instance <id> --form <ENAME> [--from <n>] [--filter ...]
-  form new     --instance <id> --form <ENAME> --fields '{...}'
+  form rows    --instance <id> --form <ENAME> [--from <n>] [--filter ...] [--limit N]
+  form new     --instance <id> --form <ENAME> --fields '{...}' [--fields-file <path>]
   form delete  --instance <id> --form <ENAME> --filter ... --confirm
   form action  --instance <id> --form <ENAME> --name <ACT> [--filter ...]
   form start   --instance <id> --form <ENAME>
-  form set     --instance <id> --form <ENAME> --fields '{...}' [--filter ...]
+  form set     --instance <id> --form <ENAME> --fields '{...}' [--fields-file <path>] [--filter ...]
   form save    --instance <id> --form <ENAME> --fields '{...}' [--filter ...]
   form subform --instance <id> --form <PARENT> --subform <CHILD> [--rows]
   form subform --instance <id> --form <PARENT> --subform <CHILD> --set --fields-file <path>
@@ -178,10 +198,11 @@ Never invent host/tenant.
 
   interface list   --instance <id>
   interface run    --instance <id> --name <ENAME> --inputs <file>
-  interface map    --instance <id> --name <ENAME> ...
+  interface map set --instance <id> --name <ENAME> --fields-file <path>
 
 interface list is a read of the EXEC catalog: {interfaces:[{name,title}]}.
 interface run uses the proc walker (FR-21/FR-22): ended or needs_input. ptype I. Map is FR-37.
+interface map set writes one FORMINTERFACES row (allowLive). Does not prepare (FR-29).
 Prepare-interface refuses until config/interface-prep.json pins a proc name.
 `,
   report: `help report
@@ -247,7 +268,7 @@ async function withSession(fn, { write = false, needToken = true } = {}) {
   let accessToken = '';
   let tokenSource = 'none';
   if (needToken) {
-    const tok = loadAccessToken(instance);
+    const tok = await resolveAccessToken(instance);
     if (!tok.ok) return fail(tok.reason, { path: tok.path, message: tok.message });
     accessToken = tok.accessToken;
     tokenSource = tok.source;
@@ -280,13 +301,128 @@ async function withSession(fn, { write = false, needToken = true } = {}) {
   }
 }
 
+async function executeBatchRead({ instance, session, dump, tokenSource, accessToken }, read) {
+  if (read.verb === 'whoami') {
+    const r = await resolveWhoami({ instance, session });
+    if (!r.ok) return { ok: false, reason: r.reason || 'user_unidentified', read };
+    // FR #384: persist identified USERLOGIN only (never allowlist invent).
+    const saved = rememberWhoami({
+      userProfile: process.env.USERPROFILE || process.env.HOME,
+      instanceId: instance.id,
+      userLogin: r.userLogin,
+      company: instance.company,
+      source: r.source || 'whoami',
+    });
+    if (!saved.ok) return { ok: false, reason: 'whoami_login_refused', detail: saved.detail, read };
+    return {
+      ok: true,
+      result: {
+        action: 'whoami',
+        userLogin: r.userLogin,
+        source: r.source,
+        path: saved.path,
+      },
+    };
+  }
+  if (read.verb === 'companies') {
+    const r = await listCompanies({ instance, session });
+    if (!r.ok) return { ok: false, reason: r.reason || 'companies_failed', read };
+    return {
+      ok: true,
+      result: { action: 'companies', companies: r.companies, switched: false },
+    };
+  }
+  if (read.verb === 'interface.list') {
+    const r = await listInterfaces({ instance, session });
+    if (!r.ok) return { ok: false, reason: r.reason || 'interface_list_failed', read };
+    return { ok: true, result: { action: 'interface.list', interfaces: r.interfaces } };
+  }
+  if (read.verb === 'form.columns') {
+    const messages = [];
+    const form = await formStart(session.priority, read.form, instance.company, { messages });
+    const columns = formColumnsMeta(form);
+    await safeEnd(form);
+    return {
+      ok: true,
+      result: { action: 'form.columns', form: read.form, columns, messages },
+    };
+  }
+  if (read.verb === 'form.rows') {
+    const messages = [];
+    const form = await formStart(session.priority, read.form, instance.company, { messages });
+    const got = await applySearchThenGetRows(form, null, { fromRow: 1 });
+    await safeEnd(form);
+    const { searchCalls, ...rowsOut } = got;
+    return {
+      ok: true,
+      result: { action: 'form.rows', form: read.form, searchCalls, ...rowsOut, messages },
+    };
+  }
+  if (read.verb === 'table.exists') {
+    const result = await fetchTableExists(instance, read.name, { accessToken });
+    if (!result.ok) return { ok: false, reason: result.reason, read };
+    return {
+      ok: true,
+      result: { action: 'table.exists', name: result.name, exists: result.exists },
+    };
+  }
+  if (read.verb === 'table.columns') {
+    const result = await fetchTableColumns(instance, read.name, { accessToken });
+    if (!result.ok) return { ok: false, reason: result.reason, read };
+    return {
+      ok: true,
+      result: {
+        action: 'table.columns',
+        table: read.name,
+        exists: result.exists,
+        columns: result.columns,
+      },
+    };
+  }
+  if (read.verb === 'proc.text') {
+    const messages = [];
+    const result = await readProcTextViaExecForm(session, instance, read.name, { messages });
+    if (!result.ok) return { ok: false, reason: result.reason || 'proc_text_missing', read };
+    return {
+      ok: true,
+      result: { action: 'proc.text', name: result.name, body: result.body, tokenSource },
+    };
+  }
+  dump('batch-unknown.json', read);
+  return { ok: false, reason: 'batch_write_refused', read };
+}
+
+async function cmdBatch() {
+  const requestPath = arg('--request', '');
+  if (!requestPath) {
+    return fail('request_invalid', { need: '--request <file> with reads[]' }, 2);
+  }
+  const loaded = requestDoc
+    ? { ok: true, doc: requestDoc }
+    : loadRequestFile(requestPath);
+  if (!loaded.ok) return fail(loaded.reason || 'request_invalid', loaded, 2);
+  const v = validateBatchRequest(loaded.doc);
+  if (!v.ok) return fail(v.reason, v, 2);
+  return withSession(async (ctx) => {
+    const results = [];
+    for (const read of v.reads) {
+      const one = await executeBatchRead(ctx, read);
+      if (!one.ok) {
+        return fail(one.reason || 'batch_read_failed', { verb: read.verb, ...one });
+      }
+      results.push(one.result);
+    }
+    return ok({ action: 'batch', results, loginCount: 1 });
+  });
+}
+
 async function cmdProbe() {
   const picked = await resolveInstance();
   if (!picked.ok) return fail(picked.reason, picked);
   const instance = picked.instance;
   let accessToken = '';
   if (hasFlag('--with-token')) {
-    const tok = loadAccessToken(instance);
+    const tok = await resolveAccessToken(instance);
     if (!tok.ok) return fail(tok.reason, { path: tok.path, message: tok.message });
     accessToken = tok.accessToken;
   }
@@ -307,6 +443,8 @@ async function cmdProbe() {
 
 async function cmdWhoami() {
   return withSession(async ({ instance, session }) => {
+    // FR #384 / MRB #431 FIX: persist only an identified Priority USERLOGIN
+    // (login result or USERS), never allowlist OIDC email / --user invent.
     const r = await resolveWhoami({ instance, session });
     if (!r.ok) {
       // FR #383: unidentified Priority user is exit 3 (not OS username fallback).
@@ -317,8 +455,20 @@ async function cmdWhoami() {
         message: r.message,
       }, 3);
     }
-    // FR #383 contract: { ok, userLogin, source } only (no token fields).
-    return ok({ userLogin: r.userLogin, source: r.source });
+    const saved = rememberWhoami({
+      userProfile: process.env.USERPROFILE || process.env.HOME,
+      instanceId: instance.id,
+      userLogin: r.userLogin,
+      company: instance.company,
+      source: r.source || 'whoami',
+    });
+    if (!saved.ok) return fail('whoami_login_refused', saved);
+    // FR #383 fields plus FR #384 path; never token fields.
+    return ok({
+      userLogin: r.userLogin,
+      source: r.source,
+      path: saved.path,
+    });
   });
 }
 
@@ -363,8 +513,39 @@ async function cmdInterface(sub) {
       { write: true },
     );
   }
+  if (sub === 'map') {
+    const op = String(process.argv[4] || '').toLowerCase();
+    if (op !== 'set') {
+      return fail('interface_map_sub_required', { need: 'set', got: op });
+    }
+    const name = reqString('name', '--name');
+    if (!name) return fail('name_required', { need: '--name <ENAME> or request.name' });
+    const fieldsPath = arg('--fields-file', '');
+    const loaded = loadFieldsFile(fieldsPath);
+    if (!loaded.ok) {
+      return fail(loaded.reason || 'fields_file_invalid', loaded, 2);
+    }
+    if (Object.keys(loaded.fields).length < 1) {
+      return fail('fields_required', { need: '--fields-file JSON object' }, 2);
+    }
+    return withSession(
+      async ({ instance, session }) => {
+        const result = await setInterfaceMap(session, instance, {
+          name,
+          fields: loaded.fields,
+        });
+        if (!result.ok) return fail(result.reason, result);
+        return ok({
+          action: 'interface.map.set',
+          instanceId: instance.id,
+          ...result,
+        });
+      },
+      { write: true },
+    );
+  }
   if (sub !== 'list') {
-    return fail('interface_sub_required', { need: 'list|run', got: sub });
+    return fail('interface_sub_required', { need: 'list|run|map set', got: sub });
   }
   return withSession(async ({ instance, session }) => {
     const r = await listInterfaces({ instance, session });
@@ -435,15 +616,74 @@ async function openFilteredForm(session, instance, formName, filterRaw, messages
   return form;
 }
 
+function fieldsForFormWrite() {
+  const filePath = arg('--fields-file');
+  if (filePath) {
+    const loaded = loadRequestFile(filePath);
+    if (!loaded.ok) return loaded;
+    if (Object.prototype.hasOwnProperty.call(loaded.doc, 'fields')) {
+      return { ok: true, fields: fieldsFromRequestOrFlag(loaded.doc, '{}') };
+    }
+    return { ok: true, fields: { ...loaded.doc } };
+  }
+  return { ok: true, fields: fieldsFromRequestOrFlag(requestDoc, arg('--fields', '{}')) };
+}
+
 async function cmdForm(sub) {
   const formName = reqString('form', '--form');
   if (!formName) return fail('form_required', { need: '--form <ENAME> or request.form' });
-  const write = sub === 'set' || sub === 'save' || sub === 'action' || (sub === 'subform' && hasFlag('--set'));
+  if (sub === 'delete' && !hasFlag('--confirm')) {
+    return fail('confirm_required', { need: '--confirm' }, 2);
+  }
+  if (sub === 'delete' || sub === 'new') {
+    const picked = await resolveInstance();
+    if (!picked.ok) return fail(picked.reason, picked);
+    if (picked.instance.allowLive !== true) {
+      return fail('live_refused', { instanceId: picked.instance.id }, 2);
+    }
+  }
+  let rowsLimit;
+  if (sub === 'rows') {
+    const raw =
+      requestDoc && Object.prototype.hasOwnProperty.call(requestDoc, 'limit')
+        ? requestDoc.limit
+        : arg('--limit', '');
+    const parsed = parseFormRowsLimit(raw);
+    if (!parsed.ok) return fail(parsed.reason, parsed, 2);
+    rowsLimit = parsed.limit;
+  }
+  const write =
+    sub === 'set' ||
+    sub === 'save' ||
+    sub === 'delete' ||
+    sub === 'new' ||
+    sub === 'action' ||
+    (sub === 'subform' && hasFlag('--set'));
   return withSession(
     async ({ instance, session, dump }) => {
       const messages = [];
       let form;
       try {
+        if (sub === 'new') {
+          const packed = fieldsForFormWrite();
+          if (!packed.ok) return fail(packed.reason || 'fields_required', packed, 2);
+          const fields = packed.fields || {};
+          if (Object.keys(fields).length < 1) {
+            return fail('fields_required', { need: '--fields JSON, --fields-file, or request.fields' });
+          }
+          form = await formStart(session.priority, formName, instance.company, { messages });
+          const inserted = await formInsertRow(form, fields);
+          dump('form-new.json', { form: formName, fields: Object.keys(fields), inserted, messages });
+          await safeEnd(form);
+          return ok({
+            action: 'form.new',
+            instanceId: instance.id,
+            form: formName,
+            fields: Object.keys(fields),
+            ...inserted,
+            messages,
+          });
+        }
         if (sub === 'action') {
           const activation = reqString('name', '--name') || arg('--activation', '');
           if (!activation) {
@@ -553,11 +793,30 @@ async function cmdForm(sub) {
 
         const filterRaw = reqRawJson('filter', '--filter');
 
+        if (sub === 'delete') {
+          const filter = parseFilter(filterRaw);
+          if (!filter) {
+            return fail('filter_required', { need: '--filter JSON or request.filter' }, 2);
+          }
+          form = await formStart(session.priority, formName, instance.company, { messages });
+          const deleted = await formDeletePositionedRow(form, filter);
+          dump('form-delete.json', { form: formName, deleted, messages });
+          await safeEnd(form);
+          if (!deleted.ok) return fail(deleted.reason || 'form_failed', { form: formName, ...deleted });
+          return ok({
+            action: 'form.delete',
+            instanceId: instance.id,
+            form: formName,
+            deleted: deleted.deleted,
+            messages,
+          });
+        }
+
         if (sub === 'rows') {
           form = await formStart(session.priority, formName, instance.company, { messages });
           const filter = parseFilter(filterRaw);
           const fromRow = Number(arg('--from', '1')) || 1;
-          const got = await applySearchThenGetRows(form, filter, { fromRow });
+          const got = await applySearchThenGetRows(form, filter, { fromRow, limit: rowsLimit });
           dump('form-rows.json', { form: formName, ...got, messages });
           await safeEnd(form);
           const { searchCalls, ...rowsOut } = got;
@@ -581,7 +840,10 @@ async function cmdForm(sub) {
         }
 
         if (sub === 'set' || sub === 'save') {
-          const fields = fieldsFromRequestOrFlag(requestDoc, arg('--fields', '{}'));
+          const fields =
+            sub === 'set' && fieldsFileFields
+              ? fieldsFileFields
+              : fieldsFromRequestOrFlag(requestDoc, arg('--fields', '{}'));
           if (Object.keys(fields).length < 1) {
             await safeEnd(form);
             return fail('fields_required', { need: '--fields JSON object or request.fields' });
@@ -944,8 +1206,9 @@ async function cmdTable(sub) {
     if (!picked.ok) return fail(picked.reason, picked);
     const instance = picked.instance;
     let accessToken = '';
-    const tok = loadAccessToken(instance);
-    if (tok.ok) accessToken = tok.accessToken;
+    const tok = await resolveAccessToken(instance);
+    if (!tok.ok) return fail(tok.reason, { path: tok.path, message: tok.message });
+    accessToken = tok.accessToken;
     const result = await fetchTableExists(instance, name, { accessToken });
     if (!result.ok) return fail(result.reason, result);
     return ok({
@@ -990,8 +1253,9 @@ async function cmdTable(sub) {
     if (!picked.ok) return fail(picked.reason, picked);
     const instance = picked.instance;
     let accessToken = '';
-    const tok = loadAccessToken(instance);
-    if (tok.ok) accessToken = tok.accessToken;
+    const tok = await resolveAccessToken(instance);
+    if (!tok.ok) return fail(tok.reason, { path: tok.path, message: tok.message });
+    accessToken = tok.accessToken;
     const result = await fetchTableColumns(instance, name, { accessToken });
     if (!result.ok) return fail(result.reason, result);
     return ok({
@@ -1075,6 +1339,17 @@ async function main() {
     requestDoc = loaded.doc;
   }
 
+  // FR #402: --fields-file before login (BOM / size). form set only; not form save.
+  const fieldsFilePath = arg('--fields-file', '');
+  const formSub = verb === 'form' ? (process.argv[3] || '').toLowerCase() : '';
+  if (fieldsFilePath && verb === 'form' && formSub === 'set') {
+    const loaded = loadFieldsFile(fieldsFilePath);
+    if (!loaded.ok) {
+      return fail(loaded.reason, { path: loaded.path, detail: loaded.detail, bytes: loaded.bytes }, 2);
+    }
+    fieldsFileFields = loaded.fields;
+  }
+
   // FR #391: resolve instance + verb without login.
   if (hasFlag('--dry-run')) {
     const plan = planDryRun(process.argv);
@@ -1086,13 +1361,17 @@ async function main() {
     });
   }
 
+  if (verb === 'batch') return cmdBatch();
   if (verb === 'probe') return cmdProbe();
   if (verb === 'session') return cmdSession();
   if (verb === 'whoami') return cmdWhoami();
   if (verb === 'companies') return cmdCompanies();
   if (verb === 'form') {
     const sub = (process.argv[3] || '').toLowerCase();
-    if (!sub) return fail('form_sub_required', { need: 'start|columns|rows|set|save|subform|action' });
+    if (!sub)
+      return fail('form_sub_required', {
+        need: 'start|columns|rows|set|save|subform|new|delete|action',
+      });
     return cmdForm(sub);
   }
   if (verb === 'prepare') {
@@ -1119,12 +1398,12 @@ async function main() {
   }
   if (verb === 'interface') {
     const sub = (process.argv[3] || '').toLowerCase();
-    if (!sub) return fail('interface_sub_required', { need: 'list|run' });
+    if (!sub) return fail('interface_sub_required', { need: 'list|run|map' });
     return cmdInterface(sub);
   }
   return fail('unknown_verb', {
     verb,
-    hint: 'probe|session|whoami|companies|form|prepare|proc|report|table|interface|help',
+    hint: 'probe|session|whoami|companies|form|prepare|proc|report|table|interface|batch|help',
   });
 }
 

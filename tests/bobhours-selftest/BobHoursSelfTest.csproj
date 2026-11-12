@@ -8,5 +8,6 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="..\..\launcher\BobHours.cs" Link="BobHours.cs" />
+    <Compile Include="..\..\launcher\LastUser.cs" Link="LastUser.cs" />
   </ItemGroup>
 </Project>

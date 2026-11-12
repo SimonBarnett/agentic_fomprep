@@ -92,16 +92,21 @@ node bin\priority-wcf.mjs form subform --instance customer-saas-dev --form CUSTO
 # Prefer a UTF-8 request file on Windows (no shell quoting). File stays outside the repo.
 # request.json example: { "form": "CUSTOMERS", "fields": { "EMAIL": "a@b.c" }, "filter": { "field": "CUSTNAME", "fromval": "X" } }
 node bin\priority-wcf.mjs form set --instance customer-saas-dev --request C:\temp\request.json
+node bin\priority-wcf.mjs batch --instance customer-saas-dev --request C:\temp\batch-reads.json
 ```
 
 `help` prints the top-level summary. `help <verb>` prints one screen for
-`form`, `prepare`, `proc`, `table`, `interface`, or `report` (unknown topic exits 2).
+`form`, `prepare`, `proc`, `table`, `interface`, `report`, or `batch` (unknown topic exits 2).
 
 `--confirm-errors` auto-dismisses SDK error dialogs. By default `messageHandler` does not call `errorConfirm` (warnings and info still auto-confirm). Proc walk is unchanged.
 
 `--request <path>` reads UTF-8 JSON. Keys `fields`, `filter`, `inputs`, `name`, `form`, `subform`
 override the matching CLI flags when present. Invalid JSON exits 2 with `reason: request_invalid`
 before login. Do not copy request files into the repo.
+
+`batch --request` takes `{ "reads": [ { "verb": "whoami" }, ... ] }` (up to 8). Allowed verbs:
+whoami, form columns, form rows, table columns, table exists, companies, proc text, interface list.
+A 9th read or a write verb (for example form new) exits 2 before login. One login for the file.
 
 `companies --instance <id>` is read-only JSON `{companies:[{name,title}]}` and does not require `allowLive`. It does not switch the session company.
 

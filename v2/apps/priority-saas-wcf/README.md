@@ -49,6 +49,15 @@ Local file (default `%USERPROFILE%\.priority-saas-wcf\instances.json`, override
 Copy from `instances.example.json`. Never put passwords or tokens in the allowlist.
 Unknown / missing instance → exit 2, no SaaS call.
 
+### Process exit codes (FR-011)
+
+| Code | When |
+|------|------|
+| exit 0 | `ok: true` |
+| exit 2 | usage / allowlist / `request_invalid` (and other non-auth fails) |
+| exit 3 | `login_failed`, `api_licence`, `login_connect`, `token_expired`, `user_unidentified` |
+| exit 4 | prepare walk finished (`walkOk`) and gate `status` is `unavailable` |
+
 Every `fail()` stdout object includes boolean `retryable` (true only for `login_connect`). `api_licence` and `token_expired` stay `retryable: false` with a `hint` string. This client does not retry.
 
 ## Install
@@ -72,6 +81,7 @@ node bin\priority-wcf.mjs session --instance customer-saas-dev --form CUSTOMERS
 node bin\priority-wcf.mjs form start --instance customer-saas-dev --form CUSTOMERS
 node bin\priority-wcf.mjs form columns --instance customer-saas-dev --form CUSTOMERS
 node bin\priority-wcf.mjs form rows  --instance customer-saas-dev --form CUSTOMERS
+node bin\priority-wcf.mjs form rows  --instance customer-saas-dev --form CUSTOMERS --filter "{\"field\":\"CUSTNAME\",\"fromval\":\"X\"}"
 node bin\priority-wcf.mjs form set   --instance customer-saas-dev --form CUSTOMERS --filter "{\"field\":\"CUSTNAME\",\"fromval\":\"X\"}" --fields "{\"EMAIL\":\"a@b.c\"}"
 node bin\priority-wcf.mjs form save  --instance customer-saas-dev --form CUSTOMERS --filter "..." --fields "{...}"
 # Prefer a UTF-8 request file on Windows (no shell quoting). File stays outside the repo.
@@ -82,11 +92,15 @@ node bin\priority-wcf.mjs form set --instance customer-saas-dev --request C:\tem
 `help` prints the top-level summary. `help <verb>` prints one screen for
 `form`, `prepare`, `proc`, `table`, `interface`, or `report` (unknown topic exits 2).
 
+`--confirm-errors` auto-dismisses SDK error dialogs. By default `messageHandler` does not call `errorConfirm` (warnings and info still auto-confirm). Proc walk is unchanged.
+
 `--request <path>` reads UTF-8 JSON. Keys `fields`, `filter`, `inputs`, `name`, `form`, `subform`
 override the matching CLI flags when present. Invalid JSON exits 2 with `reason: request_invalid`
 before login. Do not copy request files into the repo.
 
 `companies --instance <id>` is read-only JSON `{companies:[{name,title}]}` and does not require `allowLive`. It does not switch the session company.
+
+`form rows --filter` (or request-file `filter`) calls SDK `setSearchFilter` once then `getRows` from 1. Missing filter is the unfiltered read. Writes stay on `form set` / `form save`.
 
 Writes (`form set` / `form save`) require `allowLive: true` on the row (and operator approval).
 

@@ -10,7 +10,7 @@ import { fileURLToPath } from 'node:url';
 import { readAllowlist, selectInstance, refuseLiveWrite, defaultInstancesPath } from '../lib/allowlist.mjs';
 import { loadAccessToken } from '../lib/token.mjs';
 import { probeTenant } from '../lib/probe.mjs';
-import { loginSession, logout, safeEnd } from '../lib/session.mjs';
+import { loginSession, logout, safeEnd, setConfirmErrors } from '../lib/session.mjs';
 import {
   formStart,
   formGetRows,
@@ -18,6 +18,7 @@ import {
   formSave,
   formStartSubForm,
   formColumnsMeta,
+  applySearchThenGetRows,
 } from '../lib/form.mjs';
 import { runPrepare } from '../lib/prepare.mjs';
 import { runProcStart } from '../lib/proc.mjs';
@@ -74,6 +75,7 @@ Object kinds: table, form, report, procedure, interface.
   report  (see: help report)
   Any verb: --request <path>  UTF-8 JSON; keys fields|filter|inputs|name|form|subform override flags
   --dry-run               resolve instance + verb; print instanceId, verb, write; no login
+  --confirm-errors        auto-dismiss SDK error dialogs (default: leave them for the agent)
   help
   help <verb>   form|prepare|proc|table|interface|report|companies
 
@@ -387,6 +389,25 @@ async function cmdForm(sub) {
         }
 
         const filterRaw = reqRawJson('filter', '--filter');
+
+        if (sub === 'rows') {
+          form = await formStart(session.priority, formName, instance.company, { messages });
+          const filter = parseFilter(filterRaw);
+          const fromRow = Number(arg('--from', '1')) || 1;
+          const got = await applySearchThenGetRows(form, filter, { fromRow });
+          dump('form-rows.json', { form: formName, ...got, messages });
+          await safeEnd(form);
+          const { searchCalls, ...rowsOut } = got;
+          return ok({
+            action: 'form.rows',
+            instanceId: instance.id,
+            form: formName,
+            searchCalls,
+            ...rowsOut,
+            messages,
+          });
+        }
+
         form = await openFilteredForm(session, instance, formName, filterRaw, messages);
 
         if (sub === 'start') {
@@ -394,13 +415,6 @@ async function cmdForm(sub) {
           dump('form-start.json', { form: formName, columns: cols, messages });
           await safeEnd(form);
           return ok({ action: 'form.start', instanceId: instance.id, form: formName, columns: cols, messages });
-        }
-
-        if (sub === 'rows') {
-          const got = await formGetRows(form, Number(arg('--from', '1')) || 1);
-          dump('form-rows.json', { form: formName, ...got, messages });
-          await safeEnd(form);
-          return ok({ action: 'form.rows', instanceId: instance.id, form: formName, ...got, messages });
         }
 
         if (sub === 'set' || sub === 'save') {
@@ -532,6 +546,7 @@ async function cmdProc(sub) {
 }
 
 async function main() {
+  setConfirmErrors(hasFlag('--confirm-errors'));
   const verb = (process.argv[2] || 'help').toLowerCase();
   if (verb === 'help' || verb === '-h' || verb === '--help') {
     const topic = (process.argv[3] || '').toLowerCase();

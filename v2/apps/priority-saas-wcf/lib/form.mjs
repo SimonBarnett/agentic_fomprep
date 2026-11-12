@@ -57,6 +57,21 @@ export async function formGetRows(form, fromRow = 1) {
   return rowsFromGetRows(rows, form?.name);
 }
 
+/**
+ * FR #396 / FR-014: optional one SDK search, then getRows (default from 1).
+ * Missing filter skips setSearchFilter (unfiltered read).
+ */
+export async function applySearchThenGetRows(form, filter, { fromRow = 1, getRows } = {}) {
+  let searchCalls = 0;
+  if (filter) {
+    await form.setSearchFilter(filter);
+    searchCalls += 1;
+  }
+  const fetch = getRows || formGetRows;
+  const got = await fetch(form, fromRow);
+  return { ...got, searchCalls };
+}
+
 export async function formSetFields(form, fields) {
   const entries = Object.entries(fields || {});
   for (const [field, value] of entries) {

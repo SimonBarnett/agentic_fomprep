@@ -1,0 +1,6 @@
+{
+  "name": "priority-service-desk-company-timezone-scheduled-reports",
+  "title": "Scheduled reports ran an hour off after upgrade until the company time zone was set",
+  "description": "After a version 26 upgrade, scheduled report emails seemed missing; they were arriving an hour late because the companies had no time zone. Support added a time zone to each company and the customer closed the call.",
+  "version": "1.0.0"
+}

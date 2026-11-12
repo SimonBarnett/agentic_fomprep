@@ -38,8 +38,33 @@ export function emit(obj, { exit = 0 } = {}) {
   return payload;
 }
 
+/** FR-010 / #392: retryable is true only for login_connect. No retry inside fail(). */
+export const FAIL_RETRY = Object.freeze({
+  login_connect: {
+    retryable: true,
+    hint: 'Pass probed tenant.wcf (…/wcf/service.svc) as login url; host-only URL appends /wcf/wcf/Service.svc.',
+  },
+  api_licence: {
+    retryable: false,
+    hint: 'Tick API License (USERSB.REST) on the OIDC user, or use a REST PAT + OData/MCP for dictionary reads (see SAAS_WCF_CLIENT.md Failure).',
+  },
+  token_expired: {
+    retryable: false,
+    hint: 'OIDC access_token expired; re-run priority-saas-oidc-login',
+  },
+});
+
+export function classifyFailRetry(reason) {
+  const row = FAIL_RETRY[String(reason || '')];
+  if (row) return { retryable: row.retryable === true, hint: row.hint };
+  return { retryable: false, hint: undefined };
+}
+
 export function fail(reason, extra = {}, exit = 2) {
-  return emit({ ok: false, reason, ...extra }, { exit });
+  const cls = classifyFailRetry(reason);
+  const payload = { ok: false, reason, ...extra, retryable: cls.retryable };
+  if (cls.hint && (payload.hint == null || payload.hint === '')) payload.hint = cls.hint;
+  return emit(payload, { exit });
 }
 
 export function ok(extra = {}) {

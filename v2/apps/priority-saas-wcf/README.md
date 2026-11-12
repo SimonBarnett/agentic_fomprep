@@ -162,7 +162,7 @@ node bin\priority-wcf.mjs interface map set --instance customer-saas-dev --name 
 ## CAST IRON
 
 - Never invent host, tenant, company DNAME, or WCF URL.
-- Never log or commit tokens / passwords / OTPs.
+- Never log or commit tokens / passwords / OTPs. Login error JSON redacts `Bearer …` and `access_token=` values (FR-044).
 - SaaS REST `formStart` 404 is not proof auth failed; use this Web SDK path.
 - OIDC MFA stays in `priority-saas-oidc-login`; this client only consumes the token.
 - OIDC user needs **API License** for WCF login. If login returns API License, tick REST on the user (approved env) or use PAT + OData/MCP for dictionary work.

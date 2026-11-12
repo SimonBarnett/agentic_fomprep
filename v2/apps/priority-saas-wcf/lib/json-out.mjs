@@ -17,7 +17,9 @@ export function redact(value) {
   if (typeof value === 'string') {
     if (/^eyJ[A-Za-z0-9_-]+\./.test(value)) return '<redacted-jwt>';
     if (value.length > 40 && /^[A-Za-z0-9._~+/-]+=*$/.test(value)) return '<redacted>';
-    return value;
+    let s = value.replace(/\bBearer\s+\S+/gi, 'Bearer <redacted>');
+    s = s.replace(/access_token\s*[:=]\s*\S+/gi, 'access_token=<redacted>');
+    return s;
   }
   if (Array.isArray(value)) return value.map(redact);
   if (typeof value === 'object') {

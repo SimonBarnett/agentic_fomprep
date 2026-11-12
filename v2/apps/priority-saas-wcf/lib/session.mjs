@@ -2,6 +2,7 @@ import { createRequire } from 'node:module';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { probeTenant } from './probe.mjs';
+import { redact } from './json-out.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const require = createRequire(path.join(__dirname, '..', 'package.json'));
@@ -116,7 +117,7 @@ export async function loginSession(instance, accessToken, opts = {}) {
     return {
       ok: false,
       reason: cls.reason,
-      message: msg,
+      message: redact(msg),
       hint: cls.hint,
       type: e?.type || null,
       code: e?.code || null,

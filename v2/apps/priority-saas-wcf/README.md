@@ -24,6 +24,7 @@ Past `expires_at` or `obtained_at`+`expires_in` is `token_expired` (`retryable: 
 
 The Web SDK `login({ accessToken })` sends that token as the WCF UsernameToken password.
 Login **url** is the tenant probe `wcf` value (`…/wcf/service.svc`), not the host alone.
+Successful probes cache `wcf` and `tabulaini` for 60 minutes in `%USERPROFILE%\.priority-agent\probe-cache.json` (no token).
 
 ## Allowlist-gated
 

@@ -1,7 +1,7 @@
 import { createRequire } from 'node:module';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { probeTenant } from './probe.mjs';
+import { probeTenant, probeTenantCached } from './probe.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const require = createRequire(path.join(__dirname, '..', 'package.json'));
@@ -91,7 +91,12 @@ function classifyLoginError(message) {
 export async function loginSession(instance, accessToken, opts = {}) {
   const probe =
     opts.probe ||
-    (await probeTenant(instance, { accessToken }));
+    (await probeTenantCached(instance, {
+      accessToken,
+      fetchImpl: opts.fetchImpl,
+      cachePath: opts.cachePath,
+      now: opts.now,
+    }));
   const iniRes = await resolveTabulaini(instance, accessToken, { probe });
   if (!iniRes.ok) return iniRes;
   if (!iniRes.tabulaini) {

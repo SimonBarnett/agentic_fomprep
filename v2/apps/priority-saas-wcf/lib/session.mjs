@@ -139,7 +139,19 @@ export async function loginSession(instance, accessToken, opts = {}) {
     probe: probe?.ok ? probe : iniRes.probe || null,
   };
 }
-export function messageHandler(bag, formRef) {
+let confirmErrors = false;
+
+/** FR #401 / FR-019: errorConfirm only when --confirm-errors (or setConfirmErrors(true)). */
+export function setConfirmErrors(value) {
+  confirmErrors = value === true;
+}
+
+export function getConfirmErrors() {
+  return confirmErrors === true;
+}
+
+export function messageHandler(bag, formRef, opts = {}) {
+  const allowErrorConfirm = opts.confirmErrors === true || (opts.confirmErrors !== false && confirmErrors);
   return (sr) => {
     try {
       bag.push({
@@ -164,7 +176,7 @@ export function messageHandler(bag, formRef) {
         /* ignore */
       }
     }
-    if (sr?.type === 'error' && form?.errorConfirm) {
+    if (sr?.type === 'error' && form?.errorConfirm && allowErrorConfirm) {
       try {
         form.errorConfirm();
       } catch {

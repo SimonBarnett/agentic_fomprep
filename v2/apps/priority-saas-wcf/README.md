@@ -91,6 +91,8 @@ node bin\priority-wcf.mjs form set --instance customer-saas-dev --request C:\tem
 `help` prints the top-level summary. `help <verb>` prints one screen for
 `form`, `prepare`, `proc`, `table`, `interface`, or `report` (unknown topic exits 2).
 
+`--confirm-errors` auto-dismisses SDK error dialogs. By default `messageHandler` does not call `errorConfirm` (warnings and info still auto-confirm). Proc walk is unchanged.
+
 `--request <path>` reads UTF-8 JSON. Keys `fields`, `filter`, `inputs`, `name`, `form`, `subform`
 override the matching CLI flags when present. Invalid JSON exits 2 with `reason: request_invalid`
 before login. Do not copy request files into the repo.

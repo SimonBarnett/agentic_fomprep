@@ -28,6 +28,8 @@ import { loadProcTextFile, writeProcTextViaExecForm } from '../lib/proc-text.mjs
 import { loadInputsFile } from '../lib/inputs-file.mjs';
 import { resolveWhoami } from '../lib/whoami.mjs';
 import { listCompanies } from '../lib/companies.mjs';
+import { addTableColumn, instanceHasSqlProfile } from '../lib/table.mjs';
+import { checkDictionaryTitle } from '../lib/title-check.mjs';
 import { emit, fail, ok, redact } from '../lib/json-out.mjs';
 import { planDryRun } from '../lib/dry-run.mjs';
 import {
@@ -77,7 +79,7 @@ Object kinds: table, form, report, procedure, interface.
   form start|rows|set|save|subform|columns|new|delete|action  (see: help form)
   prepare form|procedure|report --instance <id> --name <ENAME>  (see: help prepare)
   proc start|continue --instance <id>  (see: help proc)
-  table   (see: help table)
+  table column add --instance <id> --name <TNAME> --column <COL> --type <T> --title <title>  (see: help table)
   interface (see: help interface)
   report run --instance <id> --name <ENAME>  (see: help report)
   Any verb: --request <path>  UTF-8 JSON; keys fields|filter|inputs|name|form|subform override flags
@@ -147,9 +149,10 @@ proc text set writes --file through the EXEC form (allowLive). Does not prepare.
 
   table exists --instance <id> --name <TNAME>
   table columns --instance <id> --name <TNAME>
+  table column add --instance <id> --name <TNAME> --column <COL> --type <T> --title <title>
   table create  --instance <id> --name <TNAME>  (refuses without SQL profile)
 
-Dictionary reads only until create is allowlisted. Never invent host/tenant.
+Column add needs allowLive and sqlProfile. Title longer than 20 is title_too_long before login.
 `,
   interface: `help interface
 
@@ -793,6 +796,47 @@ async function cmdReport(sub) {
   );
 }
 
+async function cmdTable(sub) {
+  if (sub !== 'column') {
+    return fail('table_sub_required', { need: 'column add', got: sub });
+  }
+  const op = (process.argv[4] || '').toLowerCase();
+  if (op !== 'add') {
+    return fail('table_column_sub_required', { need: 'add', got: op });
+  }
+  const title = reqString('title', '--title');
+  const titleCheck = checkDictionaryTitle(title);
+  if (!titleCheck.ok) return fail(titleCheck.reason, titleCheck, 2);
+  const name = reqString('name', '--name');
+  const column = reqString('column', '--column');
+  const type = reqString('type', '--type');
+  if (!name) return fail('name_required', { need: '--name <TNAME>' });
+  if (!column) return fail('column_required', { need: '--column <COL>' });
+  if (!type) return fail('type_required', { need: '--type <T>' });
+  const picked = await resolveInstance();
+  if (!picked.ok) return fail(picked.reason, picked);
+  if (!instanceHasSqlProfile(picked.instance)) {
+    return fail('table_ddl_needs_sql', { instanceId: picked.instance.id, need: 'sqlProfile' }, 2);
+  }
+  return withSession(
+    async ({ instance, session }) => {
+      const result = await addTableColumn(session, instance, {
+        table: name,
+        column,
+        type,
+        title,
+      });
+      if (!result.ok) return fail(result.reason, result);
+      return ok({
+        action: 'table.column.add',
+        instanceId: instance.id,
+        ...result,
+      });
+    },
+    { write: true },
+  );
+}
+
 async function main() {
   setConfirmErrors(hasFlag('--confirm-errors'));
   const verb = (process.argv[2] || 'help').toLowerCase();
@@ -856,9 +900,14 @@ async function main() {
     if (!sub) return fail('report_sub_required', { need: 'run' });
     return cmdReport(sub);
   }
+  if (verb === 'table') {
+    const sub = (process.argv[3] || '').toLowerCase();
+    if (!sub) return fail('table_sub_required', { need: 'column' });
+    return cmdTable(sub);
+  }
   return fail('unknown_verb', {
     verb,
-    hint: 'probe|session|whoami|companies|form|prepare|proc|report|help',
+    hint: 'probe|session|whoami|companies|form|prepare|proc|report|table|help',
   });
 }
 

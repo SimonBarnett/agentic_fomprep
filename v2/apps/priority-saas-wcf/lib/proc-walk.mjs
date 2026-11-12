@@ -3,6 +3,15 @@
  * Used by prepare (activateStart) and proc (procStart).
  */
 
+export function collectStepUrls(steps) {
+  const urls = [];
+  for (const s of steps || []) {
+    const u = displayUrlOf(s);
+    if (u) urls.push(u);
+  }
+  return urls;
+}
+
 export function displayUrlOf(step) {
   const urls = step && (step.Urls || step.urls);
   if (!urls) return '';
@@ -149,6 +158,7 @@ export async function walkProcSteps(firstStep, opts = {}) {
             errors,
             lastType: 'inputOptions',
             stepCount: n,
+            urls: collectStepUrls(steps),
           };
         }
         sel = (selected || optionList[0] || {}).field;
@@ -202,5 +212,6 @@ export async function walkProcSteps(firstStep, opts = {}) {
     errors,
     lastType: step ? step.type : null,
     stepCount: n,
+    urls: collectStepUrls(steps),
   };
 }

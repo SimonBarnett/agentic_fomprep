@@ -78,7 +78,7 @@ Object kinds: table, form, report, procedure, interface.
   proc start|continue --instance <id>  (see: help proc)
   table   (see: help table)
   interface (see: help interface)
-  report  (see: help report)
+  report run --instance <id> --name <ENAME>  (see: help report)
   Any verb: --request <path>  UTF-8 JSON; keys fields|filter|inputs|name|form|subform override flags
   --dry-run               resolve instance + verb; print instanceId, verb, write; no login
   --confirm-errors        auto-dismiss SDK error dialogs (default: leave them for the agent)
@@ -703,6 +703,50 @@ async function cmdProc(sub) {
   );
 }
 
+async function cmdReport(sub) {
+  if (sub !== 'run') {
+    return fail('report_sub_required', { need: 'run', got: sub });
+  }
+  const name = reqString('name', '--name') || arg('--proc');
+  if (!name) return fail('name_required', { need: '--name <ENAME> or request.name' });
+  return withSession(
+    async ({ instance, session, dump, tokenSource }) => {
+      const result = await runProcStart(session, instance, name, {
+        ptype: 'R',
+        nameHint: arg('--hint', ''),
+        inputValues: procInputValues,
+        onNeedsInput: (snap) => dump('needs-input.json', snap),
+      });
+      dump('report.json', result);
+      if (result.reason === 'needs_input') {
+        dump('needs-input.json', result.snapshot || { options: result.options });
+        return fail('needs_input', {
+          action: 'report.run',
+          instanceId: instance.id,
+          options: result.options,
+          urls: result.urls || [],
+        });
+      }
+      if (!result.ok) {
+        return fail(result.reason || 'report_failed', {
+          action: 'report.run',
+          instanceId: instance.id,
+          tokenSource,
+          ...result,
+        });
+      }
+      return ok({
+        instanceId: instance.id,
+        tokenSource,
+        ...result,
+        action: 'report.run',
+        ptype: 'R',
+      });
+    },
+    { write: true },
+  );
+}
+
 async function main() {
   setConfirmErrors(hasFlag('--confirm-errors'));
   const verb = (process.argv[2] || 'help').toLowerCase();
@@ -761,9 +805,14 @@ async function main() {
     if (!sub) return fail('proc_sub_required', { need: 'start|continue' });
     return cmdProc(sub);
   }
+  if (verb === 'report') {
+    const sub = (process.argv[3] || '').toLowerCase();
+    if (!sub) return fail('report_sub_required', { need: 'run' });
+    return cmdReport(sub);
+  }
   return fail('unknown_verb', {
     verb,
-    hint: 'probe|session|whoami|companies|form|prepare|proc|help',
+    hint: 'probe|session|whoami|companies|form|prepare|proc|report|help',
   });
 }
 

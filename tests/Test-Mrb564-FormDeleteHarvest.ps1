@@ -11,8 +11,8 @@ $idx = $text.IndexOf('## Harvested lessons')
 if ($idx -lt 0) { $idx = 0 }
 $section = $text.Substring($idx)
 $needle = 'Classify form.delete as verbIsWrite so --dry-run never looks like a read; empty filter matches must not call deleteRow.'
-$lines = $section -split "`n" | Where-Object { $_ -like ('*' + $needle + '*') }
-if (-not $lines) { Write-Error 'harvest-agent-skills missing form.delete verbIsWrite lesson' }
+$lines = @($section -split "`n" | Where-Object { $_ -like ('*' + $needle + '*') })
+if ($lines.Count -lt 1) { Write-Error 'harvest-agent-skills missing form.delete verbIsWrite lesson' }
 $line = ([string]$lines[0]).TrimStart()
 if (-not $line.StartsWith('- ')) { Write-Error ("orphan/splice: {0}" -f $line) }
 Write-Host 'PASS Test-Mrb564-FormDeleteHarvest'

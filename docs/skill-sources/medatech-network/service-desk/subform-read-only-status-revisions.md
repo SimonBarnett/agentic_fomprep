@@ -2,7 +2,7 @@
 
 Issue type: a user can open a subform (for example a description text) on a document but cannot type or change anything there.
 
-Known: on 2026-09-08 a customer reported a complaint description subform could be opened but not typed in. Support asked them to make sure the document was in a status that allows revisions. The customer replied that allowing revisions did enable editing the subform. Form and document names are not stored.
+Known: on 2026-09-08 a customer reported a complaint description subform could be opened but not typed in. Support asked them to make sure the document was in a status that allows revisions. The customer replied that allowing revisions did enable editing the subform. Related explanation, SC262461 (2026-08-28): on an engineering change order, support explained that subforms cannot be edited when the ECO is in a status not ticked for "Allow Revisions" on the BPM, such as Cancelled and Authorised (explanation only; no follow-up recorded). Form and document names are not stored.
 
 This is not a privilege fault or a broken form. Do not re-prepare the form first.
 

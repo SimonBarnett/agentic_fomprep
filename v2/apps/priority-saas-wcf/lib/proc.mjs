@@ -54,6 +54,7 @@ export async function runProcStart(session, instance, ename, opts = {}) {
       lastType: walk.lastType,
       errors: walk.errors,
       walkSteps: walk.steps,
+      urls: walk.urls || [],
     };
   }
   const blockers = walk.errors.filter((e) => e.severity === 'Blocker');
@@ -67,5 +68,6 @@ export async function runProcStart(session, instance, ename, opts = {}) {
     lastType: walk.lastType,
     errors: walk.errors,
     walkSteps: walk.steps,
+    urls: walk.urls || [],
   };
 }

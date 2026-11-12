@@ -9,14 +9,14 @@ namespace PriorityAgent;
 /// </summary>
 public static class LastUserFile
 {
-    public const string EnvPath = \"PRIORITY_AGENT_LAST_USER_FILE\";
+    public const string EnvPath = "PRIORITY_AGENT_LAST_USER_FILE";
 
     public static string DefaultPath()
     {
         string profile = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
         if (string.IsNullOrWhiteSpace(profile))
-            profile = Environment.GetEnvironmentVariable(\"USERPROFILE\") ?? \"\";
-        return Path.Combine(profile, \".priority-agent\", \"last-user.json\");
+            profile = Environment.GetEnvironmentVariable("USERPROFILE") ?? "";
+        return Path.Combine(profile, ".priority-agent", "last-user.json");
     }
 
     public static string ResolvePath()
@@ -29,7 +29,7 @@ public static class LastUserFile
 
     public static string? ReadUserLogin(string? instanceId, string? path = null)
     {
-        string id = (instanceId ?? \"\").Trim();
+        string id = (instanceId ?? "").Trim();
         if (id.Length == 0)
             return null;
         string file = string.IsNullOrWhiteSpace(path) ? ResolvePath() : path.Trim();
@@ -42,9 +42,9 @@ public static class LastUserFile
                 return null;
             if (!doc.RootElement.TryGetProperty(id, out var row) || row.ValueKind != JsonValueKind.Object)
                 return null;
-            if (!row.TryGetProperty(\"userLogin\", out var loginEl) || loginEl.ValueKind != JsonValueKind.String)
+            if (!row.TryGetProperty("userLogin", out var loginEl) || loginEl.ValueKind != JsonValueKind.String)
                 return null;
-            string login = (loginEl.GetString() ?? \"\").Trim();
+            string login = (loginEl.GetString() ?? "").Trim();
             if (!BobHours.IsPriorityUserLogin(login))
                 return null;
             return login;
@@ -57,10 +57,10 @@ public static class LastUserFile
 
     public static string FormatPrompt(string? savedLogin)
     {
-        string saved = (savedLogin ?? \"\").Trim();
+        string saved = (savedLogin ?? "").Trim();
         if (saved.Length > 0 && BobHours.IsPriorityUserLogin(saved))
-            return \"Priority USERLOGIN [\" + saved + \"]: \";
-        return \"Priority USERLOGIN for this session: \";
+            return "Priority USERLOGIN [" + saved + "]: ";
+        return "Priority USERLOGIN for this session: ";
     }
 
     /// <summary>
@@ -68,17 +68,18 @@ public static class LastUserFile
     /// </summary>
     public static string? ChooseRequestedUser(string? hoursUserArg, string? typedAnswer, string? savedLogin)
     {
-        string flag = (hoursUserArg ?? \"\").Trim();
+        string flag = (hoursUserArg ?? "").Trim();
         if (flag.Length > 0)
             return flag;
-        string typed = (typedAnswer ?? \"\").Trim();
+        string typed = (typedAnswer ?? "").Trim();
         if (typed.Length > 0)
             return typed;
-        string saved = (savedLogin ?? \"\").Trim();
+        string saved = (savedLogin ?? "").Trim();
         if (saved.Length > 0 && BobHours.IsPriorityUserLogin(saved))
             return saved;
         return null;
     }
+
 
     /// <summary>
     /// FR #386 / FR-004: resolve USERLOGIN for launch without calling ReadLine.
@@ -92,7 +93,7 @@ public static class LastUserFile
         string? savedLogin,
         string? typedAnswer)
     {
-        string flag = (hoursUserArg ?? \"\").Trim();
+        string flag = (hoursUserArg ?? "").Trim();
         if (flag.Length > 0)
             return flag;
         if (inputRedirected)
@@ -110,16 +111,16 @@ public static class LastUserFile
     /// </summary>
     public static FlagWhoamiCheck CheckFlagAgainstWhoami(string? hoursUser, string? whoamiLogin)
     {
-        string flag = (hoursUser ?? \"\").Trim();
-        string who = (whoamiLogin ?? \"\").Trim();
+        string flag = (hoursUser ?? "").Trim();
+        string who = (whoamiLogin ?? "").Trim();
         if (flag.Length == 0 || who.Length == 0)
-            return new(true, 0, \"no hours-user/whoami pair\");
+            return new(true, 0, "no hours-user/whoami pair");
         if (string.Equals(flag, who, StringComparison.Ordinal))
-            return new(true, 0, \"hours-user matches whoami\");
+            return new(true, 0, "hours-user matches whoami");
         return new(
             false,
             2,
-            \"--hours-user \" + flag + \" disagrees with whoami \" + who);
+            "--hours-user " + flag + " disagrees with whoami " + who);
     }
 
     public static void NoteGrokStart() => GrokStartCount++;

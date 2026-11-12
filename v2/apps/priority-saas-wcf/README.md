@@ -66,6 +66,7 @@ node bin\priority-wcf.mjs session --instance customer-saas-dev
 node bin\priority-wcf.mjs whoami  --instance customer-saas-dev
 node bin\priority-wcf.mjs session --instance customer-saas-dev --form CUSTOMERS
 node bin\priority-wcf.mjs form start --instance customer-saas-dev --form CUSTOMERS
+node bin\priority-wcf.mjs form columns --instance customer-saas-dev --form CUSTOMERS
 node bin\priority-wcf.mjs form rows  --instance customer-saas-dev --form CUSTOMERS
 node bin\priority-wcf.mjs form set   --instance customer-saas-dev --form CUSTOMERS --filter "{\"field\":\"CUSTNAME\",\"fromval\":\"X\"}" --fields "{\"EMAIL\":\"a@b.c\"}"
 node bin\priority-wcf.mjs form save  --instance customer-saas-dev --form CUSTOMERS --filter "..." --fields "{...}"

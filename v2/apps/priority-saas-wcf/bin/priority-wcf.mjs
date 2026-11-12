@@ -11,7 +11,14 @@ import { readAllowlist, selectInstance, refuseLiveWrite, defaultInstancesPath } 
 import { loadAccessToken } from '../lib/token.mjs';
 import { probeTenant } from '../lib/probe.mjs';
 import { loginSession, logout, safeEnd } from '../lib/session.mjs';
-import { formStart, formGetRows, formSetFields, formSave, formStartSubForm } from '../lib/form.mjs';
+import {
+  formStart,
+  formGetRows,
+  formSetFields,
+  formSave,
+  formStartSubForm,
+  formColumnsMeta,
+} from '../lib/form.mjs';
 import { runPrepare } from '../lib/prepare.mjs';
 import { runProcStart } from '../lib/proc.mjs';
 import { resolveWhoami } from '../lib/whoami.mjs';
@@ -54,6 +61,7 @@ function usage() {
   session --instance <id> [--form <ENAME>]
   whoami  --instance <id>
   form start   --instance <id> --form <ENAME>
+  form columns --instance <id> --form <ENAME>
   form rows    --instance <id> --form <ENAME> [--from <n>]
   form set     --instance <id> --form <ENAME> --fields '{"COL":"v"}' [--filter '{"field":"X","fromval":"y"}']
   form save    --instance <id> --form <ENAME> --fields '{...}' [--filter ...]
@@ -262,6 +270,21 @@ async function cmdForm(sub) {
           });
         }
 
+        // FR #395: columns from form.columns only — no getRows / no filter.
+        if (sub === 'columns') {
+          form = await formStart(session.priority, formName, instance.company, { messages });
+          const columns = formColumnsMeta(form);
+          dump('form-columns.json', { form: formName, columns, messages });
+          await safeEnd(form);
+          return ok({
+            action: 'form.columns',
+            instanceId: instance.id,
+            form: formName,
+            columns,
+            messages,
+          });
+        }
+
         const filterRaw = reqRawJson('filter', '--filter');
         form = await openFilteredForm(session, instance, formName, filterRaw, messages);
 
@@ -424,7 +447,7 @@ async function main() {
   if (verb === 'whoami') return cmdWhoami();
   if (verb === 'form') {
     const sub = (process.argv[3] || '').toLowerCase();
-    if (!sub) return fail('form_sub_required', { need: 'start|rows|set|save|subform' });
+    if (!sub) return fail('form_sub_required', { need: 'start|columns|rows|set|save|subform' });
     return cmdForm(sub);
   }
   if (verb === 'prepare') {

@@ -1,0 +1,6 @@
+{
+  "name": "priority-service-desk-wrong-url-error-404",
+  "title": "Error 404 at login was the user using the wrong URL",
+  "description": "Some users got an Error 404 when logging in. The supplier said this is the message for the wrong URL. The affected user had a different URL and logged in once she used the correct one.",
+  "version": "1.0.0"
+}

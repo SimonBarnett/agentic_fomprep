@@ -1,0 +1,6 @@
+{
+  "name": "priority-service-desk-ssl-acme-renewal-firewall",
+  "title": "Automatic SSL renewal failed because the firewall lockdown blocked the ACME check",
+  "description": "An automatic (ACME) certificate renewal on a hosted web server failed. The scheduled renewal task had stale Windows credentials, and after that was fixed the ACME port 80 check timed out because of the IP lockdown. Network support let the renewal through, renewed the certificate and locked the server down again.",
+  "version": "1.0.0"
+}

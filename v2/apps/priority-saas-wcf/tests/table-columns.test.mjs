@@ -71,3 +71,33 @@ test('help table lists columns', () => {
 test('verbIsWrite: table.columns is not a write', () => {
   assert.equal(verbIsWrite('table.columns'), false);
 });
+
+test('MRB 492: TNAME apostrophe is doubled in $filter; blank CNAME dropped', async () => {
+  let seen = '';
+  const fetchImpl = async (url) => {
+    seen = String(url);
+    return {
+      ok: true,
+      status: 200,
+      text: async () =>
+        JSON.stringify({
+          value: [{ CNAME: '  ', CTYPE: 'CHAR', TITLE: 'skip' }, { CNAME: 'OK', CTYPE: 'CHAR', TITLE: 'ok' }],
+        }),
+    };
+  };
+  const r = await fetchTableColumns(instance, "O'BRIEN", { fetchImpl, accessToken: 'FAKE_odata_token' });
+  assert.match(seen, /\$filter=TNAME%20eq%20'O''BRIEN'/);
+  assert.equal(r.ok, true);
+  assert.equal(r.columns.length, 1);
+  assert.equal(r.columns[0].name, 'OK');
+});
+
+test('MRB 492: missing name and missing auth do not exist', async () => {
+  const missing = await fetchTableColumns(instance, '  ', { accessToken: 'FAKE_odata_token' });
+  assert.equal(missing.ok, false);
+  assert.equal(missing.reason, 'name_required');
+  assert.equal(missing.exists, false);
+  const noAuth = await fetchTableColumns(instance, 'CUSTOMERS', {});
+  assert.equal(noAuth.ok, false);
+  assert.equal(noAuth.reason, 'no_odata_auth');
+});

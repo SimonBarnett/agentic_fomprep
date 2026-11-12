@@ -16,7 +16,7 @@ Define Input for Task alone did not fix it here. The reports were running, late,
 
 ## Verification
 
-Proven: reports were arriving, an hour off, and the customer closed the call after the time zone was set (SC263125).
+Proven: reports were arriving, an hour off, and the customer closed the call after the time zone was set (SC263125). Second example: SC262659 (2026-09-01): a customer reported Priority time stamps were out; support found some companies had no time zone in the Companies form and set them; the customer confirmed they all had a time zone and asked to close the call.
 
 Not proven: an explicit post-change arrival check, and whether the date format was changed.
 

@@ -99,6 +99,7 @@ export async function walkProcSteps(firstStep, opts = {}) {
   let ended = false;
   let n = 0;
   let appliedInputValues = false;
+  let appliedChosenOption = false;
 
   while (step && Date.now() < deadline && n < maxSteps) {
     n += 1;
@@ -128,7 +129,13 @@ export async function walkProcSteps(firstStep, opts = {}) {
     }
     if (type === 'inputOptions') {
       const optionList = (step.input && step.input.Options) || [];
-      const sel = (optionList.find((o) => o.selected) || optionList[0] || {}).field;
+      let sel;
+      if (!appliedChosenOption && opts.chosenOption) {
+        sel = String(opts.chosenOption);
+        appliedChosenOption = true;
+      } else {
+        sel = (optionList.find((o) => o.selected) || optionList[0] || {}).field;
+      }
       step = await proc.inputOptions(1, sel);
       continue;
     }

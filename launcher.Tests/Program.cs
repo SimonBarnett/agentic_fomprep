@@ -18,6 +18,11 @@ var checks = new List<(string Name, Action Run)>
     ("AI root prefers existing C:\\AI over later drives", TestAiRootPrefersExistingC),
     ("AI root skips missing D: and creates on first ready drive", TestAiRootCreatesOnFirstReady),
     ("AI root search lists AI and repos across ready drives", TestAiRootBuildSearchRoots),
+    ("saved MEDATECH empty answer binds MEDATECH; prompt has [MEDATECH] not OS user", TestSavedLoginEmptyAnswer),
+    ("--hours-user OTHER wins over saved MEDATECH", TestHoursUserWinsOverSaved),
+    ("MRB-434: space login and access_token row are not suggested", TestInvalidSavedLoginIgnored),
+    ("FR-387: --hours-user OTHERUSER vs whoami MEDATECH exits 2 and does not start grok", TestHoursUserDisagreesWithWhoami),
+    ("MRB-438: matching --hours-user continues; missing whoami does not block", TestHoursUserMatchesOrAbsentWhoami),
     ("FR-004 redirected stdin plus saved login binds that login", TestRedirectedSavedLoginBinds),
     ("FR-004 redirected stdin and no saved login exits unavailable", TestRedirectedNoSavedUnavailable),
 };
@@ -271,6 +276,107 @@ static void TestAiRootBuildSearchRoots()
         "must include existing repos roots");
     Assert(!roots.Any(r => r.StartsWith(@"D:\", StringComparison.OrdinalIgnoreCase)),
         "must not invent paths on drives that are not ready");
+}
+
+static void TestSavedLoginEmptyAnswer()
+{
+    string root = NewTemp();
+    string? previous = Environment.GetEnvironmentVariable(LastUserFile.EnvPath);
+    try
+    {
+        string path = Path.Combine(root, "last-user.json");
+        File.WriteAllText(path,
+            """{"saas1":{"userLogin":"MEDATECH","company":"CO","identifiedAt":"2026-11-12T00:00:00Z","source":"whoami"}}""");
+        Environment.SetEnvironmentVariable(LastUserFile.EnvPath, path);
+        string? saved = LastUserFile.ReadUserLogin("saas1");
+        Assert(saved == "MEDATECH", "saved login must be MEDATECH");
+        string prompt = LastUserFile.FormatPrompt(saved);
+        Assert(prompt.Contains("[MEDATECH]", StringComparison.Ordinal), prompt);
+        string os = Environment.UserName ?? "";
+        if (!os.Equals("MEDATECH", StringComparison.OrdinalIgnoreCase))
+            Assert(!prompt.Contains(os, StringComparison.OrdinalIgnoreCase), "prompt must not contain OS user " + os);
+        string? requested = LastUserFile.ChooseRequestedUser(null, "", saved);
+        var bound = BobHours.BindSessionOwner(null, requested);
+        Assert(bound.Ok && bound.UserLogin == "MEDATECH", bound.Detail + "/" + bound.UserLogin);
+    }
+    finally
+    {
+        Environment.SetEnvironmentVariable(LastUserFile.EnvPath, previous);
+        DeleteTempDirectory(root);
+    }
+}
+
+static void TestHoursUserWinsOverSaved()
+{
+    string? requested = LastUserFile.ChooseRequestedUser("OTHER", "", "MEDATECH");
+    Assert(requested == "OTHER", "flag must win, got " + requested);
+    var bound = BobHours.BindSessionOwner(null, requested);
+    Assert(bound.Ok && bound.UserLogin == "OTHER", bound.Detail);
+}
+
+static void TestInvalidSavedLoginIgnored()
+{
+    string root = NewTemp();
+    string? previous = Environment.GetEnvironmentVariable(LastUserFile.EnvPath);
+    try
+    {
+        string path = Path.Combine(root, "last-user.json");
+        File.WriteAllText(path,
+            """{"saas1":{"userLogin":"bad login","access_token":"nope"},"saas2":{"userLogin":"OKUSER"}}""");
+        Environment.SetEnvironmentVariable(LastUserFile.EnvPath, path);
+        Assert(LastUserFile.ReadUserLogin("saas1") == null, "space login must not be suggested");
+        string prompt = LastUserFile.FormatPrompt(LastUserFile.ReadUserLogin("saas1"));
+        Assert(!prompt.Contains("[", StringComparison.Ordinal), prompt);
+        Assert(LastUserFile.ReadUserLogin("saas2") == "OKUSER", "valid sibling key must still read");
+        Assert(LastUserFile.ChooseRequestedUser(null, "", LastUserFile.ReadUserLogin("saas1")) == null,
+            "empty Enter must not bind a refused login");
+    }
+    finally
+    {
+        Environment.SetEnvironmentVariable(LastUserFile.EnvPath, previous);
+        DeleteTempDirectory(root);
+    }
+}
+
+static void TestHoursUserDisagreesWithWhoami()
+{
+    string root = NewTemp();
+    string? previous = Environment.GetEnvironmentVariable(LastUserFile.EnvPath);
+    try
+    {
+        string path = Path.Combine(root, "last-user.json");
+        string original = """{"saas1":{"userLogin":"MEDATECH","company":"CO","identifiedAt":"2026-11-12T00:00:00Z","source":"whoami"}}""";
+        File.WriteAllText(path, original);
+        Environment.SetEnvironmentVariable(LastUserFile.EnvPath, path);
+        string? whoami = LastUserFile.ReadUserLogin("saas1");
+        Assert(whoami == "MEDATECH", "whoami fixture must be MEDATECH");
+        LastUserFile.GrokStartCount = 0;
+        var check = LastUserFile.CheckFlagAgainstWhoami("OTHERUSER", whoami);
+        Assert(!check.Ok && check.ExitCode == 2, check.Detail);
+        Assert(check.Detail.Contains("OTHERUSER", StringComparison.Ordinal)
+            && check.Detail.Contains("MEDATECH", StringComparison.Ordinal), check.Detail);
+        if (check.Ok)
+            LastUserFile.NoteGrokStart();
+        Assert(LastUserFile.GrokStartCount == 0, "grok start count must stay 0");
+        Assert(File.ReadAllText(path) == original, "last-user.json must still contain MEDATECH");
+        Assert(File.ReadAllText(path).Contains("MEDATECH", StringComparison.Ordinal), "MEDATECH must remain");
+        Assert(!File.ReadAllText(path).Contains("OTHERUSER", StringComparison.Ordinal), "flag must not be written");
+    }
+    finally
+    {
+        Environment.SetEnvironmentVariable(LastUserFile.EnvPath, previous);
+        DeleteTempDirectory(root);
+    }
+}
+
+static void TestHoursUserMatchesOrAbsentWhoami()
+{
+    var match = LastUserFile.CheckFlagAgainstWhoami("MEDATECH", "MEDATECH");
+    Assert(match.Ok && match.ExitCode == 0, match.Detail);
+    var absent = LastUserFile.CheckFlagAgainstWhoami("OTHERUSER", null);
+    Assert(absent.Ok && absent.ExitCode == 0, "no whoami pair must not exit 2: " + absent.Detail);
+    var noFlag = LastUserFile.CheckFlagAgainstWhoami(null, "MEDATECH");
+    Assert(noFlag.Ok, noFlag.Detail);
 }
 
 static void TestRedirectedSavedLoginBinds()

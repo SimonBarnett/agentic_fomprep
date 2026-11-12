@@ -72,12 +72,16 @@ with the right context.
    the Priority USERLOGIN in `on_behalf_of`, the expected customer and project, `status` `closed`,
    and a real start/end.
    - `?user=` and `on_behalf_of` are the USERLOGIN stored in that session's `identity.json`
-     at launch (`--hours-user`, or a prompt when a terminal is attached). When stdin is
-     redirected (FR #386), a saved row in `%USERPROFILE%\.priority-agent\last-user.json`
-     for the selected WCF instance is bound instead of prompting; with no saved login and
-     no `--hours-user` the launcher exits 2 (`Priority USERLOGIN unavailable`) and never
-     blocks on ReadLine. The launcher does not read the OS account name or the connections
-     file. A later launch for someone else does not rewrite an existing session.
+     at launch (--hours-user, or a prompt when a terminal is attached). When a last-user
+     row exists for the selected WCF instance (%USERPROFILE%\.priority-agent\last-user.json),
+     the interactive prompt is Priority USERLOGIN [<saved>]: and Enter binds that login.
+     When stdin is redirected (FR #386), that saved row is bound instead of prompting; with
+     no saved login and no --hours-user the launcher exits 2 (Priority USERLOGIN unavailable)
+     and never blocks on ReadLine. --hours-user still wins. If --hours-user is set and
+     differs from the whoami login, the launcher prints both logins and exits 2 without
+     starting Grok and without rewriting last-user.json (FR #387). The launcher does
+     not read the OS account name, a shared environment default, or the connections file.
+     A later launch for someone else does not rewrite an existing session.
    - The returned id is persisted in the session `hours-entry.json`. Tests set
      `PRIORITY_AGENT_HOURS_JSON` to a list fixture. When that variable is set, the check does
      not contact the network.

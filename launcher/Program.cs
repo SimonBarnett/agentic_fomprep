@@ -282,10 +282,21 @@ static class Program
         Directory.CreateDirectory(sessionDir);
         string instanceId = wcfConfig.Instances.Count > 0 ? wcfConfig.Instances[0].Id : "";
         string? savedLogin = LastUserFile.ReadUserLogin(instanceId);
+        string? whoamiLogin = Environment.GetEnvironmentVariable("PRIORITY_AGENT_TEST_WHOAMI");
+        if (string.IsNullOrWhiteSpace(whoamiLogin))
+            whoamiLogin = savedLogin;
+        var flagWhoami = LastUserFile.CheckFlagAgainstWhoami(HoursUserArg, whoamiLogin);
+        if (!flagWhoami.Ok)
+        {
+            Err(flagWhoami.Detail + " Agent not started.");
+            Pause();
+            return flagWhoami.ExitCode;
+        }
         string? typedAnswer = null;
         // FR-004: never ReadLine when stdin is redirected; bind saved login or fail unavailable.
+        // FR-003: interactive prompt offers [saved]; empty Enter binds saved.
         if (string.IsNullOrWhiteSpace(HoursUserArg) && !Console.IsInputRedirected)
-            typedAnswer = Ask("Priority USERLOGIN for this session: ");
+            typedAnswer = Ask(LastUserFile.FormatPrompt(savedLogin));
         string? requestedUser = LastUserFile.ResolveLaunchUser(
             HoursUserArg, Console.IsInputRedirected, savedLogin, typedAnswer);
         var sessionOwner = BobHours.BindSessionOwner(ReadSessionOwner(sessionDir), requestedUser);
@@ -409,6 +420,7 @@ static class Program
     {
         var psi = new ProcessStartInfo(grok) { UseShellExecute = false, WorkingDirectory = workDir };
         foreach (var a in gargs) psi.ArgumentList.Add(a);
+        LastUserFile.NoteGrokStart();
         using var p = Process.Start(psi)!;
         p.WaitForExit();
         Log($"grok exit {p.ExitCode}");

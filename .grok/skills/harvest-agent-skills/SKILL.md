@@ -201,3 +201,4 @@ books use `harvest-agent-skills` pointing at their home.)
 - A BPM status missing from the flow chart that already exists on create is often deleted; restore it from the deleted-status list via the + icon; do not insert in tables.
 - Stacked service-desk harvests conflict on PRIORITY-AGENT-SKILLS and skill-harvest-log; keep every sibling skill name when folding.
 - FIX for a CONFLICTING polish PR: merge origin/main onto the assigned head (fr-N), keep both the original verb and later form verbs, push HEAD:assigned-ref, DONE FIX with the assigned PR URL.
+- Service-desk harvest leaflets: pin grok=catalog SKILL.md, SC ticket, Stop unverified requester, and forbid DB MFA edits; CAT-T59 on untouched files is not a FAIL.

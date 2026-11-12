@@ -45,12 +45,28 @@ export function typeSeverity(typeOrMsgType, messagetype) {
   return 'Warning';
 }
 
-function fillNameHint(fields, nameHint) {
+function valueFromInputMap(inputValues, field) {
+  if (!inputValues || typeof inputValues !== 'object') return undefined;
+  const want = String(field || '');
+  if (Object.prototype.hasOwnProperty.call(inputValues, want)) {
+    return String(inputValues[want]);
+  }
+  const up = want.toUpperCase();
+  for (const [k, v] of Object.entries(inputValues)) {
+    if (String(k).toUpperCase() === up) return String(v);
+  }
+  return undefined;
+}
+
+function fillNameHint(fields, nameHint, inputValues) {
   return (fields || []).map((f) => {
     const title = String(f.title || '');
     const key = String(f.field || '').toUpperCase();
     let value = String(f.value || '');
-    if (
+    const fromFile = valueFromInputMap(inputValues, f.field);
+    if (fromFile !== undefined) {
+      value = fromFile;
+    } else if (
       nameHint &&
       (key === 'PAR' ||
         key === 'FNM' ||
@@ -82,6 +98,7 @@ export async function walkProcSteps(firstStep, opts = {}) {
   let step = firstStep;
   let ended = false;
   let n = 0;
+  let appliedInputValues = false;
 
   while (step && Date.now() < deadline && n < maxSteps) {
     n += 1;
@@ -132,7 +149,9 @@ export async function walkProcSteps(firstStep, opts = {}) {
     }
     if (type === 'inputFields') {
       const fields = (step.input && step.input.EditField) || [];
-      const data = { EditFields: fillNameHint(fields, opts.nameHint) };
+      const fileValues = appliedInputValues ? undefined : opts.inputValues;
+      appliedInputValues = true;
+      const data = { EditFields: fillNameHint(fields, opts.nameHint, fileValues) };
       if (typeof opts.onInput === 'function') opts.onInput(data);
       step = await proc.inputFields(1, data);
       continue;

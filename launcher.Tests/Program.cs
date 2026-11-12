@@ -28,6 +28,8 @@ var checks = new List<(string Name, Action Run)>
     ("MRB-444 hostile: hours-routing has on_behalf_of not user and no token keys", TestHoursRoutingNoSecrets),
     ("FR-387: --hours-user OTHERUSER vs whoami MEDATECH exits 2 and does not start grok", TestHoursUserDisagreesWithWhoami),
     ("MRB-438: matching --hours-user continues; missing whoami does not block", TestHoursUserMatchesOrAbsentWhoami),
+    ("FR-004 redirected stdin plus saved login binds that login", TestRedirectedSavedLoginBinds),
+    ("FR-004 redirected stdin and no saved login exits unavailable", TestRedirectedNoSavedUnavailable),
 };
 
 int failures = 0;
@@ -449,6 +451,46 @@ static void TestHoursUserMatchesOrAbsentWhoami()
     Assert(absent.Ok && absent.ExitCode == 0, "no whoami pair must not exit 2: " + absent.Detail);
     var noFlag = LastUserFile.CheckFlagAgainstWhoami(null, "MEDATECH");
     Assert(noFlag.Ok, noFlag.Detail);
+}
+
+static void TestRedirectedSavedLoginBinds()
+{
+    string root = NewTemp();
+    string? previous = Environment.GetEnvironmentVariable(LastUserFile.EnvPath);
+    try
+    {
+        string path = Path.Combine(root, "last-user.json");
+        File.WriteAllText(path,
+            """{"saas1":{"userLogin":"MEDATECH","company":"CO","identifiedAt":"2026-11-12T00:00:00Z","source":"whoami"}}""");
+        Environment.SetEnvironmentVariable(LastUserFile.EnvPath, path);
+        string? saved = LastUserFile.ReadUserLogin("saas1");
+        Assert(saved == "MEDATECH", "saved login must be MEDATECH");
+        // Redirected stdin: never Ask/ReadLine; bind saved via ResolveLaunchUser.
+        string? requested = LastUserFile.ResolveLaunchUser(null, inputRedirected: true, saved, typedAnswer: null);
+        Assert(requested == "MEDATECH", "redirected+saved must exit prompt step with MEDATECH, got " + requested);
+        var bound = BobHours.BindSessionOwner(null, requested);
+        Assert(bound.Ok && bound.UserLogin == "MEDATECH", bound.Detail + "/" + bound.UserLogin);
+        string? flagWins = LastUserFile.ResolveLaunchUser("OTHER", inputRedirected: true, saved, null);
+        Assert(flagWins == "OTHER", "--hours-user must still win when redirected");
+    }
+    finally
+    {
+        Environment.SetEnvironmentVariable(LastUserFile.EnvPath, previous);
+        DeleteTempDirectory(root);
+    }
+}
+
+static void TestRedirectedNoSavedUnavailable()
+{
+    string? requested = LastUserFile.ResolveLaunchUser(null, inputRedirected: true, savedLogin: null, typedAnswer: null);
+    Assert(requested == null, "redirected with no saved and no --hours-user must not invent a login");
+    var bound = BobHours.BindSessionOwner(null, requested);
+    Assert(!bound.Ok, "must fail BindSessionOwner");
+    Assert(bound.Detail.Contains("Priority USERLOGIN unavailable", StringComparison.Ordinal),
+        "exit-2 detail must say Priority USERLOGIN unavailable, got " + bound.Detail);
+    // Simulated launcher exit code when bind fails (Program returns 2).
+    int exitCode = (!bound.Ok || string.IsNullOrEmpty(bound.UserLogin)) ? 2 : 0;
+    Assert(exitCode == 2, "launcher must exit 2");
 }
 
 static string NewTemp()

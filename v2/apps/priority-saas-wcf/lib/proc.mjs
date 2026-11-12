@@ -33,6 +33,7 @@ export async function runProcStart(session, instance, ename, opts = {}) {
   const nameHint = opts.nameHint || '';
   const walk = await walkProcSteps(step, {
     nameHint,
+    inputValues: opts.inputValues,
     maxSteps: opts.maxSteps,
     deadlineMs: opts.deadlineMs,
     onStep: opts.onStep,

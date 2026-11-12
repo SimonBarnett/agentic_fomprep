@@ -13,8 +13,10 @@ const ROOT = path.resolve(__dirname, '..');
 
 test('MRB-460: form rows is not a write in cmdForm write flag', () => {
   const src = fs.readFileSync(path.join(ROOT, 'bin', 'priority-wcf.mjs'), 'utf8');
-  assert.match(src, /const write = sub === 'set' \|\| sub === 'save'/);
-  assert.doesNotMatch(src, /write = sub === 'set' \|\| sub === 'save' \|\| sub === 'rows'/);
+  const line = (src.match(/const write = [^\n]+/) || [''])[0];
+  assert.match(line, /sub === 'set'/);
+  assert.match(line, /sub === 'save'/);
+  assert.doesNotMatch(line, /'rows'/);
 });
 
 test('MRB-460: applySearchThenGetRows does not fieldUpdate', async () => {

@@ -36,3 +36,6 @@ launcher.Tests/FakeCli/out/
 # Bobiverse / bob-worker job seat markers (FR #349) - never commit
 .bobiverse-seat
 **/.bobiverse-seat
+
+dist/
+third_party/wix/

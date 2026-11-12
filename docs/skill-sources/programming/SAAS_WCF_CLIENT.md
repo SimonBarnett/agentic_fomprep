@@ -64,7 +64,9 @@ This client resolves `url` from tenant probe `wcf` (preferred) before login.
 | OData `You cannot run API with the type of license…` | Same licence class on Bearer TabulaUser | Prefer PAT Basic (`token` / `PAT`) |
 | OData empty HTTP 500 without language segment | Some SaaS tenants need `tab….ini,3/<DNAME>` | Try `,2` / `,3` language segment (FR #226 still applies for wrong DNAME) |
 | `token_file_invalid_json` | UTF-8 BOM from PowerShell `Set-Content` | Client strips BOM; write tokens UTF-8 **no BOM** |
-| `token_expired` | OIDC `expires_in` ~1800s elapsed | Re-run `priority-saas-oidc-login` |
+| `token_expired` | OIDC `expires_in` ~1800s elapsed | Re-run `priority-saas-oidc-login` (`retryable: false`) |
+| `login_connect` | `Can't connect to server.` | Use probed `…/wcf/service.svc` (`retryable: true` on fail JSON; caller retries, not this client) |
+| `api_licence` | API License flag missing | Tick USERSB.REST (`retryable: false`, hint on fail JSON) |
 
 **Scope:** use this client for **Web SDK form walks** (and Phase 2 prepare). For Cloud **dictionary / FORMTRIG / EFORM** archaeology, prefer `priority-odata-dev` (PAT) or `priority-mcp-forms` first — do not burn MFA on WCF when PAT already works.
 

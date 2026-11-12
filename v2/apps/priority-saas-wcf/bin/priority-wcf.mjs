@@ -14,6 +14,7 @@ import { loginSession, logout, safeEnd, setConfirmErrors } from '../lib/session.
 import { formStart, formGetRows, formSetFields, formSave, formStartSubForm, applySearchThenGetRows } from '../lib/form.mjs';
 import { runPrepare } from '../lib/prepare.mjs';
 import { runProcStart } from '../lib/proc.mjs';
+import { loadInputsFile } from '../lib/inputs-file.mjs';
 import { resolveWhoami } from '../lib/whoami.mjs';
 import { listCompanies } from '../lib/companies.mjs';
 import { emit, fail, ok, redact } from '../lib/json-out.mjs';
@@ -30,6 +31,8 @@ const ROOT = path.resolve(__dirname, '..');
 
 /** FR #389: loaded --request JSON; keys override matching flags. */
 let requestDoc = null;
+/** FR #403: --inputs JSON map for proc start only. */
+let procInputValues = null;
 
 function arg(name, fallback = '') {
   const i = process.argv.indexOf(name);
@@ -61,7 +64,7 @@ Object kinds: table, form, report, procedure, interface.
   companies --instance <id>  (see: help companies)
   form start|rows|set|save|subform|columns|new|delete|action  (see: help form)
   prepare form|procedure|report --instance <id> --name <ENAME>  (see: help prepare)
-  proc start --instance <id> --name <ENAME> [--ptype P|R]  (see: help proc)
+  proc start --instance <id> --name <ENAME> [--ptype P|R] [--inputs <file>]  (see: help proc)
   table   (see: help table)
   interface (see: help interface)
   report  (see: help report)
@@ -120,9 +123,10 @@ Prepare is a write (allowLive: true). preparedClaim needs the OData gate when od
 `,
   proc: `help proc
 
-  proc start --instance <id> --name <ENAME> [--ptype P|R]
+  proc start --instance <id> --name <ENAME> [--ptype P|R] [--inputs <file>] [--hint <ename>]
 
-P = procedure, R = report. Does not prepare; use help prepare for prep verbs.
+P = procedure, R = report. --inputs is a UTF-8 JSON map for the first inputFields step.
+Name-hint fill runs only for fields the file did not set. Does not prepare; use help prepare.
 `,
   table: `help table
 
@@ -501,6 +505,7 @@ async function cmdProc(sub) {
       const result = await runProcStart(session, instance, name, {
         ptype: arg('--ptype', 'P'),
         nameHint: arg('--hint', ''),
+        inputValues: procInputValues,
       });
       dump('proc.json', result);
       if (!result.ok) {
@@ -529,6 +534,17 @@ async function main() {
     const topic = (process.argv[3] || '').toLowerCase();
     if (topic) return helpTopic(topic);
     return usage();
+  }
+
+  // FR #403: --inputs JSON map, proc start only (not form / prepare).
+  const inputsPath = arg('--inputs', '');
+  const procSub = verb === 'proc' ? (process.argv[3] || '').toLowerCase() : '';
+  if (inputsPath && verb === 'proc' && procSub === 'start') {
+    const loaded = loadInputsFile(inputsPath);
+    if (!loaded.ok) {
+      return fail(loaded.reason, { path: loaded.path, detail: loaded.detail }, 2);
+    }
+    procInputValues = loaded.inputValues;
   }
 
   // FR #389: load --request before any verb that may login.

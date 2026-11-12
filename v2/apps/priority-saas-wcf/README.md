@@ -109,11 +109,12 @@ Writes (`form set` / `form save`) require `allowLive: true` on the row (and oper
 node bin\priority-wcf.mjs prepare form --instance customer-saas-dev --name MYFORM
 node bin\priority-wcf.mjs prepare procedure --instance customer-saas-dev --name MYPROC
 node bin\priority-wcf.mjs prepare report --instance customer-saas-dev --name MYREP
-node bin\priority-wcf.mjs proc start --instance customer-saas-dev --name SOMEPROC [--ptype P]
+node bin\priority-wcf.mjs proc start --instance customer-saas-dev --name SOMEPROC [--ptype P] [--inputs C:\temp\inputs.json] [--hint SOMEPROC]
 ```
 
 - Form prep: `EFORM` + `FORMPREPDRCT2`, then scrape `FORMPREPERRS`.
 - Procedure/report prep: `EXEC` + `REPPREPDIRECT2`.
+- `proc start --inputs <file>` is a UTF-8 JSON map passed as `inputValues` on the first `inputFields` step. Matching EditField names take file values; name-hint fill runs only for fields the file did not set. Option selection is unchanged.
 - `prepare` is a write (`allowLive: true` required).
 - SaaS success gate: when `odataBase` is set on the allowlist row, re-read UPD/LASTPREPDATE-style fields via OData (`PRIORITY_SAAS_ODATA_PAT` or Bearer). Without SQL or OData, `walkOk` may be true but `preparedClaim` stays false (`gate.status=unavailable`). Use `--no-gate` only for walk diagnostics.
 

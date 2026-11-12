@@ -110,6 +110,14 @@ Writes (`form set` / `form save` / `form action` / `form subform --set`) require
 `form action --form <ENAME> --name <activation>` runs one named activation (e.g. SAVE) and returns the
 message-handler list. `allowLive: false` is refused before login.
 
+Dictionary title writes (WINDBI) check length before login via `checkDictionaryTitle`
+(`lib/dictionary-title.mjs`). Titles longer than 20 characters exit 2 with
+`reason: title_too_long` and never call the SDK. Example gate path:
+
+```powershell
+node bin\priority-wcf.mjs table column add --instance customer-saas-dev --name MYTABLE --column C1 --type CHAR --title "too-long-title-here!!"
+```
+
 ## Phase 2: prepare + proc
 
 ```powershell

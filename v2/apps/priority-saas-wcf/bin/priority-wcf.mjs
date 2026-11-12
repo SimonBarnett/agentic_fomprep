@@ -37,6 +37,7 @@ import {
   stringFromRequestOrFlag,
   loadFieldsFile,
 } from '../lib/request-file.mjs';
+import { checkDictionaryTitle } from '../lib/dictionary-title.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '..');
@@ -147,9 +148,11 @@ proc text set writes --file through the EXEC form (allowLive). Does not prepare.
 
   table exists --instance <id> --name <TNAME>
   table columns --instance <id> --name <TNAME>
+  table column add --instance <id> --name <TNAME> --column <COL> --type <T> --title <title>
   table create  --instance <id> --name <TNAME>  (refuses without SQL profile)
 
-Dictionary reads only until create is allowlisted. Never invent host/tenant.
+Dictionary title writes check length ≤20 before login (reason title_too_long).
+Never invent host/tenant.
 `,
   interface: `help interface
 
@@ -749,6 +752,51 @@ async function cmdProc(sub) {
   );
 }
 
+/**
+ * FR #414 / FR-032: title length gate before any dictionary title write.
+ * Full column add (sqlProfile / allowLive / SDK) is FR-033 (#415).
+ */
+async function cmdTableColumnAdd() {
+  const titlePresent =
+    hasFlag('--title') || (requestDoc != null && Object.prototype.hasOwnProperty.call(requestDoc, 'title'));
+  if (!titlePresent) {
+    return fail('title_required', {
+      action: 'table.column.add',
+      need: '--title <title> or request.title',
+    }, 2);
+  }
+  const title = reqString('title', '--title');
+  const checked = checkDictionaryTitle(title);
+  if (!checked.ok) {
+    return fail(checked.reason, {
+      action: 'table.column.add',
+      title: checked.title,
+      length: checked.length,
+      max: checked.max,
+    }, 2);
+  }
+  // Title OK — column add body ships in FR-033; do not login/SDK here.
+  return fail('table_column_add_not_implemented', {
+    action: 'table.column.add',
+    title: checked.title,
+    length: checked.length,
+    max: checked.max,
+    hint: 'FR-033',
+  }, 2);
+}
+
+async function cmdTable(sub) {
+  if (sub === 'column') {
+    const mode = (process.argv[4] || '').toLowerCase();
+    if (mode === 'add') return cmdTableColumnAdd();
+    return fail('table_column_mode_required', { need: 'add', got: mode || null });
+  }
+  return fail('table_sub_required', {
+    need: 'column add (title gate FR-032); exists|columns|create later',
+    got: sub || null,
+  });
+}
+
 async function cmdReport(sub) {
   if (sub !== 'run') {
     return fail('report_sub_required', { need: 'run', got: sub });
@@ -856,9 +904,14 @@ async function main() {
     if (!sub) return fail('report_sub_required', { need: 'run' });
     return cmdReport(sub);
   }
+  if (verb === 'table') {
+    const sub = (process.argv[3] || '').toLowerCase();
+    if (!sub) return fail('table_sub_required', { need: 'column add' });
+    return cmdTable(sub);
+  }
   return fail('unknown_verb', {
     verb,
-    hint: 'probe|session|whoami|companies|form|prepare|proc|report|help',
+    hint: 'probe|session|whoami|companies|form|prepare|proc|report|table|help',
   });
 }
 

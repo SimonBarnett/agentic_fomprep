@@ -35,6 +35,7 @@ var checks = new List<(string Name, Action Run)>
     ("FR-568 agent.exe under .grok\\bin is not Cursor", TestFr568CursorRejectsGrokAgent),
     ("FR-568 fake installer is interactive user not LocalSystem", TestFr568InstallerInteractiveUser),
     ("FR-568 OpenCode URL from fixture html no live network", TestFr568OpenCodeParseFixture),
+    ("MRB-575 OpenCode plan uses $env:USERPROFILE and creates .opencode\\bin", TestMrb575OpenCodePlanPath),
 };
 
 int failures = 0;
@@ -576,6 +577,17 @@ static void TestFr568OpenCodeParseFixture()
         user: "simon",
         openCodeBinaryUrl: url);
     Assert(r.Ran && net == 1, "fake runner only");
+}
+
+static void TestMrb575OpenCodePlanPath()
+{
+    var plan = CliInstall.Plan(CliKind.OpenCode, "https://github.example.invalid/opencode-windows-x64.exe");
+    Assert(plan.Arguments.Contains("$env:USERPROFILE", StringComparison.Ordinal), "PowerShell profile expansion");
+    Assert(!plan.Arguments.Contains("%USERPROFILE%", StringComparison.Ordinal), "cmd %USERPROFILE% is literal in PowerShell");
+    Assert(plan.Arguments.Contains("New-Item", StringComparison.OrdinalIgnoreCase) &&
+           plan.Arguments.Contains("$env:USERPROFILE\\.opencode\\bin", StringComparison.Ordinal),
+        "must create .opencode\\bin, not Split-Path parent only");
+    Assert(!plan.Arguments.Contains("Split-Path", StringComparison.OrdinalIgnoreCase), "Split-Path of bin only creates .opencode");
 }
 
 static string NewTemp()

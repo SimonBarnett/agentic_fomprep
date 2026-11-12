@@ -9,6 +9,8 @@ if ($src -notmatch 'x\.ai/cli/install\.ps1') { Write-Error 'Grok official instal
 if ($src -notmatch 'cursor\.com/install') { Write-Error 'Cursor official installer URL missing' }
 if ($src -match '(?i)scoop|chocolatey|winget') { Write-Error 'no Scoop/Chocolatey/WinGet' }
 if ($src -notmatch 'refuse LocalSystem') { Write-Error 'LocalSystem refuse missing' }
+if ($src -match '%USERPROFILE%') { Write-Error 'OpenCode plan must not use cmd %USERPROFILE% (literal in PowerShell)' }
+if ($src -notmatch '\$env:USERPROFILE') { Write-Error 'OpenCode plan must use $env:USERPROFILE' }
 $wxs = Get-ChildItem -Path $repo -Filter '*.wxs' -Recurse -ErrorAction SilentlyContinue
 foreach ($f in $wxs) {
     $t = Get-Content -LiteralPath $f.FullName -Raw

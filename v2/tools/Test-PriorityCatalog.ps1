@@ -1293,6 +1293,23 @@ if ((Test-Path -LiteralPath $wcfSkill) -and (Test-Path -LiteralPath $wcfGrok)) {
 }
 Add-Gate 'CAT-T75' $t75Ok $t75Why
 
+# FR-443 / #443: no leftover ======= merge markers in harvest log / skill index
+$fr443 = Join-Path $repo 'v2\tests\test-fr443-no-conflict-markers.ps1'
+$t76Ok = $false
+$t76Why = 'CAT-T76 missing v2/tests/test-fr443-no-conflict-markers.ps1'
+if (Test-Path -LiteralPath $fr443) {
+    $p443 = Start-Process -FilePath powershell.exe -ArgumentList @('-NoProfile', '-File', $fr443) -Wait -PassThru -NoNewWindow
+    if ($p443.ExitCode -eq 0) {
+        $t76Ok = $true
+        $t76Why = 'FR-443 harvest log and PRIORITY-AGENT-SKILLS have no conflict markers'
+    } else {
+        $t76Why = ('FR-443 conflict-marker fixture exit=' + $p443.ExitCode)
+    }
+}
+Add-Gate 'CAT-T76' $t76Ok $t76Why
+
+
+
 if ($failed -gt 0) {
     Write-Host "Test-PriorityCatalog FAIL ($failed)"
     exit 1

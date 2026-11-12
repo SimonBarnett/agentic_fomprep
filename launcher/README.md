@@ -3,6 +3,11 @@
 `PriorityAgent.exe` is a Windows console launcher. It starts a **Grok coding agent for Priority ERP work**
 with the right context.
 
+A per-machine **MSI** is an extra asset next to the existing `PriorityAgent.exe` pre-release (the loose
+exe stays). The MSI installs to `C:\Program Files\Priority Agent`. An interactive install offers
+**Grok**, **Cursor**, **OpenCode**, or **Not now**. `msiexec /qn` completes without showing that prompt
+and does not download a CLI.
+
 ## What it does on every start
 
 1. It **fast-forwards SimonBarnett/agentic_fomprep**.
@@ -218,7 +223,8 @@ The Windows workflow also runs the published executable through dry-run integrat
 profiles and fake GitHub/Grok CLIs, checking config preservation, WCF session instance files, and connection-file
 canary handling. The `Launcher release` workflow runs on launcher pull requests and `main` pushes for validation;
 it publishes a GitHub **pre-release** with `PriorityAgent.exe` and its `.sha256` file for `launcher-v*` tags or a
-manual dispatch from `main`. A `launcher-vX.Y.Z` tag stamps banner / FileVersion `X.Y.Z` / `X.Y.Z.0` and
+manual dispatch from `main`. When an MSI is packed, it is an **additional asset** beside that loose exe
+pre-release; the exe is not replaced. A `launcher-vX.Y.Z` tag stamps banner / FileVersion `X.Y.Z` / `X.Y.Z.0` and
 ProductVersion `X.Y.Z+<commit>` (FR #267). Local `launcher\build.ps1 -Install` defaults to `1.0.0` unless you pass `-Version`. Download
 it from [GitHub Releases](https://github.com/SimonBarnett/agentic_fomprep/releases) and verify the checksum
 before use. Releases remain pre-release until separately approved.

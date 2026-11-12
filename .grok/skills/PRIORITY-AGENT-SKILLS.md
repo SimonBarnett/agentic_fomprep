@@ -90,12 +90,13 @@ IncludeDba=False IncludeCustomer=False
 - priority-service-desk-ui-language-print
 - priority-service-desk-user-paccount-signup
 - priority-service-desk-webhook-sync-mitigation
-- priority-service-desk-mrp-run-locked-by-scheduler
 - priority-service-desk-analytics-multi-company-per-user
 - priority-service-desk-app-redis-services-stopped
 - priority-service-desk-app-user-applications-for-license
 - priority-service-desk-bpm-deleted-status-restore
 - priority-service-desk-closed-so-mrp-flag-demand
+- priority-service-desk-mrp-run-locked-by-scheduler
+- priority-service-desk-renew-license-login-errors
 - priority-service-desk-company-timezone-scheduled-reports
 - priority-service-desk-debit-memo-part-account
 - priority-service-desk-form-design-restore

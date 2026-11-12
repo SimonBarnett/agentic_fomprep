@@ -280,12 +280,14 @@ static class Program
         string rules = LoadRules(fomprep, out string rulesSrc);
         string sessionDir = sessionDirEarly;
         Directory.CreateDirectory(sessionDir);
-        string? requestedUser = string.IsNullOrWhiteSpace(HoursUserArg) ? null : HoursUserArg.Trim();
-        if (requestedUser == null && !Console.IsInputRedirected)
-        {
-            string typed = Ask("Priority USERLOGIN for this session: ");
-            requestedUser = string.IsNullOrWhiteSpace(typed) ? null : typed.Trim();
-        }
+        string instanceId = wcfConfig.Instances.Count > 0 ? wcfConfig.Instances[0].Id : "";
+        string? savedLogin = LastUserFile.ReadUserLogin(instanceId);
+        string? typedAnswer = null;
+        // FR-004: never ReadLine when stdin is redirected; bind saved login or fail unavailable.
+        if (string.IsNullOrWhiteSpace(HoursUserArg) && !Console.IsInputRedirected)
+            typedAnswer = Ask("Priority USERLOGIN for this session: ");
+        string? requestedUser = LastUserFile.ResolveLaunchUser(
+            HoursUserArg, Console.IsInputRedirected, savedLogin, typedAnswer);
         var sessionOwner = BobHours.BindSessionOwner(ReadSessionOwner(sessionDir), requestedUser);
         if (!sessionOwner.Ok || string.IsNullOrEmpty(sessionOwner.UserLogin))
         {
@@ -971,9 +973,10 @@ PriorityAgent.exe [options]
   --check-hours <ignored-repo-dir> --session <full uuid>
                         webhook hours gate for that session (not a git hours ref)
   --hours-user <USERLOGIN>
-                        Priority USERLOGIN for this launch only. Required when input is
-                        not a terminal. Not read from the OS user or a shared default.
-                        An existing session keeps the login in its identity.json.
+                        Priority USERLOGIN for this launch only. When stdin is redirected,
+                        a saved last-user row for the selected WCF instance is used if this
+                        flag is omitted; otherwise exit 2 (Priority USERLOGIN unavailable).
+                        Not read from the OS user. An existing session keeps identity.json.
   --hours-entry-id <h_...>
                         persisted receiver id (else hours-entry.json or PRIORITY_AGENT_HOURS_ENTRY_ID)
   PRIORITY_AGENT_HOURS_JSON

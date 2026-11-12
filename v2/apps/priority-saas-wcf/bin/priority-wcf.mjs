@@ -32,6 +32,7 @@ import {
 } from '../lib/interface-prep.mjs';
 import { resolveWhoami } from '../lib/whoami.mjs';
 import { listCompanies } from '../lib/companies.mjs';
+import { listInterfaces } from '../lib/interface-list.mjs';
 import {
   addTableColumn,
   columnsFromCreateRequest,
@@ -175,7 +176,9 @@ Never invent host/tenant.
   interface run    --instance <id> --name <ENAME> --inputs <file>
   interface map    --instance <id> --name <ENAME> ...
 
+interface list is a read of the EXEC catalog: {interfaces:[{name,title}]}.
 Prepare-interface refuses until config/interface-prep.json pins a proc name.
+Run and map are later FRs.
 `,
   report: `help report
 
@@ -312,6 +315,21 @@ async function cmdWhoami() {
     }
     // FR #383 contract: { ok, userLogin, source } only (no token fields).
     return ok({ userLogin: r.userLogin, source: r.source });
+  });
+}
+
+async function cmdInterface(sub) {
+  if (sub !== 'list') {
+    return fail('interface_sub_required', { need: 'list', got: sub });
+  }
+  return withSession(async ({ instance, session }) => {
+    const r = await listInterfaces({ instance, session });
+    if (!r.ok) return fail(r.reason || 'interface_list_failed', r);
+    return ok({
+      action: 'interface.list',
+      instanceId: instance.id,
+      interfaces: r.interfaces,
+    });
   });
 }
 
@@ -997,9 +1015,14 @@ async function main() {
     if (!sub) return fail('table_sub_required', { need: 'columns|column|create' });
     return cmdTable(sub);
   }
+  if (verb === 'interface') {
+    const sub = (process.argv[3] || '').toLowerCase();
+    if (!sub) return fail('interface_sub_required', { need: 'list' });
+    return cmdInterface(sub);
+  }
   return fail('unknown_verb', {
     verb,
-    hint: 'probe|session|whoami|companies|form|prepare|proc|report|table|help',
+    hint: 'probe|session|whoami|companies|form|prepare|proc|report|table|interface|help',
   });
 }
 

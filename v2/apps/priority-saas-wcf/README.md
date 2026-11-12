@@ -67,6 +67,7 @@ node bin\priority-wcf.mjs probe   --instance customer-saas-dev
 node bin\priority-wcf.mjs session --instance customer-saas-dev
 node bin\priority-wcf.mjs whoami  --instance customer-saas-dev
 node bin\priority-wcf.mjs companies --instance customer-saas-dev
+node bin\priority-wcf.mjs form start --instance customer-saas-dev --dry-run
 node bin\priority-wcf.mjs session --instance customer-saas-dev --form CUSTOMERS
 node bin\priority-wcf.mjs form start --instance customer-saas-dev --form CUSTOMERS
 node bin\priority-wcf.mjs form rows  --instance customer-saas-dev --form CUSTOMERS

@@ -17,6 +17,7 @@ import { runProcStart } from '../lib/proc.mjs';
 import { resolveWhoami } from '../lib/whoami.mjs';
 import { listCompanies } from '../lib/companies.mjs';
 import { emit, fail, ok, redact } from '../lib/json-out.mjs';
+import { planDryRun } from '../lib/dry-run.mjs';
 import {
   loadRequestFile,
   fieldsFromRequestOrFlag,
@@ -65,6 +66,7 @@ Object kinds: table, form, report, procedure, interface.
   interface (see: help interface)
   report  (see: help report)
   Any verb: --request <path>  UTF-8 JSON; keys fields|filter|inputs|name|form|subform override flags
+  --dry-run               resolve instance + verb; print instanceId, verb, write; no login
   help
   help <verb>   form|prepare|proc|table|interface|report|companies
 
@@ -521,6 +523,17 @@ async function main() {
     const loaded = loadRequestFile(requestPath);
     if (!loaded.ok) return fail(loaded.reason || 'request_invalid', loaded, 2);
     requestDoc = loaded.doc;
+  }
+
+  // FR #391: resolve instance + verb without login.
+  if (hasFlag('--dry-run')) {
+    const plan = planDryRun(process.argv);
+    if (!plan.ok) return fail(plan.reason, plan);
+    return ok({
+      instanceId: plan.instanceId,
+      verb: plan.verb,
+      write: plan.write,
+    });
   }
 
   if (verb === 'probe') return cmdProbe();

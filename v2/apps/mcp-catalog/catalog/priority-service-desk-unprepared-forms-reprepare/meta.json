@@ -1,0 +1,6 @@
+{
+  "name": "priority-service-desk-unprepared-forms-reprepare",
+  "title": "User setup misbehaved and Add New User hung while many forms were unprepared",
+  "description": "A user could not be made active and running Add New User froze the system for everyone. Many forms were unprepared, possibly after a new custom procedure was added. Running the procedure to re-prepare unprepared forms fixed it.",
+  "version": "1.0.0"
+}

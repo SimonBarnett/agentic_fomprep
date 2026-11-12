@@ -1,0 +1,6 @@
+{
+  "name": "priority-service-desk-inventory-count-prepare-zero",
+  "title": "Stock could not be zeroed because the inventory count was not prepared first",
+  "description": "A user could not zero a part stock with an inventory count because they had not prepared the count. Preparing the count for the part, leaving the counted quantity at 0 and approving the lines zeroed the stock.",
+  "version": "1.0.0"
+}

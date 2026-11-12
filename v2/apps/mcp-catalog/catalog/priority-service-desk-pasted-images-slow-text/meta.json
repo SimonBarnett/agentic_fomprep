@@ -1,0 +1,6 @@
+{
+  "name": "priority-service-desk-pasted-images-slow-text",
+  "title": "Large images pasted into a text form made the record slow",
+  "description": "A service call internal dialogue became slow after a whole email trail with images was pasted in. Removing the pasted images made it faster. Images should be imported with the image button.",
+  "version": "1.0.0"
+}

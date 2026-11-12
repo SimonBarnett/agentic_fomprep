@@ -1,0 +1,6 @@
+{
+  "name": "priority-service-desk-mrp-purchase-planning-input",
+  "title": "Overnight MRP ran without Purchase Planning, so no purchase demands",
+  "description": "A scheduled overnight MRP raised work orders but no purchase demands because it ran without Purchase Planning in that company. Running MRP with Purchase Planning, saving it as the user input, then Refresh Task Input by User fixed the schedule.",
+  "version": "1.0.0"
+}

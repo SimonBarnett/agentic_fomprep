@@ -90,7 +90,7 @@ IncludeDba=False IncludeCustomer=False
 - priority-service-desk-ui-language-print
 - priority-service-desk-user-paccount-signup
 - priority-service-desk-webhook-sync-mitigation
-- priority-service-desk-pasted-images-slow-text
+- priority-service-desk-closed-so-mrp-flag-demand
 - priority-service-desk-company-timezone-scheduled-reports
 - priority-service-desk-debit-memo-part-account
 - priority-service-desk-form-design-restore
@@ -98,6 +98,7 @@ IncludeDba=False IncludeCustomer=False
 - priority-service-desk-mrp-purchase-planning-input
 - priority-service-desk-numeration-fiscal-year-constant
 - priority-service-desk-odata-record-limit-powerbi
+- priority-service-desk-pasted-images-slow-text
 - priority-service-desk-privilege-message-disable
 - priority-service-desk-serial-number-renamed-history
 - priority-service-desk-ssl-acme-renewal-firewall

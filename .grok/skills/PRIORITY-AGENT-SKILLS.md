@@ -90,6 +90,7 @@ IncludeDba=False IncludeCustomer=False
 - priority-service-desk-ui-language-print
 - priority-service-desk-user-paccount-signup
 - priority-service-desk-webhook-sync-mitigation
+- priority-service-desk-pasted-images-slow-text
 - priority-service-desk-company-timezone-scheduled-reports
 - priority-service-desk-debit-memo-part-account
 - priority-service-desk-form-design-restore

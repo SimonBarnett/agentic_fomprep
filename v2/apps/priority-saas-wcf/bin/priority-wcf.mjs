@@ -26,6 +26,10 @@ import { runPrepare } from '../lib/prepare.mjs';
 import { runProcStart, runProcContinue } from '../lib/proc.mjs';
 import { loadProcTextFile, writeProcTextViaExecForm } from '../lib/proc-text.mjs';
 import { loadInputsFile } from '../lib/inputs-file.mjs';
+import {
+  defaultInterfacePrepPath,
+  loadInterfacePrepConfig,
+} from '../lib/interface-prep.mjs';
 import { resolveWhoami } from '../lib/whoami.mjs';
 import { listCompanies } from '../lib/companies.mjs';
 import { addTableColumn, fetchTableColumns, instanceHasSqlProfile } from '../lib/table.mjs';
@@ -77,7 +81,7 @@ Object kinds: table, form, report, procedure, interface.
   whoami  --instance <id>
   companies --instance <id>  (see: help companies)
   form start|rows|set|save|subform|columns|new|delete|action  (see: help form)
-  prepare form|procedure|report --instance <id> --name <ENAME>  (see: help prepare)
+  prepare form|procedure|report|interface --instance <id> --name <ENAME>  (see: help prepare)
   proc start|continue --instance <id>  (see: help proc)
   table columns --instance <id> --name <TNAME>  (see: help table)
   table column add --instance <id> --name <TNAME> --column <COL> --type <T> --title <title>  (see: help table)
@@ -134,8 +138,10 @@ Writes need allowLive: true. Never invent ENAME. Never log tokens.
   prepare form      --instance <id> --name <ENAME> [--proc FORMPREPDRCT2] [--no-gate]
   prepare procedure --instance <id> --name <ENAME> [--proc REPPREPDIRECT2] [--no-gate]
   prepare report    --instance <id> --name <ENAME> [--proc REPPREPDIRECT2] [--no-gate]
+  prepare interface --instance <id> --name <ENAME> [--no-gate]
 
 Prepare is a write (allowLive: true). preparedClaim needs the OData gate when odataBase is set.
+prepare interface reads config/interface-prep.json; empty/missing proc => interface_prep_unknown (no login).
 `,
   proc: `help proc
 
@@ -560,14 +566,35 @@ async function cmdPrepare(kind) {
     reqString('name', '--name') || reqString('form', '--form') || arg('--form');
   if (!name) return fail('name_required', { need: '--name <ENAME> or request.name' });
   const k = String(kind || '').toLowerCase();
-  if (!['form', 'procedure', 'report'].includes(k)) {
-    return fail('prepare_kind_required', { need: 'prepare form|procedure|report', got: kind });
+  if (!['form', 'procedure', 'report', 'interface'].includes(k)) {
+    return fail('prepare_kind_required', {
+      need: 'prepare form|procedure|report|interface',
+      got: kind,
+    });
   }
+
+  // FR #411 / FR-029: pin interface prep proc from config before any login.
+  let interfaceProc;
+  if (k === 'interface') {
+    const prepPath =
+      arg('--interface-prep', '') || defaultInterfacePrepPath(ROOT);
+    const pinned = loadInterfacePrepConfig(prepPath);
+    if (!pinned.ok) {
+      return fail(pinned.reason || 'interface_prep_unknown', {
+        action: 'prepare.interface',
+        path: pinned.path,
+        detail: pinned.detail,
+        name,
+      }, 2);
+    }
+    interfaceProc = pinned.proc;
+  }
+
   // Prepare mutates dictionary compile state — treat as write.
   return withSession(
     async ({ instance, session, dump, tokenSource, accessToken }) => {
       const result = await runPrepare(session, instance, k, name, {
-        proc: arg('--proc') || undefined,
+        proc: k === 'interface' ? interfaceProc : (arg('--proc') || undefined),
         gate: !hasFlag('--no-gate'),
         accessToken: accessToken || '',
         messages: [],
@@ -581,6 +608,13 @@ async function cmdPrepare(kind) {
           instanceId: instance.id,
           options: result.options,
         });
+      }
+      if (result.reason === 'interface_prep_unknown') {
+        return fail('interface_prep_unknown', {
+          action: 'prepare.' + k,
+          instanceId: instance.id,
+          ...result,
+        }, 2);
       }
       if (!result.walkOk) {
         return fail('prepare_walk_failed', {
@@ -907,7 +941,9 @@ async function main() {
   }
   if (verb === 'prepare') {
     const kind = (process.argv[3] || '').toLowerCase();
-    if (!kind) return fail('prepare_kind_required', { need: 'form|procedure|report' });
+    if (!kind) {
+      return fail('prepare_kind_required', { need: 'form|procedure|report|interface' });
+    }
     return cmdPrepare(kind);
   }
   if (verb === 'proc') {

@@ -116,6 +116,7 @@ message-handler list. `allowLive: false` is refused before login.
 node bin\priority-wcf.mjs prepare form --instance customer-saas-dev --name MYFORM
 node bin\priority-wcf.mjs prepare procedure --instance customer-saas-dev --name MYPROC
 node bin\priority-wcf.mjs prepare report --instance customer-saas-dev --name MYREP
+node bin\priority-wcf.mjs prepare interface --instance customer-saas-dev --name MYIFACE
 node bin\priority-wcf.mjs proc start --instance customer-saas-dev --name SOMEPROC [--ptype P] [--inputs C:\temp\inputs.json] [--hint SOMEPROC]
 node bin\priority-wcf.mjs report run --instance customer-saas-dev --name MYREP
 node bin\priority-wcf.mjs table columns --instance customer-saas-dev --name CUSTOMERS
@@ -126,6 +127,7 @@ node bin\priority-wcf.mjs table column add --instance customer-saas-dev --name T
 
 - Form prep: `EFORM` + `FORMPREPDRCT2`, then scrape `FORMPREPERRS`.
 - Procedure/report prep: `EXEC` + `REPPREPDIRECT2`.
+- Interface prep: reads `config/interface-prep.json`. Empty/missing `proc` returns `interface_prep_unknown` (exit 2) before login. A pinned non-empty proc runs that prepare walk with the same OData gate as report prep. Do not invent an interface proc ENAME in the shipped config.
 - `proc start --inputs <file>` is a UTF-8 JSON map passed as `inputValues` on the first `inputFields` step. Matching EditField names take file values; name-hint fill runs only for fields the file did not set. Option selection is unchanged.
 - `proc start` and `prepare` JSON include `urls: string[]` from SDK `displayUrl` steps (`displayUrlOf`). Missing URLs are `[]`. The client does not download those URLs.
 - `report run --name <ENAME>` is `procStart` with `ptype` R (does not prepare). JSON includes `urls: string[]` from displayUrl steps (`[]` when none).

@@ -1,0 +1,6 @@
+{
+  "name": "priority-service-desk-debit-memo-part-account",
+  "title": "A debit memo part with no account left the journal unposted",
+  "description": "A vendor debit memo journal stayed unposted with the account shown as Lineitems because the part had no nominal account. Defining the account on the part resolved it.",
+  "version": "1.0.0"
+}

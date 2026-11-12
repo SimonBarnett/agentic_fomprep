@@ -24,7 +24,7 @@ import {
 } from '../lib/form.mjs';
 import { runPrepare } from '../lib/prepare.mjs';
 import { runProcStart, runProcContinue } from '../lib/proc.mjs';
-import { loadProcTextFile, writeProcTextViaExecForm } from '../lib/proc-text.mjs';
+import { loadProcTextFile, writeProcTextViaExecForm, readProcTextViaExecForm } from '../lib/proc-text.mjs';
 import { loadInputsFile } from '../lib/inputs-file.mjs';
 import {
   defaultInterfacePrepPath,
@@ -39,6 +39,7 @@ import {
   columnsFromCreateRequest,
   createTable,
   fetchTableColumns,
+  fetchTableExists,
   instanceHasSqlProfile,
 } from '../lib/table.mjs';
 import { checkDictionaryTitle } from '../lib/title-check.mjs';
@@ -91,6 +92,7 @@ Object kinds: table, form, report, procedure, interface.
   form start|rows|set|save|subform|columns|new|delete|action  (see: help form)
   prepare form|procedure|report|interface --instance <id> --name <ENAME>  (see: help prepare)
   proc start|continue --instance <id>  (see: help proc)
+  table exists --instance <id> --name <TNAME>  (see: help table)
   table columns --instance <id> --name <TNAME>  (see: help table)
   table column add --instance <id> --name <TNAME> --column <COL> --type <T> --title <title>  (see: help table)
   interface (see: help interface)
@@ -155,8 +157,10 @@ prepare interface reads config/interface-prep.json; empty/missing proc => interf
 
   proc start    --instance <id> --name <ENAME> [--ptype P|R] [--inputs <file>] [--hint <ename>]
   proc continue --instance <id> --from <step.json> --option <field> [--inputs <file>]
+  proc text     --instance <id> --name <ENAME>
   proc text set --instance <id> --name <ENAME> --file <path>
 
+proc text is read-only (EXEC TEXT); allowLive not required. Missing/empty body -> proc_text_missing exit 2.
 Continue answers a needs_input snapshot. Missing --from exits 2 before login. Does not auto-pick.
 proc text set writes --file through the EXEC form (allowLive). Does not prepare.
 `,
@@ -178,6 +182,7 @@ Never invent host/tenant.
   interface map set --instance <id> --name <ENAME> --fields-file <path>
 
 interface list is a read of the EXEC catalog: {interfaces:[{name,title}]}.
+interface run uses the proc walker (FR-21/FR-22): ended or needs_input. ptype I. Map is FR-37.
 interface map set writes one FORMINTERFACES row (allowLive). Does not prepare (FR-29).
 Prepare-interface refuses until config/interface-prep.json pins a proc name.
 `,
@@ -320,6 +325,46 @@ async function cmdWhoami() {
 }
 
 async function cmdInterface(sub) {
+  if (sub === 'run') {
+    const name = reqString('name', '--name') || arg('--proc');
+    if (!name) return fail('name_required', { need: '--name <ENAME> or request.name' });
+    return withSession(
+      async ({ instance, session, dump, tokenSource }) => {
+        const result = await runProcStart(session, instance, name, {
+          ptype: 'I',
+          nameHint: arg('--hint', ''),
+          inputValues: procInputValues,
+          onNeedsInput: (snap) => dump('needs-input.json', snap),
+        });
+        dump('interface.json', result);
+        if (result.reason === 'needs_input') {
+          dump('needs-input.json', result.snapshot || { options: result.options });
+          return fail('needs_input', {
+            action: 'interface.run',
+            instanceId: instance.id,
+            options: result.options,
+            urls: result.urls || [],
+          });
+        }
+        if (!result.ok) {
+          return fail(result.reason || 'interface_run_failed', {
+            action: 'interface.run',
+            instanceId: instance.id,
+            tokenSource,
+            ...result,
+          });
+        }
+        return ok({
+          instanceId: instance.id,
+          tokenSource,
+          ...result,
+          action: 'interface.run',
+          ptype: 'I',
+        });
+      },
+      { write: true },
+    );
+  }
   if (sub === 'map') {
     const op = String(process.argv[4] || '').toLowerCase();
     if (op !== 'set') {
@@ -352,7 +397,7 @@ async function cmdInterface(sub) {
     );
   }
   if (sub !== 'list') {
-    return fail('interface_sub_required', { need: 'list|map set', got: sub });
+    return fail('interface_sub_required', { need: 'list|run|map set', got: sub });
   }
   return withSession(async ({ instance, session }) => {
     const r = await listInterfaces({ instance, session });
@@ -722,6 +767,35 @@ function loadFromStepFile(filePath) {
   }
 }
 
+
+async function cmdProcTextRead() {
+  const name = reqString('name', '--name') || arg('--proc');
+  if (!name) return fail('name_required', { need: '--name <ENAME> or request.name' });
+  return withSession(
+    async ({ instance, session, dump, tokenSource }) => {
+      const messages = [];
+      const result = await readProcTextViaExecForm(session, instance, name, { messages });
+      dump('proc-text.json', { name, ok: result.ok, reason: result.reason, messages });
+      if (!result.ok) {
+        return fail(result.reason || 'proc_text_missing', {
+          action: 'proc.text',
+          instanceId: instance.id,
+          tokenSource,
+          name,
+        }, 2);
+      }
+      return ok({
+        action: 'proc.text',
+        instanceId: instance.id,
+        tokenSource,
+        name: result.name,
+        body: result.body,
+      });
+    },
+    { write: false },
+  );
+}
+
 async function cmdProcTextSet() {
   const name = reqString('name', '--name') || arg('--proc');
   if (!name) return fail('name_required', { need: '--name <ENAME> or request.name' });
@@ -761,10 +835,16 @@ async function cmdProcTextSet() {
 async function cmdProc(sub) {
   if (sub === 'text') {
     const mode = String(process.argv[4] || '').toLowerCase();
-    if (mode !== 'set') {
-      return fail('proc_sub_required', { need: 'start|continue|text set', got: 'text ' + mode });
+    if (mode === 'set') {
+      return cmdProcTextSet();
     }
-    return cmdProcTextSet();
+    if (mode && !mode.startsWith('-')) {
+      return fail('proc_sub_required', {
+        need: 'start|continue|text (read); text set (write FR-028)',
+        got: 'text ' + mode,
+      });
+    }
+    return cmdProcTextRead();
   }
   if (sub === 'continue') {
     const fromPath = arg('--from', '');
@@ -805,7 +885,7 @@ async function cmdProc(sub) {
     );
   }
   if (sub !== 'start') {
-    return fail('proc_sub_required', { need: 'start|continue|text set', got: sub });
+    return fail('proc_sub_required', { need: 'start|continue|text|text set', got: sub });
   }
   const name = reqString('name', '--name') || arg('--proc');
   if (!name) return fail('name_required', { need: '--name <ENAME> or request.name' });
@@ -890,6 +970,24 @@ async function cmdReport(sub) {
 }
 
 async function cmdTable(sub) {
+  if (sub === 'exists') {
+    const name = reqString('name', '--name');
+    if (!name) return fail('name_required', { need: '--name <TNAME> or request.name' });
+    const picked = await resolveInstance();
+    if (!picked.ok) return fail(picked.reason, picked);
+    const instance = picked.instance;
+    let accessToken = '';
+    const tok = loadAccessToken(instance);
+    if (tok.ok) accessToken = tok.accessToken;
+    const result = await fetchTableExists(instance, name, { accessToken });
+    if (!result.ok) return fail(result.reason, result);
+    return ok({
+      action: 'table.exists',
+      instanceId: instance.id,
+      name: result.name,
+      exists: result.exists,
+    });
+  }
   if (sub === 'create') {
     const name = reqString('name', '--name');
     if (!name) return fail('name_required', { need: '--name <TNAME> or request.name' });
@@ -938,7 +1036,7 @@ async function cmdTable(sub) {
     });
   }
   if (sub !== 'column') {
-    return fail('table_sub_required', { need: 'columns|column add|create', got: sub });
+    return fail('table_sub_required', { need: 'exists|columns|column add|create', got: sub });
   }
   const op = (process.argv[4] || '').toLowerCase();
   if (op !== 'add') {
@@ -986,10 +1084,15 @@ async function main() {
     return usage();
   }
 
-  // FR #403: --inputs JSON map, proc start only (not form / prepare).
+  // FR #403 / FR #418: --inputs JSON map for proc start/continue and interface run.
   const inputsPath = arg('--inputs', '');
   const procSub = verb === 'proc' ? (process.argv[3] || '').toLowerCase() : '';
-  if (inputsPath && verb === 'proc' && (procSub === 'start' || procSub === 'continue')) {
+  const ifaceSub = verb === 'interface' ? (process.argv[3] || '').toLowerCase() : '';
+  if (
+    inputsPath &&
+    ((verb === 'proc' && (procSub === 'start' || procSub === 'continue')) ||
+      (verb === 'interface' && ifaceSub === 'run'))
+  ) {
     const loaded = loadInputsFile(inputsPath);
     if (!loaded.ok) {
       return fail(loaded.reason, { path: loaded.path, detail: loaded.detail }, 2);
@@ -1044,12 +1147,12 @@ async function main() {
   }
   if (verb === 'table') {
     const sub = (process.argv[3] || '').toLowerCase();
-    if (!sub) return fail('table_sub_required', { need: 'columns|column|create' });
+    if (!sub) return fail('table_sub_required', { need: 'exists|columns|column|create' });
     return cmdTable(sub);
   }
   if (verb === 'interface') {
     const sub = (process.argv[3] || '').toLowerCase();
-    if (!sub) return fail('interface_sub_required', { need: 'list|map' });
+    if (!sub) return fail('interface_sub_required', { need: 'list|run|map' });
     return cmdInterface(sub);
   }
   return fail('unknown_verb', {

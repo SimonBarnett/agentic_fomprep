@@ -18,6 +18,7 @@ Used by PriorityAgent after an OIDC Bearer token exists (`priority-saas-oidc-log
 ```
 
 (`expires_at` ISO is also accepted. Write UTF-8 **without BOM** — PowerShell `Set-Content` BOM is stripped by the client but avoid it.)
+Past `expires_at` or `obtained_at`+`expires_in` is `token_expired` (`retryable: false`, exit 3) before login. No expiry field still attempts login. Refresh is FR-39.
 
 3. Or set env `PRIORITY_SAAS_TOKEN` for the process only.
 
@@ -130,9 +131,11 @@ node bin\priority-wcf.mjs report run --instance customer-saas-dev --name MYREP
 node bin\priority-wcf.mjs table columns --instance customer-saas-dev --name CUSTOMERS
 node bin\priority-wcf.mjs proc continue --instance customer-saas-dev --from C:\temp\needs-input.json --option FIELD [--inputs C:\temp\inputs.json]
 node bin\priority-wcf.mjs proc text set --instance customer-saas-dev --name MYPROC --file C:\temp\body.txt
+node bin\priority-wcf.mjs table exists --instance customer-saas-dev --name CUSTOMERS
 node bin\priority-wcf.mjs table column add --instance customer-saas-dev --name T1 --column C1 --type CHAR --title Cust
 node bin\priority-wcf.mjs table create --instance customer-saas-dev --name T1 --request C:\temp\table-cols.json
 node bin\priority-wcf.mjs interface list --instance customer-saas-dev
+node bin\priority-wcf.mjs interface run --instance customer-saas-dev --name MYIFACE --inputs C:\temp\inputs.json
 node bin\priority-wcf.mjs interface map set --instance customer-saas-dev --name MYIFACE --fields-file C:\temp\map.json
 ```
 
@@ -147,10 +150,12 @@ node bin\priority-wcf.mjs interface map set --instance customer-saas-dev --name 
 - `prepare` is a write (`allowLive: true` required).
 - Ambiguous procedure `inputOptions` (more than one choice, none selected) returns `ok: false` `reason: needs_input` and the option list; the walker does not call `inputOptions`. A single option may still be taken. With `--out`, the step snapshot is written as `needs-input.json` (resume is FR-23).
 - A finished `proc start` with zero `urls` and zero `errors` is `ok: true` `empty: true` (exit 0), not a failure. Blocker errors still return `ok: false`. This does not change the prepare OData gate.
+- `table exists --name <TNAME>` is a read-only OData TABLES GET `{name, exists}`. A miss is `exists: false` exit 0. Does not create.
 - `table columns --name <TNAME>` is a read-only OData COLUMNS list `{name,type,title}`. Unknown / empty value is `exists: false` `columns: []` exit 0. Does not write the dictionary.
 - `table column add` needs `allowLive: true` and `sqlProfile` on the instance. No `sqlProfile` is `table_ddl_needs_sql` before login. Titles longer than 20 characters are `title_too_long` (FR-32) before login. Does not create a table (FR-34).
 - `table create --name --request <file>` uses the same SQL gate. Request JSON is `{ "columns": [{ "name", "type", "title" }] }` (not a CREATE statement). `allowLive: false` is `live_refused` before login when the instance id looks live.
 - `interface list` is a read of the EXEC catalog and returns `{interfaces:[{name,title}]}`. It does not run an interface (FR-36).
+- `interface run --name --inputs <file>` is `procStart` with `ptype` I and the FR-21/FR-22 walker (file values on inputFields; two options => needs_input). Mapping edits are FR-37.
 - `interface map set --name --fields-file` field-updates one FORMINTERFACES row. `allowLive: false` is `live_refused` before login. Does not prepare (FR-29).
 
 
@@ -175,3 +180,7 @@ npm test
 - OIDC: `priority-saas-oidc-login`, `docs/skill-sources/programming/SAAS_OIDC_LOGIN.md`
 - On-prem password formprep: `src/Prepare-NamedForm.ps1` (unchanged)
 - airc Priority verbs: bobiverse `airc/priority-worker` (fleet console; CredMan on-prem)
+
+### proc text (FR #409)
+
+`proc text --instance <id> --name <ENAME>` reads EXEC `TEXT` as `{name, body}` (read-only; `allowLive` not required). Missing or empty body exits 2 with `proc_text_missing`. Write is FR-028 (`proc text set`).

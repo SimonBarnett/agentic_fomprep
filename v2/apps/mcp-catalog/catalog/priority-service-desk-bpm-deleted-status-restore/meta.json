@@ -1,0 +1,6 @@
+{
+  "name": "priority-service-desk-bpm-deleted-status-restore",
+  "title": "A BPM status could not be re-created because it had been deleted",
+  "description": "A user could not see a status in the purchase order BPM flow chart, and re-creating it said it already existed. The status had been deleted. Restoring it from the deleted statuses list in BPM fixed it.",
+  "version": "1.0.0"
+}

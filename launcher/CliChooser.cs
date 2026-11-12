@@ -29,16 +29,60 @@ public sealed record CliChooserResult(
 
 /// <summary>
 /// Issue #569 / FR-004: same choice rules as the MSI chooser, without downloads (FR-003).
+/// Cursor probe paths align with FR #568 (cursor-agent\agent.cmd; never Cursor.exe GUI or .grok\bin\agent.exe).
 /// </summary>
 public static class CliChooser
 {
     public const string NotFoundLine =
-        "agent CLI not found (expected grok.exe, cursor.exe, or opencode.exe).";
+        "agent CLI not found (expected grok.exe, cursor-agent\\agent.cmd, or opencode.exe).";
     public const string InstallNowPrompt = "Install it now?";
     public const string ZeroMenu =
         "None installed. Offer Grok, Cursor, OpenCode, or refuse.";
     public const string WhichPrompt =
         "Two or more agent CLIs are installed. Ask which to launch. Do not pick by token fuel.";
+
+    /// <summary>FR #568: Cursor agent CLI candidates (not the Cursor IDE GUI).</summary>
+    public static IReadOnlyList<string> CursorAgentCandidatePaths(string localAppData) =>
+        new[]
+        {
+            Path.Combine(localAppData, "cursor-agent", "agent.cmd"),
+            Path.Combine(localAppData, "cursor-agent", "agent.exe"),
+        };
+
+    /// <summary>FR #568: .grok\bin\agent.exe is never Cursor.</summary>
+    public static bool IsRejectedCursorPath(string? path)
+    {
+        if (string.IsNullOrWhiteSpace(path)) return true;
+        string n = path.Replace('/', '\\');
+        if (n.Contains(@"\.grok\bin\agent.exe", StringComparison.OrdinalIgnoreCase)
+            || n.EndsWith(@"\.grok\bin\agent.cmd", StringComparison.OrdinalIgnoreCase)
+            || n.EndsWith(@"\.grok\bin\agent", StringComparison.OrdinalIgnoreCase))
+            return true;
+        // Cursor IDE GUI is not the agent CLI.
+        if (n.EndsWith(@"\Programs\cursor\Cursor.exe", StringComparison.OrdinalIgnoreCase)
+            || n.EndsWith(@"\cursor\Cursor.exe", StringComparison.OrdinalIgnoreCase))
+            return true;
+        return false;
+    }
+
+    public static string? ResolveCursorAgent(string localAppData, IEnumerable<string?>? overrides = null)
+    {
+        foreach (string? o in overrides ?? Array.Empty<string?>())
+        {
+            if (string.IsNullOrWhiteSpace(o) || !File.Exists(o)) continue;
+            if (IsRejectedCursorPath(o)) continue;
+            return Path.GetFullPath(o);
+        }
+        foreach (string p in CursorAgentCandidatePaths(localAppData))
+        {
+            if (File.Exists(p) && !IsRejectedCursorPath(p))
+                return Path.GetFullPath(p);
+        }
+        return null;
+    }
+
+    /// <summary>Hours loop always relaunches the chosen exe (FR #570 / MRB #577), never a hardcoded grok-only gate.</summary>
+    public static string HoursRelaunchExe(FoundCli launch) => launch.Path;
 
     public static AgentCliKind? ParsePick(string? raw)
     {

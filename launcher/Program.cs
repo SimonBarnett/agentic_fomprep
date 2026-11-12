@@ -139,11 +139,16 @@ static class Program
             @"C:\Program Files\GitHub CLI\gh.exe", @"D:\Program Files\GitHub CLI\gh.exe");
         string? grokBin = Which("grok.exe", Environment.GetEnvironmentVariable("PRIORITY_AGENT_TEST_GROK"),
             Path.Combine(Home, ".grok", "bin", "grok.exe"));
-        string? cursorBin = Which("cursor.exe", Environment.GetEnvironmentVariable("PRIORITY_AGENT_TEST_CURSOR"),
-            Path.Combine(Home, "AppData", "Local", "Programs", "cursor", "Cursor.exe"),
-            Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Programs", "cursor", "Cursor.exe"));
+        // FR #568 / MRB #577: Cursor agent is cursor-agent\agent.cmd — never Cursor.exe GUI or .grok\bin\agent.exe.
+        string localAppDataForCli = Environment.GetEnvironmentVariable("LOCALAPPDATA")
+            ?? Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+        string? cursorBin = CliChooser.ResolveCursorAgent(localAppDataForCli, new[]
+        {
+            Environment.GetEnvironmentVariable("PRIORITY_AGENT_TEST_CURSOR"),
+        });
         string? opencodeBin = Which("opencode.exe", Environment.GetEnvironmentVariable("PRIORITY_AGENT_TEST_OPENCODE"),
-            Path.Combine(Home, ".opencode", "bin", "opencode.exe"));
+            Path.Combine(Home, ".opencode", "bin", "opencode.exe"),
+            Path.Combine(localAppDataForCli, "opencode", "opencode.exe"));
         var foundClis = new List<FoundCli>();
         if (grokBin != null) foundClis.Add(new FoundCli(AgentCliKind.Grok, grokBin));
         if (cursorBin != null) foundClis.Add(new FoundCli(AgentCliKind.Cursor, cursorBin));
@@ -409,10 +414,11 @@ static class Program
         Console.WriteLine("\nLaunch command:\n  " + display.Replace("\r\n", "\\n").Replace("\n", "\\n"));
         Log("launch: " + display);
         Check(Directory.Exists(workDir), $"working directory exists: {workDir}");
-        if (chosen.Launch.Kind == AgentCliKind.Grok && grok != null)
         {
-            Console.WriteLine("Hours relaunch command (only if hours are missing on exit):\n  " + Quote(grok) + " " +
+            string hoursExe = CliChooser.HoursRelaunchExe(chosen.Launch);
+            string hoursDisplay = Quote(hoursExe) + (resumeArgs.Count == 0 ? "" : " " +
                 string.Join(' ', resumeArgs.Select(a => a == rules ? $"<rules: {rulesFile}>" : Quote(a))));
+            Console.WriteLine("Hours relaunch command (only if hours are missing on exit):\n  " + hoursDisplay);
         }
 
         if (DryRun) { Info("Dry run: agent not started."); Summary(); Pause(); return Fails == 0 ? 0 : 1; }
@@ -442,8 +448,8 @@ static class Program
             if (Console.IsInputRedirected) { Fails++; Err("non-interactive: cannot relaunch for hours."); break; }
             string ans = Ask($"Relaunching the agent to report hours (attempt {attempt}). Press Enter to continue (type SKIP to override, it gets logged): ");
             if (ans == "SKIP") { Log($"HOURS OVERRIDE: session {sessionId} closed without hours by user"); Warn("hours skipped by override; logged."); Fails++; break; }
-            if (chosen.Launch.Kind == AgentCliKind.Grok && grok != null)
-                code = RunGrok(grok, workDir, resumeArgs);
+            // MRB #577: hours loop relaunches the chosen CLI (empty argv for Cursor/OpenCode until FR-005).
+            code = RunGrok(CliChooser.HoursRelaunchExe(chosen.Launch), workDir, resumeArgs);
         }
         Pause();
         return code;

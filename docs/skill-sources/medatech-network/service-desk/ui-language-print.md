@@ -4,7 +4,7 @@ Issue type: after a cloud move, printouts are in the wrong format because the us
 
 Known: on 2026-10-19 08:22 BST support recorded that the printouts were wrong because she was working in American English, showed her how to change the UI language, and everything was ok after that. The target language was not named. Do not hardcode British English. The menu clicks were not recorded.
 
-Related example: SC262893. On 2026-09-17 a user logged in and all their shortcuts were missing. Support asked whether the user language had changed to American English and, if so, to change it back to British; support called it a known issue. On 2026-09-18 09:39 BST the customer said that did the trick. So a changed UI language can also hide a user's shortcuts, not only change print formats.
+Related example: SC262893. On 2026-09-17 a user logged in and all their shortcuts were missing. Support asked whether the user language had changed to American English and, if so, to change it back to British; support called it a known issue. On 2026-09-18 09:39 BST the customer said that did the trick. So a changed UI language can also hide a user's shortcuts, not only change print formats. A second case, SC262605 (2026-08-27): homepage shortcut tiles were missing for some users; support asked which language those users were in, as this is seen when the language changes to American English from British English. On 2026-08-28 the customer said that fixed it.
 
 This does not fix missing tiles or a missing column translation. Those are separate. It does not fix every cloud print problem.
 
@@ -17,7 +17,7 @@ This does not fix missing tiles or a missing column translation. Those are separ
 
 ## Verification
 
-Proven: the format was correct after the language change (SC263256). Shortcuts came back after the language was changed back (SC262893).
+Proven: the format was correct after the language change (SC263256). Shortcuts came back after the language was changed back (SC262893, SC262605).
 
 Not proven: the target language name and the menu path.
 

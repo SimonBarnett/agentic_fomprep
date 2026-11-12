@@ -197,3 +197,4 @@ books use `harvest-agent-skills` pointing at their home.)
 - form rows --filter calls setSearchFilter once then getRows from 1; omit filter for the unfiltered read.
 - error dialogs stay for the agent unless --confirm-errors; wire CLI setConfirmErrors(hasFlag) plus tests that count errorConfirm 0/1.
 - form action --form ENAME --name ACT needs allowLive; refuseLiveWrite before login; return message-handler list from activateStart/invoke
+- interface run is procStart ptype I with FR-21/FR-22 walker; --inputs on inputFields; two options needs_input; write so allowLive required

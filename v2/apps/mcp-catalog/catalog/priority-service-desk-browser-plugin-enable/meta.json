@@ -2,5 +2,5 @@
   "name": "priority-service-desk-browser-plugin-enable",
   "title": "Enable the Priority browser plugin for the site",
   "description": "Executive reports, blank screens, or statement PDFs can fail because the installed Priority client plugin is disabled for the site. Enable it and rerun. Do not start with a reinstall. A private-window cache clear is a different skill.",
-  "version": "1.0.0"
+  "version": "1.1.0"
 }

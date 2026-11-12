@@ -192,4 +192,5 @@ books use `harvest-agent-skills` pointing at their home.)
 - Seat-side resolve_skills overlay: merge public MCP with local customer .grok/skills + SO/SC markdown; never POST overlay; normalizeMcpToolsUrl accepts https://mcp.ntsa.uk or .../mcp.
 - Read %USERPROFILE%\.priority-agent\last-user.json by WCF instance id for the interactive USERLOGIN prompt; do not invent the OS account as a default.
 - fail() must emit boolean retryable; true only for login_connect; api_licence and token_expired keep a hint and retryable false.
+- When folding a verb PR into FR-008 help, add the new verb to usage() and HELP_TOPICS so help <verb> stays one screen.
 - form rows --filter calls setSearchFilter once then getRows from 1; omit filter for the unfiltered read.

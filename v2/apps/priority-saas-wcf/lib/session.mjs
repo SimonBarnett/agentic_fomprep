@@ -107,8 +107,9 @@ export async function loginSession(instance, accessToken, opts = {}) {
     devicename: opts.devicename,
     url: urlRes.url,
   });
+  let loginResult = null;
   try {
-    await priority.login(config);
+    loginResult = await priority.login(config);
   } catch (e) {
     const msg = String(e?.message || e);
     const cls = classifyLoginError(msg);
@@ -129,6 +130,7 @@ export async function loginSession(instance, accessToken, opts = {}) {
   return {
     ok: true,
     priority,
+    loginResult: loginResult ?? null,
     tabulaini: iniRes.tabulaini,
     tabulainiSource: iniRes.source,
     company: instance.company,

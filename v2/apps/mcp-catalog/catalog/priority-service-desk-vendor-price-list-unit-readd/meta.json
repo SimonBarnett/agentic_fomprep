@@ -1,0 +1,6 @@
+{
+  "name": "priority-service-desk-vendor-price-list-unit-readd",
+  "title": "A vendor price list kept the old unit after the unit on vendor parts changed",
+  "description": "Vendor price list lines showed a different unit from the one now set on the vendor part. The line had to be deleted from the price list and re-added to pick up the new unit.",
+  "version": "1.0.0"
+}

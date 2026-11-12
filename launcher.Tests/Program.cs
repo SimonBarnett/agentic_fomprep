@@ -23,6 +23,8 @@ var checks = new List<(string Name, Action Run)>
     ("MRB-434: space login and access_token row are not suggested", TestInvalidSavedLoginIgnored),
     ("session metadata userLoginSource saved on empty Enter", TestSessionSourceSaved),
     ("--hours-user matching whoami records flag", TestSessionSourceFlagMatchesWhoami),
+    ("MRB-439 hostile: typed login is client even when equals saved", TestSessionSourceTypedIsClient),
+    ("MRB-439 hostile: identity has no token keys", TestSessionIdentityNoSecrets),
 };
 
 int failures = 0;
@@ -362,6 +364,32 @@ static void TestSessionSourceFlagMatchesWhoami()
         "matching --hours-user must still be flag");
 }
 
+
+static void TestSessionSourceTypedIsClient()
+{
+    Assert(SessionLoginMeta.ClassifySource(null, "MEDATECH", "MEDATECH") == SessionLoginMeta.SourceClient,
+        "typed answer must be client even when it matches saved");
+    Assert(SessionLoginMeta.ClassifySource(null, "OTHER", "MEDATECH") == SessionLoginMeta.SourceClient,
+        "typed OTHER must be client");
+}
+
+static void TestSessionIdentityNoSecrets()
+{
+    string root = NewTemp();
+    try
+    {
+        SessionLoginMeta.WriteIdentity(root, "MEDATECH", SessionLoginMeta.SourceFlag);
+        string text = File.ReadAllText(Path.Combine(root, "identity.json"));
+        Assert(!text.Contains("access_token", StringComparison.Ordinal)
+            && !text.Contains("refresh_token", StringComparison.Ordinal)
+            && !text.Contains("password", StringComparison.OrdinalIgnoreCase),
+            "identity must not look like secrets: " + text);
+        Assert(text.Contains("\"userLoginSource\":\"flag\"", StringComparison.Ordinal)
+            || text.Contains("\"userLoginSource\": \"flag\"", StringComparison.Ordinal),
+            "source flag missing: " + text);
+    }
+    finally { DeleteTempDirectory(root); }
+}
 static string NewTemp()
 {
     string path = Path.Combine(Path.GetTempPath(), "priority-agent-tests-" + Guid.NewGuid().ToString("N"));

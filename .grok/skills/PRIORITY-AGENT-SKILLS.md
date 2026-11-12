@@ -95,6 +95,7 @@ IncludeDba=False IncludeCustomer=False
 - priority-service-desk-debit-memo-part-account
 - priority-service-desk-form-design-restore
 - priority-service-desk-inventory-count-prepare-zero
+- priority-service-desk-mrp-purchase-planning-input
 - priority-service-desk-numeration-fiscal-year-constant
 - priority-service-desk-odata-record-limit-powerbi
 - priority-service-desk-privilege-message-disable

@@ -133,6 +133,7 @@ node bin\priority-wcf.mjs proc text set --instance customer-saas-dev --name MYPR
 node bin\priority-wcf.mjs table column add --instance customer-saas-dev --name T1 --column C1 --type CHAR --title Cust
 node bin\priority-wcf.mjs table create --instance customer-saas-dev --name T1 --request C:\temp\table-cols.json
 node bin\priority-wcf.mjs interface list --instance customer-saas-dev
+node bin\priority-wcf.mjs interface map set --instance customer-saas-dev --name MYIFACE --fields-file C:\temp\map.json
 ```
 
 - Form prep: `EFORM` + `FORMPREPDRCT2`, then scrape `FORMPREPERRS`.
@@ -150,6 +151,7 @@ node bin\priority-wcf.mjs interface list --instance customer-saas-dev
 - `table column add` needs `allowLive: true` and `sqlProfile` on the instance. No `sqlProfile` is `table_ddl_needs_sql` before login. Titles longer than 20 characters are `title_too_long` (FR-32) before login. Does not create a table (FR-34).
 - `table create --name --request <file>` uses the same SQL gate. Request JSON is `{ "columns": [{ "name", "type", "title" }] }` (not a CREATE statement). `allowLive: false` is `live_refused` before login when the instance id looks live.
 - `interface list` is a read of the EXEC catalog and returns `{interfaces:[{name,title}]}`. It does not run an interface (FR-36).
+- `interface map set --name --fields-file` field-updates one FORMINTERFACES row. `allowLive: false` is `live_refused` before login. Does not prepare (FR-29).
 
 
 ## CAST IRON

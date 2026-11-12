@@ -1,0 +1,48 @@
+id	slug	title
+FR-001	whoami	whoami returns the Priority USERLOGIN
+FR-002	save-last-user	save the identified USERLOGIN for the next run
+FR-003	suggest-saved-user	launcher suggests the saved USERLOGIN
+FR-004	noninteractive-default	non-interactive launch uses the saved USERLOGIN
+FR-005	disagree-stop	stop when the flag disagrees with whoami
+FR-006	session-user-source	session metadata records where the login came from
+FR-007	request-file	JSON request file for verb arguments
+FR-008	verb-help	per-verb help text
+FR-009	dry-run	dry-run resolves the instance and does not log in
+FR-010	error-envelope	machine-readable retry hint on login failures
+FR-011	exit-codes	stable process exit codes
+FR-012	companies	list companies for this login
+FR-013	form-columns	form columns without reading rows
+FR-014	form-rows-filter	form rows accepts a filter
+FR-015	form-new	insert one form row
+FR-016	form-delete	delete one positioned row only with confirm
+FR-017	form-action	run one named form activation
+FR-018	subform-write	write one subform row
+FR-019	dialog-policy	do not auto-confirm error dialogs
+FR-020	fields-file-cap	cap the fields file at 1 MiB and reject a BOM
+FR-021	proc-inputs	procedure inputs come from a file
+FR-022	needs-input	ambiguous procedure options return needs_input
+FR-023	proc-continue	proc continue resumes with an explicit option
+FR-024	result-urls	proc and prepare results include report URLs
+FR-025	report-run	report run is proc start with type R
+FR-026	empty-report	a report with no output is empty, not a failure
+FR-027	proc-text-read	read procedure body
+FR-028	proc-text-write	write procedure body through the form
+FR-029	prepare-interface	prepare interface refuses until the proc name is pinned
+FR-030	table-columns	read dictionary columns for one table
+FR-031	table-exists	table exists is a read
+FR-032	title-length	dictionary titles longer than 20 characters are refused
+FR-033	table-column-add	add one column or refuse on SaaS without SQL
+FR-034	table-create	create table refuses without a SQL profile
+FR-035	interface-list	list interface names
+FR-036	interface-run	run one interface with an inputs file
+FR-037	interface-map-set	update one interface mapping row
+FR-038	token-expired	refuse an expired access token before login
+FR-039	token-refresh	refresh an expired access token once
+FR-040	login-retry	retry login_connect once
+FR-041	probe-cache	cache the tenant probe for one hour
+FR-042	batch-reads	batch up to 8 reads on one login
+FR-043	row-cap	form rows stops at a limit
+FR-044	redact-stdout	login errors do not echo bearer tokens
+FR-045	rules-examples	launcher rules show whoami and the saved-user prompt
+FR-046	skill-verb-list	catalog skill lists the same verbs as the client help
+FR-047	vision-bounds	VISION.md records the last-user file and keeps the prep gate

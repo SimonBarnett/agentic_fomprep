@@ -103,7 +103,7 @@ before login. Do not copy request files into the repo.
 
 `companies --instance <id>` is read-only JSON `{companies:[{name,title}]}` and does not require `allowLive`. It does not switch the session company.
 
-`form rows --filter` (or request-file `filter`) calls SDK `setSearchFilter` once then `getRows` from 1. Missing filter is the unfiltered read. Writes stay on `form set` / `form save`.
+`form rows --filter` (or request-file `filter`) calls SDK `setSearchFilter` once then `getRows` from 1. Missing filter is the unfiltered read. `--limit N` (default 50, maximum 500) stops the client after N rows; `--limit 501` exits 2 `limit_too_high` before login. Writes stay on `form set` / `form save`.
 
 `form subform --set --fields-file` field-updates the child only (`allowLive: true` required). Bare `form subform` (no `--set`) stays read-only.
 

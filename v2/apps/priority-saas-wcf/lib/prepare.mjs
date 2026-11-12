@@ -220,7 +220,28 @@ export async function runPrepare(session, instance, kind, name, opts = {}) {
     maxSteps: opts.maxSteps,
     deadlineMs: opts.deadlineMs,
     onStep: opts.onStep,
+    onNeedsInput: opts.onNeedsInput,
   });
+  if (walk.reason === 'needs_input') {
+    return {
+      ok: false,
+      walkOk: false,
+      preparedClaim: false,
+      reason: 'needs_input',
+      options: walk.options,
+      snapshot: walk.snapshot,
+      stage: 'needs_input',
+      kind: defaults.kind,
+      name,
+      catalog: started.catalog,
+      proc: started.proc,
+      steps: walk.stepCount,
+      lastType: walk.lastType,
+      ended: false,
+      errors,
+      messages,
+    };
+  }
   errors.push(...walk.errors);
 
   if (defaults.errorForm === 'FORMPREPERRS') {

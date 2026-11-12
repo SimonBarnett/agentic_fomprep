@@ -193,6 +193,26 @@ test('evaluatePrepGate fails when lastprep did not advance', () => {
   assert.equal(r.status, 'lastprep_unchanged');
 });
 
+test('S4 two-option step nothing selected: needs_input and no inputOptions', async () => {
+  let calls = 0;
+  const proc = {
+    inputOptions: async () => {
+      calls += 1;
+      return { type: 'end', proc };
+    },
+  };
+  const r = await walkProcSteps(
+    {
+      type: 'inputOptions',
+      proc,
+      input: { Options: [{ field: 'A' }, { field: 'B' }] },
+    },
+    { maxSteps: 5, deadlineMs: 5000 },
+  );
+  assert.equal(calls, 0);
+  assert.equal(r.reason, 'needs_input');
+});
+
 test('gateUnavailable when no SQL/OData', () => {
   const g = gateUnavailable('no_sql_no_odata');
   assert.equal(g.ok, false);

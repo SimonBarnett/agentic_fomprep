@@ -124,6 +124,7 @@ node bin\priority-wcf.mjs proc continue --instance customer-saas-dev --from C:\t
 - `proc start --inputs <file>` is a UTF-8 JSON map passed as `inputValues` on the first `inputFields` step. Matching EditField names take file values; name-hint fill runs only for fields the file did not set. Option selection is unchanged.
 - `proc continue --from <step.json> --option <field>` resumes after needs_input with that option field (does not auto-pick). Missing `--from` exits 2 before login. `--inputs` applies on the next `inputFields` step.
 - `prepare` is a write (`allowLive: true` required).
+- Ambiguous procedure `inputOptions` (more than one choice, none selected) returns `ok: false` `reason: needs_input` and the option list; the walker does not call `inputOptions`. A single option may still be taken. With `--out`, the step snapshot is written as `needs-input.json` (resume is FR-23).
 - SaaS success gate: when `odataBase` is set on the allowlist row, re-read UPD/LASTPREPDATE-style fields via OData (`PRIORITY_SAAS_ODATA_PAT` or Bearer). Without SQL or OData, `walkOk` may be true but `preparedClaim` stays false (`gate.status=unavailable`). Use `--no-gate` only for walk diagnostics.
 
 

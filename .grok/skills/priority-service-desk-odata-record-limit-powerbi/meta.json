@@ -1,0 +1,6 @@
+{
+  "name": "priority-service-desk-odata-record-limit-powerbi",
+  "title": "Power BI stopped loading records past a point because of the API record limit",
+  "description": "After an upgrade, a Power BI table fed by OData stopped loading records after a certain customer. A system constant limited API retrieval to 7000 records. Raising it to 30000 fixed the query.",
+  "version": "1.0.0"
+}

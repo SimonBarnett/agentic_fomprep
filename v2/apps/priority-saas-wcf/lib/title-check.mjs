@@ -4,13 +4,15 @@ export const DICTIONARY_TITLE_MAX = 20;
 
 export function checkDictionaryTitle(title) {
   const t = String(title ?? '');
-  if (t.length > DICTIONARY_TITLE_MAX) {
+  const length = t.length;
+  if (length > DICTIONARY_TITLE_MAX) {
     return {
       ok: false,
       reason: 'title_too_long',
+      title: t,
       max: DICTIONARY_TITLE_MAX,
-      length: t.length,
+      length,
     };
   }
-  return { ok: true, title: t };
+  return { ok: true, title: t, length, max: DICTIONARY_TITLE_MAX };
 }

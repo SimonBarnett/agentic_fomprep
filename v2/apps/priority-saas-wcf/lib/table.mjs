@@ -53,6 +53,10 @@ export function columnsFromCreateRequest(doc) {
     const type = String(c.type || c.CTYPE || '').trim();
     const title = String(c.title || c.TITLE || '').trim();
     if (!name || !type) return { ok: false, reason: 'column_invalid' };
+    if (title) {
+      const tc = checkDictionaryTitle(title);
+      if (!tc.ok) return tc;
+    }
     const col = { name, type };
     if (title) col.title = title;
     columns.push(col);

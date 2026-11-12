@@ -167,6 +167,7 @@ proc text set writes --file through the EXEC form (allowLive). Does not prepare.
 
 Column add and table create need allowLive and sqlProfile. No sqlProfile is table_ddl_needs_sql before login.
 Request JSON lists columns (name/type/title). Never a raw CREATE. Title longer than 20 is title_too_long before login.
+Never invent host/tenant.
 `,
   interface: `help interface
 

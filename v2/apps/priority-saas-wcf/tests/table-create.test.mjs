@@ -139,3 +139,60 @@ test('allowLive false: live_refused before login', () => {
 test('verbIsWrite: table.create is a write', () => {
   assert.equal(verbIsWrite('table.create'), true);
 });
+
+test('MRB 500: 21-char column title on create is title_too_long before login', () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'tbl-create-ttl-'));
+  const instances = path.join(dir, 'instances.json');
+  const request = path.join(dir, 'request.json');
+  fs.writeFileSync(
+    instances,
+    JSON.stringify({
+      instances: [
+        {
+          id: 'dev',
+          host: 'example.invalid',
+          tenant: 'ten',
+          company: 'co',
+          user: 'u@x.com',
+          allowLive: true,
+          sqlProfile: { name: 'dev-sql' },
+          wcfUrl: 'https://example.invalid/wcf/service.svc',
+        },
+      ],
+    }),
+  );
+  fs.writeFileSync(
+    request,
+    JSON.stringify({
+      columns: [{ name: 'C1', type: 'CHAR', title: '123456789012345678901' }],
+    }),
+  );
+  const started = Date.now();
+  const run = spawnSync(
+    process.execPath,
+    [
+      BIN,
+      'table',
+      'create',
+      '--instance',
+      'dev',
+      '--instances',
+      instances,
+      '--name',
+      'T1',
+      '--request',
+      request,
+    ],
+    {
+      encoding: 'utf8',
+      cwd: ROOT,
+      env: { ...process.env, PRIORITY_SAAS_TOKEN: 'FAKE_access_token_table_create' },
+    },
+  );
+  const elapsed = Date.now() - started;
+  const out = String(run.stdout || '') + String(run.stderr || '');
+  assert.equal(run.status, 2, out);
+  const body = JSON.parse(String(run.stdout || '').trim().split('\n').pop());
+  assert.equal(body.reason, 'title_too_long');
+  assert.ok(elapsed < 4000, `must not login; took ${elapsed}ms`);
+});

@@ -10,7 +10,7 @@ import { fileURLToPath } from 'node:url';
 import { readAllowlist, selectInstance, refuseLiveWrite, defaultInstancesPath } from '../lib/allowlist.mjs';
 import { loadAccessToken } from '../lib/token.mjs';
 import { probeTenant } from '../lib/probe.mjs';
-import { loginSession, logout, safeEnd } from '../lib/session.mjs';
+import { loginSession, logout, safeEnd, setConfirmErrors } from '../lib/session.mjs';
 import {
   formStart,
   formGetRows,
@@ -75,6 +75,7 @@ Object kinds: table, form, report, procedure, interface.
   report  (see: help report)
   Any verb: --request <path>  UTF-8 JSON; keys fields|filter|inputs|name|form|subform override flags
   --dry-run               resolve instance + verb; print instanceId, verb, write; no login
+  --confirm-errors        auto-dismiss SDK error dialogs (default: leave them for the agent)
   help
   help <verb>   form|prepare|proc|table|interface|report|companies
 
@@ -561,6 +562,7 @@ async function cmdProc(sub) {
 }
 
 async function main() {
+  setConfirmErrors(hasFlag('--confirm-errors'));
   const verb = (process.argv[2] || 'help').toLowerCase();
   if (verb === 'help' || verb === '-h' || verb === '--help') {
     const topic = (process.argv[3] || '').toLowerCase();

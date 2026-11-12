@@ -240,6 +240,7 @@ export async function runPrepare(session, instance, kind, name, opts = {}) {
       ended: false,
       errors,
       messages,
+      urls: walk.urls || [],
     };
   }
   errors.push(...walk.errors);
@@ -302,5 +303,6 @@ export async function runPrepare(session, instance, kind, name, opts = {}) {
     errors,
     gate,
     messages,
+    urls: walk.urls || [],
   };
 }

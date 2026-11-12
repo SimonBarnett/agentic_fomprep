@@ -16,6 +16,7 @@ import { runPrepare } from '../lib/prepare.mjs';
 import { runProcStart } from '../lib/proc.mjs';
 import { resolveWhoami } from '../lib/whoami.mjs';
 import { emit, fail, ok, redact } from '../lib/json-out.mjs';
+import { planDryRun } from '../lib/dry-run.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '..');
@@ -43,7 +44,7 @@ function usage() {
   form subform --instance <id> --form <PARENT> --subform <CHILD> [--rows]
   prepare form|procedure|report --instance <id> --name <ENAME> [--proc FORMPREPDRCT2|REPPREPDIRECT2] [--no-gate]
   proc start --instance <id> --name <ENAME> [--ptype P|R]
-  help
+  --dry-run               resolve instance + verb; print instanceId, verb, write; no login
 
 Env:
   PRIORITY_SAAS_WCF_INSTANCES  allowlist JSON (default %USERPROFILE%\\.priority-saas-wcf\\instances.json)
@@ -394,6 +395,15 @@ async function cmdProc(sub) {
 async function main() {
   const verb = (process.argv[2] || 'help').toLowerCase();
   if (verb === 'help' || verb === '-h' || verb === '--help') return usage();
+  if (hasFlag('--dry-run')) {
+    const plan = planDryRun(process.argv);
+    if (!plan.ok) return fail(plan.reason, plan);
+    return ok({
+      instanceId: plan.instanceId,
+      verb: plan.verb,
+      write: plan.write,
+    });
+  }
   if (verb === 'probe') return cmdProbe();
   if (verb === 'session') return cmdSession();
   if (verb === 'whoami') return cmdWhoami();

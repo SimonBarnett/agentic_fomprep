@@ -31,6 +31,10 @@ A form is **prepared** only when both are true:
 
 Never report success from Playwright finish, winrun exit 0, or SQL flips of `UPD` alone. Never leave the unprepared estate marked prepared. Never embed passwords in this repo (CredMan / redacted logs only).
 
+The Priority Agent client may store the identified USERLOGIN in the user-profile last-user file. That file must not contain tokens. The OS user remains ineligible as a default.
+
+Live writes through the SaaS WCF client stay behind allowLive. Prep success still requires EXECPREPLOCK UPD=N and LASTPREPDATE moved.
+
 ## Bounds
 
 - **Prefer DEV:** Form Prep pins and default changes target environment `DEV` (SQL instance and web host on the DEV stack). Live/PRI connections for the selected customer are allowed via the machine-local passwords file **without asking first** (rules v2); prefer DEV/test for writes and Form Prep runs when a DEV estate exists.

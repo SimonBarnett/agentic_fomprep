@@ -29,6 +29,17 @@ export function prepareKindDefaults(kind) {
       searchField: 'ENAME',
     };
   }
+  // FR #411 / FR-029: interface uses EXEC + OData gate like report, but never invents a proc.
+  // Proc must come from config/interface-prep.json (or opts.proc).
+  if (k === 'interface') {
+    return {
+      kind: 'interface',
+      catalogForm: 'EXEC',
+      proc: '',
+      errorForm: '',
+      searchField: 'ENAME',
+    };
+  }
   throw new Error('unknown_prepare_kind:' + kind);
 }
 
@@ -190,6 +201,21 @@ export async function runPrepare(session, instance, kind, name, opts = {}) {
   const priority = session.priority;
   const errors = [];
 
+  // FR #411: interface prepare must not invent a proc (CLI gates before login; this is the belt).
+  if (defaults.kind === 'interface' && !String(defaults.proc || '').trim()) {
+    return {
+      ok: false,
+      walkOk: false,
+      preparedClaim: false,
+      reason: 'interface_prep_unknown',
+      stage: 'interface_prep_unknown',
+      kind: defaults.kind,
+      name,
+      messages,
+      errors,
+    };
+  }
+
   let beforeGate = null;
   if (opts.gate !== false && instance.odataBase) {
     beforeGate = await fetchODataPrepSnapshot(instance, name, {
@@ -220,7 +246,29 @@ export async function runPrepare(session, instance, kind, name, opts = {}) {
     maxSteps: opts.maxSteps,
     deadlineMs: opts.deadlineMs,
     onStep: opts.onStep,
+    onNeedsInput: opts.onNeedsInput,
   });
+  if (walk.reason === 'needs_input') {
+    return {
+      ok: false,
+      walkOk: false,
+      preparedClaim: false,
+      reason: 'needs_input',
+      options: walk.options,
+      snapshot: walk.snapshot,
+      stage: 'needs_input',
+      kind: defaults.kind,
+      name,
+      catalog: started.catalog,
+      proc: started.proc,
+      steps: walk.stepCount,
+      lastType: walk.lastType,
+      ended: false,
+      errors,
+      messages,
+      urls: walk.urls || [],
+    };
+  }
   errors.push(...walk.errors);
 
   if (defaults.errorForm === 'FORMPREPERRS') {
@@ -281,5 +329,6 @@ export async function runPrepare(session, instance, kind, name, opts = {}) {
     errors,
     gate,
     messages,
+    urls: walk.urls || [],
   };
 }

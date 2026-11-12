@@ -3,8 +3,8 @@ name: priority-saas-wcf
 description: >
   Allowlist-gated Priority SaaS Web SDK (WCF) client for PriorityAgent:
   Bearer accessToken login, tenant probe, form start/rows/set/save/subform,
-  prepare form|procedure|report, FORMPREPERRS, proc start, whoami USERLOGIN,
-  SaaS OData gate.
+  prepare form|procedure|report|interface, FORMPREPERRS, proc start, whoami USERLOGIN,
+  table exists|columns, interface list|run, SaaS OData gate.
   Use when: SaaS WCF, Cloud Web SDK, priority-wcf.mjs, formStart SaaS,
   connect SaaS Priority, accessToken WCF, prepare SaaS, whoami, /priority-saas-wcf.
 ---
@@ -21,7 +21,8 @@ Grab from catalog MCP (`get_skill` with `name=priority-saas-wcf`).
 
 Need a **deterministic** Web SDK session against Priority **SaaS / Cloud**
 (`p.priority-connect.online` or regional host) to **open/edit business forms**
-or **prepare form/procedure/report** / run `proc start`. On-prem CredMan password
+or **prepare form/procedure/report/interface** / run `proc start` / **table** /
+**interface** verbs. On-prem CredMan password
 path stays `priority-formprep` / `src/Prepare-NamedForm.ps1`.
 
 For Cloud **dictionary / trigger** archaeology (`EFORM`, `FORMTRIG`, SEARCH-ALL-FIELD
@@ -47,14 +48,23 @@ bodies), prefer **REST PAT + OData** (`priority-odata-dev`) or **Priority Cloud 
 4. `node bin/priority-wcf.mjs probe --instance <id>`
 5. `node bin/priority-wcf.mjs session --instance <id>`
 6. `node bin/priority-wcf.mjs whoami --instance <id>` -> `{ok,userLogin,source}` (`login` or `users`); never OS user; exit 3 = `user_unidentified`.
-7. Form verbs: `form start|rows|set|save|subform` with `--form <ENAME>`.
-8. Prefer `--request <path>` (UTF-8 JSON) for `fields` / `filter` / `inputs` / `name` /
+7. `--dry-run` on any verb: prints `instanceId`, `verb`, `write` without login
+   (unknown instance still exits 2 / `instance_unknown`). Does not write last-user.json.
+8. Form verbs: `form start|rows|set|save|subform|action` with `--form <ENAME>`
+   (`form action --name <activation>` needs `allowLive`; returns message list).
+   `form subform --set --fields-file <path>` writes the child only (`allowLive`
+   required; refuse before login). Bare `form subform` without `--set` stays read-only.
+9. Prefer `--request <path>` (UTF-8 JSON) for `fields` / `filter` / `inputs` / `name` /
    `form` / `subform` so Windows quoting is not required. Invalid JSON exits 2
    (`request_invalid`) before login. Keep request files outside the repo.
-9. Prepare: `prepare form|procedure|report --name <ENAME>` (needs `allowLive`).
+10. Prepare: `prepare form|procedure|report` and `prepare interface --name <ENAME>` (needs `allowLive`).
    Success = walk ended **and** independent gate (`odataBase` OData UPD/LASTPREPDATE
    when SQL unavailable). Without gate, `preparedClaim` stays false.
-10. Proc: `proc start --name <ENAME> [--ptype P]`.
+11. Proc: `proc start --name <ENAME> [--ptype P]`.
+12. Table: `table exists|columns --name <TNAME>` (reads). Writes: `table column add`, `table create`.
+13. Interface: `interface list` (read) and `interface run --name <ENAME>` (write; `allowLive`).
+14. `proc start` and `prepare` JSON include `urls: string[]` from SDK displayUrl
+    steps (`displayUrlOf`). Missing URLs are `[]`. Do not download those URLs.
 
 ## Related
 

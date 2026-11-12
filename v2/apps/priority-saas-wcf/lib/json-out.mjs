@@ -17,7 +17,9 @@ export function redact(value) {
   if (typeof value === 'string') {
     if (/^eyJ[A-Za-z0-9_-]+\./.test(value)) return '<redacted-jwt>';
     if (value.length > 40 && /^[A-Za-z0-9._~+/-]+=*$/.test(value)) return '<redacted>';
-    return value;
+    let s = value.replace(/\bBearer\s+\S+/gi, 'Bearer <redacted>');
+    s = s.replace(/access_token\s*[:=]\s*\S+/gi, 'access_token=<redacted>');
+    return s;
   }
   if (Array.isArray(value)) return value.map(redact);
   if (typeof value === 'object') {
@@ -60,11 +62,40 @@ export function classifyFailRetry(reason) {
   return { retryable: false, hint: undefined };
 }
 
-export function fail(reason, extra = {}, exit = 2) {
+/** Auth / identity failures the agent should treat as credential problems. */
+const EXIT3_REASONS = new Set([
+  'login_failed',
+  'api_licence',
+  'login_connect',
+  'token_expired',
+  'user_unidentified',
+]);
+
+/**
+ * FR-011 / #393: stable process exit codes.
+ * 0 = ok; 2 = usage/allowlist/request_invalid (default fail);
+ * 3 = login/token/user identity; 4 = prepare walk finished but gate unavailable.
+ */
+export function exitCodeForFail(reason, extra = {}) {
+  const r = String(reason || '');
+  if (EXIT3_REASONS.has(r)) return 3;
+  const gateStatus = String(extra?.gate?.status || '').toLowerCase();
+  if (
+    gateStatus === 'unavailable' &&
+    (r === 'prepare_gate_failed' || extra?.walkOk === true)
+  ) {
+    return 4;
+  }
+  return 2;
+}
+
+export function fail(reason, extra = {}, exit) {
   const cls = classifyFailRetry(reason);
   const payload = { ok: false, reason, ...extra, retryable: cls.retryable };
   if (cls.hint && (payload.hint == null || payload.hint === '')) payload.hint = cls.hint;
-  return emit(payload, { exit });
+  const code =
+    exit === undefined || exit === null ? exitCodeForFail(reason, extra) : exit;
+  return emit(payload, { exit: code });
 }
 
 export function ok(extra = {}) {

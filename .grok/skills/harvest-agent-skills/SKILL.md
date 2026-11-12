@@ -192,3 +192,12 @@ books use `harvest-agent-skills` pointing at their home.)
 - Seat-side resolve_skills overlay: merge public MCP with local customer .grok/skills + SO/SC markdown; never POST overlay; normalizeMcpToolsUrl accepts https://mcp.ntsa.uk or .../mcp.
 - Read %USERPROFILE%\.priority-agent\last-user.json by WCF instance id for the interactive USERLOGIN prompt; do not invent the OS account as a default.
 - fail() must emit boolean retryable; true only for login_connect; api_licence and token_expired keep a hint and retryable false.
+- When folding a verb PR into FR-008 help, add the new verb to usage() and HELP_TOPICS so help <verb> stays one screen.
+- When MRB tip goes DIRTY after stacking docs, fetch real origin/main (ls-remote) before fold; keep both sides of skill/CLI conflicts (dry-run + request + help topics)
+- form rows --filter calls setSearchFilter once then getRows from 1; omit filter for the unfiltered read.
+- error dialogs stay for the agent unless --confirm-errors; wire CLI setConfirmErrors(hasFlag) plus tests that count errorConfirm 0/1.
+- form action --form ENAME --name ACT needs allowLive; refuseLiveWrite before login; return message-handler list from activateStart/invoke
+- interface run is procStart ptype I with FR-21/FR-22 walker; --inputs on inputFields; two options needs_input; write so allowLive required
+- A BPM status missing from the flow chart that already exists on create is often deleted; restore it from the deleted-status list via the + icon; do not insert in tables.
+- Stacked service-desk harvests conflict on PRIORITY-AGENT-SKILLS and skill-harvest-log; keep every sibling skill name when folding.
+

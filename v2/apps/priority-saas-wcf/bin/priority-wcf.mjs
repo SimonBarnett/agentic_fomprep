@@ -11,7 +11,15 @@ import { readAllowlist, selectInstance, refuseLiveWrite, defaultInstancesPath } 
 import { loadAccessToken } from '../lib/token.mjs';
 import { probeTenant } from '../lib/probe.mjs';
 import { loginSession, logout, safeEnd } from '../lib/session.mjs';
-import { formStart, formGetRows, formSetFields, formSave, formStartSubForm, applySearchThenGetRows } from '../lib/form.mjs';
+import {
+  formStart,
+  formGetRows,
+  formSetFields,
+  formSave,
+  formStartSubForm,
+  formSubformSetFields,
+  applySearchThenGetRows,
+} from '../lib/form.mjs';
 import { runPrepare } from '../lib/prepare.mjs';
 import { runProcStart } from '../lib/proc.mjs';
 import { resolveWhoami } from '../lib/whoami.mjs';
@@ -23,6 +31,7 @@ import {
   fieldsFromRequestOrFlag,
   rawJsonFromRequestOrFlag,
   stringFromRequestOrFlag,
+  loadFieldsFile,
 } from '../lib/request-file.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -106,6 +115,7 @@ Form verbs (one screen):
   form set     --instance <id> --form <ENAME> --fields '{...}' [--filter ...]
   form save    --instance <id> --form <ENAME> --fields '{...}' [--filter ...]
   form subform --instance <id> --form <PARENT> --subform <CHILD> [--rows]
+  form subform --instance <id> --form <PARENT> --subform <CHILD> --set --fields-file <path>
 
 Writes need allowLive: true. Never invent ENAME. Never log tokens.
 `,
@@ -338,7 +348,7 @@ async function openFilteredForm(session, instance, formName, filterRaw, messages
 async function cmdForm(sub) {
   const formName = reqString('form', '--form');
   if (!formName) return fail('form_required', { need: '--form <ENAME> or request.form' });
-  const write = sub === 'set' || sub === 'save';
+  const write = sub === 'set' || sub === 'save' || (sub === 'subform' && hasFlag('--set'));
   return withSession(
     async ({ instance, session, dump }) => {
       const messages = [];
@@ -347,6 +357,47 @@ async function cmdForm(sub) {
         if (sub === 'subform') {
           const childName = reqString('subform', '--subform');
           if (!childName) return fail('subform_required', { need: '--subform <ENAME> or request.subform' });
+
+          // FR #400: --set writes the child via fields-file (allowLive gated by write flag).
+          if (hasFlag('--set')) {
+            const fieldsPath = arg('--fields-file', '');
+            let fields = {};
+            if (fieldsPath) {
+              const loaded = loadFieldsFile(fieldsPath);
+              if (!loaded.ok) {
+                return fail(loaded.reason || 'fields_file_invalid', loaded);
+              }
+              fields = loaded.fields;
+            } else {
+              fields = fieldsFromRequestOrFlag(requestDoc, arg('--fields', '{}'));
+            }
+            if (Object.keys(fields).length < 1) {
+              return fail('fields_required', {
+                need: '--fields-file <path> or --fields JSON / request.fields',
+              });
+            }
+            form = await formStart(session.priority, formName, instance.company, { messages });
+            const { child, set } = await formSubformSetFields(form, childName, fields, { messages });
+            dump('subform-set.json', {
+              parent: formName,
+              child: childName,
+              fields: Object.keys(fields),
+              set,
+              messages,
+            });
+            await safeEnd(child);
+            await safeEnd(form);
+            return ok({
+              action: 'form.subform.set',
+              instanceId: instance.id,
+              parent: formName,
+              subform: childName,
+              fields: Object.keys(fields),
+              set,
+              messages,
+            });
+          }
+
           form = await formStart(session.priority, formName, instance.company, { messages });
           const child = await formStartSubForm(form, childName, { messages });
           let rows = null;

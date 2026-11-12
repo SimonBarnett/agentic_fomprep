@@ -53,5 +53,6 @@ test('Fake miss: exists false and ok true', async () => {
 
 test('verbIsWrite: table.exists is not a write', () => {
   assert.equal(verbIsWrite('table.exists'), false);
-  assert.equal(verbIsWrite('table.create'), false);
+  // FR-034 on main: create is a write; exists stays read-only.
+  assert.equal(verbIsWrite('table.create'), true);
 });

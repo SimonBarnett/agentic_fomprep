@@ -22,6 +22,7 @@ var checks = new List<(string Name, Action Run)>
     ("--hours-user OTHER wins over saved MEDATECH", TestHoursUserWinsOverSaved),
     ("MRB-434: space login and access_token row are not suggested", TestInvalidSavedLoginIgnored),
     ("FR-387: --hours-user OTHERUSER vs whoami MEDATECH exits 2 and does not start grok", TestHoursUserDisagreesWithWhoami),
+    ("MRB-438: matching --hours-user continues; missing whoami does not block", TestHoursUserMatchesOrAbsentWhoami),
 };
 
 int failures = 0;
@@ -364,6 +365,16 @@ static void TestHoursUserDisagreesWithWhoami()
         Environment.SetEnvironmentVariable(LastUserFile.EnvPath, previous);
         DeleteTempDirectory(root);
     }
+}
+
+static void TestHoursUserMatchesOrAbsentWhoami()
+{
+    var match = LastUserFile.CheckFlagAgainstWhoami("MEDATECH", "MEDATECH");
+    Assert(match.Ok && match.ExitCode == 0, match.Detail);
+    var absent = LastUserFile.CheckFlagAgainstWhoami("OTHERUSER", null);
+    Assert(absent.Ok && absent.ExitCode == 0, "no whoami pair must not exit 2: " + absent.Detail);
+    var noFlag = LastUserFile.CheckFlagAgainstWhoami(null, "MEDATECH");
+    Assert(noFlag.Ok, noFlag.Detail);
 }
 
 static string NewTemp()

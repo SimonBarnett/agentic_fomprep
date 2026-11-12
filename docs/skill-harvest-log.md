@@ -212,6 +212,7 @@ Expanded `priority-uat-wcf` (skill-source + catalog meta **1.2.0**) from CE Day 
 - 2026-11-12: `priority-service-desk-unprepared-forms-reprepare`. SC262804: active-user change failed and Add New User hung the system; many forms were unprepared (maybe after a new custom procedure). Re-preparing unprepared forms fixed it (support note after call).
 - 2026-11-12: `priority-service-desk-vendor-price-list-unit-readd`. SC262535: vendor price list line kept old unit after vendor parts unit changed; delete and re-add the line (support note after call).
 - 2026-11-12: `priority-service-desk-wrong-url-error-404`. SC263091: Error 404 at login for some users. Supplier said it is the wrong-URL message; the user had a different URL and logged in with the correct one. URLs not stored.
+- 2026-11-12: `priority-service-desk-mobile-app-update-registration` 1.1.0. SC262514 added: apps were off auto-update; updating the app alone fixed it (customer-solved).
 - 2026-11-12: `priority-service-desk-inactive-user-login-error-500`. SC262976: one user got Error 500 at login; they had been marked inactive by another user. Marked active, login worked, customer confirmed.
 - 2026-11-12: `priority-service-desk-maxformlines-user-group` 1.1.0. SC262499 added: 2500-row cap came from the user's privilege group in that company (read-only group), not the constant; customer closed.
 

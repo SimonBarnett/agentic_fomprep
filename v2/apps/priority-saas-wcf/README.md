@@ -131,6 +131,7 @@ node bin\priority-wcf.mjs table columns --instance customer-saas-dev --name CUST
 node bin\priority-wcf.mjs proc continue --instance customer-saas-dev --from C:\temp\needs-input.json --option FIELD [--inputs C:\temp\inputs.json]
 node bin\priority-wcf.mjs proc text set --instance customer-saas-dev --name MYPROC --file C:\temp\body.txt
 node bin\priority-wcf.mjs table column add --instance customer-saas-dev --name T1 --column C1 --type CHAR --title Cust
+node bin\priority-wcf.mjs interface list --instance customer-saas-dev
 ```
 
 - Form prep: `EFORM` + `FORMPREPDRCT2`, then scrape `FORMPREPERRS`.
@@ -146,6 +147,7 @@ node bin\priority-wcf.mjs table column add --instance customer-saas-dev --name T
 - A finished `proc start` with zero `urls` and zero `errors` is `ok: true` `empty: true` (exit 0), not a failure. Blocker errors still return `ok: false`. This does not change the prepare OData gate.
 - `table columns --name <TNAME>` is a read-only OData COLUMNS list `{name,type,title}`. Unknown / empty value is `exists: false` `columns: []` exit 0. Does not write the dictionary.
 - `table column add` needs `allowLive: true` and `sqlProfile` on the instance. No `sqlProfile` is `table_ddl_needs_sql` before login. Titles longer than 20 characters are `title_too_long` (FR-32) before login. Does not create a table (FR-34).
+- `interface list` is a read of the EXEC catalog and returns `{interfaces:[{name,title}]}`. It does not run an interface (FR-36).
 
 
 ## CAST IRON

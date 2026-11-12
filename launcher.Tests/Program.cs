@@ -20,6 +20,7 @@ var checks = new List<(string Name, Action Run)>
     ("AI root search lists AI and repos across ready drives", TestAiRootBuildSearchRoots),
     ("saved MEDATECH empty answer binds MEDATECH; prompt has [MEDATECH] not OS user", TestSavedLoginEmptyAnswer),
     ("--hours-user OTHER wins over saved MEDATECH", TestHoursUserWinsOverSaved),
+    ("MRB-434: space login and access_token row are not suggested", TestInvalidSavedLoginIgnored),
 };
 
 int failures = 0;
@@ -307,6 +308,30 @@ static void TestHoursUserWinsOverSaved()
     Assert(requested == "OTHER", "flag must win, got " + requested);
     var bound = BobHours.BindSessionOwner(null, requested);
     Assert(bound.Ok && bound.UserLogin == "OTHER", bound.Detail);
+}
+
+static void TestInvalidSavedLoginIgnored()
+{
+    string root = NewTemp();
+    string? previous = Environment.GetEnvironmentVariable(LastUserFile.EnvPath);
+    try
+    {
+        string path = Path.Combine(root, "last-user.json");
+        File.WriteAllText(path,
+            """{"saas1":{"userLogin":"bad login","access_token":"nope"},"saas2":{"userLogin":"OKUSER"}}""");
+        Environment.SetEnvironmentVariable(LastUserFile.EnvPath, path);
+        Assert(LastUserFile.ReadUserLogin("saas1") == null, "space login must not be suggested");
+        string prompt = LastUserFile.FormatPrompt(LastUserFile.ReadUserLogin("saas1"));
+        Assert(!prompt.Contains("[", StringComparison.Ordinal), prompt);
+        Assert(LastUserFile.ReadUserLogin("saas2") == "OKUSER", "valid sibling key must still read");
+        Assert(LastUserFile.ChooseRequestedUser(null, "", LastUserFile.ReadUserLogin("saas1")) == null,
+            "empty Enter must not bind a refused login");
+    }
+    finally
+    {
+        Environment.SetEnvironmentVariable(LastUserFile.EnvPath, previous);
+        DeleteTempDirectory(root);
+    }
 }
 
 static string NewTemp()

@@ -1,0 +1,6 @@
+{
+  "name": "priority-service-desk-cloud-mfa-method-change",
+  "title": "A cloud user MFA method could only be changed by the Priority supplier",
+  "description": "A cloud customer needed one user MFA method changed from app to email. It could not be done from the partner or tabula side or the management console; the supplier changed it for the user.",
+  "version": "1.0.0"
+}

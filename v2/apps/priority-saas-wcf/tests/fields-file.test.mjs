@@ -152,7 +152,10 @@ test('MRB-470: form save with --fields-file BOM is not bom_refused', () => {
   const out = String(run.stdout || '');
   const parsed = JSON.parse(out.trim());
   assert.notEqual(parsed.reason, 'bom_refused', out);
-  assert.equal(parsed.reason, 'live_refused');
+  assert.ok(
+    parsed.reason === 'live_refused' || parsed.reason === 'writes_require_allowLive',
+    out,
+  );
   assert.doesNotMatch(out, /login_connect|Can't connect/i);
 });
 

@@ -13,6 +13,6 @@ $section = $text.Substring($idx)
 $needle = 'Classify form.delete as verbIsWrite so --dry-run never looks like a read; empty filter matches must not call deleteRow.'
 $lines = $section -split "`n" | Where-Object { $_ -like ('*' + $needle + '*') }
 if (-not $lines) { Write-Error 'harvest-agent-skills missing form.delete verbIsWrite lesson' }
-$line = [string]$lines[0]
-if ($line.TrimStart() -notlike '- *') { Write-Error ("orphan/splice: {0}" -f $line) }
+$line = ([string]$lines[0]).TrimStart()
+if (-not $line.StartsWith('- ')) { Write-Error ("orphan/splice: {0}" -f $line) }
 Write-Host 'PASS Test-Mrb564-FormDeleteHarvest'

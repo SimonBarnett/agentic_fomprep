@@ -1271,6 +1271,28 @@ if ((Test-Path -LiteralPath $sdSkill) -and (Test-Path -LiteralPath $sdMeta) -and
 }
 Add-Gate 'CAT-T74' $t74Ok $t74Why
 
+# FR-046 / #428: catalog priority-saas-wcf SKILL names the same verbs as client help
+$wcfSkill = Join-Path $catalog 'priority-saas-wcf\SKILL.md'
+$wcfGrok = Join-Path $repo '.grok\skills\priority-saas-wcf\SKILL.md'
+$t75Ok = $false
+$t75Why = 'CAT-T75 priority-saas-wcf SKILL missing help verbs'
+if ((Test-Path -LiteralPath $wcfSkill) -and (Test-Path -LiteralPath $wcfGrok)) {
+    $wcfRaw = [System.IO.File]::ReadAllText($wcfSkill)
+    $wcfGrokRaw = [System.IO.File]::ReadAllText($wcfGrok)
+    $hasWhoami = $wcfRaw -match 'whoami'
+    $hasPrepIface = $wcfRaw -match 'prepare interface'
+    $hasTable = $wcfRaw -match '(?i)\btable\b'
+    $hasIface = $wcfRaw -match '(?i)\binterface\b'
+    $mirror = $wcfRaw -eq $wcfGrokRaw
+    if ($hasWhoami -and $hasPrepIface -and $hasTable -and $hasIface -and $mirror) {
+        $t75Ok = $true
+        $t75Why = 'priority-saas-wcf SKILL lists whoami, prepare interface, table, interface; grok mirror'
+    } else {
+        $t75Why = "whoami=$hasWhoami prepareInterface=$hasPrepIface table=$hasTable interface=$hasIface mirror=$mirror"
+    }
+}
+Add-Gate 'CAT-T75' $t75Ok $t75Why
+
 # FR-443 / #443: no leftover ======= merge markers in harvest log / skill index
 $fr443 = Join-Path $repo 'v2\tests\test-fr443-no-conflict-markers.ps1'
 $t76Ok = $false
@@ -1285,10 +1307,6 @@ if (Test-Path -LiteralPath $fr443) {
     }
 }
 Add-Gate 'CAT-T76' $t76Ok $t76Why
-
-
-
-
 
 
 

@@ -121,6 +121,27 @@ export async function formSave(form) {
   throw new Error('form has no saveRow/invoke Save');
 }
 
+/** FR #397 / FR-015: one new row. newRow (or startRow) once, then fieldUpdate, then saveRow(1). */
+export async function formInsertRow(form, fields) {
+  if (typeof form.newRow === 'function') {
+    await form.newRow();
+  } else if (typeof form.startRow === 'function') {
+    await form.startRow(1);
+  } else {
+    throw new Error('form has no newRow/startRow');
+  }
+  const set = await formSetFields(form, fields);
+  if (typeof form.saveRow === 'function') {
+    await form.saveRow(1);
+    return { set: set.set, saved: true, via: 'saveRow' };
+  }
+  if (typeof form.invoke === 'function') {
+    await form.invoke('Save');
+    return { set: set.set, saved: true, via: 'invoke:Save' };
+  }
+  throw new Error('form has no saveRow/invoke Save');
+}
+
 /**
  * FR #399 / FR-017: run one named form activation (e.g. SAVE).
  * Prefer activateStart; fall back to invoke. Caller owns message handler bag.

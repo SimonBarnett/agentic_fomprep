@@ -21,6 +21,7 @@ import {
   formSubformSetFields,
   applySearchThenGetRows,
   formRunAction,
+  formInsertRow,
   parseFormRowsLimit,
 } from '../lib/form.mjs';
 import { runPrepare } from '../lib/prepare.mjs';
@@ -146,7 +147,7 @@ Form verbs (one screen):
 
   form columns --instance <id> --form <ENAME>
   form rows    --instance <id> --form <ENAME> [--from <n>] [--filter ...] [--limit N]
-  form new     --instance <id> --form <ENAME> --fields '{...}'
+  form new     --instance <id> --form <ENAME> --fields '{...}' [--fields-file <path>]
   form delete  --instance <id> --form <ENAME> --filter ... --confirm
   form action  --instance <id> --form <ENAME> --name <ACT> [--filter ...]
   form start   --instance <id> --form <ENAME>
@@ -580,9 +581,29 @@ async function openFilteredForm(session, instance, formName, filterRaw, messages
   return form;
 }
 
+function fieldsForFormWrite() {
+  const filePath = arg('--fields-file');
+  if (filePath) {
+    const loaded = loadRequestFile(filePath);
+    if (!loaded.ok) return loaded;
+    if (Object.prototype.hasOwnProperty.call(loaded.doc, 'fields')) {
+      return { ok: true, fields: fieldsFromRequestOrFlag(loaded.doc, '{}') };
+    }
+    return { ok: true, fields: { ...loaded.doc } };
+  }
+  return { ok: true, fields: fieldsFromRequestOrFlag(requestDoc, arg('--fields', '{}')) };
+}
+
 async function cmdForm(sub) {
   const formName = reqString('form', '--form');
   if (!formName) return fail('form_required', { need: '--form <ENAME> or request.form' });
+  if (sub === 'new') {
+    const picked = await resolveInstance();
+    if (!picked.ok) return fail(picked.reason, picked);
+    if (picked.instance.allowLive !== true) {
+      return fail('live_refused', { instanceId: picked.instance.id }, 2);
+    }
+  }
   let rowsLimit;
   if (sub === 'rows') {
     const raw =
@@ -593,12 +614,32 @@ async function cmdForm(sub) {
     if (!parsed.ok) return fail(parsed.reason, parsed, 2);
     rowsLimit = parsed.limit;
   }
-  const write = sub === 'set' || sub === 'save' || sub === 'action' || (sub === 'subform' && hasFlag('--set'));
+  const write = sub === 'set' || sub === 'save' || sub === 'new' || sub === 'action' || (sub === 'subform' && hasFlag('--set'));
   return withSession(
     async ({ instance, session, dump }) => {
       const messages = [];
       let form;
       try {
+        if (sub === 'new') {
+          const packed = fieldsForFormWrite();
+          if (!packed.ok) return fail(packed.reason || 'fields_required', packed, 2);
+          const fields = packed.fields || {};
+          if (Object.keys(fields).length < 1) {
+            return fail('fields_required', { need: '--fields JSON, --fields-file, or request.fields' });
+          }
+          form = await formStart(session.priority, formName, instance.company, { messages });
+          const inserted = await formInsertRow(form, fields);
+          dump('form-new.json', { form: formName, fields: Object.keys(fields), inserted, messages });
+          await safeEnd(form);
+          return ok({
+            action: 'form.new',
+            instanceId: instance.id,
+            form: formName,
+            fields: Object.keys(fields),
+            ...inserted,
+            messages,
+          });
+        }
         if (sub === 'action') {
           const activation = reqString('name', '--name') || arg('--activation', '');
           if (!activation) {
@@ -1250,7 +1291,7 @@ async function main() {
   if (verb === 'companies') return cmdCompanies();
   if (verb === 'form') {
     const sub = (process.argv[3] || '').toLowerCase();
-    if (!sub) return fail('form_sub_required', { need: 'start|columns|rows|set|save|subform|action' });
+    if (!sub) return fail('form_sub_required', { need: 'start|columns|rows|set|save|subform|new|action' });
     return cmdForm(sub);
   }
   if (verb === 'prepare') {

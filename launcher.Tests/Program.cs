@@ -40,6 +40,17 @@ var checks = new List<(string Name, Action Run)>
     ("FR-570: Cursor/OpenCode argv omit Grok MCP flags", TestFr570CursorOpenCodeOmitGrokFlags),
     ("FR-570: unknown help starts with empty argv (work dir only)", TestFr570UnknownHelpWorkDirOnly),
     ("FR-570: hours relaunch uses chosen CLI argv shape not hardcoded grok", TestFr570HoursRelaunchChosenCli),
+    ("FR-569: zero CLIs interactive offers Grok Cursor OpenCode refuse", TestFr569ZeroInteractiveOffersMenu),
+    ("FR-569: refuse prints not-found and does not download", TestFr569RefuseNoDownload),
+    ("FR-569: exactly one installed launches it", TestFr569ExactlyOneLaunches),
+    ("FR-569: two or more ask which; fuel is not used", TestFr569ManyAskWhichNotFuel),
+    ("FR-569: missing pick asks Install it now before download", TestFr569MissingAsksInstall),
+    ("FR-569: redirected stdin does not prompt or download", TestFr569RedirectedNoPromptNoDownload),
+    ("FR-569: missing grok.exe is not the only error path", TestFr569CursorOnlyLaunches),
+    ("MRB-577 hostile: Cursor probe is agent.cmd not Cursor.exe GUI", TestMrb577CursorAgentNotGui),
+    ("MRB-577 hostile: .grok\\bin\\agent.exe is rejected as Cursor", TestMrb577RejectGrokAgentAsCursor),
+    ("MRB-577 hostile: which-prompt forbids token fuel (exact)", TestMrb577WhichForbidsFuelExact),
+    ("MRB-577 hostile: hours relaunch exe is the chosen CLI", TestMrb577HoursRelaunchChosenExe),
 };
 
 int failures = 0;
@@ -692,6 +703,142 @@ static void TestFr570HoursRelaunchChosenCli()
         "cursor hours argv must not hardcode grok.exe");
     Assert(!openResume.Any(a => a.Contains("grok.exe", StringComparison.OrdinalIgnoreCase)),
         "opencode hours argv must not hardcode grok.exe");
+}
+
+
+static FoundCli Fake(AgentCliKind kind, string name) =>
+    new(kind, Path.Combine(Path.GetTempPath(), "fake-cli", name));
+
+static void TestFr569ZeroInteractiveOffersMenu()
+{
+    var r = CliChooser.Decide(Array.Empty<FoundCli>(), stdinRedirected: false, pick: null, installNow: null);
+    Assert(r.Action == CliChooserAction.OfferZeroMenu, "zero interactive must offer the four choices");
+    Assert(r.Message.Contains("Grok", StringComparison.Ordinal)
+        && r.Message.Contains("Cursor", StringComparison.Ordinal)
+        && r.Message.Contains("OpenCode", StringComparison.Ordinal)
+        && r.Message.Contains("refuse", StringComparison.OrdinalIgnoreCase),
+        "menu must name Grok, Cursor, OpenCode, and refuse");
+    Assert(!r.Download && r.ExitCode == 0, "offer is not a download and not an exit yet");
+}
+
+static void TestFr569RefuseNoDownload()
+{
+    var r = CliChooser.Decide(Array.Empty<FoundCli>(), stdinRedirected: false, pick: AgentCliKind.Refuse, installNow: null);
+    Assert(r.Action == CliChooserAction.Refuse, "refuse must refuse");
+    Assert(r.Message == CliChooser.NotFoundLine, "refuse must print the not-found line");
+    Assert(r.ExitCode == 1 && !r.Download, "refuse exits 1 and never downloads");
+}
+
+static void TestFr569ExactlyOneLaunches()
+{
+    var only = Fake(AgentCliKind.OpenCode, "opencode.exe");
+    var r = CliChooser.Decide(new[] { only }, stdinRedirected: true, pick: null, installNow: null);
+    Assert(r.Action == CliChooserAction.Launch && r.Launch == only, "exactly one must launch that CLI");
+    Assert(!r.Download, "launch is not a download");
+}
+
+static void TestFr569ManyAskWhichNotFuel()
+{
+    var grok = Fake(AgentCliKind.Grok, "grok.exe");
+    var cursor = Fake(AgentCliKind.Cursor, "agent.cmd");
+    var r = CliChooser.Decide(new[] { grok, cursor }, stdinRedirected: false, pick: null, installNow: null);
+    Assert(r.Action == CliChooserAction.OfferWhich, "two installed must ask which");
+    Assert(r.Message.Contains("Do not pick by token fuel", StringComparison.Ordinal),
+        "which-prompt must forbid token fuel, got: " + r.Message);
+    Assert(r.Launch == null && !r.Download, "which-prompt must not auto-launch or download");
+    var picked = CliChooser.Decide(new[] { grok, cursor }, stdinRedirected: false, pick: AgentCliKind.Cursor, installNow: null);
+    Assert(picked.Launch?.Kind == AgentCliKind.Cursor, "user pick wins; fuel does not");
+}
+
+static void TestFr569MissingAsksInstall()
+{
+    var r = CliChooser.Decide(Array.Empty<FoundCli>(), stdinRedirected: false, pick: AgentCliKind.Grok, installNow: null);
+    Assert(r.Action == CliChooserAction.AskInstallNow, "missing pick must ask before download");
+    Assert(r.Message == CliChooser.InstallNowPrompt, "prompt must be Install it now?");
+    Assert(!r.Download, "the ask must happen before any download");
+    var no = CliChooser.Decide(Array.Empty<FoundCli>(), stdinRedirected: false, pick: AgentCliKind.Grok, installNow: false);
+    Assert(no.Action == CliChooserAction.Refuse && !no.Download && no.ExitCode == 1, "No must not download");
+    var yes = CliChooser.Decide(Array.Empty<FoundCli>(), stdinRedirected: false, pick: AgentCliKind.Grok, installNow: true);
+    Assert(!yes.Download, "yes still must not download (installer is FR-003)");
+}
+
+static void TestFr569RedirectedNoPromptNoDownload()
+{
+    var none = CliChooser.Decide(Array.Empty<FoundCli>(), stdinRedirected: true, pick: null, installNow: null);
+    Assert(none.Action == CliChooserAction.Refuse && none.ExitCode == 1 && !none.Download,
+        "redirected zero must not prompt or download");
+    var grok = Fake(AgentCliKind.Grok, "grok.exe");
+    var cursor = Fake(AgentCliKind.Cursor, "cursor.exe");
+    var many = CliChooser.Decide(new[] { grok, cursor }, stdinRedirected: true, pick: null, installNow: null);
+    Assert(many.Action == CliChooserAction.Refuse && !many.Download,
+        "redirected many must not prompt, pick by fuel, or download");
+}
+
+static void TestFr569CursorOnlyLaunches()
+{
+    var cursor = Fake(AgentCliKind.Cursor, "agent.cmd");
+    var r = CliChooser.Decide(new[] { cursor }, stdinRedirected: false, pick: null, installNow: null);
+    Assert(r.Action == CliChooserAction.Launch && r.Launch?.Kind == AgentCliKind.Cursor,
+        "a missing grok.exe must not be the only success path");
+}
+
+static void TestMrb577CursorAgentNotGui()
+{
+    string root = NewTemp();
+    string local = Path.Combine(root, "Local");
+    try
+    {
+        var paths = CliChooser.CursorAgentCandidatePaths(local);
+        Assert(paths.All(p => p.Contains("cursor-agent", StringComparison.OrdinalIgnoreCase)),
+            "Cursor candidates must live under cursor-agent");
+        Assert(paths.Any(p => p.EndsWith("agent.cmd", StringComparison.OrdinalIgnoreCase)),
+            "must include agent.cmd");
+        Assert(!paths.Any(p => p.EndsWith("Cursor.exe", StringComparison.OrdinalIgnoreCase)),
+            "must not probe Cursor.exe GUI");
+        Assert(CliChooser.IsRejectedCursorPath(Path.Combine(local, "Programs", "cursor", "Cursor.exe")),
+            "Cursor.exe GUI must be rejected");
+        Directory.CreateDirectory(Path.Combine(local, "Programs", "cursor"));
+        File.WriteAllText(Path.Combine(local, "Programs", "cursor", "Cursor.exe"), "gui");
+        Assert(CliChooser.ResolveCursorAgent(local) == null,
+            "GUI-only install must not resolve as Cursor agent");
+        Directory.CreateDirectory(Path.Combine(local, "cursor-agent"));
+        string cmd = Path.Combine(local, "cursor-agent", "agent.cmd");
+        File.WriteAllText(cmd, "@echo off");
+        string? resolved = CliChooser.ResolveCursorAgent(local);
+        Assert(resolved != null && resolved.Equals(Path.GetFullPath(cmd), StringComparison.OrdinalIgnoreCase),
+            "agent.cmd must resolve, got " + resolved);
+    }
+    finally { DeleteTempDirectory(root); }
+}
+
+static void TestMrb577RejectGrokAgentAsCursor()
+{
+    string root = NewTemp();
+    try
+    {
+        string trap = Path.Combine(root, ".grok", "bin", "agent.exe");
+        Directory.CreateDirectory(Path.GetDirectoryName(trap)!);
+        File.WriteAllText(trap, "trap");
+        Assert(CliChooser.IsRejectedCursorPath(trap), ".grok\\bin\\agent.exe must be rejected");
+        string? resolved = CliChooser.ResolveCursorAgent(Path.Combine(root, "Local"), new[] { trap });
+        Assert(resolved == null, "override that is the grok agent trap must not resolve as Cursor");
+    }
+    finally { DeleteTempDirectory(root); }
+}
+
+static void TestMrb577WhichForbidsFuelExact()
+{
+    Assert(CliChooser.WhichPrompt.Contains("Do not pick by token fuel", StringComparison.Ordinal),
+        CliChooser.WhichPrompt);
+}
+
+static void TestMrb577HoursRelaunchChosenExe()
+{
+    var cursor = Fake(AgentCliKind.Cursor, "agent.cmd");
+    var grok = Fake(AgentCliKind.Grok, "grok.exe");
+    Assert(CliChooser.HoursRelaunchExe(cursor) == cursor.Path, "cursor hours must relaunch cursor path");
+    Assert(CliChooser.HoursRelaunchExe(grok) == grok.Path, "grok hours must relaunch grok path");
+    Assert(CliChooser.HoursRelaunchExe(cursor) != grok.Path, "cursor hours must not hardcode grok.exe");
 }
 
 static string NewTemp()

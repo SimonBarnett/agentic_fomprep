@@ -38,6 +38,7 @@ import {
   columnsFromCreateRequest,
   createTable,
   fetchTableColumns,
+  fetchTableExists,
   instanceHasSqlProfile,
 } from '../lib/table.mjs';
 import { checkDictionaryTitle } from '../lib/title-check.mjs';
@@ -90,6 +91,7 @@ Object kinds: table, form, report, procedure, interface.
   form start|rows|set|save|subform|columns|new|delete|action  (see: help form)
   prepare form|procedure|report|interface --instance <id> --name <ENAME>  (see: help prepare)
   proc start|continue --instance <id>  (see: help proc)
+  table exists --instance <id> --name <TNAME>  (see: help table)
   table columns --instance <id> --name <TNAME>  (see: help table)
   table column add --instance <id> --name <TNAME> --column <COL> --type <T> --title <title>  (see: help table)
   interface (see: help interface)
@@ -858,6 +860,24 @@ async function cmdReport(sub) {
 }
 
 async function cmdTable(sub) {
+  if (sub === 'exists') {
+    const name = reqString('name', '--name');
+    if (!name) return fail('name_required', { need: '--name <TNAME> or request.name' });
+    const picked = await resolveInstance();
+    if (!picked.ok) return fail(picked.reason, picked);
+    const instance = picked.instance;
+    let accessToken = '';
+    const tok = loadAccessToken(instance);
+    if (tok.ok) accessToken = tok.accessToken;
+    const result = await fetchTableExists(instance, name, { accessToken });
+    if (!result.ok) return fail(result.reason, result);
+    return ok({
+      action: 'table.exists',
+      instanceId: instance.id,
+      name: result.name,
+      exists: result.exists,
+    });
+  }
   if (sub === 'create') {
     const name = reqString('name', '--name');
     if (!name) return fail('name_required', { need: '--name <TNAME> or request.name' });
@@ -906,7 +926,7 @@ async function cmdTable(sub) {
     });
   }
   if (sub !== 'column') {
-    return fail('table_sub_required', { need: 'columns|column add|create', got: sub });
+    return fail('table_sub_required', { need: 'exists|columns|column add|create', got: sub });
   }
   const op = (process.argv[4] || '').toLowerCase();
   if (op !== 'add') {
@@ -1012,7 +1032,7 @@ async function main() {
   }
   if (verb === 'table') {
     const sub = (process.argv[3] || '').toLowerCase();
-    if (!sub) return fail('table_sub_required', { need: 'columns|column|create' });
+    if (!sub) return fail('table_sub_required', { need: 'exists|columns|column|create' });
     return cmdTable(sub);
   }
   if (verb === 'interface') {

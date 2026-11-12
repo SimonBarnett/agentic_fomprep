@@ -33,6 +33,7 @@ import {
   loadInterfacePrepConfig,
 } from '../lib/interface-prep.mjs';
 import { resolveWhoami } from '../lib/whoami.mjs';
+import { rememberWhoami } from '../lib/last-user.mjs';
 import { listCompanies } from '../lib/companies.mjs';
 import { listInterfaces } from '../lib/interface-list.mjs';
 import { setInterfaceMap } from '../lib/interface-map.mjs';
@@ -301,7 +302,24 @@ async function executeBatchRead({ instance, session, dump, tokenSource, accessTo
   if (read.verb === 'whoami') {
     const r = await resolveWhoami({ instance, session });
     if (!r.ok) return { ok: false, reason: r.reason || 'user_unidentified', read };
-    return { ok: true, result: { action: 'whoami', userLogin: r.userLogin, source: r.source } };
+    // FR #384: persist identified USERLOGIN only (never allowlist invent).
+    const saved = rememberWhoami({
+      userProfile: process.env.USERPROFILE || process.env.HOME,
+      instanceId: instance.id,
+      userLogin: r.userLogin,
+      company: instance.company,
+      source: r.source || 'whoami',
+    });
+    if (!saved.ok) return { ok: false, reason: 'whoami_login_refused', detail: saved.detail, read };
+    return {
+      ok: true,
+      result: {
+        action: 'whoami',
+        userLogin: r.userLogin,
+        source: r.source,
+        path: saved.path,
+      },
+    };
   }
   if (read.verb === 'companies') {
     const r = await listCompanies({ instance, session });
@@ -422,6 +440,8 @@ async function cmdProbe() {
 
 async function cmdWhoami() {
   return withSession(async ({ instance, session }) => {
+    // FR #384 / MRB #431 FIX: persist only an identified Priority USERLOGIN
+    // (login result or USERS), never allowlist OIDC email / --user invent.
     const r = await resolveWhoami({ instance, session });
     if (!r.ok) {
       // FR #383: unidentified Priority user is exit 3 (not OS username fallback).
@@ -432,8 +452,20 @@ async function cmdWhoami() {
         message: r.message,
       }, 3);
     }
-    // FR #383 contract: { ok, userLogin, source } only (no token fields).
-    return ok({ userLogin: r.userLogin, source: r.source });
+    const saved = rememberWhoami({
+      userProfile: process.env.USERPROFILE || process.env.HOME,
+      instanceId: instance.id,
+      userLogin: r.userLogin,
+      company: instance.company,
+      source: r.source || 'whoami',
+    });
+    if (!saved.ok) return fail('whoami_login_refused', saved);
+    // FR #383 fields plus FR #384 path; never token fields.
+    return ok({
+      userLogin: r.userLogin,
+      source: r.source,
+      path: saved.path,
+    });
   });
 }
 

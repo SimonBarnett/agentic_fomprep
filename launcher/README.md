@@ -83,6 +83,10 @@ with the right context.
      starting Grok and without rewriting last-user.json (FR #387). The launcher does
      not read the OS account name, a shared environment default, or the connections file.
      A later launch for someone else does not rewrite an existing session.
+     A successful `priority-wcf whoami` (FR #384) writes that same last-user.json
+     (UTF-8 without BOM) after resolving Priority USERLOGIN via login result or USERS;
+     it refuses a login that fails `BobHours.IsPriorityUserLogin` and never stores
+     `access_token`, `refresh_token`, or `password` keys.
    - The returned id is persisted in the session `hours-entry.json`. Tests set
      `PRIORITY_AGENT_HOURS_JSON` to a list fixture. When that variable is set, the check does
      not contact the network.

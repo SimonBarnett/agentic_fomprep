@@ -15,6 +15,7 @@ import { formStart, formGetRows, formSetFields, formSave, formStartSubForm } fro
 import { runPrepare } from '../lib/prepare.mjs';
 import { runProcStart } from '../lib/proc.mjs';
 import { resolveWhoami } from '../lib/whoami.mjs';
+import { listCompanies } from '../lib/companies.mjs';
 import { emit, fail, ok, redact } from '../lib/json-out.mjs';
 import {
   loadRequestFile,
@@ -53,6 +54,7 @@ function usage() {
   probe   --instance <id> [--with-token]
   session --instance <id> [--form <ENAME>]
   whoami  --instance <id>
+  companies --instance <id>
   form start   --instance <id> --form <ENAME>
   form rows    --instance <id> --form <ENAME> [--from <n>]
   form set     --instance <id> --form <ENAME> --fields '{"COL":"v"}' [--filter '{"field":"X","fromval":"y"}']
@@ -185,6 +187,19 @@ async function cmdWhoami() {
     }
     // FR #383 contract: { ok, userLogin, source } only (no token fields).
     return ok({ userLogin: r.userLogin, source: r.source });
+  });
+}
+
+async function cmdCompanies() {
+  return withSession(async ({ instance, session }) => {
+    const r = await listCompanies({ instance, session });
+    if (!r.ok) return fail(r.reason || 'companies_failed', r);
+    return ok({
+      action: 'companies',
+      instanceId: instance.id,
+      companies: r.companies,
+      switched: false,
+    });
   });
 }
 
@@ -422,6 +437,7 @@ async function main() {
   if (verb === 'probe') return cmdProbe();
   if (verb === 'session') return cmdSession();
   if (verb === 'whoami') return cmdWhoami();
+  if (verb === 'companies') return cmdCompanies();
   if (verb === 'form') {
     const sub = (process.argv[3] || '').toLowerCase();
     if (!sub) return fail('form_sub_required', { need: 'start|rows|set|save|subform' });
@@ -437,7 +453,7 @@ async function main() {
     if (!sub) return fail('proc_sub_required', { need: 'start' });
     return cmdProc(sub);
   }
-  return fail('unknown_verb', { verb, hint: 'probe|session|whoami|form|prepare|proc|help' });
+  return fail('unknown_verb', { verb, hint: 'probe|session|whoami|companies|form|prepare|proc|help' });
 }
 
 main().catch((e) => {

@@ -196,3 +196,4 @@ books use `harvest-agent-skills` pointing at their home.)
 - When MRB tip goes DIRTY after stacking docs, fetch real origin/main (ls-remote) before fold; keep both sides of skill/CLI conflicts (dry-run + request + help topics)
 - form rows --filter calls setSearchFilter once then getRows from 1; omit filter for the unfiltered read.
 - error dialogs stay for the agent unless --confirm-errors; wire CLI setConfirmErrors(hasFlag) plus tests that count errorConfirm 0/1.
+- form action --form ENAME --name ACT needs allowLive; refuseLiveWrite before login; return message-handler list from activateStart/invoke

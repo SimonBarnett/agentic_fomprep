@@ -24,11 +24,13 @@ static class Program
     static bool DryRun, ListOnly, Smoke, General, NoPause, NoFuel;
     static string? CustomerArg, ProjectArg, CheckHoursDir, SessionArg;
     static string? HoursUserArg, HoursEntryIdArg;
-    /// <summary>FR #570: --cli grok|cursor|opencode (default grok until FR-004 chooser lands).</summary>
+    /// <summary>FR #570 / FR-004: --cli grok|cursor|opencode; when unset, MSI-style chooser (issue #569).</summary>
     static string? CliArg;
+    static bool CliExplicit;
     static CliKind ChosenCli = CliKind.Grok;
     static string? ChosenExe;
     static string? ChosenHelpText;
+    static List<FoundCli> DiscoveredClis = new();
     /// <summary>Explicit --root / PRIORITY_AGENT_ROOT; null means auto-resolve X:\AI.</summary>
     static string? CloneRootOverride = Environment.GetEnvironmentVariable("PRIORITY_AGENT_ROOT");
     static string CloneRoot = "";
@@ -103,7 +105,8 @@ static class Program
         }
         if (ListOnly || DryRun || Smoke || CustomerArg != null || General) NoPause |= Console.IsInputRedirected;
         string? cliRaw = CliArg ?? Environment.GetEnvironmentVariable("PRIORITY_AGENT_CLI");
-        if (!string.IsNullOrWhiteSpace(cliRaw))
+        CliExplicit = !string.IsNullOrWhiteSpace(cliRaw);
+        if (CliExplicit)
         {
             if (!CliLaunch.TryParseKind(cliRaw, out ChosenCli))
             {
@@ -154,13 +157,33 @@ static class Program
             @"C:\Program Files\GitHub CLI\gh.exe", @"D:\Program Files\GitHub CLI\gh.exe");
         string? grok = Which("grok.exe", Environment.GetEnvironmentVariable("PRIORITY_AGENT_TEST_GROK"),
             Path.Combine(Home, ".grok", "bin", "grok.exe"));
-        ChosenExe = CliLaunch.ResolveExecutable(ChosenCli, Home, new[]
+        string? cursorBin = CliChooser.ResolveCursorAgent(localAppData, new[]
         {
-            Environment.GetEnvironmentVariable("PRIORITY_AGENT_TEST_CLI"),
-            ChosenCli == CliKind.Grok ? Environment.GetEnvironmentVariable("PRIORITY_AGENT_TEST_GROK") : null,
-            ChosenCli == CliKind.Grok ? grok : null,
+            Environment.GetEnvironmentVariable("PRIORITY_AGENT_TEST_CURSOR"),
         });
-        Info($"git : {git ?? "MISSING"}\ngh  : {gh ?? "MISSING"}\ncli : {CliLaunch.KindName(ChosenCli)} = {ChosenExe ?? "MISSING"}");
+        string? opencodeBin = Which("opencode.exe",
+            Environment.GetEnvironmentVariable("PRIORITY_AGENT_TEST_OPENCODE"),
+            Path.Combine(Home, ".opencode", "bin", "opencode.exe"),
+            Path.Combine(localAppData, "opencode", "opencode.exe"));
+        DiscoveredClis = new List<FoundCli>();
+        if (grok != null) DiscoveredClis.Add(new FoundCli(AgentCliKind.Grok, grok));
+        if (cursorBin != null) DiscoveredClis.Add(new FoundCli(AgentCliKind.Cursor, cursorBin));
+        if (opencodeBin != null) DiscoveredClis.Add(new FoundCli(AgentCliKind.OpenCode, opencodeBin));
+
+        if (CliExplicit)
+        {
+            ChosenExe = CliLaunch.ResolveExecutable(ChosenCli, Home, new[]
+            {
+                Environment.GetEnvironmentVariable("PRIORITY_AGENT_TEST_CLI"),
+                ChosenCli == CliKind.Grok ? Environment.GetEnvironmentVariable("PRIORITY_AGENT_TEST_GROK") : null,
+                ChosenCli == CliKind.Grok ? grok : null,
+            });
+            Info($"git : {git ?? "MISSING"}\ngh  : {gh ?? "MISSING"}\ncli : {CliLaunch.KindName(ChosenCli)} = {ChosenExe ?? "MISSING"}");
+        }
+        else
+        {
+            Info($"git : {git ?? "MISSING"}\ngh  : {gh ?? "MISSING"}\ngrok: {grok ?? "MISSING"}\ncursor: {cursorBin ?? "MISSING"}\nopencode: {opencodeBin ?? "MISSING"}");
+        }
         if (git == null || gh == null) { Err("git and gh are required."); Pause(); return 1; }
         Git = git; Gh = gh;
 
@@ -272,8 +295,24 @@ static class Program
         }
         Log($"wcf instances: {wcfConfig.Instances.Count} from {wcfConfig.SourcePath ?? "(none)"}");
 
-        // ---- 4. chosen CLI: register MCP (Grok only) + skills, build brief, launch ----
-        Header("[4] Agent (" + CliLaunch.KindName(ChosenCli) + ")");
+        // ---- 4. agent CLI chooser (issue #569) or explicit --cli, then launch ----------
+        if (!CliExplicit)
+        {
+            Header("[4] Agent CLI");
+            var chosen = ChooseAgentCli(DiscoveredClis);
+            if (chosen.Action == CliChooserAction.Refuse || chosen.Launch == null)
+            {
+                Err(chosen.Message);
+                Pause();
+                return chosen.ExitCode == 0 ? 1 : chosen.ExitCode;
+            }
+            ChosenCli = ToCliKind(chosen.Launch.Kind);
+            ChosenExe = CliChooser.HoursRelaunchExe(chosen.Launch);
+            Info($"chosen: {CliLaunch.KindName(ChosenCli)} = {ChosenExe}");
+        }
+        else
+            Header("[4] Agent (" + CliLaunch.KindName(ChosenCli) + ")");
+
         if (ChosenExe == null)
         {
             Err(ChosenCli == CliKind.Grok
@@ -991,6 +1030,44 @@ static class Program
         LauncherSupport.ValidateWindowsCommandLine(executable, args, operation);
     }
 
+    /// <summary>Issue #569 / FR-004: MSI-style none / one / many / refuse chooser (no download).</summary>
+    static CliChooserResult ChooseAgentCli(IReadOnlyList<FoundCli> installed)
+    {
+        AgentCliKind? pick = null;
+        bool? installNow = null;
+        for (int i = 0; i < 8; i++)
+        {
+            var result = CliChooser.Decide(installed, Console.IsInputRedirected, pick, installNow);
+            switch (result.Action)
+            {
+                case CliChooserAction.Launch:
+                case CliChooserAction.Refuse:
+                    return result;
+                case CliChooserAction.OfferZeroMenu:
+                    Info(result.Message);
+                    pick = CliChooser.ParsePick(Ask("Grok / Cursor / OpenCode / refuse: "));
+                    break;
+                case CliChooserAction.OfferWhich:
+                    Info(result.Message);
+                    pick = CliChooser.ParsePick(Ask("Which CLI to launch? "));
+                    break;
+                case CliChooserAction.AskInstallNow:
+                    Info(result.Message);
+                    string ans = Ask(CliChooser.InstallNowPrompt + " [y/N]: ");
+                    installNow = ans.StartsWith("y", StringComparison.OrdinalIgnoreCase);
+                    break;
+            }
+        }
+        return CliChooser.Decide(installed, true, AgentCliKind.Refuse, false);
+    }
+
+    static CliKind ToCliKind(AgentCliKind kind) => kind switch
+    {
+        AgentCliKind.Cursor => CliKind.Cursor,
+        AgentCliKind.OpenCode => CliKind.OpenCode,
+        _ => CliKind.Grok,
+    };
+
     static string Ask(string prompt)
     {
         Console.Write(prompt);
@@ -1030,7 +1107,7 @@ static class Program
     static void Help() => Console.WriteLine(@"
 PriorityAgent.exe [options]
 
-  (no options)          interactive: pick customer and project, then start Grok
+  (no options)          interactive: pick customer/project, then MSI-style CLI chooser
   --list                list customer repos (topic priority-customer); with --customer, also list its folders
   --general             general Priority context (no customer)
   --customer <repo>     pick customer non-interactively (e.g. rees)
@@ -1054,12 +1131,14 @@ PriorityAgent.exe [options]
   --hours-entry-id <h_...>
                         persisted receiver id (else hours-entry.json or PRIORITY_AGENT_HOURS_ENTRY_ID)
   --cli grok|cursor|opencode
-                        which agent CLI to start (default grok; env PRIORITY_AGENT_CLI).
-                        Grok keeps RunGrok + MCP registration. Cursor uses
-                        %LOCALAPPDATA%\cursor-agent\agent.cmd; OpenCode uses a
+                        which agent CLI to start (env PRIORITY_AGENT_CLI). When
+                        omitted, issue #569 chooser: none/one/many/refuse; redirected
+                        stdin never prompts or downloads. Grok keeps RunGrok + MCP.
+                        Cursor uses %LOCALAPPDATA%\cursor-agent\agent.cmd (never
+                        Cursor.exe GUI or .grok\bin\agent.exe). OpenCode uses a
                         standalone opencode.exe. Cursor/OpenCode never get Grok
                         MCP flags; --help is read first, else work-dir only.
-                        Hours relaunch uses the same chosen CLI.
+                        Hours relaunch always uses the same chosen CLI.
   PRIORITY_AGENT_HOURS_JSON
                         fixture file for the list body; when set, no HTTP request is made
 ");

@@ -17,6 +17,7 @@
     <Compile Include="../launcher/LastUserFile.cs" Link="LastUserFile.cs" />
     <Compile Include="../launcher/CliDetect.cs" Link="CliDetect.cs" />
     <Compile Include="../launcher/CliInstall.cs" Link="CliInstall.cs" />
+    <Compile Include="../launcher/CliChooser.cs" Link="CliChooser.cs" />
     <Compile Include="../launcher/SessionLoginMeta.cs" Link="SessionLoginMeta.cs" />
     <None Include="fixtures/**/*" CopyToOutputDirectory="PreserveNewest" />
     <None Include="../launcher/agent-rules.md" Link="fixtures/agent-rules.md" CopyToOutputDirectory="PreserveNewest" />

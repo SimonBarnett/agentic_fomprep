@@ -60,17 +60,23 @@ and does not download a CLI.
    - Source: the Bob report `machines.<machine>.pcent["grok-chat"]`.
    - Above 0 means the pool is used. 0 or unknown gives a warning and asks before continuing.
    - It never handles keys.
-8. It **starts the chosen agent CLI** in the same console (FR #570 / FR-005):
-   - **`--cli grok|cursor|opencode`** (env `PRIORITY_AGENT_CLI`; default `grok` until the
-     interactive chooser lands). The selected work directory is always
-     `ProcessStartInfo.WorkingDirectory`.
+8. It **starts the chosen agent CLI** in the same console (issue #569 / FR #570 / FR-005):
+   - **Agent CLI chooser (issue #569):** same rules as the MSI chooser. None installed and
+     interactive: offer Grok, Cursor, OpenCode, or refuse. Refuse prints the not-found line
+     and exits 1 with no download. Exactly one installed: launch it. Two or more: ask which
+     (never by token fuel). A missing pick asks "Install it now?" before any download.
+     Redirected stdin does not prompt and does not download. Cursor is
+     `%LOCALAPPDATA%\cursor-agent\agent.cmd` (never the Cursor.exe GUI or
+     `%USERPROFILE%\.grok\bin\agent.exe`; FR #568).
+   - **`--cli grok|cursor|opencode`** (env `PRIORITY_AGENT_CLI`) skips the chooser and
+     starts that CLI. The selected work directory is always `ProcessStartInfo.WorkingDirectory`.
    - **Grok** keeps `RunGrok`: `grok --cwd <context> --session-id <new uuid> --trust --rules <agent rules> "<context brief>"`
      plus MCP registration / fuel checks.
    - **Cursor** starts `%LOCALAPPDATA%\cursor-agent\agent.cmd` (never `%USERPROFILE%\.grok\bin\agent.exe`).
      **OpenCode** starts a standalone `opencode.exe`. Neither receives Grok MCP /
      `--cwd` / `--session-id` / `--rules` flags. The launcher reads `agent --help` /
      `opencode --help` before adding workspace flags; if those flags are unknown, it
-     starts with the work directory only.
+     starts with the work directory only. Hours relaunch always starts the chosen exe.
    - The rules come from `launcher/agent-rules.md`. That file is the only reporting
      policy. The exe embeds a copy of it at build time. On launch, `LoadRules` uses the
      clone file when its `rules-version` is at least the embedded copy. Customer repos
@@ -193,14 +199,17 @@ PriorityAgent.exe --mcp-catalog [<catalog dir>]                 fallback stdio c
 ```
 
 Other options: `--root <dir>` (clone root; default: first existing `X:\AI` on C:->Z:, else create `\AI` on the first ready drive; env `PRIORITY_AGENT_ROOT`),
-`--cli grok|cursor|opencode` (env `PRIORITY_AGENT_CLI`; default `grok`),
+`--cli grok|cursor|opencode` (env `PRIORITY_AGENT_CLI`; when omitted the issue #569 chooser runs),
 `--passwords-dir <dir>`, `--no-fuel-check`, `--no-pause`.
 
-Requirements: `git`, `gh` (logged in as SimonBarnett). For `--cli grok` (default): Grok CLI
+Requirements: `git`, `gh` (logged in as SimonBarnett). With none installed and an interactive console
+the launcher offers Grok, Cursor, OpenCode, or refuse (exit 1, no download). Exactly one installed
+is launched. Two or more: the operator picks; token fuel is not used. For `--cli grok`: Grok CLI
 (`%USERPROFILE%\.grok\bin\grok.exe`). For `--cli cursor`: `%LOCALAPPDATA%\cursor-agent\agent.cmd`
-(never `%USERPROFILE%\.grok\bin\agent.exe`). For `--cli opencode`: `%USERPROFILE%\.opencode\bin\opencode.exe`
-or a standalone `opencode.exe` under LocalAppData/home. Official installers run as the interactive user
-only (FR #568); tests fake those commands and do not hit the network.
+(never the Cursor.exe GUI or `%USERPROFILE%\.grok\bin\agent.exe`). For `--cli opencode`:
+`%USERPROFILE%\.opencode\bin\opencode.exe` or a standalone `opencode.exe` under LocalAppData/home.
+Official installers run as the interactive user only (FR #568); tests fake those commands and do
+not hit the network.
 
 Optional execute plugins (formprep, compile, install, odata) need node and `instances.json`, so the launcher doesn't install them:
 `grok plugin marketplace add SimonBarnett/agentic_fomprep`, then `grok plugin install priority-formprep --trust` (and so on).

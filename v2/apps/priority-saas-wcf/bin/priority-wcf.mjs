@@ -1278,9 +1278,10 @@ async function main() {
     requestDoc = loaded.doc;
   }
 
-  // FR #402: --fields-file before login (BOM / size). Not used by form save.
+  // FR #402: --fields-file before login (BOM / size). form set only; not form save.
   const fieldsFilePath = arg('--fields-file', '');
-  if (fieldsFilePath) {
+  const formSub = verb === 'form' ? (process.argv[3] || '').toLowerCase() : '';
+  if (fieldsFilePath && verb === 'form' && formSub === 'set') {
     const loaded = loadFieldsFile(fieldsFilePath);
     if (!loaded.ok) {
       return fail(loaded.reason, { path: loaded.path, detail: loaded.detail, bytes: loaded.bytes }, 2);

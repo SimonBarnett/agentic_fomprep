@@ -11,10 +11,10 @@ export function loadFieldsFile(filePath) {
   if (!p) {
     return { ok: false, reason: 'request_invalid', detail: 'path_missing' };
   }
-  let buf;
+  let st;
   try {
-    buf = fs.readFileSync(p);
-  } catch (e) {
+    st = fs.statSync(p);
+  } catch {
     return {
       ok: false,
       reason: 'request_invalid',
@@ -22,8 +22,22 @@ export function loadFieldsFile(filePath) {
       path: p,
     };
   }
-  if (buf.length > FIELDS_FILE_MAX_BYTES) {
-    return { ok: false, reason: 'fields_file_too_large', path: p, bytes: buf.length };
+  if (!st.isFile()) {
+    return { ok: false, reason: 'request_invalid', detail: 'not_file', path: p };
+  }
+  if (st.size > FIELDS_FILE_MAX_BYTES) {
+    return { ok: false, reason: 'fields_file_too_large', path: p, bytes: st.size };
+  }
+  let buf;
+  try {
+    buf = fs.readFileSync(p);
+  } catch {
+    return {
+      ok: false,
+      reason: 'request_invalid',
+      detail: 'read_failed',
+      path: p,
+    };
   }
   if (buf.length >= 3 && buf[0] === 0xef && buf[1] === 0xbb && buf[2] === 0xbf) {
     return { ok: false, reason: 'bom_refused', path: p };

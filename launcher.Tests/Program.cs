@@ -25,6 +25,9 @@ var checks = new List<(string Name, Action Run)>
     ("--hours-user matching whoami records flag", TestSessionSourceFlagMatchesWhoami),
     ("MRB-439 hostile: typed login is client even when equals saved", TestSessionSourceTypedIsClient),
     ("MRB-439 hostile: identity has no token keys", TestSessionIdentityNoSecrets),
+    ("MRB-444 hostile: hours-routing has on_behalf_of not user and no token keys", TestHoursRoutingNoSecrets),
+    ("FR-387: --hours-user OTHERUSER vs whoami MEDATECH exits 2 and does not start grok", TestHoursUserDisagreesWithWhoami),
+    ("MRB-438: matching --hours-user continues; missing whoami does not block", TestHoursUserMatchesOrAbsentWhoami),
 };
 
 int failures = 0;
@@ -364,7 +367,6 @@ static void TestSessionSourceFlagMatchesWhoami()
         "matching --hours-user must still be flag");
 }
 
-
 static void TestSessionSourceTypedIsClient()
 {
     Assert(SessionLoginMeta.ClassifySource(null, "MEDATECH", "MEDATECH") == SessionLoginMeta.SourceClient,
@@ -390,6 +392,65 @@ static void TestSessionIdentityNoSecrets()
     }
     finally { DeleteTempDirectory(root); }
 }
+
+static void TestHoursRoutingNoSecrets()
+{
+    string root = NewTemp();
+    try
+    {
+        var routing = new BobHours.CustomerHoursConfig(true, "", "cust", "SC1", "", "", "ok");
+        SessionLoginMeta.WriteHoursRoutingLogin(root, "MEDATECH", routing);
+        string text = File.ReadAllText(Path.Combine(root, "hours-routing.json"));
+        Assert(text.Contains("on_behalf_of", StringComparison.Ordinal), text);
+        Assert(!text.Contains("\"user\"", StringComparison.Ordinal), "must not rename webhook user field: " + text);
+        Assert(!text.Contains("access_token", StringComparison.Ordinal)
+            && !text.Contains("password", StringComparison.OrdinalIgnoreCase),
+            "hours-routing must not look like secrets: " + text);
+    }
+    finally { DeleteTempDirectory(root); }
+}
+
+static void TestHoursUserDisagreesWithWhoami()
+{
+    string root = NewTemp();
+    string? previous = Environment.GetEnvironmentVariable(LastUserFile.EnvPath);
+    try
+    {
+        string path = Path.Combine(root, "last-user.json");
+        string original = """{"saas1":{"userLogin":"MEDATECH","company":"CO","identifiedAt":"2026-11-12T00:00:00Z","source":"whoami"}}""";
+        File.WriteAllText(path, original);
+        Environment.SetEnvironmentVariable(LastUserFile.EnvPath, path);
+        string? whoami = LastUserFile.ReadUserLogin("saas1");
+        Assert(whoami == "MEDATECH", "whoami fixture must be MEDATECH");
+        LastUserFile.GrokStartCount = 0;
+        var check = LastUserFile.CheckFlagAgainstWhoami("OTHERUSER", whoami);
+        Assert(!check.Ok && check.ExitCode == 2, check.Detail);
+        Assert(check.Detail.Contains("OTHERUSER", StringComparison.Ordinal)
+            && check.Detail.Contains("MEDATECH", StringComparison.Ordinal), check.Detail);
+        if (check.Ok)
+            LastUserFile.NoteGrokStart();
+        Assert(LastUserFile.GrokStartCount == 0, "grok start count must stay 0");
+        Assert(File.ReadAllText(path) == original, "last-user.json must still contain MEDATECH");
+        Assert(File.ReadAllText(path).Contains("MEDATECH", StringComparison.Ordinal), "MEDATECH must remain");
+        Assert(!File.ReadAllText(path).Contains("OTHERUSER", StringComparison.Ordinal), "flag must not be written");
+    }
+    finally
+    {
+        Environment.SetEnvironmentVariable(LastUserFile.EnvPath, previous);
+        DeleteTempDirectory(root);
+    }
+}
+
+static void TestHoursUserMatchesOrAbsentWhoami()
+{
+    var match = LastUserFile.CheckFlagAgainstWhoami("MEDATECH", "MEDATECH");
+    Assert(match.Ok && match.ExitCode == 0, match.Detail);
+    var absent = LastUserFile.CheckFlagAgainstWhoami("OTHERUSER", null);
+    Assert(absent.Ok && absent.ExitCode == 0, "no whoami pair must not exit 2: " + absent.Detail);
+    var noFlag = LastUserFile.CheckFlagAgainstWhoami(null, "MEDATECH");
+    Assert(noFlag.Ok, noFlag.Detail);
+}
+
 static string NewTemp()
 {
     string path = Path.Combine(Path.GetTempPath(), "priority-agent-tests-" + Guid.NewGuid().ToString("N"));

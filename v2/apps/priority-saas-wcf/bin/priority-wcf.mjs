@@ -8,7 +8,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { readAllowlist, selectInstance, refuseLiveWrite, defaultInstancesPath } from '../lib/allowlist.mjs';
-import { loadAccessToken } from '../lib/token.mjs';
+import { resolveAccessToken } from '../lib/token.mjs';
 import { probeTenant } from '../lib/probe.mjs';
 import { loginSession, logout, safeEnd, setConfirmErrors } from '../lib/session.mjs';
 import {
@@ -247,7 +247,7 @@ async function withSession(fn, { write = false, needToken = true } = {}) {
   let accessToken = '';
   let tokenSource = 'none';
   if (needToken) {
-    const tok = loadAccessToken(instance);
+    const tok = await resolveAccessToken(instance);
     if (!tok.ok) return fail(tok.reason, { path: tok.path, message: tok.message });
     accessToken = tok.accessToken;
     tokenSource = tok.source;
@@ -286,7 +286,7 @@ async function cmdProbe() {
   const instance = picked.instance;
   let accessToken = '';
   if (hasFlag('--with-token')) {
-    const tok = loadAccessToken(instance);
+    const tok = await resolveAccessToken(instance);
     if (!tok.ok) return fail(tok.reason, { path: tok.path, message: tok.message });
     accessToken = tok.accessToken;
   }
@@ -944,8 +944,9 @@ async function cmdTable(sub) {
     if (!picked.ok) return fail(picked.reason, picked);
     const instance = picked.instance;
     let accessToken = '';
-    const tok = loadAccessToken(instance);
-    if (tok.ok) accessToken = tok.accessToken;
+    const tok = await resolveAccessToken(instance);
+    if (!tok.ok) return fail(tok.reason, { path: tok.path, message: tok.message });
+    accessToken = tok.accessToken;
     const result = await fetchTableExists(instance, name, { accessToken });
     if (!result.ok) return fail(result.reason, result);
     return ok({
@@ -990,8 +991,9 @@ async function cmdTable(sub) {
     if (!picked.ok) return fail(picked.reason, picked);
     const instance = picked.instance;
     let accessToken = '';
-    const tok = loadAccessToken(instance);
-    if (tok.ok) accessToken = tok.accessToken;
+    const tok = await resolveAccessToken(instance);
+    if (!tok.ok) return fail(tok.reason, { path: tok.path, message: tok.message });
+    accessToken = tok.accessToken;
     const result = await fetchTableColumns(instance, name, { accessToken });
     if (!result.ok) return fail(result.reason, result);
     return ok({

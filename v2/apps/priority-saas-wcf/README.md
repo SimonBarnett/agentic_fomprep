@@ -59,7 +59,7 @@ Unknown / missing instance → exit 2, no SaaS call.
 | exit 3 | `login_failed`, `api_licence`, `login_connect`, `token_expired`, `user_unidentified` |
 | exit 4 | prepare walk finished (`walkOk`) and gate `status` is `unavailable` |
 
-Every `fail()` stdout object includes boolean `retryable` (true only for `login_connect`). `api_licence` and `token_expired` stay `retryable: false` with a `hint` string. This client does not retry.
+Every `fail()` stdout object includes boolean `retryable` (true only for `login_connect`). `api_licence` and `token_expired` stay `retryable: false` with a `hint` string. On login_connect, loginSession waits briefly and calls login once more (FR-040); api_licence is never retried.
 
 ## Install
 

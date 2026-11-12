@@ -21,6 +21,9 @@ $okComment = '# no test calls x.ai'
 Gate 'guard-allows-comment' (-not (Test-Fr571IsForbiddenInstallerCall $okComment)) 'comment is not a call'
 $okNeg = "`$raw -notmatch 'x.ai/cli' -and `$raw -notmatch 'cursor.com/install'"
 Gate 'guard-allows-notmatch' (-not (Test-Fr571IsForbiddenInstallerCall $okNeg)) '-notmatch pin is not a call'
+# MRB #582 hostile: PowerShell iwr alias must trip the guard without needing iex.
+$iwrOnly = 'iwr https://' + 'cursor.com/install?win32=true'
+Gate 'guard-catches-iwr-alias' (Test-Fr571IsForbiddenInstallerCall $iwrOnly) 'iwr cursor.com/install is forbidden'
 
 $scanRoots = @(
     (Join-Path $repo 'tests'),

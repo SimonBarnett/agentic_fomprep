@@ -4,13 +4,13 @@ Issue type: one record opens or scrolls slowly, and its text form (for example i
 
 Known: on 2026-10-06 10:33 BST support said this can happen when images are pasted into a text form, which is not supported, and that images should be imported with the image button. At 11:28 BST the customer said they had pasted a whole trail of emails with images into that call, had deleted the images, and it was working faster.
 
-This is not a server performance problem and not a network problem. It is limited to the record that has the pasted content.
+Pasted images are a possible cause when slowness is limited to one record that has that pasted content. Removing them does not rule out server or network problems. If removal does not resolve the slowness, continue with performance investigation.
 
 ## Steps
 
 1. Confirm the slowness is on one record, not across the system.
 2. Open the text form on that record and look for pasted images or long pasted email trails.
-3. The record owner removes the pasted images. Keep the text that is needed.
+3. The record owner saves and verifies any images needed for the service call, then removes the pasted copies. Keep the text that is needed. Keep the saved images for the import or attachment in step 4.
 4. If an image is needed, import it with the text form image button, or attach it, instead of pasting.
 5. Reopen the record and confirm it is faster.
 

@@ -182,3 +182,4 @@ Expanded `priority-uat-wcf` (skill-source + catalog meta **1.2.0**) from CE Day 
 - Source: SaaS WCF Live smoke after API License tick (generic). Folded into PR #338.
 - 2026-11-09 (FR #339): Phase 2 `priority-saas-wcf` prepare form|procedure|report + FORMPREPERRS + proc start + SaaS OData gate (`odataBase`); never preparedClaim without gate.
 - 2026-11-09 (FR #349): gitignore `.bobiverse-seat` / `**/.bobiverse-seat`; harvest-agent-skills: seat markers stay untracked.
+- 2026-11-12: `priority-service-desk-company-timezone-scheduled-reports`. SC263125: after v26 upgrade scheduled report emails seemed missing; they arrived an hour late. Define Input for Task had no effect. Support set a time zone on each company; customer closed the call. Explicit timing retest not recorded.

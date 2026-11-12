@@ -105,6 +105,7 @@ IncludeDba=False IncludeCustomer=False
 - priority-service-desk-privilege-message-disable
 - priority-service-desk-serial-number-renamed-history
 - priority-service-desk-ssl-acme-renewal-firewall
+- priority-service-desk-subform-read-only-status-revisions
 - priority-service-desk-tts-tasks-not-running
 - priority-service-desk-unprepared-forms-reprepare
 - priority-service-desk-upgrade-missing-custom-trigger-code

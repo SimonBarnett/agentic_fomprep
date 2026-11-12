@@ -182,3 +182,4 @@ Expanded `priority-uat-wcf` (skill-source + catalog meta **1.2.0**) from CE Day 
 - Source: SaaS WCF Live smoke after API License tick (generic). Folded into PR #338.
 - 2026-11-09 (FR #339): Phase 2 `priority-saas-wcf` prepare form|procedure|report + FORMPREPERRS + proc start + SaaS OData gate (`odataBase`); never preparedClaim without gate.
 - 2026-11-09 (FR #349): gitignore `.bobiverse-seat` / `**/.bobiverse-seat`; harvest-agent-skills: seat markers stay untracked.
+- 2026-11-12: `priority-service-desk-pasted-images-slow-text`. SC263088: internal dialogue slow after an email trail with images was pasted in. Customer removed the images and it was faster. Images should be imported with the image button, not pasted.

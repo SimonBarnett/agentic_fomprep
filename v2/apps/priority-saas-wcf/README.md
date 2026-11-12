@@ -83,6 +83,8 @@ node bin\priority-wcf.mjs form rows  --instance customer-saas-dev --form CUSTOME
 node bin\priority-wcf.mjs form rows  --instance customer-saas-dev --form CUSTOMERS --filter "{\"field\":\"CUSTNAME\",\"fromval\":\"X\"}"
 node bin\priority-wcf.mjs form set   --instance customer-saas-dev --form CUSTOMERS --filter "{\"field\":\"CUSTNAME\",\"fromval\":\"X\"}" --fields "{\"EMAIL\":\"a@b.c\"}"
 node bin\priority-wcf.mjs form save  --instance customer-saas-dev --form CUSTOMERS --filter "..." --fields "{...}"
+node bin\priority-wcf.mjs form subform --instance customer-saas-dev --form CUSTOMERS --subform CUSTPERSONNEL
+node bin\priority-wcf.mjs form subform --instance customer-saas-dev --form CUSTOMERS --subform CUSTPERSONNEL --set --fields-file C:\temp\fields.json
 # Prefer a UTF-8 request file on Windows (no shell quoting). File stays outside the repo.
 # request.json example: { "form": "CUSTOMERS", "fields": { "EMAIL": "a@b.c" }, "filter": { "field": "CUSTNAME", "fromval": "X" } }
 node bin\priority-wcf.mjs form set --instance customer-saas-dev --request C:\temp\request.json
@@ -101,7 +103,9 @@ before login. Do not copy request files into the repo.
 
 `form rows --filter` (or request-file `filter`) calls SDK `setSearchFilter` once then `getRows` from 1. Missing filter is the unfiltered read. Writes stay on `form set` / `form save`.
 
-Writes (`form set` / `form save` / `form action`) require `allowLive: true` on the row (and operator approval).
+`form subform --set --fields-file` field-updates the child only (`allowLive: true` required). Bare `form subform` (no `--set`) stays read-only.
+
+Writes (`form set` / `form save` / `form action` / `form subform --set`) require `allowLive: true` on the row (and operator approval).
 `form action --form <ENAME> --name <activation>` runs one named activation (e.g. SAVE) and returns the
 message-handler list. `allowLive: false` is refused before login.
 

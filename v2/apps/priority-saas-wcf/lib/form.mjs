@@ -95,4 +95,13 @@ export async function formStartSubForm(parent, ename, { messages = [] } = {}) {
   return child;
 }
 
+/**
+ * FR #400 / FR-018: open child subform and fieldUpdate on the child only.
+ */
+export async function formSubformSetFields(parent, childName, fields, { messages = [] } = {}) {
+  const child = await formStartSubForm(parent, childName, { messages });
+  const set = await formSetFields(child, fields);
+  return { child, set };
+}
+
 export { safeEnd, packOf };

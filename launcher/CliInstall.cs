@@ -75,10 +75,12 @@ public static class CliInstall
 
     static string OpenCodeDownloadCommand(string? url)
     {
-        string dest = "%USERPROFILE%\\.opencode\\bin\\opencode.exe";
+        // PowerShell must expand $env:USERPROFILE (cmd percent-USERPROFILE stays literal).
+        // Create .opencode\bin itself; Split-Path of that path would only create .opencode.
+        string dest = "$env:USERPROFILE\\.opencode\\bin\\opencode.exe";
         string u = string.IsNullOrWhiteSpace(url) ? "URL_FROM_INSTALL_PAGE" : url.Replace("\"", "");
-        return "New-Item -ItemType Directory -Force -Path (Split-Path $env:USERPROFILE\\.opencode\\bin) | Out-Null; " +
-               "Invoke-WebRequest -UseBasicParsing -Uri '" + u + "' -OutFile '" + dest + "'";
+        return "New-Item -ItemType Directory -Force -Path $env:USERPROFILE\\.opencode\\bin | Out-Null; " +
+               "Invoke-WebRequest -UseBasicParsing -Uri '" + u + "' -OutFile \"" + dest + "\"";
     }
 
     public static CliInstallResult Run(

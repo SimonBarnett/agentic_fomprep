@@ -124,7 +124,7 @@ jobs:
             gh release upload $tag .\launcher\out\PriorityAgent.exe .\launcher\out\PriorityAgent.exe.sha256 --clobber
           } else {
             gh release create $tag .\launcher\out\PriorityAgent.exe .\launcher\out\PriorityAgent.exe.sha256 `
-              --title $tag --notes "Priority Agent launcher pre-release. Verify PriorityAgent.exe.sha256 before use." `
+              --title $tag --notes "Priority Agent launcher pre-release. The loose exe stays. An MSI is an additional asset when packed (not published by this job). Verify PriorityAgent.exe.sha256 before use." `
               --prerelease --target $env:GITHUB_SHA
           }
           if ($LASTEXITCODE -ne 0) { throw "GitHub release upload failed" }

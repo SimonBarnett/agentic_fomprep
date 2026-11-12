@@ -3,9 +3,10 @@ name: priority-saas-wcf
 description: >
   Allowlist-gated Priority SaaS Web SDK (WCF) client for PriorityAgent:
   Bearer accessToken login, tenant probe, form start/rows/set/save/subform,
-  prepare form|procedure|report, FORMPREPERRS, proc start, SaaS OData gate.
+  prepare form|procedure|report, FORMPREPERRS, proc start, whoami USERLOGIN,
+  SaaS OData gate.
   Use when: SaaS WCF, Cloud Web SDK, priority-wcf.mjs, formStart SaaS,
-  connect SaaS Priority, accessToken WCF, prepare SaaS, /priority-saas-wcf.
+  connect SaaS Priority, accessToken WCF, prepare SaaS, whoami, /priority-saas-wcf.
 ---
 
 # Priority SaaS WCF client
@@ -45,11 +46,12 @@ bodies), prefer **REST PAT + OData** (`priority-odata-dev`) or **Priority Cloud 
 3. Obtain token (skill `priority-saas-oidc-login`); store JSON with `access_token`.
 4. `node bin/priority-wcf.mjs probe --instance <id>`
 5. `node bin/priority-wcf.mjs session --instance <id>`
-6. Form verbs: `form start|rows|set|save|subform` with `--form <ENAME>`.
-7. Prepare: `prepare form|procedure|report --name <ENAME>` (needs `allowLive`).
+6. `node bin/priority-wcf.mjs whoami --instance <id>` -> `{ok,userLogin,source}` (`login` or `users`); never OS user; exit 3 = `user_unidentified`.
+7. Form verbs: `form start|rows|set|save|subform` with `--form <ENAME>`.
+8. Prepare: `prepare form|procedure|report --name <ENAME>` (needs `allowLive`).
    Success = walk ended **and** independent gate (`odataBase` OData UPD/LASTPREPDATE
    when SQL unavailable). Without gate, `preparedClaim` stays false.
-8. Proc: `proc start --name <ENAME> [--ptype P]`.
+9. Proc: `proc start --name <ENAME> [--ptype P]`.
 
 ## Related
 

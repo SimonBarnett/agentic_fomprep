@@ -1,0 +1,6 @@
+{
+  "name": "priority-service-desk-privilege-message-disable",
+  "title": "A shipment warning popped up too often and was turned off for one privilege group",
+  "description": "A below-minimum-price warning popped up on many shipments after a minimum price field was used. Support showed how to set that message to no message for the group in Privilege Explorer; users restart Priority.",
+  "version": "1.0.0"
+}

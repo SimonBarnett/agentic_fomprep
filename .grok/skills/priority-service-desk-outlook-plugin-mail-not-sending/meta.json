@@ -1,0 +1,6 @@
+{
+  "name": "priority-service-desk-outlook-plugin-mail-not-sending",
+  "title": "Priority emails stopped sending from Outlook because the plugin was broken",
+  "description": "A user could no longer send Priority emails to colleagues. The Outlook option was missing from Mail Options, which shows the Priority plugin is broken. Reinstalling the plugin with a Windows admin account fixed it.",
+  "version": "1.0.0"
+}

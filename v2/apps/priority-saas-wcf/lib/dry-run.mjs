@@ -18,6 +18,11 @@ export function verbIsWrite(verb, argv = []) {
   if (v === 'form.subform' && Array.isArray(argv) && argv.includes('--set')) return true;
   if (v.startsWith('prepare.')) return true;
   if (v === 'proc.start' || v === 'proc.continue' || v === 'report.run') return true;
+  // FR #410: proc text set is a write; bare proc text (FR #409) stays read-only.
+  if (v === 'proc.text' && Array.isArray(argv)) {
+    const i = argv.findIndex((a) => String(a).toLowerCase() === 'text');
+    if (i >= 0 && String(argv[i + 1] || '').toLowerCase() === 'set') return true;
+  }
   return false;
 }
 

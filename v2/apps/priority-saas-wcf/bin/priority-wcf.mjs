@@ -27,6 +27,7 @@ import { runProcStart, runProcContinue } from '../lib/proc.mjs';
 import { loadInputsFile } from '../lib/inputs-file.mjs';
 import { resolveWhoami } from '../lib/whoami.mjs';
 import { listCompanies } from '../lib/companies.mjs';
+import { readProcTextViaExecForm } from '../lib/proc-text.mjs';
 import { emit, fail, ok, redact } from '../lib/json-out.mjs';
 import { planDryRun } from '../lib/dry-run.mjs';
 import {
@@ -75,7 +76,7 @@ Object kinds: table, form, report, procedure, interface.
   companies --instance <id>  (see: help companies)
   form start|rows|set|save|subform|columns|new|delete|action  (see: help form)
   prepare form|procedure|report --instance <id> --name <ENAME>  (see: help prepare)
-  proc start|continue --instance <id>  (see: help proc)
+  proc start|continue|text --instance <id>  (see: help proc)
   table   (see: help table)
   interface (see: help interface)
   report run --instance <id> --name <ENAME>  (see: help report)
@@ -137,7 +138,9 @@ Prepare is a write (allowLive: true). preparedClaim needs the OData gate when od
 
   proc start    --instance <id> --name <ENAME> [--ptype P|R] [--inputs <file>] [--hint <ename>]
   proc continue --instance <id> --from <step.json> --option <field> [--inputs <file>]
+  proc text     --instance <id> --name <ENAME>
 
+proc text is read-only (EXEC TEXT); allowLive not required. Missing/empty body -> proc_text_missing exit 2.
 Continue answers a needs_input snapshot. Missing --from exits 2 before login. Does not auto-pick.
 `,
   table: `help table
@@ -623,7 +626,46 @@ function loadFromStepFile(filePath) {
   }
 }
 
+
+async function cmdProcTextRead() {
+  const name = reqString('name', '--name') || arg('--proc');
+  if (!name) return fail('name_required', { need: '--name <ENAME> or request.name' });
+  return withSession(
+    async ({ instance, session, dump, tokenSource }) => {
+      const messages = [];
+      const result = await readProcTextViaExecForm(session, instance, name, { messages });
+      dump('proc-text.json', { name, ok: result.ok, reason: result.reason, messages });
+      if (!result.ok) {
+        return fail(result.reason || 'proc_text_missing', {
+          action: 'proc.text',
+          instanceId: instance.id,
+          tokenSource,
+          name,
+        }, 2);
+      }
+      return ok({
+        action: 'proc.text',
+        instanceId: instance.id,
+        tokenSource,
+        name: result.name,
+        body: result.body,
+      });
+    },
+    { write: false },
+  );
+}
+
 async function cmdProc(sub) {
+  if (sub === 'text') {
+    const mode = String(process.argv[4] || '').toLowerCase();
+    if (mode === 'set') {
+      return fail('proc_sub_required', {
+        need: 'start|continue|text (read); text set is FR-028 / #410',
+        got: 'text set',
+      });
+    }
+    return cmdProcTextRead();
+  }
   if (sub === 'continue') {
     const fromPath = arg('--from', '');
     if (!fromPath) {
@@ -663,7 +705,7 @@ async function cmdProc(sub) {
     );
   }
   if (sub !== 'start') {
-    return fail('proc_sub_required', { need: 'start|continue', got: sub });
+    return fail('proc_sub_required', { need: 'start|continue|text', got: sub });
   }
   const name = reqString('name', '--name') || arg('--proc');
   if (!name) return fail('name_required', { need: '--name <ENAME> or request.name' });
@@ -802,7 +844,7 @@ async function main() {
   }
   if (verb === 'proc') {
     const sub = (process.argv[3] || '').toLowerCase();
-    if (!sub) return fail('proc_sub_required', { need: 'start|continue' });
+    if (!sub) return fail('proc_sub_required', { need: 'start|continue|text' });
     return cmdProc(sub);
   }
   if (verb === 'report') {

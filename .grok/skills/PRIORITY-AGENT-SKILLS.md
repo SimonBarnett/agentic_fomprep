@@ -92,6 +92,7 @@ IncludeDba=False IncludeCustomer=False
 - priority-service-desk-webhook-sync-mitigation
 - priority-service-desk-company-timezone-scheduled-reports
 - priority-service-desk-debit-memo-part-account
+- priority-service-desk-form-design-restore
 - priority-service-desk-inventory-count-prepare-zero
 - priority-service-desk-numeration-fiscal-year-constant
 - priority-service-desk-odata-record-limit-powerbi

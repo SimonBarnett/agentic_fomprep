@@ -1,0 +1,6 @@
+{
+  "name": "priority-service-desk-privilege-explorer-override",
+  "title": "Privilege Explorer would not give access to a whole sub-menu until Override was turned on",
+  "description": "In Privilege Explorer, clicking to give a user access to a sub-menu flashed \"Please Wait\" and changed nothing. Turning on \"Override?\" from the Edit menu let the change save.",
+  "version": "1.0.0"
+}

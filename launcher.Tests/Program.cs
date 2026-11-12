@@ -7,6 +7,7 @@ var checks = new List<(string Name, Action Run)>
 {
     ("project wcf overrides customer; legacy airc warns", TestWcfConfigPrecedenceAndLegacy),
     ("saas allowlist loads and renders priority-wcf.mjs rules", TestSaasAllowlistAndRules),
+    ("FR-045: rules example uses whoami and --request; empty USERLOGIN accepts saved; no 'No default login is used'", TestFr045RulesWhoamiAndSavedPrompt),
     ("session instances file has no secrets", TestSessionInstancesNoSecrets),
     ("airc source files and template are gone", TestAircFilesGone),
     ("README documents WCF client only", TestReadmeWcfOnly),
@@ -28,6 +29,8 @@ var checks = new List<(string Name, Action Run)>
     ("MRB-444 hostile: hours-routing has on_behalf_of not user and no token keys", TestHoursRoutingNoSecrets),
     ("FR-387: --hours-user OTHERUSER vs whoami MEDATECH exits 2 and does not start grok", TestHoursUserDisagreesWithWhoami),
     ("MRB-438: matching --hours-user continues; missing whoami does not block", TestHoursUserMatchesOrAbsentWhoami),
+    ("FR-004 redirected stdin plus saved login binds that login", TestRedirectedSavedLoginBinds),
+    ("FR-004 redirected stdin and no saved login exits unavailable", TestRedirectedNoSavedUnavailable),
 };
 
 int failures = 0;
@@ -103,8 +106,30 @@ static void TestSaasAllowlistAndRules()
             "rules must name fom-prep client + harvest destinations and forbid old paths");
         Assert(rules.StartsWith("before", StringComparison.Ordinal) && rules.EndsWith("after", StringComparison.Ordinal),
             "template bookends lost");
+        Assert(rules.Contains("whoami", StringComparison.Ordinal)
+            && rules.Contains("--request", StringComparison.Ordinal),
+            "FR-045: RenderSessionRules example must use whoami and --request");
+        Assert(!rules.Contains("No default login is used", StringComparison.Ordinal),
+            "FR-045: rules must not say No default login is used");
     }
     finally { DeleteTempDirectory(root); }
+}
+
+static void TestFr045RulesWhoamiAndSavedPrompt()
+{
+    string rules = WcfSupport.RenderSessionRules(
+        "{{WCF_SECTION}}",
+        new[] { new WcfInstance("dev", "p.priority-connect.online", "ten", "CO", "u@e", "C:\\tok\\t.json", 3, false, "") },
+        null);
+    Assert(rules.Contains("whoami", StringComparison.Ordinal), "rendered section must mention whoami");
+    Assert(rules.Contains("--request", StringComparison.Ordinal), "rendered section must mention --request");
+    Assert(
+        rules.Contains("Priority USERLOGIN", StringComparison.Ordinal)
+        && (rules.Contains("empty", StringComparison.OrdinalIgnoreCase) || rules.Contains("Enter", StringComparison.Ordinal))
+        && rules.Contains("saved", StringComparison.OrdinalIgnoreCase),
+        "section must state an empty Priority USERLOGIN answer accepts the saved login");
+    Assert(!rules.Contains("No default login is used", StringComparison.Ordinal),
+        "rendered section must not contain the sentence No default login is used");
 }
 
 static void TestSessionInstancesNoSecrets()
@@ -449,6 +474,46 @@ static void TestHoursUserMatchesOrAbsentWhoami()
     Assert(absent.Ok && absent.ExitCode == 0, "no whoami pair must not exit 2: " + absent.Detail);
     var noFlag = LastUserFile.CheckFlagAgainstWhoami(null, "MEDATECH");
     Assert(noFlag.Ok, noFlag.Detail);
+}
+
+static void TestRedirectedSavedLoginBinds()
+{
+    string root = NewTemp();
+    string? previous = Environment.GetEnvironmentVariable(LastUserFile.EnvPath);
+    try
+    {
+        string path = Path.Combine(root, "last-user.json");
+        File.WriteAllText(path,
+            """{"saas1":{"userLogin":"MEDATECH","company":"CO","identifiedAt":"2026-11-12T00:00:00Z","source":"whoami"}}""");
+        Environment.SetEnvironmentVariable(LastUserFile.EnvPath, path);
+        string? saved = LastUserFile.ReadUserLogin("saas1");
+        Assert(saved == "MEDATECH", "saved login must be MEDATECH");
+        // Redirected stdin: never Ask/ReadLine; bind saved via ResolveLaunchUser.
+        string? requested = LastUserFile.ResolveLaunchUser(null, inputRedirected: true, saved, typedAnswer: null);
+        Assert(requested == "MEDATECH", "redirected+saved must exit prompt step with MEDATECH, got " + requested);
+        var bound = BobHours.BindSessionOwner(null, requested);
+        Assert(bound.Ok && bound.UserLogin == "MEDATECH", bound.Detail + "/" + bound.UserLogin);
+        string? flagWins = LastUserFile.ResolveLaunchUser("OTHER", inputRedirected: true, saved, null);
+        Assert(flagWins == "OTHER", "--hours-user must still win when redirected");
+    }
+    finally
+    {
+        Environment.SetEnvironmentVariable(LastUserFile.EnvPath, previous);
+        DeleteTempDirectory(root);
+    }
+}
+
+static void TestRedirectedNoSavedUnavailable()
+{
+    string? requested = LastUserFile.ResolveLaunchUser(null, inputRedirected: true, savedLogin: null, typedAnswer: null);
+    Assert(requested == null, "redirected with no saved and no --hours-user must not invent a login");
+    var bound = BobHours.BindSessionOwner(null, requested);
+    Assert(!bound.Ok, "must fail BindSessionOwner");
+    Assert(bound.Detail.Contains("Priority USERLOGIN unavailable", StringComparison.Ordinal),
+        "exit-2 detail must say Priority USERLOGIN unavailable, got " + bound.Detail);
+    // Simulated launcher exit code when bind fails (Program returns 2).
+    int exitCode = (!bound.Ok || string.IsNullOrEmpty(bound.UserLogin)) ? 2 : 0;
+    Assert(exitCode == 2, "launcher must exit 2");
 }
 
 static string NewTemp()

@@ -1,0 +1,6 @@
+{
+  "name": "priority-service-desk-renew-license-login-errors",
+  "title": "Licence error pop-ups, or business rules that would not open, cleared after Renew License on the server",
+  "description": "Users saw licence error messages, or could not open Business Rules and Autofill Rules. An administrator ran the Renew License program on the server, and the errors stopped.",
+  "version": "1.0.0"
+}

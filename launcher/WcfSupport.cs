@@ -309,7 +309,9 @@ public static class WcfSupport
         sb.AppendLine("- Allowlist: `%USERPROFILE%\\.priority-saas-wcf\\instances.json` (or env");
         sb.AppendLine("  `PRIORITY_SAAS_WCF_INSTANCES`). Tokens via `tokenFile` under `C:\\passwords\\`");
         sb.AppendLine("  or process env `PRIORITY_SAAS_TOKEN`. Never store tokens in git or `.priority-agent.json`.");
-        sb.AppendLine("- Example: `node v2/apps/priority-saas-wcf/bin/priority-wcf.mjs prepare form --instance <id> --name MYFORM`");
+        sb.AppendLine("- Example: `node v2/apps/priority-saas-wcf/bin/priority-wcf.mjs whoami --instance <id>`");
+        sb.AppendLine("- Example: `node v2/apps/priority-saas-wcf/bin/priority-wcf.mjs batch --request <file> --instance <id>`");
+        sb.AppendLine("- An empty answer at the Priority USERLOGIN prompt accepts the saved login when one is offered.");
         if (instances.Count == 0)
         {
             sb.AppendLine("- No WCF instances are configured for this session. Ask Simon to add an");

@@ -195,3 +195,11 @@ books use `harvest-agent-skills` pointing at their home.)
 - When folding a verb PR into FR-008 help, add the new verb to usage() and HELP_TOPICS so help <verb> stays one screen.
 - When MRB tip goes DIRTY after stacking docs, fetch real origin/main (ls-remote) before fold; keep both sides of skill/CLI conflicts (dry-run + request + help topics)
 - form rows --filter calls setSearchFilter once then getRows from 1; omit filter for the unfiltered read.
+- error dialogs stay for the agent unless --confirm-errors; wire CLI setConfirmErrors(hasFlag) plus tests that count errorConfirm 0/1.
+- form action --form ENAME --name ACT needs allowLive; refuseLiveWrite before login; return message-handler list from activateStart/invoke
+- interface run is procStart ptype I with FR-21/FR-22 walker; --inputs on inputFields; two options needs_input; write so allowLive required
+- A BPM status missing from the flow chart that already exists on create is often deleted; restore it from the deleted-status list via the + icon; do not insert in tables.
+- Stacked service-desk harvests conflict on PRIORITY-AGENT-SKILLS and skill-harvest-log; keep every sibling skill name when folding.
+- FIX for a CONFLICTING polish PR: merge origin/main onto the assigned head (fr-N), keep both the original verb and later form verbs, push HEAD:assigned-ref, DONE FIX with the assigned PR URL.
+- Service-desk harvest leaflets: pin grok=catalog SKILL.md, SC ticket, Stop unverified requester, and forbid DB MFA edits; CAT-T59 on untouched files is not a FAIL.
+- After a FIX fold, keep cmdForm const write = on one line so MRB-460/471 source pins still match; include set/save/delete/new/action and subform --set.

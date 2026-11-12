@@ -92,3 +92,48 @@ export function stringFromRequestOrFlag(requestDoc, key, flagRaw, fallback = '')
   if (flagRaw != null && String(flagRaw) !== '') return String(flagRaw);
   return fallback;
 }
+
+/**
+ * FR #400 / FR-018: --fields-file UTF-8 JSON object for form subform --set.
+ * (Size/BOM policy is FR-020 / #402 — not enforced here.)
+ */
+export function loadFieldsFile(filePath) {
+  const p = String(filePath || '').trim();
+  if (!p) {
+    return { ok: false, reason: 'fields_file_required', detail: 'path_missing' };
+  }
+  let text;
+  try {
+    text = fs.readFileSync(p, 'utf8');
+  } catch (e) {
+    return {
+      ok: false,
+      reason: 'fields_file_invalid',
+      detail: 'read_failed',
+      message: String(e?.message || e),
+      path: p,
+    };
+  }
+  if (text.charCodeAt(0) === 0xfeff) text = text.slice(1);
+  let doc;
+  try {
+    doc = JSON.parse(text);
+  } catch (e) {
+    return {
+      ok: false,
+      reason: 'fields_file_invalid',
+      detail: 'json_parse',
+      message: String(e?.message || e),
+      path: p,
+    };
+  }
+  if (!doc || typeof doc !== 'object' || Array.isArray(doc)) {
+    return {
+      ok: false,
+      reason: 'fields_file_invalid',
+      detail: 'not_object',
+      path: p,
+    };
+  }
+  return { ok: true, fields: { ...doc }, path: p };
+}

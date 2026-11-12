@@ -54,6 +54,7 @@ await priority.login({
 When `accessToken` is set, the SDK uses it as the WCF UsernameToken password.
 
 This client resolves `url` from tenant probe `wcf` (preferred) before login.
+A successful probe stores `wcf` and `tabulaini` in `%USERPROFILE%\.priority-agent\probe-cache.json` keyed by instance id with `cachedAt` (FR-041). Later logins within 60 minutes reuse that cache and skip the network probe. The cache never stores a token.
 
 ## Failure / fallback (field-proven)
 

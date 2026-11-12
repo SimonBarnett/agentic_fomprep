@@ -4,6 +4,8 @@ Issue type: the same form query returns a hard row ceiling for some people in a 
 
 Known path, support on 2026-10-30 13:06 GMT: System Management > System Maintenance > Constant Forms > System Constants, search for MAXFORMLINES, then the sublevel Constant per User/User Group. The customer changed the applicable scope and on 2026-10-30 14:01 GMT wrote "Thank you all sorted." Opened 2026-10-30 12:12 GMT.
 
+Second example, SC262499 (opened 2026-08-17): a user in a group whose MAXFORMLINES was set to 30000 could see only 2500 documents in one company. On 2026-08-21 support found the user's privilege group in that company was a read-only group, not the group with the higher limit, and asked for it to be changed to the right group. On 2026-08-24 the customer said the call could be closed. So check which group the user actually has in that company before changing the constant.
+
 Unknown: the final constant value, and which scope wins when both a user and a group override exist. Do not invent a number to set. Do not publish financial rows from the call.
 
 ## Prerequisites
@@ -20,7 +22,7 @@ A system manager, and a performance review before any limit is raised. Read the 
 
 ## Verification
 
-Proven: the customer confirmed the cap change sorted the issue (SC263442).
+Proven: the customer confirmed the cap change sorted the issue (SC263442). In SC262499 the fix was the user's privilege group in that company, not the constant.
 
 Not proven: the number that was saved, and override precedence.
 

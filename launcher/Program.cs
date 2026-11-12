@@ -292,14 +292,14 @@ static class Program
             Pause();
             return flagWhoami.ExitCode;
         }
-        string? requestedUser = LastUserFile.ChooseRequestedUser(HoursUserArg, null, null);
-        string typed = "";
-        if (requestedUser == null && !Console.IsInputRedirected)
-        {
-            typed = Ask(LastUserFile.FormatPrompt(savedLogin));
-            requestedUser = LastUserFile.ChooseRequestedUser(HoursUserArg, typed, savedLogin);
-        }
-        string userLoginSource = SessionLoginMeta.ClassifySource(HoursUserArg, typed, savedLogin);
+        string? typedAnswer = null;
+        // FR-004: never ReadLine when stdin is redirected; bind saved login or fail unavailable.
+        // FR-003: interactive prompt offers [saved]; empty Enter binds saved.
+        if (string.IsNullOrWhiteSpace(HoursUserArg) && !Console.IsInputRedirected)
+            typedAnswer = Ask(LastUserFile.FormatPrompt(savedLogin));
+        string? requestedUser = LastUserFile.ResolveLaunchUser(
+            HoursUserArg, Console.IsInputRedirected, savedLogin, typedAnswer);
+        string userLoginSource = SessionLoginMeta.ClassifySource(HoursUserArg, typedAnswer, savedLogin);
         var sessionOwner = BobHours.BindSessionOwner(ReadSessionOwner(sessionDir), requestedUser);
         if (!sessionOwner.Ok || string.IsNullOrEmpty(sessionOwner.UserLogin))
         {
@@ -960,9 +960,10 @@ PriorityAgent.exe [options]
   --check-hours <ignored-repo-dir> --session <full uuid>
                         webhook hours gate for that session (not a git hours ref)
   --hours-user <USERLOGIN>
-                        Priority USERLOGIN for this launch only. Required when input is
-                        not a terminal. Not read from the OS user or a shared default.
-                        An existing session keeps the login in its identity.json.
+                        Priority USERLOGIN for this launch only. When stdin is redirected,
+                        a saved last-user row for the selected WCF instance is used if this
+                        flag is omitted; otherwise exit 2 (Priority USERLOGIN unavailable).
+                        Not read from the OS user. An existing session keeps identity.json.
   --hours-entry-id <h_...>
                         persisted receiver id (else hours-entry.json or PRIORITY_AGENT_HOURS_ENTRY_ID)
   PRIORITY_AGENT_HOURS_JSON

@@ -2,57 +2,33 @@
 
 - 2026-11-11: `priority-create-table` — WINDBI add column is `FOR TABLE <T> INSERT` (not `CHANGE TABLE … ADD`); table and column titles ≤ 20 characters. Authority in `CREATE_TABLE.md` §5–§6 and `DICTIONARY_SQL.md`.
 - 2026-11-07: `priority-service-desk-shipping-site-vat`. SC263171 order VAT followed the shipping site. Customer confirmed the site correction. No tax code stored. Posted orders are not recalculated by this change.
-=======
 - 2026-11-07: `priority-service-desk-procedure-loop-desktop-tile`. SC263369 step 10 set GO to 10. Prefixed copy and menu replacement were not enough until the customer replaced the old desktop tile on 2026-11-04. Do not edit the standard procedure in place.
-=======
 - 2026-11-07: `priority-service-desk-mobile-migration-qr`. SC263384 apps failed after a server move. A new registration QR worked. QR contents and menu path were not recorded. Mail setup was not confirmed.
 
-=======
-=======
 - 2026-11-07: `priority-service-desk-forecast-mrp-retrieve`. SC263390 Retrieve Sales Orders - MRP, Selected Orders only, set forecast lines to MRP? Y in local and customer Test. Live not run. Do not use All Open Orders from this skill.
 
-=======
 - 2026-11-07: `priority-service-desk-first-costing-baseline`. SC263410 had never run costing, so 01/01/22 was costed before the 31/03/26 valuation. Those dates are not universal. Customer could then run the valuation. Distinct from the orphan work-order past-balance escalation. No autonomous delete.
-=======
 - 2026-11-07: `priority-service-desk-quote-so-attachment-refresh`. SC263161 paperclip worked after refresh and reopen of the new sales order. Mitigation only. No product fix recorded.
-=======
 - 2026-11-07: `priority-service-desk-scanner-numeration`. SC263177 Scanner Trans numeration was extended and the customer could open documents. Not an API quota. Diff and new width unknown. No sequence reset.
-=======
 - 2026-11-07: `priority-service-desk-public-ip-allowlist`. SC263173 login worked after the new public IP was allowlisted. Later churn still happened. No addresses stored. Not an email or password fix.
-=======
 - 2026-11-07: `priority-service-desk-license-manual-install`. SC263215 official 25.0 license matched the system and the higher seat count was visible. 26.0 was the wrong file. Renew License remains unfixed. No license material stored.
-=======
 - 2026-11-07: `priority-service-desk-portal-view-price`. SC263208 View Price in Portal was ticked and the customer said it worked. Discounts and branding were not part of the fix. No prices recorded.
-=======
 - 2026-11-07: `priority-service-desk-warranty-auto-raise`. SC263216 Live lacked Stat After Auto Raise. Two missed contracts were replayed in Draft after owner approval. Next automatic shipment not confirmed. Trigger diff unknown.
-=======
 - 2026-11-07: `priority-service-desk-email-column-translation`. SC263220 Email Editor custom fields appeared after a missing column translation was added. Language direction in the notes disagrees. Check the installation. No direct dictionary edit.
-=======
 - 2026-11-07: `priority-service-desk-invoice-po-column`. SC263237 PO reference was hidden in the selected invoice format. The field was MC Cust PO. Customer confirmed it printed. Wrong-column guess was rejected.
-=======
 - 2026-11-07: `priority-service-desk-standard-cost-update`. SC263270 UpdStdCost=0 so nightly costing did not write catalogue standard costs. Calculate/Update Standard Cost corrected the parents. No amounts. No constant change.
-=======
 - 2026-11-07: `priority-service-desk-hmrc-mtd-reauth`. SC263292 customer reauthenticated via Set Up for HMRC's MTD and the VAT submission went through. Not SC263549. No tokens. 18-month interval is not current policy.
-=======
 - 2026-11-07: `priority-service-desk-serial-site-filter`. SC263316 serial customer matched but the site did not, so the device dropdown was empty. It listed the device when the site was removed. Customer accepted the explanation. Do not drop real site segregation.
-=======
 - 2026-11-07: `priority-service-desk-mrp-production-days`. SC263299 practice company: quantity 5 and Production Days 21 with Time per Batch, MRP without Work Plan, duration 21 not 105. Customer tested maximum 100. Not live. Numbers are not universal. Earlier Work Plan advice is superseded for this case.
-=======
 - 2026-11-07: `priority-service-desk-po-approval-restart`. SC263332 Cancel Auth restarted from the status that starts approval. Customer confirmed 2026-10-23 09:31 BST. Pending Auth is an example only. No status SQL.
-=======
 - 2026-11-07: `priority-service-desk-runaway-report-cpu`. SC263359 two manual Repair History per Serial Number runs were terminated. Cleanup finished and SQL CPU recovered. HEAVYQUERY only logs. Mitigation only. No KILL script.
-=======
 - 2026-11-07: `priority-service-desk-data-exchange-email-company`. SC263373 reinstall did not restore data exchange. Define Comps. for Data Exchange and Update Interface by Email in each company did. Customer found exchanges by searching the current date. Full PO and receipt lifecycle was not recorded.
-=======
 - 2026-11-07: `priority-service-desk-shopify-product-code-import`. SC263397 order imported after the Shopify product code mapping was corrected. Exact field unknown. Failure email not fixed. Not the Dokka split-receipt skill.
 
-=======
 - 2026-11-07: `priority-service-desk-last-purchase-price-report`. SC263402 report built in Part Catalogue Report Generator for last purchase price and date on R parts, then added to the menu. Field identifiers were not retrieved. No price update.
 
-=======
 - 2026-11-07: `priority-service-desk-quote-order-duplicate-lines`. SC263415 copied standard BUF6 line-add inside custom triggers and duplicated quote-to-order lines. Redundant call removed. Copy-company Open Order had no duplicate lines. Exact diff and live customer test were not retrieved.
 
-=======
 - 2026-11-07: `priority-service-desk-blank-partname-report`. SC263245 consumables report blank lines came from empty part link rows. PART.PARTNAME <> '' was deployed and the customer confirmed. Line 800 is not universal.
 
 - 2026-11-07: `priority-service-desk-analytics-child-field`. SC263252 shipping-voucher Analytics hid parents without Additional Expenses while a child cost field was included. Removing the field restored parents. Full cost report not implemented.
@@ -206,3 +182,38 @@ Expanded `priority-uat-wcf` (skill-source + catalog meta **1.2.0**) from CE Day 
 - Source: SaaS WCF Live smoke after API License tick (generic). Folded into PR #338.
 - 2026-11-09 (FR #339): Phase 2 `priority-saas-wcf` prepare form|procedure|report + FORMPREPERRS + proc start + SaaS OData gate (`odataBase`); never preparedClaim without gate.
 - 2026-11-09 (FR #349): gitignore `.bobiverse-seat` / `**/.bobiverse-seat`; harvest-agent-skills: seat markers stay untracked.
+- 2026-11-12: `priority-service-desk-cloud-mfa-method-change`. SC262870: cloud user MFA method change (app to email) could not be done partner-side; supplier changed it. Customer closed. Future requests go via support to the supplier.
+- 2026-11-12: `priority-service-desk-mrp-run-locked-by-scheduler`. SC262717: manual MRP stuck because TTS was running MRP at the same time (procedure locked); avoiding overlap fixed it (customer-verified).
+- 2026-11-12: `priority-service-desk-analytics-multi-company-per-user`. SC262740: analytics report did not run across companies; multi-company selection is per user in the top-right menu; selecting companies fixed it (customer-verified).
+- 2026-11-12: `priority-service-desk-mobile-app-camera-permission`. SC262769: app camera permission read as blocked; full uninstall + device restart + reinstall fixed it (customer-verified).
+- 2026-11-12: `priority-service-desk-app-redis-services-stopped`. SC262863: on-prem Priority down for all; Priority App service and Priority Redis service stopped; restart brought it back. Cause sent to hosting provider, not recorded. SC262824 second example: same two services not running; restart sorted login. SC262608 third example: services not running after DB and web servers rebooted together; restart fixed logins; stagger reboots.
+- 2026-11-12: `priority-service-desk-app-user-applications-for-license`. SC263067: custom app login said user is not an API user; adding the user to Applications for License fixed login. Work orders appeared in the app only once released. Support note after session.
+- 2026-11-12: `priority-service-desk-bpm-deleted-status-restore`. SC262695: BPM status missing from flow chart but "exists" on create; it was deleted; restore from deleted statuses via + icon fixed it (customer-verified).
+- 2026-11-12: `priority-service-desk-browser-plugin-enable` 1.1.0. SC263047 added as corroboration: after a fresh install Chrome enabled the extension but disabled it for the Priority site (found in remote session). Customer retest not recorded. SC262928 known fix: pin the extension and enable it for the Priority tab, refresh; customer said email working. SC262664 added: Chrome silently disabled the extension; re-enable plus mail-by-Outlook setting fixed notifications.
+- 2026-11-12: `priority-service-desk-closed-so-mrp-flag-demand`. SC262958: completed/cancelled SO still drove MRP demand; support removed MRP: Y from its order items; after MRP re-ran the customer said resolved.
+- 2026-11-12: `priority-service-desk-company-timezone-scheduled-reports`. SC263125: after v26 upgrade scheduled report emails seemed missing; they arrived an hour late. Define Input for Task had no effect. Support set a time zone on each company; customer closed the call. Explicit timing retest not recorded. SC262659 second example: time stamps out because companies had no time zone; setting it fixed it (customer-confirmed).
+- 2026-11-12: `priority-service-desk-debit-memo-part-account`. SC263134: debit memo journal unposted with account Lineitems because the part had no nominal account. Defining the account on the part resolved it (support note after call). Account values and form path not stored.
+- 2026-11-12: `priority-service-desk-form-design-restore`. SC262983: Customer Sites showed data in wrong fields for one user across companies; restoring form design fixed it (user confirmed). SC263041: missing sublevel restored by hide/unhide in form design (support note).
+- 2026-11-12: `priority-service-desk-grv-not-linked-po-warehouse`. SC262875: GRV had wrong warehouse because it was not linked to the PO; linking fixed it (support note after call).
+- 2026-11-12: `priority-service-desk-inventory-count-prepare-zero`. SC263014: user could not zero a part stock by inventory count because the count was not prepared. Prepare Count for the part, leave count 0, approve. Customer confirmed they forgot the prep.
+- 2026-11-12: `priority-service-desk-mrp-purchase-planning-input`. SC263116: overnight MRP in one company ran without Purchase Planning, so work orders but no purchase demands. Ran MRP with Purchase Planning, updated user input, Refresh Task Input by User. Customer said all resolved after a week.
+- 2026-11-12: `priority-service-desk-numeration-fiscal-year-constant`. SC263045: Open Numeration Templates did not create new-year prefixes in one company; DocumentNumeration constant was 0 (calendar year). Set to 1 and reran; documents created with the new prefix (support-verified).
+- 2026-11-12: `priority-service-desk-odata-record-limit-powerbi`. SC263022: Power BI OData stopped loading customers past a point after upgrade. A system constant capped API retrieval at 7000 records; raised to 30000 and customer said it worked. Constant name not recorded. SC262930 corroboration: 2000-record API cap after cloud move; support raised MAXAPILINES to 10,000; retest not recorded.
+- 2026-11-12: `priority-service-desk-outlook-plugin-mail-not-sending`. SC262772: Priority emails stopped; Outlook option missing in Mail Options meant a broken plugin; reinstall with Windows admin fixed it (customer-verified).
+- 2026-11-12: `priority-service-desk-pasted-images-slow-text`. SC263088: internal dialogue slow after an email trail with images was pasted in. Customer removed the images and it was faster. Images should be imported with the image button, not pasted.
+- 2026-11-12: `priority-service-desk-po-additional-recipients-contact`. SC262549: POs only reached one contact; no additional recipients on the contact; defining them fixed it (support-verified).
+- 2026-11-12: `priority-service-desk-privilege-explorer-override`. SC262737: Privilege Explorer would not give sub-menu access (Please Wait flash, no change); turning on Override? in the Edit menu fixed it (customer-verified).
+- 2026-11-12: `priority-service-desk-privilege-message-disable`. SC262991: below-minimum-price warning on many shipments; support showed how to set the message to no message for a group in Privilege Explorer and restart Priority. Customer thanked; explicit retest not recorded.
+- 2026-11-12: `priority-service-desk-serial-number-renamed-history`. SC263002: asset missing from Catalogue of Parts with S Nos; serial had been renamed on the part (History of Changes). Customer changed it back. Reason for rename unknown.
+- 2026-11-12: `priority-service-desk-ssl-acme-renewal-firewall`. SC263074: ACME SSL renewal failed. Renewal task had stale Windows credentials; after fixing, ACME port 80 validation timed out due to IP lockdown. Network provider renewed the cert and re-locked; support says task addresses were allowlisted. Customer confirmed OK.
+- 2026-11-12: `priority-service-desk-subform-read-only-status-revisions`. SC262759: subform could be opened but not edited; the status did not allow revisions; allowing revisions fixed it (customer-verified). SC262461 related: ECO subforms not editable in statuses without Allow Revisions (explanation).
+- 2026-11-12: `priority-service-desk-tts-tasks-not-running`. SC262780 + SC262771: TTS stopped (service account logon failure) or stalled while running; fixing the account / restarting the service brought tasks back (support-verified).
+- 2026-11-12: `priority-service-desk-upgrade-missing-custom-trigger-code`. SC262879: after upgrade, service contract errors and missing engineer fill; custom code in standard triggers was not recorded as a standard-trigger change and was lost. Restored; customer said resolved.
+- 2026-11-12: `priority-service-desk-ui-language-print` 1.1.0. SC262893: user shortcuts missing after the user language changed to American English; changing back to British fixed it (customer confirmed). Support called it a known issue. SC262605 added: homepage tiles missing with American English; changing language fixed it (customer-confirmed).
+- 2026-11-12: `priority-service-desk-unprepared-forms-reprepare`. SC262804: active-user change failed and Add New User hung the system; many forms were unprepared (maybe after a new custom procedure). Re-preparing unprepared forms fixed it (support note after call).
+- 2026-11-12: `priority-service-desk-vendor-price-list-unit-readd`. SC262535: vendor price list line kept old unit after vendor parts unit changed; delete and re-add the line (support note after call).
+- 2026-11-12: `priority-service-desk-wrong-url-error-404`. SC263091: Error 404 at login for some users. Supplier said it is the wrong-URL message; the user had a different URL and logged in with the correct one. URLs not stored.
+- 2026-11-12: `priority-service-desk-mobile-app-update-registration` 1.1.0. SC262514 added: apps were off auto-update; updating the app alone fixed it (customer-solved).
+- 2026-11-12: `priority-service-desk-inactive-user-login-error-500`. SC262976: one user got Error 500 at login; they had been marked inactive by another user. Marked active, login worked, customer confirmed.
+- 2026-11-12: `priority-service-desk-maxformlines-user-group` 1.1.0. SC262499 added: 2500-row cap came from the user's privilege group in that company (read-only group), not the constant; customer closed.
+- 2026-11-12: `priority-service-desk-renew-license-login-errors`. SC262447 + SC262456 + SC262592: licence error pop-ups and business rules not opening cleared after Renew License on the server (support-verified).

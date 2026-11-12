@@ -2,5 +2,5 @@
   "name": "priority-service-desk-ui-language-print",
   "title": "UI language selected the wrong print format",
   "description": "Wrong print format after a move can be the user's UI language. American English was the mismatched language in the call. The target language was not named.",
-  "version": "1.0.0"
+  "version": "1.1.0"
 }

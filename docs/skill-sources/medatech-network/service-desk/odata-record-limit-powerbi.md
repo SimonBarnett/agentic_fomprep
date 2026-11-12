@@ -1,0 +1,27 @@
+# Power BI stopped loading records past a point because of the API record limit
+
+Issue type: a Power BI (or other OData) query returns only part of a table, for example customers stop after a certain number, often noticed after an upgrade.
+
+Known: on 2026-09-29 15:28 BST the consultant told the customer he had changed a system constant related to how many records can be retrieved through the API, from a maximum of 7000 at once to 30000, and asked them to retry the Power BI query. At 15:39 BST the customer replied that it worked. The constant name is not recorded in the call. Customer and record identifiers are not stored.
+
+This is not missing data and not the user-interface row cap (MAXFORMLINES, see priority-service-desk-maxformlines-user-group). Do not assume the constant name.
+
+Second example (corroboration): SC262930. After a move to the cloud, Power BI through the API retrieved at most 2000 records per form (more than 6000 customers existed). On 2026-09-21 10:32 BST support said this is managed by the MAXAPILINES system constant (System Management > System Maintenance > Constant Forms > System Constants) and raised it to 10,000. The customer retest is not recorded. Check that the constant in the target system has the same name before changing it.
+
+## Steps
+
+1. Count the records the OData query returns. A round number (for example exactly 7000) suggests a retrieval cap, not a data problem.
+2. Check that the missing records exist in Priority and are readable by that API user.
+3. Find the system constant that limits API record retrieval in that environment. Confirm its name from the system, not from memory.
+4. The system owner agrees a higher value, considering load. An authorised administrator changes it.
+5. Rerun the Power BI query and confirm the missing records now load.
+
+## Verification
+
+Proven: after raising the API record limit from 7000 to 30000, the customer said the Power BI query worked (SC263022).
+
+Not proven: the constant name in SC263022 (SC262930 names MAXAPILINES), whether paging in the client would have avoided it, and the load impact.
+
+## Stop
+
+Stop if the count is not near a round limit, or if the records are missing in Priority too. Then treat it as a data or permission problem.

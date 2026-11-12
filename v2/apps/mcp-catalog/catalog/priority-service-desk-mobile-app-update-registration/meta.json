@@ -2,5 +2,5 @@
   "name": "priority-service-desk-mobile-app-update-registration",
   "title": "Mobile app update plus registration restored login",
   "description": "Update the mobile app to a currently supported build and repeat registration. The historical build 183.2.79 is evidence from one call, not a universal target.",
-  "version": "1.0.0"
+  "version": "1.1.0"
 }

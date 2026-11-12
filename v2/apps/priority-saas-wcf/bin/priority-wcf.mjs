@@ -18,6 +18,7 @@ import { resolveWhoami } from '../lib/whoami.mjs';
 import { listCompanies } from '../lib/companies.mjs';
 import { emit, fail, ok, redact } from '../lib/json-out.mjs';
 import { planDryRun } from '../lib/dry-run.mjs';
+import { loadFieldsFile } from '../lib/fields-file.mjs';
 import {
   loadRequestFile,
   fieldsFromRequestOrFlag,
@@ -30,6 +31,8 @@ const ROOT = path.resolve(__dirname, '..');
 
 /** FR #389: loaded --request JSON; keys override matching flags. */
 let requestDoc = null;
+/** FR #402: --fields-file object for form set only (not form save). */
+let fieldsFileFields = null;
 
 function arg(name, fallback = '') {
   const i = process.argv.indexOf(name);
@@ -103,7 +106,7 @@ Form verbs (one screen):
   form delete  --instance <id> --form <ENAME> --filter ... --confirm
   form action  --instance <id> --form <ENAME> --name <ACT> [--filter ...]
   form start   --instance <id> --form <ENAME>
-  form set     --instance <id> --form <ENAME> --fields '{...}' [--filter ...]
+  form set     --instance <id> --form <ENAME> --fields '{...}' [--fields-file <path>] [--filter ...]
   form save    --instance <id> --form <ENAME> --fields '{...}' [--filter ...]
   form subform --instance <id> --form <PARENT> --subform <CHILD> [--rows]
 
@@ -394,7 +397,10 @@ async function cmdForm(sub) {
         }
 
         if (sub === 'set' || sub === 'save') {
-          const fields = fieldsFromRequestOrFlag(requestDoc, arg('--fields', '{}'));
+          const fields =
+            sub === 'set' && fieldsFileFields
+              ? fieldsFileFields
+              : fieldsFromRequestOrFlag(requestDoc, arg('--fields', '{}'));
           if (Object.keys(fields).length < 1) {
             await safeEnd(form);
             return fail('fields_required', { need: '--fields JSON object or request.fields' });
@@ -535,6 +541,16 @@ async function main() {
     const loaded = loadRequestFile(requestPath);
     if (!loaded.ok) return fail(loaded.reason || 'request_invalid', loaded, 2);
     requestDoc = loaded.doc;
+  }
+
+  // FR #402: --fields-file before login (BOM / size). Not used by form save.
+  const fieldsFilePath = arg('--fields-file', '');
+  if (fieldsFilePath) {
+    const loaded = loadFieldsFile(fieldsFilePath);
+    if (!loaded.ok) {
+      return fail(loaded.reason, { path: loaded.path, detail: loaded.detail, bytes: loaded.bytes }, 2);
+    }
+    fieldsFileFields = loaded.fields;
   }
 
   // FR #391: resolve instance + verb without login.

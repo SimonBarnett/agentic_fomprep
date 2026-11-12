@@ -86,6 +86,7 @@ node bin\priority-wcf.mjs form save  --instance customer-saas-dev --form CUSTOME
 # Prefer a UTF-8 request file on Windows (no shell quoting). File stays outside the repo.
 # request.json example: { "form": "CUSTOMERS", "fields": { "EMAIL": "a@b.c" }, "filter": { "field": "CUSTNAME", "fromval": "X" } }
 node bin\priority-wcf.mjs form set --instance customer-saas-dev --request C:\temp\request.json
+node bin\priority-wcf.mjs form set --instance customer-saas-dev --form CUSTOMERS --fields-file C:\temp\fields.json
 ```
 
 `help` prints the top-level summary. `help <verb>` prints one screen for
@@ -98,6 +99,8 @@ before login. Do not copy request files into the repo.
 `companies --instance <id>` is read-only JSON `{companies:[{name,title}]}` and does not require `allowLive`. It does not switch the session company.
 
 `form rows --filter` (or request-file `filter`) calls SDK `setSearchFilter` once then `getRows` from 1. Missing filter is the unfiltered read. Writes stay on `form set` / `form save`.
+
+`--fields-file` is UTF-8 JSON for `form set` only (does not change `form save`). A leading UTF-8 BOM exits 2 `bom_refused`. Larger than 1 MiB exits 2 `fields_file_too_large`. The client does not log the file body.
 
 Writes (`form set` / `form save`) require `allowLive: true` on the row (and operator approval).
 

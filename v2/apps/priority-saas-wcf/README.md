@@ -70,6 +70,7 @@ node bin\priority-wcf.mjs companies --instance customer-saas-dev
 node bin\priority-wcf.mjs session --instance customer-saas-dev --form CUSTOMERS
 node bin\priority-wcf.mjs form start --instance customer-saas-dev --form CUSTOMERS
 node bin\priority-wcf.mjs form rows  --instance customer-saas-dev --form CUSTOMERS
+node bin\priority-wcf.mjs form rows  --instance customer-saas-dev --form CUSTOMERS --filter "{\"field\":\"CUSTNAME\",\"fromval\":\"X\"}"
 node bin\priority-wcf.mjs form set   --instance customer-saas-dev --form CUSTOMERS --filter "{\"field\":\"CUSTNAME\",\"fromval\":\"X\"}" --fields "{\"EMAIL\":\"a@b.c\"}"
 node bin\priority-wcf.mjs form save  --instance customer-saas-dev --form CUSTOMERS --filter "..." --fields "{...}"
 # Prefer a UTF-8 request file on Windows (no shell quoting). File stays outside the repo.
@@ -85,6 +86,8 @@ override the matching CLI flags when present. Invalid JSON exits 2 with `reason:
 before login. Do not copy request files into the repo.
 
 `companies --instance <id>` is read-only JSON `{companies:[{name,title}]}` and does not require `allowLive`. It does not switch the session company.
+
+`form rows --filter` (or request-file `filter`) calls SDK `setSearchFilter` once then `getRows` from 1. Missing filter is the unfiltered read. Writes stay on `form set` / `form save`.
 
 Writes (`form set` / `form save`) require `allowLive: true` on the row (and operator approval).
 

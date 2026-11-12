@@ -1,0 +1,6 @@
+{
+  "name": "priority-service-desk-upgrade-missing-custom-trigger-code",
+  "title": "After an upgrade, errors came back because custom code in a standard trigger was lost",
+  "description": "After a version upgrade, a service contract form raised errors and stopped filling a field. Custom code that had been added to standard triggers was missing because it had not been recorded as a standard-trigger change. Adding it back fixed both.",
+  "version": "1.0.0"
+}

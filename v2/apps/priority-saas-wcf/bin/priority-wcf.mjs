@@ -44,6 +44,7 @@ import {
 import { checkDictionaryTitle } from '../lib/title-check.mjs';
 import { emit, fail, ok, redact } from '../lib/json-out.mjs';
 import { planDryRun } from '../lib/dry-run.mjs';
+import { validateBatchRequest } from '../lib/batch.mjs';
 import {
   loadRequestFile,
   fieldsFromRequestOrFlag,
@@ -96,11 +97,12 @@ Object kinds: table, form, report, procedure, interface.
   table column add --instance <id> --name <TNAME> --column <COL> --type <T> --title <title>  (see: help table)
   interface (see: help interface)
   report run --instance <id> --name <ENAME>  (see: help report)
+  batch --request <file> --instance <id>  (see: help batch)
   Any verb: --request <path>  UTF-8 JSON; keys fields|filter|inputs|name|form|subform override flags
   --dry-run               resolve instance + verb; print instanceId, verb, write; no login
   --confirm-errors        auto-dismiss SDK error dialogs (default: leave them for the agent)
   help
-  help <verb>   form|prepare|proc|table|interface|report|companies
+  help <verb>   form|prepare|proc|table|interface|report|companies|batch
 
 Env:
   PRIORITY_SAAS_WCF_INSTANCES  allowlist JSON (default %USERPROFILE%\\.priority-saas-wcf\\instances.json)
@@ -118,6 +120,17 @@ Request files stay outside the repo (temp / profile); never commit them.
 }
 
 const HELP_TOPICS = {
+  batch: `help batch
+
+  batch --request <file> --instance <id>
+
+  Request JSON: { "reads": [ { "verb": "whoami" }, ... ] }
+  Allowed: whoami, form columns, form rows, table columns, table exists,
+  companies, proc text, interface list.
+  Maximum 8 reads. A 9th or any write verb (for example form new) exits 2
+  before login (batch_too_many / batch_write_refused).
+  One login for the whole file. Writes stay single-verb.
+`,
   companies: `help companies
 
   companies --instance <id>
@@ -278,6 +291,104 @@ async function withSession(fn, { write = false, needToken = true } = {}) {
   } finally {
     await logout(session.priority);
   }
+}
+
+async function executeBatchRead({ instance, session, dump, tokenSource, accessToken }, read) {
+  if (read.verb === 'whoami') {
+    const r = await resolveWhoami({ instance, session });
+    if (!r.ok) return { ok: false, reason: r.reason || 'user_unidentified', read };
+    return { ok: true, result: { action: 'whoami', userLogin: r.userLogin, source: r.source } };
+  }
+  if (read.verb === 'companies') {
+    const r = await listCompanies({ instance, session });
+    if (!r.ok) return { ok: false, reason: r.reason || 'companies_failed', read };
+    return {
+      ok: true,
+      result: { action: 'companies', companies: r.companies, switched: false },
+    };
+  }
+  if (read.verb === 'interface.list') {
+    const r = await listInterfaces({ instance, session });
+    if (!r.ok) return { ok: false, reason: r.reason || 'interface_list_failed', read };
+    return { ok: true, result: { action: 'interface.list', interfaces: r.interfaces } };
+  }
+  if (read.verb === 'form.columns') {
+    const messages = [];
+    const form = await formStart(session.priority, read.form, instance.company, { messages });
+    const columns = formColumnsMeta(form);
+    await safeEnd(form);
+    return {
+      ok: true,
+      result: { action: 'form.columns', form: read.form, columns, messages },
+    };
+  }
+  if (read.verb === 'form.rows') {
+    const messages = [];
+    const form = await formStart(session.priority, read.form, instance.company, { messages });
+    const got = await applySearchThenGetRows(form, null, { fromRow: 1 });
+    await safeEnd(form);
+    const { searchCalls, ...rowsOut } = got;
+    return {
+      ok: true,
+      result: { action: 'form.rows', form: read.form, searchCalls, ...rowsOut, messages },
+    };
+  }
+  if (read.verb === 'table.exists') {
+    const result = await fetchTableExists(instance, read.name, { accessToken });
+    if (!result.ok) return { ok: false, reason: result.reason, read };
+    return {
+      ok: true,
+      result: { action: 'table.exists', name: result.name, exists: result.exists },
+    };
+  }
+  if (read.verb === 'table.columns') {
+    const result = await fetchTableColumns(instance, read.name, { accessToken });
+    if (!result.ok) return { ok: false, reason: result.reason, read };
+    return {
+      ok: true,
+      result: {
+        action: 'table.columns',
+        table: read.name,
+        exists: result.exists,
+        columns: result.columns,
+      },
+    };
+  }
+  if (read.verb === 'proc.text') {
+    const messages = [];
+    const result = await readProcTextViaExecForm(session, instance, read.name, { messages });
+    if (!result.ok) return { ok: false, reason: result.reason || 'proc_text_missing', read };
+    return {
+      ok: true,
+      result: { action: 'proc.text', name: result.name, body: result.body, tokenSource },
+    };
+  }
+  dump('batch-unknown.json', read);
+  return { ok: false, reason: 'batch_write_refused', read };
+}
+
+async function cmdBatch() {
+  const requestPath = arg('--request', '');
+  if (!requestPath) {
+    return fail('request_invalid', { need: '--request <file> with reads[]' }, 2);
+  }
+  const loaded = requestDoc
+    ? { ok: true, doc: requestDoc }
+    : loadRequestFile(requestPath);
+  if (!loaded.ok) return fail(loaded.reason || 'request_invalid', loaded, 2);
+  const v = validateBatchRequest(loaded.doc);
+  if (!v.ok) return fail(v.reason, v, 2);
+  return withSession(async (ctx) => {
+    const results = [];
+    for (const read of v.reads) {
+      const one = await executeBatchRead(ctx, read);
+      if (!one.ok) {
+        return fail(one.reason || 'batch_read_failed', { verb: read.verb, ...one });
+      }
+      results.push(one.result);
+    }
+    return ok({ action: 'batch', results, loginCount: 1 });
+  });
 }
 
 async function cmdProbe() {
@@ -1086,6 +1197,7 @@ async function main() {
     });
   }
 
+  if (verb === 'batch') return cmdBatch();
   if (verb === 'probe') return cmdProbe();
   if (verb === 'session') return cmdSession();
   if (verb === 'whoami') return cmdWhoami();
@@ -1124,7 +1236,7 @@ async function main() {
   }
   return fail('unknown_verb', {
     verb,
-    hint: 'probe|session|whoami|companies|form|prepare|proc|report|table|interface|help',
+    hint: 'probe|session|whoami|companies|form|prepare|proc|report|table|interface|batch|help',
   });
 }
 

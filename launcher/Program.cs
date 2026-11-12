@@ -137,9 +137,18 @@ static class Program
             @"C:\Program Files\Git\cmd\git.exe", @"D:\Program Files\Git\cmd\git.exe");
         string? gh = Which("gh.exe", Environment.GetEnvironmentVariable("PRIORITY_AGENT_TEST_GH"),
             @"C:\Program Files\GitHub CLI\gh.exe", @"D:\Program Files\GitHub CLI\gh.exe");
-        string? grok = Which("grok.exe", Environment.GetEnvironmentVariable("PRIORITY_AGENT_TEST_GROK"),
+        string? grokBin = Which("grok.exe", Environment.GetEnvironmentVariable("PRIORITY_AGENT_TEST_GROK"),
             Path.Combine(Home, ".grok", "bin", "grok.exe"));
-        Info($"git : {git ?? "MISSING"}\ngh  : {gh ?? "MISSING"}\ngrok: {grok ?? "MISSING"}");
+        string? cursorBin = Which("cursor.exe", Environment.GetEnvironmentVariable("PRIORITY_AGENT_TEST_CURSOR"),
+            Path.Combine(Home, "AppData", "Local", "Programs", "cursor", "Cursor.exe"),
+            Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Programs", "cursor", "Cursor.exe"));
+        string? opencodeBin = Which("opencode.exe", Environment.GetEnvironmentVariable("PRIORITY_AGENT_TEST_OPENCODE"),
+            Path.Combine(Home, ".opencode", "bin", "opencode.exe"));
+        var foundClis = new List<FoundCli>();
+        if (grokBin != null) foundClis.Add(new FoundCli(AgentCliKind.Grok, grokBin));
+        if (cursorBin != null) foundClis.Add(new FoundCli(AgentCliKind.Cursor, cursorBin));
+        if (opencodeBin != null) foundClis.Add(new FoundCli(AgentCliKind.OpenCode, opencodeBin));
+        Info($"git : {git ?? "MISSING"}\ngh  : {gh ?? "MISSING"}\ngrok: {grokBin ?? "MISSING"}\ncursor: {cursorBin ?? "MISSING"}\nopencode: {opencodeBin ?? "MISSING"}");
         if (git == null || gh == null) { Err("git and gh are required."); Pause(); return 1; }
         Git = git; Gh = gh;
 
@@ -251,12 +260,23 @@ static class Program
         }
         Log($"wcf instances: {wcfConfig.Instances.Count} from {wcfConfig.SourcePath ?? "(none)"}");
 
-        // ---- 4. grok: register MCP + skills, build brief, launch ----------------------
-        Header("[4] Agent (Grok)");
-        if (grok == null) { Err("grok CLI not found (expected %USERPROFILE%\\.grok\\bin\\grok.exe)."); Pause(); return 1; }
-        EnsureGrokMcp(grok, fomprep);
-        EnsureGrokSkillsPath(skillsDir);
-        if (!NoFuel) FuelCheck();
+        // ---- 4. agent CLI chooser (issue #569), then launch ----------------------
+        Header("[4] Agent CLI");
+        var chosen = ChooseAgentCli(foundClis);
+        if (chosen.Action == CliChooserAction.Refuse || chosen.Launch == null)
+        {
+            Err(chosen.Message);
+            Pause();
+            return chosen.ExitCode == 0 ? 1 : chosen.ExitCode;
+        }
+        string agentExe = chosen.Launch.Path;
+        string? grok = chosen.Launch.Kind == AgentCliKind.Grok ? agentExe : null;
+        if (grok != null)
+        {
+            EnsureGrokMcp(grok, fomprep);
+            EnsureGrokSkillsPath(skillsDir);
+            if (!NoFuel) FuelCheck();
+        }
 
         string level = projectDir != null ? "project" : cust != null ? "customer" : "general";
         string workDir = projectDir ?? custDir ?? fomprep;
@@ -356,7 +376,8 @@ static class Program
             priorityUserLogin = sessionOwner.UserLogin,
             workDir,
             fomprep,
-            grok,
+            grok = agentExe,
+            agentKind = chosen.Launch.Kind.ToString(),
             wcf = wcfMeta,
             dryRun = DryRun,
             smoke = Smoke,
@@ -373,22 +394,32 @@ static class Program
             + "Do not send priority_project or wbs. Booking stays in project.md. "
             + "Persist that same login with the returned id in " + hoursEntryFile + ". "
             + "Do not invent start, end, or duration. Do not book Priority. Then stop.";
-        var gargs = LauncherSupport.BuildGrokArguments(workDir, sessionId, rules, brief.ToString(), Smoke);
-        var resumeArgs = new List<string> { "--cwd", workDir, "--resume", sessionId, "--trust", "--rules", rules, hoursPrompt };
-        EnsureCommandLineSize(grok, gargs, "Grok launch");
-        EnsureCommandLineSize(grok, resumeArgs, "Grok hours relaunch");
-        string display = Quote(grok) + " " + string.Join(' ', gargs.Select(a => a == rules ? $"<rules: {rulesFile}>" : Quote(a)));
+        var gargs = chosen.Launch.Kind == AgentCliKind.Grok
+            ? LauncherSupport.BuildGrokArguments(workDir, sessionId, rules, brief.ToString(), Smoke)
+            : new List<string>();
+        var resumeArgs = chosen.Launch.Kind == AgentCliKind.Grok
+            ? new List<string> { "--cwd", workDir, "--resume", sessionId, "--trust", "--rules", rules, hoursPrompt }
+            : new List<string>();
+        if (chosen.Launch.Kind == AgentCliKind.Grok && grok != null)
+        {
+            EnsureCommandLineSize(grok, gargs, "Grok launch");
+            EnsureCommandLineSize(grok, resumeArgs, "Grok hours relaunch");
+        }
+        string display = Quote(agentExe) + (gargs.Count == 0 ? "" : " " + string.Join(' ', gargs.Select(a => a == rules ? $"<rules: {rulesFile}>" : Quote(a))));
         Console.WriteLine("\nLaunch command:\n  " + display.Replace("\r\n", "\\n").Replace("\n", "\\n"));
         Log("launch: " + display);
         Check(Directory.Exists(workDir), $"working directory exists: {workDir}");
-        Console.WriteLine("Hours relaunch command (only if hours are missing on exit):\n  " + Quote(grok) + " " +
-            string.Join(' ', resumeArgs.Select(a => a == rules ? $"<rules: {rulesFile}>" : Quote(a))));
+        if (chosen.Launch.Kind == AgentCliKind.Grok && grok != null)
+        {
+            Console.WriteLine("Hours relaunch command (only if hours are missing on exit):\n  " + Quote(grok) + " " +
+                string.Join(' ', resumeArgs.Select(a => a == rules ? $"<rules: {rulesFile}>" : Quote(a))));
+        }
 
         if (DryRun) { Info("Dry run: agent not started."); Summary(); Pause(); return Fails == 0 ? 0 : 1; }
 
-        if (Smoke) GrokInspect(grok, workDir);
-        Header(Smoke ? "Starting Grok (single-turn smoke)..." : "Starting Grok...");
-        int code = RunGrok(grok, workDir, gargs);
+        if (Smoke && grok != null) GrokInspect(grok, workDir);
+        Header(Smoke ? "Starting agent (single-turn smoke)..." : "Starting " + chosen.Launch.Kind + "...");
+        int code = RunGrok(agentExe, workDir, gargs);
         if (Smoke)
         {
             Check(code == 0, "smoke launch exit code 0");
@@ -411,7 +442,8 @@ static class Program
             if (Console.IsInputRedirected) { Fails++; Err("non-interactive: cannot relaunch for hours."); break; }
             string ans = Ask($"Relaunching the agent to report hours (attempt {attempt}). Press Enter to continue (type SKIP to override, it gets logged): ");
             if (ans == "SKIP") { Log($"HOURS OVERRIDE: session {sessionId} closed without hours by user"); Warn("hours skipped by override; logged."); Fails++; break; }
-            code = RunGrok(grok, workDir, resumeArgs);
+            if (chosen.Launch.Kind == AgentCliKind.Grok && grok != null)
+                code = RunGrok(grok, workDir, resumeArgs);
         }
         Pause();
         return code;
@@ -904,6 +936,36 @@ static class Program
         LauncherSupport.ValidateWindowsCommandLine(executable, args, operation);
     }
 
+    static CliChooserResult ChooseAgentCli(IReadOnlyList<FoundCli> installed)
+    {
+        AgentCliKind? pick = null;
+        bool? installNow = null;
+        for (int i = 0; i < 8; i++)
+        {
+            var result = CliChooser.Decide(installed, Console.IsInputRedirected, pick, installNow);
+            switch (result.Action)
+            {
+                case CliChooserAction.Launch:
+                case CliChooserAction.Refuse:
+                    return result;
+                case CliChooserAction.OfferZeroMenu:
+                    Info(result.Message);
+                    pick = CliChooser.ParsePick(Ask("Grok / Cursor / OpenCode / refuse: "));
+                    break;
+                case CliChooserAction.OfferWhich:
+                    Info(result.Message);
+                    pick = CliChooser.ParsePick(Ask("Which CLI to launch? "));
+                    break;
+                case CliChooserAction.AskInstallNow:
+                    Info(result.Message);
+                    string ans = Ask(CliChooser.InstallNowPrompt + " [y/N]: ");
+                    installNow = ans.StartsWith("y", StringComparison.OrdinalIgnoreCase);
+                    break;
+            }
+        }
+        return CliChooser.Decide(installed, true, AgentCliKind.Refuse, false);
+    }
+
     static string Ask(string prompt)
     {
         Console.Write(prompt);
@@ -943,7 +1005,7 @@ static class Program
     static void Help() => Console.WriteLine(@"
 PriorityAgent.exe [options]
 
-  (no options)          interactive: pick customer and project, then start Grok
+  (no options)          interactive: pick customer and project, then choose Grok, Cursor, OpenCode, or refuse
   --list                list customer repos (topic priority-customer); with --customer, also list its folders
   --general             general Priority context (no customer)
   --customer <repo>     pick customer non-interactively (e.g. rees)

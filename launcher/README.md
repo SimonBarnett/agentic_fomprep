@@ -46,23 +46,24 @@ with the right context.
      an existing clone under any searched `X:\AI` or `X:\repos` is reused.
    - **Project / service call**: one of the customer repo's top-level folders, skipping dot-folders.
      cwd is that folder.
-5. It loads **Priority SaaS WCF allowlist** rows (FR #348): default %USERPROFILE%\.priority-saas-wcf\instances.json (env PRIORITY_SAAS_WCF_INSTANCES), or a wcfInstancesPath / SaaS-shaped list in .priority-agent.json (project overrides customer). Each row has id, host, tenant, company, user, tokenFile, allowLive (see v2/apps/priority-saas-wcf/instances.example.json). Credentials and tokens are never stored there. The launcher writes a session-only wcf-instances.json and injects instructions for bin/priority-wcf.mjs + skill priority-saas-wcf (not bobiverse #6026 priority_wcf.py). Legacy airc / airc_console fields still load without error and print a warning that they are ignored. --airc, --no-airc and --airc-console are rejected with a clear "removed; use the WCF client" message.
-6. **New customer / new project** never creates anything. It prints `Ask Haitch: new customer repo for X`
+5. **Agent CLI (issue #569):** same choice rules as the MSI chooser. None installed and interactive: offer Grok, Cursor, OpenCode, or refuse. Refuse prints the not-found line and exits 1 with no download. Exactly one installed: launch it. Two or more: ask which (never by token fuel). A missing pick asks "Install it now?" before any download. Redirected stdin does not prompt and does not download. Cursor/OpenCode argument lists are FR-005.
+6. It loads **Priority SaaS WCF allowlist** rows (FR #348): default %USERPROFILE%\.priority-saas-wcf\instances.json (env PRIORITY_SAAS_WCF_INSTANCES), or a wcfInstancesPath / SaaS-shaped list in .priority-agent.json (project overrides customer). Each row has id, host, tenant, company, user, tokenFile, allowLive (see v2/apps/priority-saas-wcf/instances.example.json). Credentials and tokens are never stored there. The launcher writes a session-only wcf-instances.json and injects instructions for bin/priority-wcf.mjs + skill priority-saas-wcf (not bobiverse #6026 priority_wcf.py). Legacy airc / airc_console fields still load without error and print a warning that they are ignored. --airc, --no-airc and --airc-console are rejected with a clear "removed; use the WCF client" message.
+7. **New customer / new project** never creates anything. It prints `Ask Haitch: new customer repo for X`
    or `Ask Haitch: new project folder Y in <repo>`, copies the line to the clipboard and exits. Haitch creates it
    from `launcher/customer-setup`. A project folder must already be an authoritative `SCxxxxxx` or `SOxxxxxx`.
    The Medatech booking id and WBS go in that folder's `project.md`, not in the folder name.
-7. It checks fuel like `ce-dayworks/scripts/Start-DayWorks.ps1`.
+8. It checks fuel like `ce-dayworks/scripts/Start-DayWorks.ps1`.
    - Source: the Bob report `machines.<machine>.pcent["grok-chat"]`.
    - Above 0 means the pool is used. 0 or unknown gives a warning and asks before continuing.
    - It never handles keys.
-8. It **starts Grok** in the same console:
+9. It **starts the chosen CLI** in the same console. For Grok:
    `grok --cwd <context> --session-id <new uuid> --trust --rules <agent rules> "<context brief>"`.
    - The rules come from `launcher/agent-rules.md`. That file is the only reporting
      policy. The exe embeds a copy of it at build time. On launch, `LoadRules` uses the
      clone file when its `rules-version` is at least the embedded copy. Customer repos
      are not given a copy. The `{{...}}` placeholders are filled in.
    - The brief names the customer, project, paths and the files to read first.
-9. **Hours are mandatory.** When the agent exits, the launcher looks for one **closed** entry on
+10. **Hours are mandatory.** When the agent exits, the launcher looks for one **closed** entry on
    `GET https://bob.ntsa.uk/bob/v1/hours` (bobiverse FR #3450 / #3673). The query is
    `user` and `status=closed`. It does **not** send `idempotency_key` as a query
    parameter. `from` and `to`, when sent, are Europe/London dates from the persisted
@@ -179,7 +180,10 @@ PriorityAgent.exe --mcp-catalog [<catalog dir>]                 fallback stdio c
 Other options: `--root <dir>` (clone root; default: first existing `X:\AI` on C:->Z:, else create `\AI` on the first ready drive; env `PRIORITY_AGENT_ROOT`),
 `--passwords-dir <dir>`, `--no-fuel-check`, `--no-pause`.
 
-Requirements: `git`, `gh` (logged in as SimonBarnett) and the Grok CLI (`%USERPROFILE%\.grok\bin\grok.exe`).
+Requirements: `git`, `gh` (logged in as SimonBarnett) and at least one of Grok, Cursor, or OpenCode.
+With none installed and an interactive console the launcher offers those three plus refuse (exit 1, no download).
+Exactly one installed is launched. Two or more: the operator picks; token fuel is not used.
+A missing pick asks "Install it now?" before any download. Redirected stdin never prompts and never downloads.
 
 Optional execute plugins (formprep, compile, install, odata) need node and `instances.json`, so the launcher doesn't install them:
 `grok plugin marketplace add SimonBarnett/agentic_fomprep`, then `grok plugin install priority-formprep --trust` (and so on).

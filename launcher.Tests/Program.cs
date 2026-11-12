@@ -31,6 +31,13 @@ var checks = new List<(string Name, Action Run)>
     ("MRB-438: matching --hours-user continues; missing whoami does not block", TestHoursUserMatchesOrAbsentWhoami),
     ("FR-004 redirected stdin plus saved login binds that login", TestRedirectedSavedLoginBinds),
     ("FR-004 redirected stdin and no saved login exits unavailable", TestRedirectedNoSavedUnavailable),
+    ("FR-569: zero CLIs interactive offers Grok Cursor OpenCode refuse", TestFr569ZeroInteractiveOffersMenu),
+    ("FR-569: refuse prints not-found and does not download", TestFr569RefuseNoDownload),
+    ("FR-569: exactly one installed launches it", TestFr569ExactlyOneLaunches),
+    ("FR-569: two or more ask which; fuel is not used", TestFr569ManyAskWhichNotFuel),
+    ("FR-569: missing pick asks Install it now before download", TestFr569MissingAsksInstall),
+    ("FR-569: redirected stdin does not prompt or download", TestFr569RedirectedNoPromptNoDownload),
+    ("FR-569: missing grok.exe is not the only error path", TestFr569CursorOnlyLaunches),
 };
 
 int failures = 0;
@@ -514,6 +521,83 @@ static void TestRedirectedNoSavedUnavailable()
     // Simulated launcher exit code when bind fails (Program returns 2).
     int exitCode = (!bound.Ok || string.IsNullOrEmpty(bound.UserLogin)) ? 2 : 0;
     Assert(exitCode == 2, "launcher must exit 2");
+}
+
+static FoundCli Fake(AgentCliKind kind, string name) =>
+    new(kind, Path.Combine(Path.GetTempPath(), "fake-cli", name));
+
+static void TestFr569ZeroInteractiveOffersMenu()
+{
+    var r = CliChooser.Decide(Array.Empty<FoundCli>(), stdinRedirected: false, pick: null, installNow: null);
+    Assert(r.Action == CliChooserAction.OfferZeroMenu, "zero interactive must offer the four choices");
+    Assert(r.Message.Contains("Grok", StringComparison.Ordinal)
+        && r.Message.Contains("Cursor", StringComparison.Ordinal)
+        && r.Message.Contains("OpenCode", StringComparison.Ordinal)
+        && r.Message.Contains("refuse", StringComparison.OrdinalIgnoreCase),
+        "menu must name Grok, Cursor, OpenCode, and refuse");
+    Assert(!r.Download && r.ExitCode == 0, "offer is not a download and not an exit yet");
+}
+
+static void TestFr569RefuseNoDownload()
+{
+    var r = CliChooser.Decide(Array.Empty<FoundCli>(), stdinRedirected: false, pick: AgentCliKind.Refuse, installNow: null);
+    Assert(r.Action == CliChooserAction.Refuse, "refuse must refuse");
+    Assert(r.Message == CliChooser.NotFoundLine, "refuse must print the not-found line");
+    Assert(r.ExitCode == 1 && !r.Download, "refuse exits 1 and never downloads");
+}
+
+static void TestFr569ExactlyOneLaunches()
+{
+    var only = Fake(AgentCliKind.OpenCode, "opencode.exe");
+    var r = CliChooser.Decide(new[] { only }, stdinRedirected: true, pick: null, installNow: null);
+    Assert(r.Action == CliChooserAction.Launch && r.Launch == only, "exactly one must launch that CLI");
+    Assert(!r.Download, "launch is not a download");
+}
+
+static void TestFr569ManyAskWhichNotFuel()
+{
+    var grok = Fake(AgentCliKind.Grok, "grok.exe");
+    var cursor = Fake(AgentCliKind.Cursor, "cursor.exe");
+    var r = CliChooser.Decide(new[] { grok, cursor }, stdinRedirected: false, pick: null, installNow: null);
+    Assert(r.Action == CliChooserAction.OfferWhich, "two installed must ask which");
+    Assert(r.Message.Contains("token fuel", StringComparison.OrdinalIgnoreCase)
+        || r.Message.Contains("which", StringComparison.OrdinalIgnoreCase),
+        "must not pick by token fuel");
+    Assert(r.Launch == null && !r.Download, "which-prompt must not auto-launch or download");
+    var picked = CliChooser.Decide(new[] { grok, cursor }, stdinRedirected: false, pick: AgentCliKind.Cursor, installNow: null);
+    Assert(picked.Launch?.Kind == AgentCliKind.Cursor, "user pick wins; fuel does not");
+}
+
+static void TestFr569MissingAsksInstall()
+{
+    var r = CliChooser.Decide(Array.Empty<FoundCli>(), stdinRedirected: false, pick: AgentCliKind.Grok, installNow: null);
+    Assert(r.Action == CliChooserAction.AskInstallNow, "missing pick must ask before download");
+    Assert(r.Message == CliChooser.InstallNowPrompt, "prompt must be Install it now?");
+    Assert(!r.Download, "the ask must happen before any download");
+    var no = CliChooser.Decide(Array.Empty<FoundCli>(), stdinRedirected: false, pick: AgentCliKind.Grok, installNow: false);
+    Assert(no.Action == CliChooserAction.Refuse && !no.Download && no.ExitCode == 1, "No must not download");
+    var yes = CliChooser.Decide(Array.Empty<FoundCli>(), stdinRedirected: false, pick: AgentCliKind.Grok, installNow: true);
+    Assert(!yes.Download, "yes still must not download (installer is FR-003)");
+}
+
+static void TestFr569RedirectedNoPromptNoDownload()
+{
+    var none = CliChooser.Decide(Array.Empty<FoundCli>(), stdinRedirected: true, pick: null, installNow: null);
+    Assert(none.Action == CliChooserAction.Refuse && none.ExitCode == 1 && !none.Download,
+        "redirected zero must not prompt or download");
+    var grok = Fake(AgentCliKind.Grok, "grok.exe");
+    var cursor = Fake(AgentCliKind.Cursor, "cursor.exe");
+    var many = CliChooser.Decide(new[] { grok, cursor }, stdinRedirected: true, pick: null, installNow: null);
+    Assert(many.Action == CliChooserAction.Refuse && !many.Download,
+        "redirected many must not prompt, pick by fuel, or download");
+}
+
+static void TestFr569CursorOnlyLaunches()
+{
+    var cursor = Fake(AgentCliKind.Cursor, "cursor.exe");
+    var r = CliChooser.Decide(new[] { cursor }, stdinRedirected: false, pick: null, installNow: null);
+    Assert(r.Action == CliChooserAction.Launch && r.Launch?.Kind == AgentCliKind.Cursor,
+        "a missing grok.exe must not be the only success path");
 }
 
 static string NewTemp()

@@ -105,7 +105,9 @@ before login. Do not copy request files into the repo.
 
 `form subform --set --fields-file` field-updates the child only (`allowLive: true` required). Bare `form subform` (no `--set`) stays read-only.
 
-Writes (`form set` / `form save` / `form subform --set`) require `allowLive: true` on the row (and operator approval).
+Writes (`form set` / `form save` / `form action` / `form subform --set`) require `allowLive: true` on the row (and operator approval).
+`form action --form <ENAME> --name <activation>` runs one named activation (e.g. SAVE) and returns the
+message-handler list. `allowLive: false` is refused before login.
 
 ## Phase 2: prepare + proc
 

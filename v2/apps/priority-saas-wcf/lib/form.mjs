@@ -69,6 +69,24 @@ export async function formSave(form) {
   throw new Error('form has no saveRow/invoke Save');
 }
 
+/**
+ * FR #399 / FR-017: run one named form activation (e.g. SAVE).
+ * Prefer activateStart; fall back to invoke. Caller owns message handler bag.
+ */
+export async function formRunAction(form, activationName) {
+  const name = String(activationName || '').trim();
+  if (!name) return { ok: false, reason: 'activation_required' };
+  if (typeof form.activateStart === 'function') {
+    const step = await form.activateStart(name, null, null);
+    return { ok: true, activation: name, via: 'activateStart', step: step || null };
+  }
+  if (typeof form.invoke === 'function') {
+    await form.invoke(name);
+    return { ok: true, activation: name, via: 'invoke', step: null };
+  }
+  return { ok: false, reason: 'activation_unsupported', activation: name };
+}
+
 export async function formStartSubForm(parent, ename, { messages = [] } = {}) {
   const ref = { f: null, current: parent };
   const onMsg = messageHandler(messages, ref);

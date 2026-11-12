@@ -1,0 +1,6 @@
+{
+  "name": "priority-service-desk-mrp-run-locked-by-scheduler",
+  "title": "A manual MRP run got stuck while the scheduler was running MRP",
+  "description": "A user's MRP run kept getting stuck at the same point. The Tabula Task Scheduler was running MRP at the same time, so the procedure was locked. The History of MRP Runs showed the errors. After that, runs worked.",
+  "version": "1.0.0"
+}

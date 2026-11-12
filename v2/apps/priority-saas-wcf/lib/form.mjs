@@ -57,11 +57,40 @@ export async function formGetRows(form, fromRow = 1) {
   return rowsFromGetRows(rows, form?.name);
 }
 
+/** FR-043 / #425: form rows --limit, default 50, max 500. */
+export const FORM_ROWS_DEFAULT_LIMIT = 50;
+export const FORM_ROWS_MAX_LIMIT = 500;
+
+export function parseFormRowsLimit(raw) {
+  if (raw === '' || raw == null) {
+    return { ok: true, limit: FORM_ROWS_DEFAULT_LIMIT, defaulted: true };
+  }
+  const n = Number(raw);
+  if (!Number.isFinite(n)) {
+    return { ok: false, reason: 'limit_too_high', got: raw, max: FORM_ROWS_MAX_LIMIT };
+  }
+  const i = Math.trunc(n);
+  if (i > FORM_ROWS_MAX_LIMIT) {
+    return { ok: false, reason: 'limit_too_high', limit: i, max: FORM_ROWS_MAX_LIMIT };
+  }
+  if (i < 1) {
+    return { ok: false, reason: 'limit_too_high', limit: i, max: FORM_ROWS_MAX_LIMIT };
+  }
+  return { ok: true, limit: i };
+}
+
+function applyRowLimit(got, limit) {
+  if (limit == null) return got;
+  const rows = Array.isArray(got.rows) ? got.rows.slice(0, limit) : [];
+  return { ...got, rows, count: rows.length, limit };
+}
+
 /**
  * FR #396 / FR-014: optional one SDK search, then getRows (default from 1).
  * Missing filter skips setSearchFilter (unfiltered read).
+ * FR-043: optional limit slices the client-side row list.
  */
-export async function applySearchThenGetRows(form, filter, { fromRow = 1, getRows } = {}) {
+export async function applySearchThenGetRows(form, filter, { fromRow = 1, getRows, limit } = {}) {
   let searchCalls = 0;
   if (filter) {
     await form.setSearchFilter(filter);
@@ -69,7 +98,7 @@ export async function applySearchThenGetRows(form, filter, { fromRow = 1, getRow
   }
   const fetch = getRows || formGetRows;
   const got = await fetch(form, fromRow);
-  return { ...got, searchCalls };
+  return applyRowLimit({ ...got, searchCalls }, limit);
 }
 
 export async function formSetFields(form, fields) {

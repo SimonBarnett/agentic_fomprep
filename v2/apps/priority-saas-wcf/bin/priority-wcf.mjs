@@ -21,6 +21,7 @@ import {
   formSubformSetFields,
   applySearchThenGetRows,
   formRunAction,
+  parseFormRowsLimit,
 } from '../lib/form.mjs';
 import { runPrepare } from '../lib/prepare.mjs';
 import { runProcStart, runProcContinue } from '../lib/proc.mjs';
@@ -144,7 +145,7 @@ Does not switch the session company. Never log tokens.
 Form verbs (one screen):
 
   form columns --instance <id> --form <ENAME>
-  form rows    --instance <id> --form <ENAME> [--from <n>] [--filter ...]
+  form rows    --instance <id> --form <ENAME> [--from <n>] [--filter ...] [--limit N]
   form new     --instance <id> --form <ENAME> --fields '{...}'
   form delete  --instance <id> --form <ENAME> --filter ... --confirm
   form action  --instance <id> --form <ENAME> --name <ACT> [--filter ...]
@@ -582,6 +583,16 @@ async function openFilteredForm(session, instance, formName, filterRaw, messages
 async function cmdForm(sub) {
   const formName = reqString('form', '--form');
   if (!formName) return fail('form_required', { need: '--form <ENAME> or request.form' });
+  let rowsLimit;
+  if (sub === 'rows') {
+    const raw =
+      requestDoc && Object.prototype.hasOwnProperty.call(requestDoc, 'limit')
+        ? requestDoc.limit
+        : arg('--limit', '');
+    const parsed = parseFormRowsLimit(raw);
+    if (!parsed.ok) return fail(parsed.reason, parsed, 2);
+    rowsLimit = parsed.limit;
+  }
   const write = sub === 'set' || sub === 'save' || sub === 'action' || (sub === 'subform' && hasFlag('--set'));
   return withSession(
     async ({ instance, session, dump }) => {
@@ -701,7 +712,7 @@ async function cmdForm(sub) {
           form = await formStart(session.priority, formName, instance.company, { messages });
           const filter = parseFilter(filterRaw);
           const fromRow = Number(arg('--from', '1')) || 1;
-          const got = await applySearchThenGetRows(form, filter, { fromRow });
+          const got = await applySearchThenGetRows(form, filter, { fromRow, limit: rowsLimit });
           dump('form-rows.json', { form: formName, ...got, messages });
           await safeEnd(form);
           const { searchCalls, ...rowsOut } = got;

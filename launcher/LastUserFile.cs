@@ -78,4 +78,28 @@ public static class LastUserFile
             return saved;
         return null;
     }
+
+    public static int GrokStartCount;
+
+    public readonly record struct FlagWhoamiCheck(bool Ok, int ExitCode, string Detail);
+
+    /// <summary>
+    /// FR #387 / FR-005: --hours-user that differs from whoami does not start Grok
+    /// and does not rewrite last-user.json.
+    /// </summary>
+    public static FlagWhoamiCheck CheckFlagAgainstWhoami(string? hoursUser, string? whoamiLogin)
+    {
+        string flag = (hoursUser ?? "").Trim();
+        string who = (whoamiLogin ?? "").Trim();
+        if (flag.Length == 0 || who.Length == 0)
+            return new(true, 0, "no hours-user/whoami pair");
+        if (string.Equals(flag, who, StringComparison.Ordinal))
+            return new(true, 0, "hours-user matches whoami");
+        return new(
+            false,
+            2,
+            "--hours-user " + flag + " disagrees with whoami " + who);
+    }
+
+    public static void NoteGrokStart() => GrokStartCount++;
 }

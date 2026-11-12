@@ -75,7 +75,9 @@ with the right context.
      at launch (`--hours-user`, or a prompt when a terminal is attached). When a last-user
      row exists for the selected WCF instance (`%USERPROFILE%\.priority-agent\last-user.json`),
      the prompt is `Priority USERLOGIN [<saved>]:` and Enter binds that login. `--hours-user`
-     still wins. The launcher does
+     still wins. If `--hours-user` is set and differs from the whoami login, the
+     launcher prints both logins and exits 2 without starting Grok and without
+     rewriting last-user.json (FR #387). The launcher does
      not read the OS account name, a shared environment default, or the connections file.
      A later launch for someone else does not rewrite an existing session.
    - The returned id is persisted in the session `hours-entry.json`. Tests set

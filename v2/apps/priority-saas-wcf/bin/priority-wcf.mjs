@@ -28,7 +28,7 @@ import { loadProcTextFile, writeProcTextViaExecForm } from '../lib/proc-text.mjs
 import { loadInputsFile } from '../lib/inputs-file.mjs';
 import { resolveWhoami } from '../lib/whoami.mjs';
 import { listCompanies } from '../lib/companies.mjs';
-import { addTableColumn, instanceHasSqlProfile } from '../lib/table.mjs';
+import { addTableColumn, fetchTableColumns, instanceHasSqlProfile } from '../lib/table.mjs';
 import { checkDictionaryTitle } from '../lib/title-check.mjs';
 import { emit, fail, ok, redact } from '../lib/json-out.mjs';
 import { planDryRun } from '../lib/dry-run.mjs';
@@ -79,6 +79,7 @@ Object kinds: table, form, report, procedure, interface.
   form start|rows|set|save|subform|columns|new|delete|action  (see: help form)
   prepare form|procedure|report --instance <id> --name <ENAME>  (see: help prepare)
   proc start|continue --instance <id>  (see: help proc)
+  table columns --instance <id> --name <TNAME>  (see: help table)
   table column add --instance <id> --name <TNAME> --column <COL> --type <T> --title <title>  (see: help table)
   interface (see: help interface)
   report run --instance <id> --name <ENAME>  (see: help report)
@@ -797,8 +798,27 @@ async function cmdReport(sub) {
 }
 
 async function cmdTable(sub) {
+  if (sub === 'columns') {
+    const name = reqString('name', '--name');
+    if (!name) return fail('name_required', { need: '--name <TNAME> or request.name' });
+    const picked = await resolveInstance();
+    if (!picked.ok) return fail(picked.reason, picked);
+    const instance = picked.instance;
+    let accessToken = '';
+    const tok = loadAccessToken(instance);
+    if (tok.ok) accessToken = tok.accessToken;
+    const result = await fetchTableColumns(instance, name, { accessToken });
+    if (!result.ok) return fail(result.reason, result);
+    return ok({
+      action: 'table.columns',
+      instanceId: instance.id,
+      table: name,
+      exists: result.exists,
+      columns: result.columns,
+    });
+  }
   if (sub !== 'column') {
-    return fail('table_sub_required', { need: 'column add', got: sub });
+    return fail('table_sub_required', { need: 'columns|column add', got: sub });
   }
   const op = (process.argv[4] || '').toLowerCase();
   if (op !== 'add') {
@@ -902,7 +922,7 @@ async function main() {
   }
   if (verb === 'table') {
     const sub = (process.argv[3] || '').toLowerCase();
-    if (!sub) return fail('table_sub_required', { need: 'column' });
+    if (!sub) return fail('table_sub_required', { need: 'columns|column' });
     return cmdTable(sub);
   }
   return fail('unknown_verb', {

@@ -114,3 +114,15 @@ test('verbIsWrite: table.column add is a write', () => {
     true,
   );
 });
+
+test('MRB 497 fold: help table lists columns and column add', () => {
+  const r = spawnSync(process.execPath, [BIN, 'help', 'table'], {
+    encoding: 'utf8',
+    cwd: ROOT,
+    env: { ...process.env },
+  });
+  assert.equal(r.status, 0, r.stderr || r.stdout);
+  const out = String(r.stdout || '');
+  assert.match(out, /table columns/);
+  assert.match(out, /table column add/);
+});

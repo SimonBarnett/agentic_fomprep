@@ -1,0 +1,6 @@
+{
+  "name": "priority-service-desk-closed-so-mrp-flag-demand",
+  "title": "A completed or cancelled sales order kept creating MRP demand until its MRP flag was removed",
+  "description": "A sales order marked completed or cancelled still drove MRP purchase demand. Support removed the MRP: Y flag from its order items; after the next MRP run the customer said it was resolved.",
+  "version": "1.0.0"
+}

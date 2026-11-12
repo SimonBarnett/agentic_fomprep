@@ -27,6 +27,7 @@ import { runProcStart, runProcContinue } from '../lib/proc.mjs';
 import { loadInputsFile } from '../lib/inputs-file.mjs';
 import { resolveWhoami } from '../lib/whoami.mjs';
 import { listCompanies } from '../lib/companies.mjs';
+import { fetchTableColumns } from '../lib/table.mjs';
 import { emit, fail, ok, redact } from '../lib/json-out.mjs';
 import { planDryRun } from '../lib/dry-run.mjs';
 import {
@@ -76,7 +77,7 @@ Object kinds: table, form, report, procedure, interface.
   form start|rows|set|save|subform|columns|new|delete|action  (see: help form)
   prepare form|procedure|report --instance <id> --name <ENAME>  (see: help prepare)
   proc start|continue --instance <id>  (see: help proc)
-  table   (see: help table)
+  table columns --instance <id> --name <TNAME>  (see: help table)
   interface (see: help interface)
   report run --instance <id> --name <ENAME>  (see: help report)
   Any verb: --request <path>  UTF-8 JSON; keys fields|filter|inputs|name|form|subform override flags
@@ -747,6 +748,29 @@ async function cmdReport(sub) {
   );
 }
 
+async function cmdTable(sub) {
+  if (sub !== 'columns') {
+    return fail('table_sub_required', { need: 'columns', got: sub });
+  }
+  const name = reqString('name', '--name');
+  if (!name) return fail('name_required', { need: '--name <TNAME> or request.name' });
+  const picked = await resolveInstance();
+  if (!picked.ok) return fail(picked.reason, picked);
+  const instance = picked.instance;
+  let accessToken = '';
+  const tok = loadAccessToken(instance);
+  if (tok.ok) accessToken = tok.accessToken;
+  const result = await fetchTableColumns(instance, name, { accessToken });
+  if (!result.ok) return fail(result.reason, result);
+  return ok({
+    action: 'table.columns',
+    instanceId: instance.id,
+    table: name,
+    exists: result.exists,
+    columns: result.columns,
+  });
+}
+
 async function main() {
   setConfirmErrors(hasFlag('--confirm-errors'));
   const verb = (process.argv[2] || 'help').toLowerCase();
@@ -810,9 +834,14 @@ async function main() {
     if (!sub) return fail('report_sub_required', { need: 'run' });
     return cmdReport(sub);
   }
+  if (verb === 'table') {
+    const sub = (process.argv[3] || '').toLowerCase();
+    if (!sub) return fail('table_sub_required', { need: 'columns' });
+    return cmdTable(sub);
+  }
   return fail('unknown_verb', {
     verb,
-    hint: 'probe|session|whoami|companies|form|prepare|proc|report|help',
+    hint: 'probe|session|whoami|companies|form|prepare|proc|report|table|help',
   });
 }
 

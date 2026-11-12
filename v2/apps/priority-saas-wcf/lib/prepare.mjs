@@ -29,6 +29,17 @@ export function prepareKindDefaults(kind) {
       searchField: 'ENAME',
     };
   }
+  // FR #411 / FR-029: interface uses EXEC + OData gate like report, but never invents a proc.
+  // Proc must come from config/interface-prep.json (or opts.proc).
+  if (k === 'interface') {
+    return {
+      kind: 'interface',
+      catalogForm: 'EXEC',
+      proc: '',
+      errorForm: '',
+      searchField: 'ENAME',
+    };
+  }
   throw new Error('unknown_prepare_kind:' + kind);
 }
 
@@ -189,6 +200,21 @@ export async function runPrepare(session, instance, kind, name, opts = {}) {
   const messages = opts.messages || [];
   const priority = session.priority;
   const errors = [];
+
+  // FR #411: interface prepare must not invent a proc (CLI gates before login; this is the belt).
+  if (defaults.kind === 'interface' && !String(defaults.proc || '').trim()) {
+    return {
+      ok: false,
+      walkOk: false,
+      preparedClaim: false,
+      reason: 'interface_prep_unknown',
+      stage: 'interface_prep_unknown',
+      kind: defaults.kind,
+      name,
+      messages,
+      errors,
+    };
+  }
 
   let beforeGate = null;
   if (opts.gate !== false && instance.odataBase) {

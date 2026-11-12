@@ -33,6 +33,8 @@ test('prepareKindDefaults procedure and report', () => {
   assert.equal(prepareKindDefaults('procedure').catalogForm, 'EXEC');
   assert.equal(prepareKindDefaults('procedure').proc, 'REPPREPDIRECT2');
   assert.equal(prepareKindDefaults('report').catalogForm, 'EXEC');
+  assert.equal(prepareKindDefaults('interface').catalogForm, 'EXEC');
+  assert.equal(prepareKindDefaults('interface').proc, '');
   assert.throws(() => prepareKindDefaults('nope'), /unknown_prepare_kind/);
 });
 

@@ -9,7 +9,7 @@ description: >
 
 # Split a GRV line before the first invoice
 
-Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
+Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/priority-mcp.
 
 Authority: `docs/skill-sources/medatech-network/service-desk/split-grv-before-invoice.md`.
 

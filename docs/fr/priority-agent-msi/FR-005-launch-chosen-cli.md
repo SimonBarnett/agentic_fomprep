@@ -1,7 +1,7 @@
 # FR-005: Launch the chosen CLI
 
-**Repo:** SimonBarnett/agentic_fomprep
-**Issue:** https://github.com/SimonBarnett/agentic_fomprep/issues/570
+**Repo:** SimonBarnett/priority-mcp
+**Issue:** https://github.com/SimonBarnett/priority-mcp/issues/570
 **Labels:** feature-request
 
 ## Goal

@@ -1,5 +1,5 @@
 #requires -Version 5.1
-# FR agentic_fomprep#566 / FR-001: Pack the Priority Agent MSI (WiX v3, per-machine, no CLI).
+# FR priority-mcp#566 / FR-001: Pack the Priority Agent MSI (WiX v3, per-machine, no CLI).
 $ErrorActionPreference = 'Stop'
 $repo = if ($env:FOMPREP_MRB_ROOT) { $env:FOMPREP_MRB_ROOT } else { Split-Path -Parent $PSScriptRoot }
 $failed = 0

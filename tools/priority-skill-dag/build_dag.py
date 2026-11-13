@@ -346,7 +346,7 @@ for d in sorted(catalog.iterdir()):
 dag = {
     "version": 2,
     "built": datetime.date.today().isoformat(),
-    "repo": "SimonBarnett/agentic_fomprep",
+    "repo": "SimonBarnett/priority-mcp",
     "lessonsRoot": "docs/skill-sources/medatech-network",
     "nodeCount": len(nodes),
     "edgeCount": len(edges),

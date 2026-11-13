@@ -1,5 +1,5 @@
 id	file	goal	depends
-FR-001	FR-001-agents-cast-iron-intake.md	AGENTS CAST IRON intake -Repo agentic_fomprep	
+FR-001	FR-001-agents-cast-iron-intake.md	AGENTS CAST IRON intake -Repo priority-mcp	
 FR-002	FR-002-harvest-agent-skills-intake.md	harvest-agent-skills intake path	FR-004 text refs ok as forward
 FR-003	FR-003-harvest-priority-skills-intake.md	harvest-priority-skills intake path	FR-004 text refs ok as forward
 FR-004	FR-004-report-fomprep-intake-script.md	tools/Report-FomprepIntakeIssue.ps1	

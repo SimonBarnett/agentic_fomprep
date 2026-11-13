@@ -19,8 +19,8 @@ if ($text -notmatch 'Invoke-FomprepHarvest\.ps1') {
     $fail += 'AGENTS.md missing Invoke-FomprepHarvest.ps1 session-close example'
 }
 # Filing command must name this product repo (not rely on bobiverse default).
-if ($text -notmatch 'SimonBarnett/agentic_fomprep') {
-    $fail += 'AGENTS.md missing SimonBarnett/agentic_fomprep in CAST IRON filing guidance'
+if ($text -notmatch 'SimonBarnett/priority-mcp') {
+    $fail += 'AGENTS.md missing SimonBarnett/priority-mcp in CAST IRON filing guidance'
 }
 # Must not tell agents to default product filings to bobiverse.
 if ($text -match '(?i)default\s+-Repo\s+SimonBarnett/bobiverse') {

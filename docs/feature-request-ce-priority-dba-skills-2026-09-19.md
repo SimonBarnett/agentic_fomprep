@@ -1,8 +1,8 @@
-﻿# Feature request: CE Priority DBA agent skills suite
+# Feature request: CE Priority DBA agent skills suite
 
-**Intake issue / MRB home:** [GitHub issue #5](https://github.com/SimonBarnett/agentic_fomprep/issues/5)  
+**Intake issue / MRB home:** [GitHub issue #5](https://github.com/SimonBarnett/priority-mcp/issues/5)  
 **Date:** 2026-09-19  
-**Repo:** https://github.com/SimonBarnett/agentic_fomprep  
+**Repo:** https://github.com/SimonBarnett/priority-mcp  
 **Raised by:** Tedious (via Simon)  
 **UAT + hostile MRB owner:** Tedious (standing order — originating agent)  
 **Build orchestrator:** Bob  

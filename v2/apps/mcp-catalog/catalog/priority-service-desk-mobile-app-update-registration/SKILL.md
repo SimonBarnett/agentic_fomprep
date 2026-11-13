@@ -9,7 +9,7 @@ description: >
 
 # Mobile app update plus registration restored login
 
-Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
+Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/priority-mcp.
 
 Authority: `docs/skill-sources/medatech-network/service-desk/mobile-app-update-registration.md`.
 

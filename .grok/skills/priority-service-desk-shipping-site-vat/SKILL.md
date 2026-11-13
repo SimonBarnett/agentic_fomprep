@@ -9,7 +9,7 @@ description: >
 
 # Shipping-site VAT overrides the customer VAT
 
-Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
+Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/priority-mcp.
 
 Authority: `docs/skill-sources/medatech-network/service-desk/shipping-site-vat.md`.
 

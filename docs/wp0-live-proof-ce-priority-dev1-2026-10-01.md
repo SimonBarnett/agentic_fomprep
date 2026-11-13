@@ -1,6 +1,6 @@
 # WP0 live §15 proof — CE-PRIORITY-DEV1 (2026-10-01)
 
-**FR:** https://github.com/SimonBarnett/agentic_fomprep/issues/56  
+**FR:** https://github.com/SimonBarnett/priority-mcp/issues/56  
 **Host:** `CE-PRIORITY-DEV1` (AllowedComputer)  
 **Instance:** `PRIORITY_WP0_INSTANCE=ce-priority-dev`  
 **Seat:** `ce-priority-dev1-13204`

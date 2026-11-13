@@ -1,11 +1,11 @@
 # FR-010: DryRun/fixture test for intake tools default repo
 
-**Repo:** SimonBarnett/agentic_fomprep  
+**Repo:** SimonBarnett/priority-mcp  
 **Labels:** feature-request
 
 ## Goal
 
-Automated test proves Report/Harvest tools emit `repo=SimonBarnett/agentic_fomprep` when `-Repo` is omitted.
+Automated test proves Report/Harvest tools emit `repo=SimonBarnett/priority-mcp` when `-Repo` is omitted.
 
 ## Deliverables
 

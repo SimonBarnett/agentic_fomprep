@@ -7,7 +7,7 @@ description: >
 
 # A text subform would open but not accept typing because the document status did not allow revisions
 
-Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
+Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/priority-mcp.
 
 Authority: `docs/skill-sources/medatech-network/service-desk/subform-read-only-status-revisions.md`.
 

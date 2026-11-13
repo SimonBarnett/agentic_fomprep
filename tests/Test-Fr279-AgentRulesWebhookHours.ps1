@@ -25,7 +25,7 @@ Gate 'log-md' ($rl -match 'log\.md') 'keeps project log.md evidence'
 Gate 'no-origin-hours-push' ($rl -notmatch 'push to `origin hours`' -and $rl -notmatch 'push to origin hours') 'no mandatory origin hours push'
 Gate 'no-hours-worktree' ($rl -notmatch 'worktree add.*"hours"' -and $rl -notmatch "worktree add -b hours") 'no hours-branch worktree recipe'
 Gate 'no-hours-ymd-store' ($rl -notmatch 'hours/YYYY-MM-DD\.md') 'hours/YYYY-MM-DD.md is not the store'
-Gate 'harvest-intact' ($rl -match 'Harvest rule' -and $rl -match 'agentic_fomprep') 'harvest rule intact'
+Gate 'harvest-intact' ($rl -match 'Harvest rule' -and $rl -match 'priority-mcp') 'harvest rule intact'
 Gate 'secrets-intact' ($rl -match 'Secrets: hard rule' -and $rl -match 'PASSWORDS_FILE') 'secrets rule intact'
 
 if ($failed -gt 0) { Write-Host "Test-Fr279-AgentRulesWebhookHours FAIL ($failed)"; exit 1 }

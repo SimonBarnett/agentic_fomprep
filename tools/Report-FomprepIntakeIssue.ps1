@@ -1,10 +1,10 @@
 <#
 .SYNOPSIS
-  POST kind=issue|fr|skill|harvest to Bobiverse intake for SimonBarnett/agentic_fomprep.
+  POST kind=issue|fr|skill|harvest to Bobiverse intake for SimonBarnett/priority-mcp.
 
 .DESCRIPTION
   Repo-local reporter for the Priority Agent home. Defaults -Repo to
-  SimonBarnett/agentic_fomprep. Intake needs no secret. On network/HTTP failure,
+  SimonBarnett/priority-mcp. Intake needs no secret. On network/HTTP failure,
   writes the payload under report-outbox (repo and ~/.grok/bob) for later retry
   with the same idempotency_key. Self-contained POST works without a bob install;
   when BOB_INSTALL_ROOT (or C:\ai\bob) has Report-BobiverseIntakeIssue.ps1, may
@@ -28,7 +28,7 @@ param(
     [Parameter(Mandatory = $true)]
     [string]$Body,
 
-    [string]$Repo = 'SimonBarnett/agentic_fomprep',
+    [string]$Repo = 'SimonBarnett/priority-mcp',
 
     [string]$IntakeUrl = 'https://bob.ntsa.uk/bob/v1/intake',
 
@@ -50,7 +50,7 @@ param(
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 
-$defaultRepo = 'SimonBarnett/agentic_fomprep'
+$defaultRepo = 'SimonBarnett/priority-mcp'
 if (-not $PSBoundParameters.ContainsKey('Repo') -or [string]::IsNullOrWhiteSpace($Repo)) {
     $Repo = $defaultRepo
 }

@@ -42,7 +42,7 @@ const config = {
   appname: 'ce-formprep-agent',
   username,
   password,
-  devicename: 'agentic_fomprep',
+  devicename: 'priority-mcp',
 };
 
 try {

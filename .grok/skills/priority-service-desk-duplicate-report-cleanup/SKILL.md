@@ -9,7 +9,7 @@ description: >
 
 # Duplicate project-report cleanup is an approved escalation
 
-Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
+Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/priority-mcp.
 
 Authority: `docs/skill-sources/medatech-network/service-desk/duplicate-report-cleanup.md`.
 

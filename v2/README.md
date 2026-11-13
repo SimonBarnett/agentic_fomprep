@@ -47,7 +47,7 @@ npm install
 powershell -NoProfile -ExecutionPolicy Bypass -File .\Prepare-NamedForm.ps1 -InstanceId <id> -Name <ENAME>
 ```
 
-Grok: `grok plugin marketplace add SimonBarnett/agentic_fomprep` then `grok plugin install priority-formprep --trust` (and `priority-shell-compile` / `priority-shell-install` / `priority-odata-dev` for the other execute plugins).
+Grok: `grok plugin marketplace add SimonBarnett/priority-mcp` then `grok plugin install priority-formprep --trust` (and `priority-shell-compile` / `priority-shell-install` / `priority-odata-dev` for the other execute plugins).
 
 Shell compile/install pins live in `v2/config/pin.json` (`PinComplete=true`, Medatech wrappers on CE DEV). WCF walkers read those ENAMEs only. `WcfFileStepWorks` stays null (unproven); WINRUN is not invented. `install_shell` returns `postInstall.formsUnprepared[]` and does not call `prepare_form`. Offline catalog + OData fixture gates (no live ERP):
 

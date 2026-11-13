@@ -7,7 +7,7 @@ description: >
 
 # No one could log in because the Priority app and Redis services had stopped
 
-Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
+Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/priority-mcp.
 
 Authority: `docs/skill-sources/medatech-network/service-desk/app-redis-services-stopped.md`.
 

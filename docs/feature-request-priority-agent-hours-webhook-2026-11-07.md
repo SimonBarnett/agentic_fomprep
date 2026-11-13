@@ -1,6 +1,6 @@
 # Feature request: Priority Agent hours -> bob.ntsa.uk webhook (full cutover)
 
-**Repo:** SimonBarnett/agentic_fomprep  
+**Repo:** SimonBarnett/priority-mcp  
 **Date:** 2026-11-07  
 **Shape:** app (PriorityAgent.exe + skills/docs) --- reuse existing  
 **Plan folder:** `bob/plan/work/plan-20261107-142159`

@@ -1,7 +1,7 @@
 # FR-004: Launcher CLI chooser
 
-**Repo:** SimonBarnett/agentic_fomprep
-**Issue:** https://github.com/SimonBarnett/agentic_fomprep/issues/569
+**Repo:** SimonBarnett/priority-mcp
+**Issue:** https://github.com/SimonBarnett/priority-mcp/issues/569
 **Labels:** feature-request
 
 ## Goal

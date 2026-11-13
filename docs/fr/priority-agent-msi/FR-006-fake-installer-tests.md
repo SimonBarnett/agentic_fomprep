@@ -1,7 +1,7 @@
 # FR-006: Fake-installer tests stay offline
 
-**Repo:** SimonBarnett/agentic_fomprep
-**Issue:** https://github.com/SimonBarnett/agentic_fomprep/issues/571
+**Repo:** SimonBarnett/priority-mcp
+**Issue:** https://github.com/SimonBarnett/priority-mcp/issues/571
 **Labels:** feature-request
 
 ## Goal

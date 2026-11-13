@@ -11,8 +11,8 @@ $text = Get-Content -LiteralPath $vision -Raw -Encoding UTF8
 if ($text -notmatch 'https://bob\.ntsa\.uk/bob/v1/intake') {
     $fail += 'VISION.md missing Bobiverse intake URL https://bob.ntsa.uk/bob/v1/intake'
 }
-if ($text -notmatch 'SimonBarnett/agentic_fomprep') {
-    $fail += 'VISION.md missing SimonBarnett/agentic_fomprep'
+if ($text -notmatch 'SimonBarnett/priority-mcp') {
+    $fail += 'VISION.md missing SimonBarnett/priority-mcp'
 }
 # Dual-mode CWD / skillbook (referral).
 if ($text -notmatch '(?i)skillbook' -and $text -notmatch 'skillbook-referral') {

@@ -3,7 +3,7 @@
 **Date:** 2026-09-24  
 **From:** Jester (UAT agent) per Simon  
 **Parked by:** Bob, 2026-09-25  
-**Repo:** SimonBarnett/agentic_fomprep  
+**Repo:** SimonBarnett/priority-mcp  
 **Status:** implemented 2026-09-28 (catalog + sources); Bob MRB / Jester UAT after merge still open  
 **Related:** PR #44 (UAT skill harvest 1.1.0, merged; still carries mandatory video); formprep WCF walker (`src/sdk/run-formprep.mjs`, `v2/lib/wcf.ps1`); video pack skill `uat-video-pack` in SimonBarnett/bob-design-uat (PR #75)
 
@@ -14,7 +14,7 @@ Harvested UAT skills still bake "screen-record every PASS or CASE on fail" into 
 ## Decision (Simon, 2026-09-24)
 
 1. **Standard test skill**: fastest method that returns findings (prefer `priority-web-sdk` / WCF over headed browser). Fail: CASE to engineering (`CASE/DOCNO/STEP/ACTION/FIELD/TRIED/ERROR/SCREEN`, SCREEN optional when no headed capture). Pass: structured result; **screenshots only if everything passed**.
-2. **Separate video / human UAT skill** owns human packs (human-speed, visible mouse, click ripples, idle cuts, burn-in subtitles). Invoked only when a human pack is requested. It lives as `uat-video-pack` in SimonBarnett/bob-design-uat (#75); agentic_fomprep only points to it.
+2. **Separate video / human UAT skill** owns human packs (human-speed, visible mouse, click ripples, idle cuts, burn-in subtitles). Invoked only when a human pack is requested. It lives as `uat-video-pack` in SimonBarnett/bob-design-uat (#75); priority-mcp only points to it.
 
 ## Proposed catalog / sources
 
@@ -30,7 +30,7 @@ Harvested UAT skills still bake "screen-record every PASS or CASE on fail" into 
 - Do not invent procedure ENAMEs; pinned or Eshbel-supplied names only.
 - Do not drop CASE reporting on fail.
 - Do not require headed Chrome for standard smoke when WCF can assert the same fields/actions.
-- Do not duplicate video rules in agentic_fomprep.
+- Do not duplicate video rules in priority-mcp.
 
 ## Acceptance
 

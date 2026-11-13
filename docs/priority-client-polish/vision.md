@@ -1,6 +1,6 @@
 # Vision: Priority Agent client polish
 
-Feature request on SimonBarnett/agentic_fomprep. Gap check: origin/main 1452ecc
+Feature request on SimonBarnett/priority-mcp. Gap check: origin/main 1452ecc
 (PR #380). Open issues at planning time: 0. This pack does not create a repo.
 
 ## Objective
@@ -77,7 +77,7 @@ Console wireframes. No PNG.
 
 ## LOCKED
 
-- Shape stays app. Repo stays SimonBarnett/agentic_fomprep.
+- Shape stays app. Repo stays SimonBarnett/priority-mcp.
 - USERLOGIN persistence is the user-profile last-user file. It stores the
   login the client identified, the instance id, and the company. It does not
   store tokens. The OS user is never a default.

@@ -7,7 +7,7 @@ description: >
 
 # A serial number missing from the catalogue had been renamed on another record
 
-Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
+Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/priority-mcp.
 
 Authority: `docs/skill-sources/medatech-network/service-desk/serial-number-renamed-history.md`.
 

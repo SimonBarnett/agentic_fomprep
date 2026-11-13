@@ -1,10 +1,10 @@
 <#
 .SYNOPSIS
-  Session-close harvest for SimonBarnett/agentic_fomprep (kind=harvest to Bobiverse intake).
+  Session-close harvest for SimonBarnett/priority-mcp (kind=harvest to Bobiverse intake).
 
 .DESCRIPTION
   Builds one harvest payload from -Summary / -Lesson and POSTs to
-  https://bob.ntsa.uk/bob/v1/intake with default -Repo SimonBarnett/agentic_fomprep.
+  https://bob.ntsa.uk/bob/v1/intake with default -Repo SimonBarnett/priority-mcp.
   Offline or failing POSTs land under harvest-outbox (repo + ~/.grok/bob) and are
   resent by -Flush (same idempotency_key). Refuses credential-looking text.
 
@@ -21,7 +21,7 @@
 param(
     [string]$Summary = '',
     [string[]]$Lesson = @(),
-    [string]$Repo = 'SimonBarnett/agentic_fomprep',
+    [string]$Repo = 'SimonBarnett/priority-mcp',
     [string]$Book = 'harvest-priority-skills',
     [string]$IntakeUrl = 'https://bob.ntsa.uk/bob/v1/intake',
     [string]$Machine = '',
@@ -37,7 +37,7 @@ param(
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 
-$defaultRepo = 'SimonBarnett/agentic_fomprep'
+$defaultRepo = 'SimonBarnett/priority-mcp'
 if (-not $PSBoundParameters.ContainsKey('Repo') -or [string]::IsNullOrWhiteSpace($Repo)) {
     $Repo = $defaultRepo
 }

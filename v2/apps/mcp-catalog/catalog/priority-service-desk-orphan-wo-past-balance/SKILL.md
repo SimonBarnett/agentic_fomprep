@@ -10,7 +10,7 @@ description: >
 
 # Orphan work-order balance is an inventory escalation
 
-Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
+Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/priority-mcp.
 
 Authority: `docs/skill-sources/medatech-network/service-desk/orphan-wo-past-balance.md`.
 

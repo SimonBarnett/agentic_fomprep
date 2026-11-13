@@ -7,7 +7,7 @@ description: >
 
 # A completed or cancelled sales order kept creating MRP demand until its MRP flag was removed
 
-Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
+Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/priority-mcp.
 
 Authority: `docs/skill-sources/medatech-network/service-desk/closed-so-mrp-flag-demand.md`.
 

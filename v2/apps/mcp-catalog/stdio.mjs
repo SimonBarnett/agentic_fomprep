@@ -79,7 +79,7 @@ function readRunnerFile(skill, rel) {
 }
 
 const TOOLS = [
-  { name: 'list_catalog', description: 'List skills in the local Priority catalog (agentic_fomprep v2/apps/mcp-catalog/catalog). Adding a folder under catalog/ with meta.json registers a new skill. This server does not compile Priority forms.', inputSchema: { type: 'object', properties: {}, additionalProperties: false } },
+  { name: 'list_catalog', description: 'List skills in the local Priority catalog (priority-mcp v2/apps/mcp-catalog/catalog). Adding a folder under catalog/ with meta.json registers a new skill. This server does not compile Priority forms.', inputSchema: { type: 'object', properties: {}, additionalProperties: false } },
   { name: 'get_skill', description: 'Return SKILL.md for a catalog skill. Pass name when more than one skill exists.', inputSchema: { type: 'object', properties: { name: { type: 'string', description: 'Skill folder / meta.name' } }, additionalProperties: false } },
   { name: 'get_instance_schema', description: 'JSON Schema for the user-owned instance allowlist (no secrets).', inputSchema: { type: 'object', properties: { name: { type: 'string' } }, additionalProperties: false } },
   { name: 'get_runner_files', description: 'Manifest of portable runner files for a skill. Optional path returns one file body. Does not execute prepare.', inputSchema: { type: 'object', properties: { name: { type: 'string' }, path: { type: 'string', description: 'Relative path under runner/' } }, additionalProperties: false } },

@@ -1,7 +1,7 @@
 # FR-003: User-context CLI installers and detection
 
-**Repo:** SimonBarnett/agentic_fomprep
-**Issue:** https://github.com/SimonBarnett/agentic_fomprep/issues/568
+**Repo:** SimonBarnett/priority-mcp
+**Issue:** https://github.com/SimonBarnett/priority-mcp/issues/568
 **Labels:** feature-request
 
 ## Goal

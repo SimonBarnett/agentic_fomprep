@@ -8,7 +8,7 @@ description: >
 
 # Priority SaaS OIDC + Accounts MFA login
 
-Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
+Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/priority-mcp.
 
 Long form: `docs/skill-sources/programming/SAAS_OIDC_LOGIN.md`.
 Grab from catalog MCP `https://mcp-priority.ntsa.uk/mcp`

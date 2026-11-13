@@ -1,6 +1,6 @@
 # Feature request: Bobiverse intake + dual-mode Priority Agent skillbook
 
-**Target repo:** `SimonBarnett/agentic_fomprep` (existing; do **not** `gh repo create`)  
+**Target repo:** `SimonBarnett/priority-mcp` (existing; do **not** `gh repo create`)  
 **Plan session:** `work/plan-20261008-101810`  
 **Date:** 2026-10-08  
 **Status:** PARKED — small FRs filed as issues #109–#118; mirrors under `docs/fr/`
@@ -9,13 +9,13 @@
 
 1. This repo must **report via the Bobiverse intake** (`POST https://bob.ntsa.uk/bob/v1/intake`).
 2. It must work as an **agent started in its CWD** (repo root) **or** as a **skillbook** another agent is pointed at.
-3. Other agents that use Priority / formprep skills must file **issues / FRs / skill harvests** back to **`SimonBarnett/agentic_fomprep`**, not to bobiverse harvest tips for product lessons.
+3. Other agents that use Priority / formprep skills must file **issues / FRs / skill harvests** back to **`SimonBarnett/priority-mcp`**, not to bobiverse harvest tips for product lessons.
 
-Repo spelling is **`agentic_fomprep`** (not `agentic_formprep`).
+Repo spelling is **`priority-mcp`** (not `agentic_formprep`).
 
 ## Objective
 
-Any agent that starts in `agentic_fomprep` CWD, or loads this repo's skillbook from elsewhere, files every issue/FR/skill/harvest through Bobiverse intake with `repo=SimonBarnett/agentic_fomprep`, and promotes Priority-generic playbooks to this home repo.
+Any agent that starts in `priority-mcp` CWD, or loads this repo's skillbook from elsewhere, files every issue/FR/skill/harvest through Bobiverse intake with `repo=SimonBarnett/priority-mcp`, and promotes Priority-generic playbooks to this home repo.
 
 LOCKED
 
@@ -23,10 +23,10 @@ LOCKED
 
 | id | metric | target | how measured | fail-when |
 |----|--------|--------|--------------|-----------|
-| S1 | AGENTS CAST IRON intake | Root `AGENTS.md` names intake URL and `-Repo SimonBarnett/agentic_fomprep` for kind issue\|fr\|skill\|harvest | `Select-String` / CAT gate on `AGENTS.md` | Missing URL, missing `-Repo`, or default repo is bobiverse |
+| S1 | AGENTS CAST IRON intake | Root `AGENTS.md` names intake URL and `-Repo SimonBarnett/priority-mcp` for kind issue\|fr\|skill\|harvest | `Select-String` / CAT gate on `AGENTS.md` | Missing URL, missing `-Repo`, or default repo is bobiverse |
 | S2 | Harvest skills route home | `harvest-agent-skills` + `harvest-priority-skills` document same intake + home repo | CAT gate needles in both `SKILL.md` | Skills only say "open GitHub issue" with no intake path |
-| S3 | CWD tools default repo | `tools/Report-FomprepIntakeIssue.ps1` and `tools/Invoke-FomprepHarvest.ps1` default `-Repo SimonBarnett/agentic_fomprep` and POST intake (or queue offline) | Script `-WhatIf`/`-DryRun` JSON `repo` field + Pester/catalog gate | Default repo wrong; no offline queue |
-| S4 | Skillbook referral | Docs + harvest skills state: referring agent loads `.grok/skills/harvest-*` / Priority leaflets and still files to `agentic_fomprep` | `docs/skillbook-referral.md` + CAT needles | Referral path silent on intake home |
+| S3 | CWD tools default repo | `tools/Report-FomprepIntakeIssue.ps1` and `tools/Invoke-FomprepHarvest.ps1` default `-Repo SimonBarnett/priority-mcp` and POST intake (or queue offline) | Script `-WhatIf`/`-DryRun` JSON `repo` field + Pester/catalog gate | Default repo wrong; no offline queue |
+| S4 | Skillbook referral | Docs + harvest skills state: referring agent loads `.grok/skills/harvest-*` / Priority leaflets and still files to `priority-mcp` | `docs/skillbook-referral.md` + CAT needles | Referral path silent on intake home |
 | S5 | Wrong-book refuse | Fleet bob/airc/jeeves tips stay bobiverse; Priority-generic tips stay here | Prose in AGENTS + harvest skills + optional CAT needle | Product tips directed to bobiverse `harvest/SKILL.md` |
 | S6 | Regression gate | New CAT-T ids cover S1–S4 needles; `Test-PriorityCatalog.ps1` exit 0 | Suite run on CI / local | Suite red or gate ids reused |
 
@@ -51,17 +51,17 @@ LOCKED
 ## Architecture
 
 ```
-[Agent in agentic_fomprep CWD]
+[Agent in priority-mcp CWD]
     -> read AGENTS.md (CAST IRON)
     -> .grok/skills/* (Priority + harvest-*)
     -> tools/Report-FomprepIntakeIssue.ps1  \  POST https://bob.ntsa.uk/bob/v1/intake
-    -> tools/Invoke-FomprepHarvest.ps1      /  repo=SimonBarnett/agentic_fomprep
+    -> tools/Invoke-FomprepHarvest.ps1      /  repo=SimonBarnett/priority-mcp
     -> offline: report-outbox/ / harvest-outbox/ then -Flush
 
 [Other agent referred to this skillbook]
-    -> load harvest-priority-skills / harvest-agent-skills (github: agentic_fomprep)
+    -> load harvest-priority-skills / harvest-agent-skills (github: priority-mcp)
     -> same tools path if clone present; else POST intake with explicit repo
-    -> Priority playbook PR -> SimonBarnett/agentic_fomprep (never main)
+    -> Priority playbook PR -> SimonBarnett/priority-mcp (never main)
     -> fleet-only lessons -> SimonBarnett/bobiverse (wrong-book refuse here)
 
 Trust: no secrets in filings; intake optional X-Bob-Intake-Key only if host enables keyed mode.
@@ -74,19 +74,19 @@ LOCKED
 Present today:
 
 - Root `AGENTS.md` Priority Agent home + Sync-PriorityGrokSkills (CAT-T60).
-- `.grok/skills/harvest-agent-skills` frontmatter `github: SimonBarnett/agentic_fomprep`.
+- `.grok/skills/harvest-agent-skills` frontmatter `github: SimonBarnett/priority-mcp`.
 - `.grok/skills/harvest-priority-skills` Priority-generic harvest paths + vague "Bob intake/outbox" mention.
 - Catalog Foundation line gate CAT-T50; Sync preserves harvest skills.
 
 Missing today:
 
-- No CAST IRON intake block with explicit `-Repo SimonBarnett/agentic_fomprep` (a-search already has this pattern).
+- No CAST IRON intake block with explicit `-Repo SimonBarnett/priority-mcp` (a-search already has this pattern).
 - No repo-local `Report-*` / `Invoke-*Harvest` tools defaulting to this product.
 - No skillbook-referral doc for agents not sitting in this CWD.
 - No CAT gates locking intake needles / default `-Repo`.
 - Harvest skills do not make intake the mandatory same-turn file path for issue|fr|skill|harvest.
 
-Related fleet gap (do **not** twin): bobiverse living FR #3318 (Plan-seat harvest still hardcoded to bobiverse). This FR pack is the **product-side** fix for agentic_fomprep CWD + skillbook referral.
+Related fleet gap (do **not** twin): bobiverse living FR #3318 (Plan-seat harvest still hardcoded to bobiverse). This FR pack is the **product-side** fix for priority-mcp CWD + skillbook referral.
 
 ## Screens
 
@@ -94,9 +94,9 @@ No UI. Shape UNKNOWN — no HTML mocks.
 
 ## LOCKED
 
-- Target repo `SimonBarnett/agentic_fomprep`
+- Target repo `SimonBarnett/priority-mcp`
 - Intake URL `https://bob.ntsa.uk/bob/v1/intake`
-- Default intake `repo` field = `SimonBarnett/agentic_fomprep`
+- Default intake `repo` field = `SimonBarnett/priority-mcp`
 - Dual mode: CWD agent + referred skillbook
 - Anti-omnibus: many small Goal/Deliverables/Testable FRs (see `fr/`)
 

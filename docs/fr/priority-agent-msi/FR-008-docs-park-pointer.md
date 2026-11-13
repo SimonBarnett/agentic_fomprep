@@ -1,7 +1,7 @@
 # FR-008: Docs park pointer
 
-**Repo:** SimonBarnett/agentic_fomprep
-**Issue:** https://github.com/SimonBarnett/agentic_fomprep/issues/573
+**Repo:** SimonBarnett/priority-mcp
+**Issue:** https://github.com/SimonBarnett/priority-mcp/issues/573
 **Labels:** feature-request
 
 ## Goal

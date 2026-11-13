@@ -2,7 +2,7 @@
 
 ## Why `--auto` failed on PR #243
 
-`GET /repos/SimonBarnett/agentic_fomprep` had `allow_auto_merge: true`, but
+`GET /repos/SimonBarnett/priority-mcp` had `allow_auto_merge: true`, but
 `main` had **no** branch protection (`GET .../branches/main/protection` = 404).
 GitHub then refuses `enablePullRequestAutoMerge` with:
 

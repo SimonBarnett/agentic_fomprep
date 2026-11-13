@@ -8,8 +8,8 @@ if (-not (Test-Path -LiteralPath $script)) { throw "missing $script" }
 $fail = @()
 $src = Get-Content -LiteralPath $script -Raw -Encoding UTF8
 
-if ($src -notmatch "SimonBarnett/agentic_fomprep") {
-    $fail += 'script source missing default repo SimonBarnett/agentic_fomprep'
+if ($src -notmatch "SimonBarnett/priority-mcp") {
+    $fail += 'script source missing default repo SimonBarnett/priority-mcp'
 }
 if ($src -notmatch 'https://bob\.ntsa\.uk/bob/v1/intake') {
     $fail += 'script source missing intake URL'
@@ -37,8 +37,8 @@ Get-Content -LiteralPath $script -Encoding UTF8 | ForEach-Object {
 
 # DryRun default repo / kind=harvest.
 $dryOut = & $script -Summary 'fr005 dryrun' -Lesson 'default product repo' -DryRun -NoDelegate 2>&1 | Out-String
-if ($dryOut -notmatch '"repo"\s*:\s*"SimonBarnett/agentic_fomprep"') {
-    $fail += 'DryRun JSON missing repo SimonBarnett/agentic_fomprep'
+if ($dryOut -notmatch '"repo"\s*:\s*"SimonBarnett/priority-mcp"') {
+    $fail += 'DryRun JSON missing repo SimonBarnett/priority-mcp'
 }
 if ($dryOut -notmatch '"kind"\s*:\s*"harvest"') {
     $fail += 'DryRun JSON missing kind harvest'
@@ -75,7 +75,7 @@ try {
     if (-not $r.outbox -or @($r.outbox).Count -lt 1) { $fail += 'offline harvest wrote no outbox' }
     else {
         $qj = Get-Content -LiteralPath @($r.outbox)[0] -Raw -Encoding UTF8
-        if ($qj -notmatch '"repo"\s*:\s*"SimonBarnett/agentic_fomprep"') {
+        if ($qj -notmatch '"repo"\s*:\s*"SimonBarnett/priority-mcp"') {
             $fail += 'queued harvest JSON missing default repo'
         }
         if ($qj -notmatch '"kind"\s*:\s*"harvest"') {

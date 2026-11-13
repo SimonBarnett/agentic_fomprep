@@ -208,3 +208,4 @@ books use `harvest-agent-skills` pointing at their home.)
 - MSI CLI chooser is a WiX fragment: four radio values grok/cursor/opencode/none, default none, InstallChosenCli only when UILevel > 3 and not none; msiexec /qn never shows the dialog or runs the CLI action.
 - CI Priority Agent CLI tests use in-memory fake installers; a guard fails any test line that irm/IWR/curl-calls x.ai, cursor.com/install, or opencode.ai.
 - Priority-generic customer-setup skill belongs in agentic_fomprep (FR #4970); verify catalog/.grok byte mirror and password-file pointer rules before PASS.
+- FORMCLTRIGTEXT lives in system dictionary DB, not company DB

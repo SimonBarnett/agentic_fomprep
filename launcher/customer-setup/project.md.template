@@ -2,6 +2,7 @@
 # priority_project is the Medatech project booking id. It is a different field.
 # wbs is the work-breakdown code. It is a different field.
 # Leave a value blank until a human confirms it. Do not invent either value.
+# Company-level facts belong in the repo-root company.md, not here.
 
 priority_project:
 wbs:

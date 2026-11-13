@@ -9,7 +9,7 @@ description: >
 
 # Shopify product-code mapping blocked the order import
 
-Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
+Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/priority-mcp.
 
 Authority: `docs/skill-sources/medatech-network/service-desk/shopify-product-code-import.md`.
 

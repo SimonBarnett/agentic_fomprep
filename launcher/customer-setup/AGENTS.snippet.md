@@ -1,7 +1,7 @@
 ## Hours and reporting
 
 Do not copy hours rules into this repo. PriorityAgent loads them from
-SimonBarnett/agentic_fomprep `launcher/agent-rules.md`.
+SimonBarnett/priority-mcp `launcher/agent-rules.md`.
 
 ## This repo's data
 

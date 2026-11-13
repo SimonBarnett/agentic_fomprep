@@ -1,6 +1,6 @@
 # Vision: Priority Agent MSI
 
-Feature request on the existing repo SimonBarnett/agentic_fomprep.
+Feature request on the existing repo SimonBarnett/priority-mcp.
 Gap check: origin/main b0b27df. launcher/Program.cs still resolves only
 grok.exe and exits 1 with "grok CLI not found". No MSI. The client-polish
 pack already names docs/mocks/home.html, so these wireframes live under

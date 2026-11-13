@@ -1,6 +1,6 @@
-﻿# Medatech network skill book harvest (2026-10-14)
+# Medatech network skill book harvest (2026-10-14)
 
-CAST IRON harvest into `SimonBarnett/agentic_fomprep`.
+CAST IRON harvest into `SimonBarnett/priority-mcp`.
 
 ## What landed
 

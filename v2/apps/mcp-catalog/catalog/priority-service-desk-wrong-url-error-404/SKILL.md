@@ -7,7 +7,7 @@ description: >
 
 # Error 404 at login was the user using the wrong URL
 
-Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
+Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/priority-mcp.
 
 Authority: `docs/skill-sources/medatech-network/service-desk/wrong-url-error-404.md`.
 

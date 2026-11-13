@@ -1,7 +1,7 @@
 # FR-002: MSI chooser for Grok, Cursor, or OpenCode
 
-**Repo:** SimonBarnett/agentic_fomprep
-**Issue:** https://github.com/SimonBarnett/agentic_fomprep/issues/567
+**Repo:** SimonBarnett/priority-mcp
+**Issue:** https://github.com/SimonBarnett/priority-mcp/issues/567
 **Labels:** feature-request
 
 ## Goal

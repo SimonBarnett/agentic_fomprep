@@ -1,6 +1,6 @@
 # FR-022: ambiguous procedure options return needs_input
 
-**Repo:** SimonBarnett/agentic_fomprep
+**Repo:** SimonBarnett/priority-mcp
 **Pack:** docs/feature-request-priority-client-polish-2026-11-12.md
 **Labels:** feature-request
 

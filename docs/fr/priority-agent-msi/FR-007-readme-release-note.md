@@ -1,7 +1,7 @@
 # FR-007: README and release note for the MSI
 
-**Repo:** SimonBarnett/agentic_fomprep
-**Issue:** https://github.com/SimonBarnett/agentic_fomprep/issues/572
+**Repo:** SimonBarnett/priority-mcp
+**Issue:** https://github.com/SimonBarnett/priority-mcp/issues/572
 **Labels:** feature-request
 
 ## Goal

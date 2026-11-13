@@ -38,7 +38,7 @@ $wcf = Get-Content -LiteralPath (Join-Path $launcher 'WcfSupport.cs') -Raw
 Gate 'client-path-const' ($wcf -match 'ClientPath = "v2/apps/priority-saas-wcf/bin/priority-wcf.mjs"') 'ClientPath const missing'
 Gate 'rules-forbid-6026-py' ($wcf -match 'priority_wcf\.py' -and $wcf -match '#6026') 'rules must explicitly forbid bobiverse priority_wcf.py'
 Gate 'harvest-rules' ($wcf -match 'bob.ntsa.uk/bob/v1/intake' -and $wcf -match 'Report-FomprepIntakeIssue' -and $wcf -match 'Invoke-FomprepHarvest') 'WcfSupport rules must include harvest-on-client'
-Gate 'harvest-destinations' ($wcf -match 'agentic_fomprep' -and $wcf -match 'customer' -and ($wcf -match 'SO/SC' -or $wcf -match 'SO\\SC')) 'WcfSupport harvest must name generic/customer/SO-SC destinations'
+Gate 'harvest-destinations' ($wcf -match 'priority-mcp' -and $wcf -match 'customer' -and ($wcf -match 'SO/SC' -or $wcf -match 'SO\\SC')) 'WcfSupport harvest must name generic/customer/SO-SC destinations'
 Gate 'harvest-no-gh-direct' ($wcf -match 'gh issue create' -and $wcf -match 'Never') 'WcfSupport must forbid direct gh issue/pr create for harvest'
 Gate 'legacy-warn' ($wcf -match 'airc_console' -and $wcf -match 'ignored') 'WcfSupport must warn on legacy airc fields'
 Gate 'no-creds-in-json' (($wcf -match 'Never' -or $wcf -match 'never') -and ($wcf -match 'tokenFile' -or $wcf -match 'PRIORITY_SAAS_TOKEN')) 'WcfSupport must say tokens stay out of JSON'

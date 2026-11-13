@@ -1,8 +1,8 @@
-﻿# agentic_fomprep — operator how-to (for Eshbel)
+# priority-mcp — operator how-to (for Eshbel)
 
 DEV-only Form Prep runner on **CE-PRIORITY-DEV1**. Do not point this pack at live/PRI.
 
-Repo: `M:\py\agentic_fomprep` (`\\10.220.0.5\dev\py\agentic_fomprep`)
+Repo: `M:\py\priority-mcp` (`\\10.220.0.5\dev\py\priority-mcp`)
 Host: CE-PRIORITY-DEV1 (NetBIOS `CE-PRIORITY-DEV`)
 SQL: `10.220.0.5\DEV` database `system`
 Web: `https://prioritydev.clarksonevans.co.uk` (company label **D - Clarkson Evans Live** = DEV `base`)
@@ -19,7 +19,7 @@ Web: `https://prioritydev.clarksonevans.co.uk` (company label **D - Clarkson Eva
 ## Preconditions (once per box / when expired)
 
 ```powershell
-cd M:\py\agentic_fomprep
+cd M:\py\priority-mcp
 powershell -NoProfile -ExecutionPolicy Bypass -File tools\Install-OnDev.ps1
 # CredMan (interactive password prompt — human only):
 powershell -NoProfile -ExecutionPolicy Bypass -File tools\Set-WinrunCredential.ps1
@@ -30,7 +30,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File tools\Save-WebStorageState.p
 ## Check before every run
 
 ```powershell
-cd M:\py\agentic_fomprep
+cd M:\py\priority-mcp
 powershell -NoProfile -ExecutionPolicy Bypass -File tools\Invoke-OpenCount.ps1
 # Must print OPEN=0. If not:
 powershell -NoProfile -ExecutionPolicy Bypass -File src\Prepare-Forms.ps1 -RepairOpenParks -Environment DEV
@@ -83,7 +83,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File src\Prepare-Forms.ps1 -Names
 1. Map `M:` to `\\10.220.0.5\dev` if needed.
 2. `RepairOpenParks` until OPEN=0.
 3. Recapture cookies if the probe says so.
-4. Resume Grok conversation (if needed) via desktop shortcut **Resume Grok agentic_fomprep** or `grok --resume 01a0a96c-2677-7c61-bf65-3ce9e16e4d3b` from `M:\`.
+4. Resume Grok conversation (if needed) via desktop shortcut **Resume Grok priority-mcp** or `grok --resume 01a0a96c-2677-7c61-bf65-3ce9e16e4d3b` from `M:\`.
 
 ## SQL sanity
 
@@ -104,7 +104,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File tools\Test-Pack.ps1
 ## Handoff notes for engineering (Eshbel)
 
 - Config pin: `config/dev.psd1` with `PinComplete=$true`; frozen hosts in `src/Private/Get-FrozenEnvironment.ps1`.
-- Working method PDF: `reviews/agentic_fomprep_Agent_Working_Method.pdf`.
+- Working method PDF: `reviews/priority_mcp_Agent_Working_Method.pdf`.
 - Build plan PDF: `CE_Priority_Autonomous_Form_Prep_Build_Plan.pdf`.
 - Result schema: `schemas/prepare-forms-result.schema.json`.
 - Bob (this agent) runs supervised prepares on DEV1 and files feedback to the Grok Build session; do not dual-run Form Prep against the same mutex.

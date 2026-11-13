@@ -1,5 +1,5 @@
 #requires -Version 5.1
-# Pin for FR agentic_fomprep#247: main auto-merge needs branch protection + docs.
+# Pin for FR priority-mcp#247: main auto-merge needs branch protection + docs.
 $ErrorActionPreference = 'Stop'
 $repo = if ($env:FOMPREP_MRB_ROOT) { $env:FOMPREP_MRB_ROOT } else { Split-Path -Parent $PSScriptRoot }
 $failed = 0

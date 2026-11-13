@@ -1,4 +1,4 @@
-# Priority Agent (`agentic_fomprep`)
+# Priority Agent (`priority-mcp`)
 
 > **CAST IRON RULE - HARVEST AND FILE EVERYTHING (read this first, every time).**
 > 1. ALWAYS harvest skills you learn and file EVERY issue / FR / bug / gap you find in the
@@ -6,13 +6,13 @@
 > 2. File with the Bobiverse intake webhook (no secret or login needed;
 >    `POST https://bob.ntsa.uk/bob/v1/intake`; offline it is queued locally and retried):
 >    `tools\Report-FomprepIntakeIssue.ps1 -Kind issue|fr|skill|harvest -Title "..." -Body "..."`
->    (default repo is this product: `SimonBarnett/agentic_fomprep`). When calling the shared
->    Bobiverse helpers instead, always pass an explicit `-Repo SimonBarnett/agentic_fomprep`
+>    (default repo is this product: `SimonBarnett/priority-mcp`). When calling the shared
+>    Bobiverse helpers instead, always pass an explicit `-Repo SimonBarnett/priority-mcp`
 >    for Priority product filings (never omit `-Repo` so the filing lands on bobiverse by accident).
 > 3. BEFORE finishing ANY debugging session run:
 >    `tools\Invoke-FomprepHarvest.ps1 -Summary "..." -Lesson "..."` then
 >    `tools\Invoke-FomprepHarvest.ps1 -Flush`
->    (wrappers default to `SimonBarnett/agentic_fomprep`; dual-mode CWD vs referred skillbook:
+>    (wrappers default to `SimonBarnett/priority-mcp`; dual-mode CWD vs referred skillbook:
 >    `docs/skillbook-referral.md`).
 > 4. Never put a token, password, CredMan secret, OData password, key, or private hostname
 >    in a filing, a skill, or a log.
@@ -26,7 +26,7 @@ Start with CWD at the **repo root**. Project skills load from `.grok/skills/`
 
 ## Clone path (Priority Agent launcher)
 
-The launcher resolves an **AI root**: existing `X:\AI` on ready drives **C: → D: → E: … Z:**, or creates `\AI` on the first ready drive in that order (override with `--root` / `PRIORITY_AGENT_ROOT`). It then prefers `<AI root>\agentic_fomprep` and also searches other `X:\AI` / `X:\repos` roots. Only a real git clone (`.git` present, origin `SimonBarnett/agentic_fomprep`) counts. An **empty stub** (directory exists, no `.git`) is skipped; use the resolved `FOMPREP_DIR` / session cwd for `git pull`, or reclone / point `--root` at the working tree. Details: `launcher/README.md`.
+The launcher resolves an **AI root**: existing `X:\AI` on ready drives **C: → D: → E: … Z:**, or creates `\AI` on the first ready drive in that order (override with `--root` / `PRIORITY_AGENT_ROOT`). It prefers `<AI root>\priority-mcp`, falls back to legacy `<AI root>\agentic_fomprep` (FR #597), and also searches other `X:\AI` / `X:\repos` roots. Only a real git clone (`.git` present, origin `SimonBarnett/priority-mcp` or legacy `SimonBarnett/agentic_fomprep`) counts. An **empty stub** (directory exists, no `.git`) is skipped; use the resolved `FOMPREP_DIR` / session cwd for `git pull`, or reclone / point `--root` at the working tree. Details: `launcher/README.md`.
 
 ## What this agent owns
 
@@ -76,7 +76,7 @@ until the user allowlists an instance for this session.
 5. **Secrets**: CredMan / env only. Never commit passwords or log them.
 6. **Harvest**: new Priority-generic playbooks -> branch + PR via
    `harvest-priority-skills` / intake above (never push `main` for harvest).
-   Product filings stay on `SimonBarnett/agentic_fomprep`; fleet/Bob/IRC defects
+   Product filings stay on `SimonBarnett/priority-mcp`; fleet/Bob/IRC defects
    go to `SimonBarnett/bobiverse`.
 7. **Project work log (billing evidence):** whenever you record hours (Bob
    webhook open/close or closed-in-one-POST, or Priority timesheet draft/post),
@@ -131,6 +131,6 @@ Optional: `-IncludeDba` or `-IncludeCustomer` for non-default leaflets.
 Agents **not** started in this CWD (referred skillbook / Mode B) follow
 `docs/skillbook-referral.md`: load `harvest-priority-skills` /
 `harvest-agent-skills` plus needed `priority-*` leaflets, and still file to
-`SimonBarnett/agentic_fomprep` via Bobiverse intake.
+`SimonBarnett/priority-mcp` via Bobiverse intake.
 
 - **Customer overlay (FR #362):** merge public `resolve_skills` with local customer `.grok/skills` + SO/SC lessons via `tools/priority-skill-dag/Resolve-WithOverlay.ps1`; never POST overlay content to mcp.ntsa.uk.

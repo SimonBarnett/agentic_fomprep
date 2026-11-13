@@ -7,7 +7,7 @@ description: >
 
 # Error 500 at login was because the user had been made inactive
 
-Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
+Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/priority-mcp.
 
 Authority: `docs/skill-sources/medatech-network/service-desk/inactive-user-login-error-500.md`.
 

@@ -10,7 +10,7 @@ description: >
 
 # Priority skill DAG (lazy loader)
 
-Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
+Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/priority-mcp.
 
 ## Hard rules
 

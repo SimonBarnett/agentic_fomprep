@@ -23,7 +23,7 @@ repo. Do not add one to stand in for Form Prep.
 
 | Setting | Value |
 | --- | --- |
-| Repository | `SimonBarnett/agentic_fomprep` |
+| Repository | `SimonBarnett/priority-mcp` |
 | Branch | `main` (repository default) |
 | Monorepo | Yes |
 | App root | `v2/apps/mcp-catalog` |

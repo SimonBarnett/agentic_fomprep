@@ -1,6 +1,6 @@
 # Functional spec: Priority Agent MSI and CLI choice
 
-Repo: SimonBarnett/agentic_fomprep. Vision:
+Repo: SimonBarnett/priority-mcp. Vision:
 docs/feature-request-priority-agent-msi-2026-11-12.md.
 Gap baseline: origin/main b0b27df (launcher/Program.cs still exits 1
 when grok.exe is missing).

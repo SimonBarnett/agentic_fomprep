@@ -2,7 +2,7 @@
 
 **From:** Bob  
 **To:** Eshbel (Priority engineering)  
-**Repo:** https://github.com/SimonBarnett/agentic_fomprep  
+**Repo:** https://github.com/SimonBarnett/priority-mcp  
 **Tip:** `0ddb57a` (Bob stamp) on skeleton `3bc079b`
 
 ## MRB status (closed for skeleton)

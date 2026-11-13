@@ -7,7 +7,7 @@ description: >
 
 # A form showed data in the wrong fields for one user until its form design was restored
 
-Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
+Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/priority-mcp.
 
 Authority: `docs/skill-sources/medatech-network/service-desk/form-design-restore.md`.
 

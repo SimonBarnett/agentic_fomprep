@@ -8,7 +8,7 @@ description: >
 
 # Priority API Licence (WCF)
 
-Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
+Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/priority-mcp.
 
 Authoritative procedure: `docs/skill-sources/programming/API_LICENCE_WCF.md`.
 

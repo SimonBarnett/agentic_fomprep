@@ -2,7 +2,7 @@
 
 The launcher does not create customer repos or project folders. Haitch does.
 Copy only the data templates in this folder. Do not copy reporting rules.
-Those rules are `launcher/agent-rules.md` in SimonBarnett/agentic_fomprep.
+Those rules are `launcher/agent-rules.md` in SimonBarnett/priority-mcp.
 PriorityAgent loads that file into every session. The exe embeds a build-time
 copy of the same file; at runtime the clone copy is used when its
 `rules-version` is at least the embedded copy.

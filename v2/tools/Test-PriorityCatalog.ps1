@@ -812,7 +812,7 @@ $harvestWhy = 'harvest-agent-skills intake lesson missing'
 if (Test-Path -LiteralPath $harvestSkill) {
     $hs = Get-Content -LiteralPath $harvestSkill -Raw -Encoding UTF8
     $hasSection = $hs -match 'Harvested lessons \(intake\)'
-    $hasRepo = $hs -match 'SimonBarnett/agentic_fomprep'
+    $hasRepo = $hs -match 'SimonBarnett/priority-mcp'
     $hasReport = $hs -match 'Report-FomprepIntakeIssue'
     $hasInvoke = $hs -match 'Invoke-FomprepHarvest'
     $hasReferral = $hs -match 'skillbook-referral'
@@ -847,7 +847,7 @@ if (Test-Path -LiteralPath $agentsIntakeSkill) {
     $t64 = Get-Content -LiteralPath $agentsIntakeSkill -Raw -Encoding UTF8
     $hasHeading = $t64 -match 'CAST IRON - Bobiverse intake'
     $hasUrl = $t64 -match 'https://bob\.ntsa\.uk/bob/v1/intake'
-    $hasRepo = $t64 -match 'SimonBarnett/agentic_fomprep'
+    $hasRepo = $t64 -match 'SimonBarnett/priority-mcp'
     $hasReport = $t64 -match 'Report-FomprepIntakeIssue'
     $hasInvoke = $t64 -match 'Invoke-FomprepHarvest'
     $bom64 = $false
@@ -870,7 +870,7 @@ if (Test-Path -LiteralPath $prioHarvestSkill) {
     $t65 = Get-Content -LiteralPath $prioHarvestSkill -Raw -Encoding UTF8
     $hasHeading = $t65 -match 'CAST IRON - Bobiverse intake'
     $hasUrl = $t65 -match 'https://bob\.ntsa\.uk/bob/v1/intake'
-    $hasRepo = $t65 -match 'SimonBarnett/agentic_fomprep'
+    $hasRepo = $t65 -match 'SimonBarnett/priority-mcp'
     $hasReport = $t65 -match 'Report-FomprepIntakeIssue'
     $hasInvoke = $t65 -match 'Invoke-FomprepHarvest'
     $hasCeDay = $t65 -match 'ce-dayworks'
@@ -894,7 +894,7 @@ $t66Ok = $false
 $t66Why = 'CAT-T66 Report-FomprepIntakeIssue.ps1 missing'
 if (Test-Path -LiteralPath $reportTool) {
     $rt = Get-Content -LiteralPath $reportTool -Raw -Encoding UTF8
-    $hasDefault = $rt -match "Repo\s*=\s*'SimonBarnett/agentic_fomprep'" -or $rt -match 'defaultRepo\s*=\s*''SimonBarnett/agentic_fomprep'''
+    $hasDefault = $rt -match "Repo\s*=\s*'SimonBarnett/priority-mcp'" -or $rt -match 'defaultRepo\s*=\s*''SimonBarnett/priority-mcp'''
     $hasUrl = $rt -match 'https://bob\.ntsa\.uk/bob/v1/intake'
     $hasDry = $rt -match '\[switch\]\$DryRun'
     $hasNoDel = $rt -match '\[switch\]\$NoDelegate'
@@ -923,7 +923,7 @@ $t67Ok = $false
 $t67Why = 'CAT-T67 Invoke-FomprepHarvest.ps1 missing'
 if (Test-Path -LiteralPath $harvestTool) {
     $ht = Get-Content -LiteralPath $harvestTool -Raw -Encoding UTF8
-    $hasDefault = $ht -match "Repo\s*=\s*'SimonBarnett/agentic_fomprep'" -or $ht -match 'defaultRepo\s*=\s*''SimonBarnett/agentic_fomprep'''
+    $hasDefault = $ht -match "Repo\s*=\s*'SimonBarnett/priority-mcp'" -or $ht -match 'defaultRepo\s*=\s*''SimonBarnett/priority-mcp'''
     $hasUrl = $ht -match 'https://bob\.ntsa\.uk/bob/v1/intake'
     $hasFlush = $ht -match '\[switch\]\$Flush'
     $hasDry = $ht -match '\[switch\]\$DryRun'
@@ -956,7 +956,7 @@ $t68Why = 'CAT-T68 docs/skillbook-referral.md missing'
 if (Test-Path -LiteralPath $skillbookDoc) {
     $sb = Get-Content -LiteralPath $skillbookDoc -Raw -Encoding UTF8
     $hasUrl = $sb -match 'https://bob\.ntsa\.uk/bob/v1/intake'
-    $hasRepo = $sb -match 'SimonBarnett/agentic_fomprep'
+    $hasRepo = $sb -match 'SimonBarnett/priority-mcp'
     $hasModeA = $sb -match 'Mode A'
     $hasModeB = $sb -match 'Mode B'
     $hasReport = $sb -match 'Report-FomprepIntakeIssue'
@@ -995,7 +995,7 @@ if (Test-Path -LiteralPath $fr010) {
     $p010 = Start-Process -FilePath powershell.exe -ArgumentList @('-NoProfile','-File',$fr010) -Wait -PassThru -NoNewWindow
     if ($p010.ExitCode -eq 0) {
         $t71Ok = $true
-        $t71Why = 'FR-010 DryRun Report+Harvest default repo SimonBarnett/agentic_fomprep offline PASS'
+        $t71Why = 'FR-010 DryRun Report+Harvest default repo SimonBarnett/priority-mcp offline PASS'
     } else {
         $t71Why = ('FR-010 DryRun fixture exit=' + $p010.ExitCode)
     }
@@ -1153,7 +1153,7 @@ Add-Gate 'CAT-T62' $hoursOk $hoursWhy
 
 # MRB #132 / FR-001 hostile: AGENTS.md Bobiverse intake needles (FR-007 partial; tools/skills/referral gates remain #115)
 $agentsIntakeOk = $true
-$agentsIntakeWhy = 'AGENTS.md intake URL + SimonBarnett/agentic_fomprep + Report/Invoke-Fomprep wrappers + no bobiverse default'
+$agentsIntakeWhy = 'AGENTS.md intake URL + SimonBarnett/priority-mcp + Report/Invoke-Fomprep wrappers + no bobiverse default'
 $agentsPath = Join-Path $repo 'AGENTS.md'
 if (-not (Test-Path -LiteralPath $agentsPath)) {
     $agentsIntakeOk = $false
@@ -1166,7 +1166,7 @@ if (-not (Test-Path -LiteralPath $agentsPath)) {
         $agentsIntakeWhy = 'AGENTS.md BOM'
     }
     if ($at -notmatch 'https://bob\.ntsa\.uk/bob/v1/intake') { $agentsIntakeOk = $false; $agentsIntakeWhy = 'missing intake URL' }
-    if ($at -notmatch 'SimonBarnett/agentic_fomprep') { $agentsIntakeOk = $false; $agentsIntakeWhy = 'missing home repo' }
+    if ($at -notmatch 'SimonBarnett/priority-mcp') { $agentsIntakeOk = $false; $agentsIntakeWhy = 'missing home repo' }
     if ($at -notmatch 'Report-FomprepIntakeIssue\.ps1') { $agentsIntakeOk = $false; $agentsIntakeWhy = 'missing Report-FomprepIntakeIssue' }
     if ($at -notmatch 'Invoke-FomprepHarvest\.ps1') { $agentsIntakeOk = $false; $agentsIntakeWhy = 'missing Invoke-FomprepHarvest' }
     if ($at -match '(?i)default\s+-Repo\s+SimonBarnett/bobiverse') { $agentsIntakeOk = $false; $agentsIntakeWhy = 'defaults -Repo bobiverse' }
@@ -1180,7 +1180,7 @@ $t69Why = 'CAT-T69 VISION.md honesty-box intake missing'
 if (Test-Path -LiteralPath $visionPath) {
     $vt = Get-Content -LiteralPath $visionPath -Raw -Encoding UTF8
     $hasUrl = $vt -match 'https://bob\.ntsa\.uk/bob/v1/intake'
-    $hasRepo = $vt -match 'SimonBarnett/agentic_fomprep'
+    $hasRepo = $vt -match 'SimonBarnett/priority-mcp'
     $hasSkillbook = $vt -match 'skillbook-referral' -or $vt -match '(?i)skillbook'
     $hasExec = $vt -match 'EXECPREPLOCK'
     $hasLast = $vt -match 'LASTPREPDATE'

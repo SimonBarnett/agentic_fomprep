@@ -1,5 +1,5 @@
 #requires -Version 5.1
-# Hostile pin for MRB agentic_fomprep#197: Priority Agent launcher contracts.
+# Hostile pin for MRB priority-mcp#197: Priority Agent launcher contracts.
 $ErrorActionPreference = 'Stop'
 $repo = if ($env:FOMPREP_MRB_ROOT) { $env:FOMPREP_MRB_ROOT } else { Split-Path -Parent $PSScriptRoot }
 $cs = Join-Path $repo 'launcher\Program.cs'
@@ -26,7 +26,7 @@ Gate 'passwords-dir' ($src -match 'C:\\passwords' -or $src -match 'PRIORITY_AGEN
 Gate 'never-read-secrets' ($src -match 'contents not read' -or $src -match 'never reads') 'launcher does not read password file'
 Gate 'hours-session-tag' ($src -match 'RunHoursGate' -and $src -match 'priority-agent-') 'webhook hours gate uses the full session key'
 Gate 'hours-dev-test' ($src -match 'PRIORITY_AGENT_HOURS_JSON' -and $src -notmatch 'origin/hours' -and $rl -match 'MANDATORY') 'fixture hours gate, not a git hours ref'
-Gate 'harvest-general' ($rl -match 'SimonBarnett/agentic_fomprep') 'general harvest to fomprep PR'
+Gate 'harvest-general' ($rl -match 'SimonBarnett/priority-mcp') 'general harvest to fomprep PR'
 Gate 'harvest-customer' ($rl -match 'customer repo') 'customer harvest to customer repo'
 Gate 'no-touch-priority' ($rl -match 'without asking first' -and $rl -match "Don't message the customer's people") 'rules v2 connect no-ask; still ask before messaging people'
 Gate 'vision-agent-entry' ((Test-Path (Join-Path $repo 'VISION.md'))) 'VISION.md present for quote'

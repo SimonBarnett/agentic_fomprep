@@ -8,7 +8,7 @@ description: >
 
 # Regenerate the mobile registration QR after a server move
 
-Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
+Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/priority-mcp.
 
 Authority: `docs/skill-sources/medatech-network/service-desk/mobile-migration-qr.md`.
 

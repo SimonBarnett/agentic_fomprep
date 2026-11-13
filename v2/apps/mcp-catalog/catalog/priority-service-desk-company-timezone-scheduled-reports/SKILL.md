@@ -7,7 +7,7 @@ description: >
 
 # Scheduled reports ran an hour off after upgrade until the company time zone was set
 
-Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
+Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/priority-mcp.
 
 Authority: `docs/skill-sources/medatech-network/service-desk/company-timezone-scheduled-reports.md`.
 

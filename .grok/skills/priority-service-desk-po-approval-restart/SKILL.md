@@ -9,7 +9,7 @@ description: >
 
 # Restart purchase-order approval from the starting status
 
-Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
+Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/priority-mcp.
 
 Authority: `docs/skill-sources/medatech-network/service-desk/po-approval-restart.md`.
 

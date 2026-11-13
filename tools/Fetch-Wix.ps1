@@ -3,7 +3,7 @@
 .SYNOPSIS
   Download WiX Toolset v3 binaries (candle/light/heat) for packing Priority Agent MSI.
 .NOTES
-  agentic_fomprep#566 / FR-001. Cached under third_party\wix. Same zip as fleet airc packs.
+  priority-mcp#566 / FR-001. Cached under third_party\wix. Same zip as fleet airc packs.
 #>
 [CmdletBinding()]
 param(

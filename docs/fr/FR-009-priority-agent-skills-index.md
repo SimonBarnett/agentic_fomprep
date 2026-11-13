@@ -1,6 +1,6 @@
 # FR-009: PRIORITY-AGENT-SKILLS index lists intake tools
 
-**Repo:** SimonBarnett/agentic_fomprep  
+**Repo:** SimonBarnett/priority-mcp  
 **Labels:** feature-request
 
 ## Goal

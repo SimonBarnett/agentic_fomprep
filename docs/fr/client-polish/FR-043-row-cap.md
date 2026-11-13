@@ -1,6 +1,6 @@
 # FR-043: form rows stops at a limit
 
-**Repo:** SimonBarnett/agentic_fomprep
+**Repo:** SimonBarnett/priority-mcp
 **Pack:** docs/feature-request-priority-client-polish-2026-11-12.md
 **Labels:** feature-request
 

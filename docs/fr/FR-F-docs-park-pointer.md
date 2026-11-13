@@ -2,7 +2,7 @@
 
 ## Goal
 
-Park this FR vision + FR mirrors under `docs/` on agentic_fomprep; open implementation issues; docs PR uses Refs (not Closes) for implementation FRs; close only this park-process issue after merge.
+Park this FR vision + FR mirrors under `docs/` on priority-mcp; open implementation issues; docs PR uses Refs (not Closes) for implementation FRs; close only this park-process issue after merge.
 
 ## Deliverables
 

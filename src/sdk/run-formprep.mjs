@@ -147,7 +147,7 @@ try {
     appname: 'ce-formprep-agent',
     username,
     password,
-    devicename: 'agentic_fomprep',
+    devicename: 'priority-mcp',
   });
 } catch (e) {
   dump('login-error.json', { message: e.message, type: e.type });

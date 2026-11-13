@@ -9,7 +9,7 @@ description: >
 
 # Draft inventory conversion needs the raw-material lot first
 
-Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
+Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/priority-mcp.
 
 Authority: `docs/skill-sources/medatech-network/service-desk/inventory-conversion-raw-lot.md`.
 

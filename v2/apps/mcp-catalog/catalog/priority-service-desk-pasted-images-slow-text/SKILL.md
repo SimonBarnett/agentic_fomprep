@@ -7,7 +7,7 @@ description: >
 
 # Large images pasted into a text form made the record slow
 
-Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
+Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/priority-mcp.
 
 Authority: `docs/skill-sources/medatech-network/service-desk/pasted-images-slow-text.md`.
 

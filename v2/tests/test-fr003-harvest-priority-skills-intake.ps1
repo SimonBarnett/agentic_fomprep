@@ -12,8 +12,8 @@ $fail = @()
 if ($text -notmatch 'https://bob\.ntsa\.uk/bob/v1/intake') {
     $fail += 'skill missing Bobiverse intake URL https://bob.ntsa.uk/bob/v1/intake'
 }
-if ($text -notmatch 'SimonBarnett/agentic_fomprep') {
-    $fail += 'skill missing SimonBarnett/agentic_fomprep'
+if ($text -notmatch 'SimonBarnett/priority-mcp') {
+    $fail += 'skill missing SimonBarnett/priority-mcp'
 }
 if ($text -notmatch 'tools[/\\]Report-FomprepIntakeIssue\.ps1') {
     $fail += 'skill missing tools/Report-FomprepIntakeIssue.ps1'

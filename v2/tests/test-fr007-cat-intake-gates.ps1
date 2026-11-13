@@ -38,13 +38,13 @@ if (-not (Test-Path -LiteralPath $agents)) {
     $fail += 'missing AGENTS.md for negative check'
 } else {
     $at = Get-Content -LiteralPath $agents -Raw -Encoding UTF8
-    $stripped = $at -replace 'SimonBarnett/agentic_fomprep', 'REMOVED_HOME_REPO_FOR_NEGATIVE'
+    $stripped = $at -replace 'SimonBarnett/priority-mcp', 'REMOVED_HOME_REPO_FOR_NEGATIVE'
     $negOk = $true
     $negWhy = 'ok'
     if ($stripped -notmatch 'https://bob\.ntsa\.uk/bob/v1/intake') { $negOk = $false; $negWhy = 'missing intake URL' }
-    if ($stripped -notmatch 'SimonBarnett/agentic_fomprep') { $negOk = $false; $negWhy = 'missing home repo' }
+    if ($stripped -notmatch 'SimonBarnett/priority-mcp') { $negOk = $false; $negWhy = 'missing home repo' }
     if ($negOk) {
-        $fail += 'negative check did not fail after stripping SimonBarnett/agentic_fomprep from AGENTS'
+        $fail += 'negative check did not fail after stripping SimonBarnett/priority-mcp from AGENTS'
     } else {
         if ($negWhy -ne 'missing home repo') {
             $fail += ("negative check failed for unexpected reason: $negWhy")

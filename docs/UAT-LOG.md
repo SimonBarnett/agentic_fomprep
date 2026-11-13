@@ -1,4 +1,4 @@
-# UAT log — SimonBarnett/agentic_fomprep#0
+# UAT log — SimonBarnett/priority-mcp#0
 
 **Verdict:** UAT PASS  
 **Date (UTC):** 2026-11-06T16:30:00Z  
@@ -16,7 +16,7 @@
 | V4 | OData empty-500 company probe (FR #226) | PASS | Test-Fr226-ODataEmpty500Refuse.ps1 |
 | V5 | SaaS OIDC / catalog skill pins | PASS | Test-Fr212 / Test-Fr219 / Test-Mrb208 |
 | V6 | Main auto-merge protection docs (FR #247) | PASS | Test-Fr247-MainAutoMergeProtection.ps1 |
-| V7 | Form Prep EXECPREPLOCK/LASTPREPDATE live success | SKIP | No C:\passwords\agentic_fomprep-connections.txt on redqueen; no DEV1. Same class as prior UATs. Not a product defect this cycle. |
+| V7 | Form Prep EXECPREPLOCK/LASTPREPDATE live success | SKIP | No C:\passwords\priority-mcp-connections.txt on redqueen; no DEV1. Same class as prior UATs. Not a product defect this cycle. |
 | V8 | Discover airc consoles / fixture override (FR #258/#261) | PASS | Prior cycle pins still green via Test-Mrb197 / catalog; no regression this cycle. |
 | V9 | Customer console channel digest/wonderland (FR #263) | PASS | Prior cycle; harness still green. |
 | V10 | Launcher-v tags stamp Version/FileVersion/InformationalVersion; banner X.Y.Z (FR #267) | PASS | Test-Fr267-LauncherVersion.ps1 |
@@ -50,7 +50,7 @@ none
 | V4 | OData empty-500 company probe (FR #226) | PASS | Test-Fr226-ODataEmpty500Refuse.ps1 |
 | V5 | SaaS OIDC / catalog skill pins | PASS | Test-Fr212 / Test-Fr219 / Test-Mrb208 |
 | V6 | Main auto-merge protection docs (FR #247) | PASS | Test-Fr247-MainAutoMergeProtection.ps1 |
-| V7 | Form Prep EXECPREPLOCK/LASTPREPDATE live success | SKIP | No C:\passwords\agentic_fomprep-connections.txt on flamingo; no CE-PRIORITY-DEV1. Same class as 2026-11-01 UAT. Not a product defect this cycle. |
+| V7 | Form Prep EXECPREPLOCK/LASTPREPDATE live success | SKIP | No C:\passwords\priority-mcp-connections.txt on flamingo; no CE-PRIORITY-DEV1. Same class as 2026-11-01 UAT. Not a product defect this cycle. |
 | V8 | Discover airc consoles from digest; fixture env ignored when fetch is explicit (FR #258/#261) | PASS | Source `launcher/AircConsoleDiscovery.cs` + `launcher.Tests/Program.cs` TestDiscoverInjection (no local dotnet; static pin). |
 | V9 | Customer console channel is digest/wonderland, not `#<stem>` (FR #263) | PASS | `launcher.Tests` picker/session-rules asserts; README airc_consoles. |
 
@@ -82,7 +82,7 @@ none
 | V4 | OData empty-500 company probe (FR #226) | PASS | Test-Fr226-ODataEmpty500Refuse.ps1 |
 | V5 | SaaS OIDC / catalog skill pins (FR #212/#219/#208) | PASS | matching 	ests/Test-*.ps1 |
 | V6 | Main auto-merge protection docs (FR #247) | PASS | Test-Fr247-MainAutoMergeProtection.ps1 |
-| V7 | Form Prep EXECPREPLOCK/LASTPREPDATE live success | SKIP | No C:\passwords\agentic_fomprep-connections.txt on flamingo; no DEV1 session. Product rules require ask Haitch when missing. Not a product defect for this cycle. |
+| V7 | Form Prep EXECPREPLOCK/LASTPREPDATE live success | SKIP | No C:\passwords\priority-mcp-connections.txt on flamingo; no DEV1 session. Product rules require ask Haitch when missing. Not a product defect for this cycle. |
 
 ## Harness
 

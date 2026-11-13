@@ -7,7 +7,7 @@ description: >
 
 # A shipment warning popped up too often and was turned off for one privilege group
 
-Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
+Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/priority-mcp.
 
 Authority: `docs/skill-sources/medatech-network/service-desk/privilege-message-disable.md`.
 

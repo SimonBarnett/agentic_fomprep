@@ -14,8 +14,8 @@ if ($fail.Count -eq 0) {
     # Report: omit -Repo; DryRun JSON must default to product repo. No live POST.
     $reportOut = & $report -Kind issue -Title 'fr010 dryrun report' -Body 'acceptance body' -DryRun -NoDelegate 2>&1 |
         Out-String
-    if ($reportOut -notmatch '"repo"\s*:\s*"SimonBarnett/agentic_fomprep"') {
-        $fail += 'Report DryRun missing default repo SimonBarnett/agentic_fomprep'
+    if ($reportOut -notmatch '"repo"\s*:\s*"SimonBarnett/priority-mcp"') {
+        $fail += 'Report DryRun missing default repo SimonBarnett/priority-mcp'
     }
     if ($reportOut -notmatch '"kind"\s*:\s*"issue"') {
         $fail += 'Report DryRun missing kind issue'
@@ -24,8 +24,8 @@ if ($fail.Count -eq 0) {
     # Harvest: omit -Repo; kind=harvest.
     $harvestOut = & $harvest -Summary 'fr010 dryrun harvest' -Lesson 'default product repo' -DryRun -NoDelegate 2>&1 |
         Out-String
-    if ($harvestOut -notmatch '"repo"\s*:\s*"SimonBarnett/agentic_fomprep"') {
-        $fail += 'Harvest DryRun missing default repo SimonBarnett/agentic_fomprep'
+    if ($harvestOut -notmatch '"repo"\s*:\s*"SimonBarnett/priority-mcp"') {
+        $fail += 'Harvest DryRun missing default repo SimonBarnett/priority-mcp'
     }
     if ($harvestOut -notmatch '"kind"\s*:\s*"harvest"') {
         $fail += 'Harvest DryRun missing kind harvest'

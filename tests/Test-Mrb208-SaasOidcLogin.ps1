@@ -1,5 +1,5 @@
 #requires -Version 5.1
-# Hostile pin for MRB agentic_fomprep#208: SaaS OIDC harvest + CAT-T51 no BOM.
+# Hostile pin for MRB priority-mcp#208: SaaS OIDC harvest + CAT-T51 no BOM.
 $ErrorActionPreference = 'Stop'
 $repo = if ($env:FOMPREP_MRB_ROOT) { $env:FOMPREP_MRB_ROOT } else { Split-Path -Parent $PSScriptRoot }
 $failed = 0

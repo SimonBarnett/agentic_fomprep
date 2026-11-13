@@ -1,6 +1,6 @@
 # FR-023: proc continue resumes with an explicit option
 
-**Repo:** SimonBarnett/agentic_fomprep
+**Repo:** SimonBarnett/priority-mcp
 **Pack:** docs/feature-request-priority-client-polish-2026-11-12.md
 **Labels:** feature-request
 

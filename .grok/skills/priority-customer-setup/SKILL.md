@@ -2,18 +2,18 @@
 name: priority-customer-setup
 description: >-
   Use when setting up or migrating Priority customer repos and SC/SO folders to
-  consume shared agentic_fomprep Priority Agent rules and Bob work reports
+  consume shared priority-mcp Priority Agent rules and Bob work reports
   without copying policy into customers.
 ---
 
 # Priority customer setup
 
-Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
+Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/priority-mcp.
 
 ## Canonical source, not per-customer policy copies
 The Priority Agent's reusable operating and reporting instructions and
-implementation belong in this repository ([agentic_fomprep](https://github.com/SimonBarnett/agentic_fomprep)).
-Read the current [agent rules](https://github.com/SimonBarnett/agentic_fomprep/blob/main/launcher/agent-rules.md)
+implementation belong in this repository ([priority-mcp](https://github.com/SimonBarnett/priority-mcp)).
+Read the current [agent rules](https://github.com/SimonBarnett/priority-mcp/blob/main/launcher/agent-rules.md)
 and the supported `launcher/customer-setup` implementation at a recorded approved
 ref before changing customer repos. This repository owns user identity,
 completed-work / human-equivalent reporting, readable narrative, receipt

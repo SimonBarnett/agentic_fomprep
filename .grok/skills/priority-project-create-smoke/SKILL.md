@@ -7,7 +7,7 @@ description: >-
 
 # Priority project create smoke (TC-01–05)
 
-Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
+Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/priority-mcp.
 
 Grab from catalog MCP `https://mcp-priority.ntsa.uk/mcp` (`get_skill` with `name=priority-project-create-smoke`).
 This catalog does not drive the UI or WCF.

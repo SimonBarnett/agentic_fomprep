@@ -1,7 +1,7 @@
-﻿# Build-and-test plan: Priority-generic catalog rename (strip ce-priority-*)
+# Build-and-test plan: Priority-generic catalog rename (strip ce-priority-*)
 
 **FR:** `docs/feature-request-priority-generic-catalog-rename-2026-09-19.md`  
-**Repo:** SimonBarnett/agentic_fomprep  
+**Repo:** SimonBarnett/priority-mcp  
 
 ## Steps
 

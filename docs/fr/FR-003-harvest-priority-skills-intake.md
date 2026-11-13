@@ -1,22 +1,22 @@
 # FR-003: harvest-priority-skills documents Bobiverse intake
 
-**Repo:** SimonBarnett/agentic_fomprep  
+**Repo:** SimonBarnett/priority-mcp  
 **Labels:** feature-request
 
 ## Goal
 
-`harvest-priority-skills` mandates Bobiverse intake filings to `SimonBarnett/agentic_fomprep` for Priority-generic gaps and blocked harvest PRs.
+`harvest-priority-skills` mandates Bobiverse intake filings to `SimonBarnett/priority-mcp` for Priority-generic gaps and blocked harvest PRs.
 
 ## Deliverables
 
-- Replace vague "Bob intake/outbox" prose with explicit URL + `-Repo SimonBarnett/agentic_fomprep`.
+- Replace vague "Bob intake/outbox" prose with explicit URL + `-Repo SimonBarnett/priority-mcp`.
 - Same-turn AUTOMATIC: file issue|fr|skill|harvest via tools scripts before idle.
 - Keep Priority-generic vs ce-priority vs ce-dayworks routing table.
 - Keep Sync-PriorityGrokSkills.ps1 step after catalog harvest.
 
 ## Testable
 
-- `Select-String` finds intake URL and `SimonBarnett/agentic_fomprep` in `.grok/skills/harvest-priority-skills/SKILL.md`.
+- `Select-String` finds intake URL and `SimonBarnett/priority-mcp` in `.grok/skills/harvest-priority-skills/SKILL.md`.
 - Skill still forbids landing CE Day Works product / CE DBA runbooks here.
 
 ## Out of scope

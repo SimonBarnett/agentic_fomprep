@@ -14,8 +14,8 @@ else {
     if ($text -notmatch 'https://bob\.ntsa\.uk/bob/v1/intake') {
         $fail += 'doc missing Bobiverse intake URL'
     }
-    if ($text -notmatch 'SimonBarnett/agentic_fomprep') {
-        $fail += 'doc missing SimonBarnett/agentic_fomprep'
+    if ($text -notmatch 'SimonBarnett/priority-mcp') {
+        $fail += 'doc missing SimonBarnett/priority-mcp'
     }
     if ($text -notmatch 'Mode A') {
         $fail += 'doc missing Mode A'

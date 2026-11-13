@@ -7,7 +7,7 @@ description: >
 
 # A BPM status could not be re-created because it had been deleted
 
-Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
+Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/priority-mcp.
 
 Authority: `docs/skill-sources/medatech-network/service-desk/bpm-deleted-status-restore.md`.
 

@@ -8,7 +8,7 @@ description: >
 
 # Priority form engineering (CE DEV)
 
-Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
+Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/priority-mcp.
 
 Grab from catalog MCP `https://mcp-priority.ntsa.uk/mcp` (`get_skill` with `name=priority-form-engineering`).
 
@@ -20,7 +20,7 @@ Changing CE custom forms, triggers, or shells on DEV.
 
 ## Named Form Prep (DEV)
 
-Entry: `src\Prepare-NamedForm.ps1` (repo path; operators may use mapped `M:\py\agentic_fomprep\...`). Web SDK EFORM -> FORMPREPDRCT2. Portable plugin: `priority-formprep` (`prepare_form`).
+Entry: `src\Prepare-NamedForm.ps1` (repo path; operators may use mapped `M:\py\priority-mcp\...`). Web SDK EFORM -> FORMPREPDRCT2. Portable plugin: `priority-formprep` (`prepare_form`).
 
 Success only when `ok=true` **and** EXECPREPLOCK `UPD=N` **and** LASTPREPDATE advanced. Never fake UPD=N. Environment DEV only in the current pin. Si may lack API licence on TEST -- use client Form Prep there.
 

@@ -1,5 +1,5 @@
 // Priority Agent launcher - starts a Grok coding agent for Priority ERP work.
-// Always fast-forwards SimonBarnett/agentic_fomprep and loads its MCP + skills,
+// Always fast-forwards SimonBarnett/priority-mcp and loads its MCP + skills,
 // then lets you pick general / customer / project context and optional WCF instances.
 // It never creates customer repos or project folders (Haitch does) and never reads credential files.
 using System.Diagnostics;
@@ -16,7 +16,10 @@ sealed record Customer(string Name, string FullName, string DefaultBranch, strin
 static class Program
 {
     const string Owner = "SimonBarnett";
-    const string FomprepRepo = "agentic_fomprep";
+    const string FomprepRepo = "priority-mcp";
+    /// <summary>FR #597 compatibility: pre-rename AI-root folder / origin leaf (agentic_fomprep).</summary>
+    const string FomprepRepoAlias = "agentic_fomprep";
+    const string FomprepFullName = Owner + "/" + FomprepRepo;
     const string Topic = "priority-customer";
     const string McpName = "priority-catalog";
     const string FuelUrl = "https://bob.ntsa.uk/bob/v1/report";
@@ -197,10 +200,12 @@ static class Program
             Check(ok, det); Summary(); Pause(); return ok ? 0 : 1;
         }
 
-        // ---- 1. agentic_fomprep: always fast-forward --------------------------------
-        Header("[1] General Priority skills: SimonBarnett/agentic_fomprep");
-        string fomprep = EnsureClone(FomprepRepo, $"{Owner}/{FomprepRepo}", "main", alwaysPull: true, preferClean: false)
-                         ?? throw new Exception("agentic_fomprep clone unavailable");
+        // ---- 1. priority-mcp: always fast-forward --------------------------------
+        Header("[1] General Priority skills: SimonBarnett/priority-mcp");
+        // Prefer <AI>\priority-mcp; fall back to legacy <AI>\agentic_fomprep (FR #597).
+        string fomprep = EnsureClone(FomprepRepo, FomprepFullName, "main", alwaysPull: true, preferClean: false)
+                         ?? EnsureClone(FomprepRepoAlias, FomprepFullName, "main", alwaysPull: true, preferClean: false)
+                         ?? throw new Exception("priority-mcp clone unavailable");
         string skillsDir = Path.Combine(fomprep, ".grok", "skills");
         int skillCount = Directory.Exists(skillsDir) ? Directory.GetDirectories(skillsDir).Count(d => File.Exists(Path.Combine(d, "SKILL.md"))) : 0;
         Check(skillCount > 0, $"skills in {skillsDir}: {skillCount}");
@@ -405,7 +410,7 @@ static class Program
         var brief = new StringBuilder();
         brief.AppendLine($"Priority agent session {sessionId} (launched {DateTime.Now:yyyy-MM-dd HH:mm} on {Environment.MachineName}).");
         brief.AppendLine($"Context level: {level}. Working directory: {workDir}.");
-        brief.AppendLine($"General Priority repo: {fomprep} (SimonBarnett/agentic_fomprep @ {GitOut(fomprep, "rev-parse", "--short", "HEAD")}); MCP server '{McpName}' and its .grok/skills are loaded.");
+        brief.AppendLine($"General Priority repo: {fomprep} (SimonBarnett/priority-mcp @ {GitOut(fomprep, "rev-parse", "--short", "HEAD")}); MCP server '{McpName}' and its .grok/skills are loaded.");
         if (wcfConfig.Instances.Count > 0)
         {
             brief.AppendLine("Priority WCF client (fom-prep priority-wcf.mjs / priority-saas-wcf): use allowlist instances; never airc shell, WINRUN, raw web SDK, OData, or bobiverse priority_wcf.py (#6026).");
@@ -718,9 +723,21 @@ static class Program
                 continue;
             }
             string url = GitOut(d, "remote", "get-url", "origin");
-            if (url.Contains(fullName, StringComparison.OrdinalIgnoreCase)) return d;
+            if (OriginMatchesRepo(url, fullName)) return d;
         }
         return null;
+    }
+
+    /// <summary>FR #597: accept SimonBarnett/priority-mcp and legacy SimonBarnett/agentic_fomprep origins.</summary>
+    static bool OriginMatchesRepo(string url, string fullName)
+    {
+        if (string.IsNullOrWhiteSpace(url)) return false;
+        if (url.Contains(fullName, StringComparison.OrdinalIgnoreCase)) return true;
+        bool priorityAgent = fullName.Equals(FomprepFullName, StringComparison.OrdinalIgnoreCase)
+            || fullName.Equals(Owner + "/" + FomprepRepoAlias, StringComparison.OrdinalIgnoreCase);
+        if (!priorityAgent) return false;
+        return url.Contains(FomprepFullName, StringComparison.OrdinalIgnoreCase)
+            || url.Contains(Owner + "/" + FomprepRepoAlias, StringComparison.OrdinalIgnoreCase);
     }
 
     static string? EnsureClone(string name, string fullName, string branch, bool alwaysPull, bool preferClean)
@@ -743,7 +760,7 @@ static class Program
                 sightings.Add(new CloneSighting(d, CloneKind.Stub));
                 continue;
             }
-            if (!GitOut(d, "remote", "get-url", "origin").Contains(fullName, StringComparison.OrdinalIgnoreCase))
+            if (!OriginMatchesRepo(GitOut(d, "remote", "get-url", "origin"), fullName))
             {
                 sightings.Add(new CloneSighting(d, CloneKind.WrongOrigin));
                 continue;
@@ -804,7 +821,7 @@ static class Program
     }
 
     // ------------------------------------------------------------------ grok config
-    // priority-catalog runs locally over stdio from the agentic_fomprep clone:
+    // priority-catalog runs locally over stdio from the priority-mcp clone:
     //   node <clone>\v2\apps\mcp-catalog\stdio.mjs   (the repo's own stdio entry point, no npm install needed)
     // Fallback while the clone lacks stdio.mjs or node is missing: this exe's built-in port (--mcp-catalog),
     // which serves the same <clone>\v2\apps\mcp-catalog\catalog. Any other registration (e.g. a remote URL) is replaced.
@@ -872,8 +889,11 @@ static class Program
     {
         foreach (var root in SearchRoots.Prepend(CloneRoot).Distinct(StringComparer.OrdinalIgnoreCase))
         {
-            string c = Path.Combine(root, FomprepRepo, "v2", "apps", "mcp-catalog", "catalog");
-            if (Directory.Exists(c)) return c;
+            foreach (var leaf in new[] { FomprepRepo, FomprepRepoAlias })
+            {
+                string c = Path.Combine(root, leaf, "v2", "apps", "mcp-catalog", "catalog");
+                if (Directory.Exists(c)) return c;
+            }
         }
         return Path.Combine(CloneRoot, FomprepRepo, "v2", "apps", "mcp-catalog", "catalog");
     }

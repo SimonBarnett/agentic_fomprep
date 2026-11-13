@@ -9,7 +9,7 @@ description: >
 
 # Report runs after a scoped browser site-data clear
 
-Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
+Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/priority-mcp.
 
 Authority: `docs/skill-sources/medatech-network/service-desk/report-browser-site-data.md`.
 

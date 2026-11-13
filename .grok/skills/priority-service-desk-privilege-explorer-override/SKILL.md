@@ -7,7 +7,7 @@ description: >
 
 # Privilege Explorer would not give access to a whole sub-menu until Override was turned on
 
-Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
+Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/priority-mcp.
 
 Authority: `docs/skill-sources/medatech-network/service-desk/privilege-explorer-override.md`.
 

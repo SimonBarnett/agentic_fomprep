@@ -1,9 +1,9 @@
 # Feature request — Priority v2 shell compile + install (spec 0.1)
 
-**Intake issue / MRB home:** [GitHub issue #6](https://github.com/SimonBarnett/agentic_fomprep/issues/6)  
+**Intake issue / MRB home:** [GitHub issue #6](https://github.com/SimonBarnett/priority-mcp/issues/6)  
 **Source PDF:** [feature-request-shell-compile-install-v2-spec-0.1.pdf](./feature-request-shell-compile-install-v2-spec-0.1.pdf)  
 **Date:** 2026-09-18 · **Scope:** v2 only · **Do not change** repo-root v1 (`src\Prepare-NamedForm.ps1`)  
-**Status in repo:** **OFFLINE SHIPPED** on v2 (`23e7e64`+ walker/SQL gate; `v2/config` pins; WP0-T* green). MRB home: [GitHub issue #6](https://github.com/SimonBarnett/agentic_fomprep/issues/6). Build plan: [build-and-test-plan-shell-compile-install-v2-spec-0.1.md](./build-and-test-plan-shell-compile-install-v2-spec-0.1.md). Live FR §15 / WP0-R* parked as [issue #56](https://github.com/SimonBarnett/agentic_fomprep/issues/56) (proof host + `PRIORITY_WP0_INSTANCE` only).
+**Status in repo:** **OFFLINE SHIPPED** on v2 (`23e7e64`+ walker/SQL gate; `v2/config` pins; WP0-T* green). MRB home: [GitHub issue #6](https://github.com/SimonBarnett/priority-mcp/issues/6). Build plan: [build-and-test-plan-shell-compile-install-v2-spec-0.1.md](./build-and-test-plan-shell-compile-install-v2-spec-0.1.md). Live FR §15 / WP0-R* parked as [issue #56](https://github.com/SimonBarnett/priority-mcp/issues/56) (proof host + `PRIORITY_WP0_INSTANCE` only).
 
 ## What the request asks for
 
@@ -48,10 +48,10 @@ Checked against `main` @ `24f71b7` (`v2/` tree):
 | Parser, path allowlist, DBI refuse | **Done** — fixtures under plugin `fixtures/`; WP0-T7/T8/T13 |
 | Medatech pins + SQL gate + handoff | **Done** — `v2/config/pin.json`; WP0-T11/T12; `docs/wp0-recon.md` |
 | `v2/tools/Test-WP0.ps1` | **Done** — offline T*; R* when `PRIORITY_WP0_INSTANCE` set |
-| `WcfFileStepWorks` / `DbiMarker` | **Partial** — `DbiMarker=DBI` observed on DEV1 (2026-10-01); `WcfFileStepWorks` still null; tracked in [#56](https://github.com/SimonBarnett/agentic_fomprep/issues/56) |
-| FR §15 live compile→install→prep | **Proof host in progress** — [#56](https://github.com/SimonBarnett/agentic_fomprep/issues/56); WP0-R* green on DEV1; P3 compile/install WCF still blocked (see `docs/wp0-live-proof-ce-priority-dev1-2026-10-01.md`) |
+| `WcfFileStepWorks` / `DbiMarker` | **Partial** — `DbiMarker=DBI` observed on DEV1 (2026-10-01); `WcfFileStepWorks` still null; tracked in [#56](https://github.com/SimonBarnett/priority-mcp/issues/56) |
+| FR §15 live compile→install→prep | **Proof host in progress** — [#56](https://github.com/SimonBarnett/priority-mcp/issues/56); WP0-R* green on DEV1; P3 compile/install WCF still blocked (see `docs/wp0-live-proof-ce-priority-dev1-2026-10-01.md`) |
 
-**Bottom line:** Product surface is on v2. Off-instance gates (WP0-T*, Test-Pack WP0) are green on MarchHare/sandboxes. Live §15 / pin walk evidence is **not** claimed here — see [#56](https://github.com/SimonBarnett/agentic_fomprep/issues/56). Bob chairs any human UAT stamp after proof-host green.
+**Bottom line:** Product surface is on v2. Off-instance gates (WP0-T*, Test-Pack WP0) are green on MarchHare/sandboxes. Live §15 / pin walk evidence is **not** claimed here — see [#56](https://github.com/SimonBarnett/priority-mcp/issues/56). Bob chairs any human UAT stamp after proof-host green.
 
 ---
 

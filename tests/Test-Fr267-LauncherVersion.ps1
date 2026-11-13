@@ -1,5 +1,5 @@
 #requires -Version 5.1
-# FR agentic_fomprep#267: stamp Version from launcher-v* tag.
+# FR priority-mcp#267: stamp Version from launcher-v* tag.
 $ErrorActionPreference = 'Stop'
 $repo = if ($env:FOMPREP_MRB_ROOT) { $env:FOMPREP_MRB_ROOT } else { Split-Path -Parent $PSScriptRoot }
 . (Join-Path $repo 'launcher\Get-LauncherReleaseVersion.ps1')

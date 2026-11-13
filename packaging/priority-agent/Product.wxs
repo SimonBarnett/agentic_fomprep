@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-  Priority Agent per-machine MSI (agentic_fomprep#566 / FR-001).
+  Priority Agent per-machine MSI (priority-mcp#566 / FR-001).
   Files harvested by heat.exe into HarvestedFiles.wxs (ComponentGroup PriorityAgentFiles).
   FR-001: no CLI dialog and no CLI custom action (FR-002/003 own those).
 -->

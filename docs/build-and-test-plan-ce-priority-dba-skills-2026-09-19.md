@@ -1,7 +1,7 @@
-﻿# Build-and-test plan: CE Priority DBA skills suite
+# Build-and-test plan: CE Priority DBA skills suite
 
 **FR:** `docs/feature-request-ce-priority-dba-skills-2026-09-19.md`  
-**Repo:** SimonBarnett/agentic_fomprep  
+**Repo:** SimonBarnett/priority-mcp  
 **Date:** 2026-09-19  
 
 ## Goal

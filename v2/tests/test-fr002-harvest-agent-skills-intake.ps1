@@ -9,14 +9,14 @@ if (-not (Test-Path -LiteralPath $skill)) { throw "missing $skill" }
 $text = Get-Content -LiteralPath $skill -Raw -Encoding UTF8
 $fail = @()
 
-if ($text -notmatch '(?m)^github:\s*https://github\.com/SimonBarnett/agentic_fomprep\s*$') {
-    $fail += 'frontmatter github: must be https://github.com/SimonBarnett/agentic_fomprep'
+if ($text -notmatch '(?m)^github:\s*https://github\.com/SimonBarnett/priority-mcp\s*$') {
+    $fail += 'frontmatter github: must be https://github.com/SimonBarnett/priority-mcp'
 }
 if ($text -notmatch 'https://bob\.ntsa\.uk/bob/v1/intake') {
     $fail += 'skill missing Bobiverse intake URL https://bob.ntsa.uk/bob/v1/intake'
 }
-if ($text -notmatch 'SimonBarnett/agentic_fomprep') {
-    $fail += 'skill missing SimonBarnett/agentic_fomprep as intake repo'
+if ($text -notmatch 'SimonBarnett/priority-mcp') {
+    $fail += 'skill missing SimonBarnett/priority-mcp as intake repo'
 }
 if ($text -notmatch 'tools[/\\]Report-FomprepIntakeIssue\.ps1') {
     $fail += 'skill missing tools/Report-FomprepIntakeIssue.ps1'

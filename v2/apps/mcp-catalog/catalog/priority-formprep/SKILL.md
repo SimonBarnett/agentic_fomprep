@@ -9,7 +9,7 @@ description: >
 
 # Priority named-form prep
 
-Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
+Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/priority-mcp.
 
 Grab this skill from catalog MCP `https://mcp-priority.ntsa.uk/mcp` (`get_skill`). Compile **locally** against an instance the **user** listed. This catalog does not call SQL or WCF.
 
@@ -80,6 +80,10 @@ is a **trigger :VAR type clash** (see **priority-procedure-style**). Fix the tri
 `EXECPREPLOCK.UPD=N` + advanced `LASTPREPDATE` does **not** always make `priority.formStart('ZCLA_…')` succeed. On CE DEV, stock forms (`PART`, `LOGPART`) open; many `ZCLA_*` still return *unprepared* on **direct** `formStart`.
 
 **Workaround for UAT/smoke:** open the **parent** that works (`PART`) then `startSubForm('ZCLA_PARTLONGDESC')` / `ZCLA_PARTLONGDREV` / child `ZCLA_PARTLONGDHIST`. See **priority-uat-wcf**.
+
+## Session 0 / LocalSystem (WINACTIV)
+
+WINACTIV / headed Form Prep from airc **LocalSystem Session 0** does not complete Form Prep (hangs). Use an interactive unlocked desktop session, Named Form Prep Web SDK (`Prepare-NamedForm.ps1` / CredMan), or another non-Session-0 path. Do not treat a Session 0 hang as a dictionary compile failure.
 
 ## Not this catalog
 

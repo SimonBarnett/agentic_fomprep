@@ -7,7 +7,7 @@
 
 ## Why this harvest
 
-Simon asked to harvest all Priority testing skills Jester learned into `agentic_fomprep`. The 2026-09-19 doc was a summary folded into thin catalog stubs. Local Grok workflow leaflets (`ce-priority-*`) are gone from the box. This pack is the full learned UAT procedure, Priority-generic.
+Simon asked to harvest all Priority testing skills Jester learned into `priority-mcp`. The 2026-09-19 doc was a summary folded into thin catalog stubs. Local Grok workflow leaflets (`ce-priority-*`) are gone from the box. This pack is the full learned UAT procedure, Priority-generic.
 
 ## Skills harvested
 

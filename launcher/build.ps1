@@ -27,7 +27,7 @@ try {
         $sh.TargetPath = Join-Path $Dest 'PriorityAgent.exe'
         $sh.WorkingDirectory = $Dest
         $sh.IconLocation = (Join-Path $Dest 'PriorityAgent.exe') + ',0'
-        $sh.Description = 'Priority ERP coding agent (Grok) with agentic_fomprep skills'
+        $sh.Description = 'Priority ERP coding agent (Grok) with priority-mcp skills'
         $sh.Save()
         Write-Host "Installed to $Dest; shortcut $lnk"
     }

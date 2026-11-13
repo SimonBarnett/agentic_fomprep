@@ -1,8 +1,8 @@
 # Build-and-test plan — Priority v2 shell compile + install (spec 0.1)
 
 **FR:** [feature-request-shell-compile-install-v2-spec-0.1.md](./feature-request-shell-compile-install-v2-spec-0.1.md)  
-**GitHub:** [issue #6](https://github.com/SimonBarnett/agentic_fomprep/issues/6)  
-**Repo:** SimonBarnett/agentic_fomprep  
+**GitHub:** [issue #6](https://github.com/SimonBarnett/priority-mcp/issues/6)  
+**Repo:** SimonBarnett/priority-mcp  
 **Scope:** v2 only — do not change repo-root `src\Prepare-NamedForm.ps1`
 
 ## Goal
@@ -57,7 +57,7 @@ Capture walk transcript under proof `agentWork` as `last-wcf-walk.json` when pin
 
 ### P4 — MRB / UAT boundary
 
-- Bob chairs MRB on [issue #6](https://github.com/SimonBarnett/agentic_fomprep/issues/6)
+- Bob chairs MRB on [issue #6](https://github.com/SimonBarnett/priority-mcp/issues/6)
 - Do **not** mark ready for human UAT until Bob re-stamps after P3 green on proof instance
 - Off-instance PASS is **not** a claim of live compile/install success
 
@@ -77,7 +77,7 @@ Capture walk transcript under proof `agentWork` as `last-wcf-walk.json` when pin
 | Install SQL gate + handoff | `Test-WP0` T11–T12; install result schema |
 | Pins from recon | `v2/config/pin.json`, `docs/wp0-recon.md` |
 | v1 frozen | `Test-WP0` T9 |
-| Live §15 ATs | WP0-R* on proof host only — [issue #56](https://github.com/SimonBarnett/agentic_fomprep/issues/56) (not required for off-instance merge) |
+| Live §15 ATs | WP0-R* on proof host only — [issue #56](https://github.com/SimonBarnett/priority-mcp/issues/56) (not required for off-instance merge) |
 
 ## Done offline (2026-09-26 / FR #6 seat)
 

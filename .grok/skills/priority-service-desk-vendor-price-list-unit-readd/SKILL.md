@@ -7,7 +7,7 @@ description: >
 
 # A vendor price list kept the old unit after the unit on vendor parts changed
 
-Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
+Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/priority-mcp.
 
 Authority: `docs/skill-sources/medatech-network/service-desk/vendor-price-list-unit-readd.md`.
 

@@ -1,6 +1,6 @@
 # WP0 live §15 proof — blocker (flamingo 2026-09-28)
 
-**FR:** https://github.com/SimonBarnett/agentic_fomprep/issues/56  
+**FR:** https://github.com/SimonBarnett/priority-mcp/issues/56  
 **Parent:** #6 (offline WP0-T* shipped; live R* still open)
 
 ## Attempt

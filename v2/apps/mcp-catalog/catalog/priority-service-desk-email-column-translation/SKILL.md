@@ -9,7 +9,7 @@ description: >
 
 # Missing column translation hides Email Editor fields
 
-Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
+Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/priority-mcp.
 
 Authority: `docs/skill-sources/medatech-network/service-desk/email-column-translation.md`.
 

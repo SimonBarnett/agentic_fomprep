@@ -44,6 +44,6 @@ public static class CloneResolve
         string listed = sightings.Count == 0
             ? "(no candidate paths searched)"
             : string.Join("; ", sightings.Select(Describe));
-        return $"agentic_fomprep clone unavailable for {fullName}. Candidates: {listed}. Rename/remove an empty stub, or use --root / PRIORITY_AGENT_ROOT pointing at a real clone.";
+        return $"priority-mcp clone unavailable for {fullName}. Candidates: {listed}. Rename/remove an empty stub, or use --root / PRIORITY_AGENT_ROOT pointing at a real clone.";
     }
 }

@@ -7,7 +7,7 @@
 param(
     [switch]$Apply,
     [string]$Owner = 'SimonBarnett',
-    [string]$Repo = 'agentic_fomprep',
+    [string]$Repo = 'priority-mcp',
     [string]$Branch = 'main'
 )
 $ErrorActionPreference = 'Stop'

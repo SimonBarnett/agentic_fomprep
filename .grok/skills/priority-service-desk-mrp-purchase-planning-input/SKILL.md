@@ -7,7 +7,7 @@ description: >
 
 # Overnight MRP ran without Purchase Planning, so no purchase demands
 
-Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
+Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/priority-mcp.
 
 Authority: `docs/skill-sources/medatech-network/service-desk/mrp-purchase-planning-input.md`.
 

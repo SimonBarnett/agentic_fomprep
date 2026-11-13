@@ -9,7 +9,7 @@ description: >
 
 # Priority shell compile
 
-Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
+Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/priority-mcp.
 
 Grab this skill from catalog MCP `https://mcp-priority.ntsa.uk/mcp` (`get_skill` with `name=priority-shell-compile`). Compile **locally** against an instance the **user** listed. This catalog does not call SQL or WCF.
 

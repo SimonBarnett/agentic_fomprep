@@ -1,18 +1,18 @@
 ---
 name: priority-form-prep-after-sql-change
 description: >
-  Gate Form Preparation after FORMTRIGTEXT or trigger SQL changes before UAT retry. Links
-  prepare-all-unprepared-priority-forms. Use when triggers changed, form prep after SQL,
-  or /priority-form-prep-after-sql-change.
+  Gate Form Preparation after FORMTRIGTEXT / FORMCLTRIGTEXT or trigger SQL changes before
+  UAT retry. Links prepare-all-unprepared-priority-forms. Use when triggers changed,
+  form prep after SQL, or /priority-form-prep-after-sql-change.
 ---
 
 # Form Prep gate after SQL dictionary change
 
-Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
+Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/priority-mcp.
 
 Grab from catalog MCP `https://mcp-priority.ntsa.uk/mcp` (`get_skill` with `name=priority-form-prep-after-sql-change`).
 
-Dictionary edits (`FORMTRIGTEXT`, PRE-DELETE/PRE-INSERT bodies, related procs) **invalidate** prepared forms until Form Prep succeeds with SQL gates.
+Dictionary edits (`FORMTRIGTEXT`, `FORMCLTRIGTEXT`, PRE-DELETE/PRE-INSERT bodies, related procs) **invalidate** prepared forms until Form Prep succeeds with SQL gates.
 
 ## When
 
@@ -29,7 +29,9 @@ powershell -NoProfile -ExecutionPolicy Bypass -File src\Prepare-NamedForm.ps1 -N
 powershell -NoProfile -ExecutionPolicy Bypass -File tools\Get-LastFormPrepResult.ps1
 ```
 
-Success = EXECPREPLOCK `UPD=N` **and** `LASTPREPDATE` advanced. Never SQL-flip `UPD`.
+Success = EXECPREPLOCK `UPD=N` **and** `LASTPREPDATE` advanced **and** (when present) the prep artifact mtime moved. Never SQL-flip `UPD`.
+
+After any `FORMCLTRIGTEXT` / column-trigger edit, Form Prep that form ENAME before relying on POST-FIELD fills. Choose-path working while key-alone leaves related fields empty often means a leftover `SQL.ENV <> 'copyps'` gate — see **priority-form-engineering**.
 
 ## Hard rules (inherited)
 

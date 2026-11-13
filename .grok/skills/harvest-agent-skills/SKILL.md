@@ -7,21 +7,21 @@ description: >
   learned a procedure, hourly skill check, /harvest-agent-skills, promote a
   playbook, skill harvest. Prefer deterministic scripts over LLM reasoning.
   Does not dispatch product builds.
-github: https://github.com/SimonBarnett/agentic_fomprep
+github: https://github.com/SimonBarnett/priority-mcp
 ---
 
 # Harvest agent skills (honesty box)
 
 ## Home GitHub (required on every harvest skill)
 
-**This skill's home:** `https://github.com/SimonBarnett/agentic_fomprep`
+**This skill's home:** `https://github.com/SimonBarnett/priority-mcp`
 
 Every skill book ships this foundation skill (or a repo-local twin). The twin's
 frontmatter `github:` MUST name the public repo that owns that book.
 
 | Playbook domain | Home repo | Foundation skill |
 |-----------------|-----------|------------------|
-| Priority catalog, formprep, hours, UAT, OData, shell, DBA, Priority MCP | `SimonBarnett/agentic_fomprep` | `harvest-priority-skills` (this book) |
+| Priority catalog, formprep, hours, UAT, OData, shell, DBA, Priority MCP | `SimonBarnett/priority-mcp` | `harvest-priority-skills` (this book) |
 | IRC wire, Jeeves, talk seats, SEAL, moot, file, dumb, Ergo, Watch-Bobiverse | `SimonBarnett/agentic_irc` | `.grok/skills/harvest-agent-skills/SKILL.md` |
 | Fleet / build / MRB / Bob jobs / TipForm | `SimonBarnett/agentic_build` | `.grok/skills/harvest-agent-skills/SKILL.md` |
 | MUD / Discworld | `SimonBarnett/mud-skill` | `.grok/skills/harvest-agent-skills/SKILL.md` |
@@ -83,7 +83,7 @@ When `gh` push/PR is blocked, or when filing issue|fr|skill|harvest gaps without
 a ready patch, POST to Bobiverse intake in the **same turn** (no GitHub account
 required; offline payloads queue and retry):
 
-`POST https://bob.ntsa.uk/bob/v1/intake` with payload `repo=SimonBarnett/agentic_fomprep`
+`POST https://bob.ntsa.uk/bob/v1/intake` with payload `repo=SimonBarnett/priority-mcp`
 (and `kind` = `issue` | `fr` | `skill` | `harvest`).
 
 Repo-local wrappers (default repo this product; scripts land in FR-004/FR-005):
@@ -96,7 +96,7 @@ tools\Invoke-FomprepHarvest.ps1 -Flush
 
 Branch + PR remains the **preferred** path for playbook landings. Intake is
 **mandatory** when a PR cannot open and for issue/FR gaps. Never omit the product
-`repo` / `-Repo SimonBarnett/agentic_fomprep` (shared Bobiverse helpers default to
+`repo` / `-Repo SimonBarnett/priority-mcp` (shared Bobiverse helpers default to
 bobiverse if `-Repo` is missing). Dual-mode CWD vs referred skillbook:
 `docs/skillbook-referral.md`. Never put secrets in filings.
 
@@ -133,7 +133,7 @@ bobiverse if `-Repo` is missing). Dual-mode CWD vs referred skillbook:
 **Every skill book MUST include this foundation skill** (twin with that book's
 `github:`). Other skills in the book SHOULD link it in one line:
 
-`Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.`
+`Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/priority-mcp.`
 
 (Catalog leaflets use `harvest-priority-skills`. Fleet/Bob skills in other
 books use `harvest-agent-skills` pointing at their home.)
@@ -151,24 +151,25 @@ books use `harvest-agent-skills` pointing at their home.)
 
 ## Harvested lessons (intake)
 
-- Priority Agent home (this repo) needs a-search-style CAST IRON Bobiverse intake: always pass `-Repo SimonBarnett/agentic_fomprep` (or the matching intake payload `repo`), ship repo-local `Report-FomprepIntakeIssue.ps1` / `Invoke-FomprepHarvest.ps1` wrappers, document dual-mode CWD vs referred skillbook in `docs/skillbook-referral.md`, and pin CAT needles for the intake default-repo path. File many small Goal/Deliverables/Testable FRs (not one omnibus). Backlog: issues #109-#118; docs park PR #119.
+- FORMCLTRIGTEXT / POST-FIELD: leftover `SQL.ENV <> 'copyps'` skips non-copy companies (key-alone empty related fields; Choose still works) — fix in **priority-form-engineering**; after edit Form Prep with LASTPREPDATE + prep artifact mtime — **priority-form-prep-after-sql-change**; Session 0 WINACTIV hangs — **priority-formprep** (interactive or Web/CredMan path).
+- Priority Agent home (this repo) needs a-search-style CAST IRON Bobiverse intake: always pass `-Repo SimonBarnett/priority-mcp` (or the matching intake payload `repo`), ship repo-local `Report-FomprepIntakeIssue.ps1` / `Invoke-FomprepHarvest.ps1` wrappers, document dual-mode CWD vs referred skillbook in `docs/skillbook-referral.md`, and pin CAT needles for the intake default-repo path. File many small Goal/Deliverables/Testable FRs (not one omnibus). Backlog: issues #109-#118; docs park PR #119.
 - Register priority-catalog as PriorityAgent.exe --mcp-catalog stdio from the fomprep clone; do not grok mcp add the hosted mcp-priority URL (no DNS).
 - Priority Agent lists customers from GitHub topic priority-customer; ff-only clean main for fomprep; new customer/project is Ask Haitch only; secrets stay in C:\passwords\<repo>-connections.txt unread by the launcher.
 - When rules v2 lands connect-without-ask, update VISION.md in a separate FR (do not edit VISION inside the product PR); prefer DEV; never commit/echo secrets; ask before messaging people; refresh hostile pins that still require Never-touch/allowlist
 - Use priority-saas-oidc-login for Cloud WebUI Bearer; tabulaini from POST /webui/<tenant>; OTP single-use; prefer PAT for unattended OData
 - Never rewrite catalog meta.json with a UTF-8 BOM (CAT-T51 / Node MCP); bump version as UTF-8 no BOM pretty JSON.
 - When intake files a catalog-skill FR after the harvest already landed, add the missing hostile pin (OTP single-use, prefer PAT, no secret literals) and Closes the FR; do not duplicate the skill folder.
-- priority-customer repos need root VISION.md for hostile MRB: customer-specific harvest here not agentic_fomprep; project logs in authoritative SC/SO folders; hours store is the bob.ntsa.uk /bob/v1/hours webhook (not a git hours ref); secrets only in C:\passwords\<repo>-connections.txt never in git
+- priority-customer repos need root VISION.md for hostile MRB: customer-specific harvest here not priority-mcp; project logs in authoritative SC/SO folders; hours store is the bob.ntsa.uk /bob/v1/hours webhook (not a git hours ref); secrets only in C:\passwords\<repo>-connections.txt never in git
 - When a live-fix evidence PR CONFLICTS with a prior docs next-step tip, keep-both fold prefers the completed-write tip narrative; verify OData evidence JSON for the write
 - fomprep catalog harvest: CAT-T51 no BOM on new meta.json; CAT-T41 password-equals fail on ODATA_REST_CLOUD.md is pre-existing on main -- confirm on origin/main before FAIL.
 - fomprep CAT-T41: do not treat documented PAT Basic (password field is PAT) as a secret; require password-equals plus a quote, or reword the skill-source.
 - priority-saas-oidc-login v1.1: PowerShell & join; HttpClient no-auto-redirect; OData Bearer empty 500 means stop guessing DNAME; prefer PAT
 - Priority SaaS OData: after N empty HTTP 500 on guessed company/DNAME (default 2; PRIORITY_ODATA_EMPTY_500_MAX), stop inventing names and confirm DNAME/API licence or PAT --- Assert-ODataCompanyProbeAllowed in odata.ps1 (FR #226).
-- Priority Agent clone path: only dirs with .git count; empty D:\ai\agentic_fomprep stub is skipped for C:\ai; agents use FOMPREP_DIR not hardcoded D:\ai; operators reclone or PRIORITY_AGENT_ROOT/--root
+- Priority Agent clone path: only dirs with .git count; empty D:\ai\priority-mcp stub is skipped for C:\ai; agents use FOMPREP_DIR not hardcoded D:\ai; operators reclone or PRIORITY_AGENT_ROOT/--root
 - Do not create a new GitHub repo from an FR that says Simon must confirm owner and name first; GIVEUP owner-confirm and leave the issue open.
 - priority-branding FR #233: after owner-confirm SimonBarnett/priority-branding, still GIVEUP needs_human if M:\ce-priority-extension is unmapped - never invent rules.json affiliate IDs
 - Greenfield product FR that needs a new repo: create the confirmed repo, seed verbatim first commit, then land generic changes on a fr-N branch PR with Closes owner/origin-repo#N; cross-repo closingIssuesReferences may stay empty until merge - comment the PR on the origin issue and note MRB confirm-close.
-- PriorityAgent EnsureClone: never skip a valid dirty agentic_fomprep clone for preferClean; warn+skip pull; FATAL must list every candidate path and reject reason
+- PriorityAgent EnsureClone: never skip a valid dirty priority-mcp clone for preferClean; warn+skip pull; FATAL must list every candidate path and reject reason
 - FR #247: allow_auto_merge true is not enough; main must have classic protection (0 reviews, no path-filtered validate) or GraphQL enablePullRequestAutoMerge fails Protected branch rules not configured.
 - UAT pin drift: when agent-rules.md bumps rules-version, Fr201 must use >= N like Mrb200 or main stays red and UAT FAILs with no release
 - Re-offered FR with open Closes PR: ACK, verify closingIssuesReferences, DONE that PR URL; never open a second implement PR
@@ -176,7 +177,7 @@ books use `harvest-agent-skills` pointing at their home.)
 - PriorityAgent airc: never derive customer target as #<stem> from *_console nick; use digest airc_console_details[].channel, else #wonderland (shops keep #flamingo/#marchhare/#redqueen)
 - Launcher-v tags must pass -p:Version / FileVersion / InformationalVersion into dotnet publish; csproj Version 1.0.0 is only the local default.
 - Custom SQLI queue columns must not be named PART/SERIAL/SERN; use QPART-style names
-- agentic_fomprep UAT #0: confirm open issues/PRs clear, run tests/Test-*.ps1 + Test-PriorityCatalog on main, SKIP live Form Prep without connections file, docs/UAT-LOG PR then gh release create uat-YYYY-MM-DD
+- priority-mcp UAT #0: confirm open issues/PRs clear, run tests/Test-*.ps1 + Test-PriorityCatalog on main, SKIP live Form Prep without connections file, docs/UAT-LOG PR then gh release create uat-YYYY-MM-DD
 - OData GET empty while form shows rows: try installed language code after ini (comma); do not hardcode British English 2; omit host/credentials from harvest
 - Service-desk training checkpoint issues are receipts: when a later checkpoint (#328) supersedes an earlier one (#317) and cited skill PRs are all MERGED, close the earlier checkpoint as Duplicate of the later issue and DONE FR with the covering merged PR URL; do not open a second implement PR.
 - SaaS prepare: port EFORM/EXEC activateStart walks onto accessToken sessions; scrape FORMPREPERRS; gate via odataBase re-read when SQL unavailable; walkOk alone is not preparedClaim
@@ -207,6 +208,7 @@ books use `harvest-agent-skills` pointing at their home.)
 - FR-003: fake install runners and refuse LocalSystem; never treat .grok\bin\agent.exe as Cursor
 - MSI CLI chooser is a WiX fragment: four radio values grok/cursor/opencode/none, default none, InstallChosenCli only when UILevel > 3 and not none; msiexec /qn never shows the dialog or runs the CLI action.
 - CI Priority Agent CLI tests use in-memory fake installers; a guard fails any test line that irm/IWR/curl-calls x.ai, cursor.com/install, or opencode.ai.
-- Priority-generic customer-setup skill belongs in agentic_fomprep (FR #4970); verify catalog/.grok byte mirror and password-file pointer rules before PASS.
+- Priority-generic customer-setup skill belongs in priority-mcp (FR #4970); verify catalog/.grok byte mirror and password-file pointer rules before PASS.
 - FORMCLTRIGTEXT lives in system dictionary DB, not company DB
+- After GitHub repo rename, MRB assign may keep the old owner/repo id while Closes and intake use the new name; DONE/ACK keep the exact assign id; leftovers of the old leaf are OK only as documented launcher/folder/origin aliases gated by a rename test.
 - WinPS 5.1 Join-Path takes only 2 args: nest Join-Path when syncing .grok skills to mcp-catalog mirrors, or catalog mirrors stay stale and mirror pin gates FAIL

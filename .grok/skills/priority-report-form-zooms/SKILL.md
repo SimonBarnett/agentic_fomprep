@@ -9,7 +9,7 @@ description: >
 
 # Priority report form zooms
 
-Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
+Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/priority-mcp.
 
 Authoritative procedure: `docs/skill-sources/programming/REPORT_FORM_ZOOMS.md`.
 

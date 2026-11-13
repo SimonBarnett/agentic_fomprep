@@ -6,7 +6,7 @@
 
 ## Why this harvest
 
-Simon asked to harvest all Priority reporting-hours skills Haitch learned into `agentic_fomprep`, and to add the harvest skill foundation for this repo. Earlier catalog work skipped the Medatech hours trio. Local Grok leaflets are gone; this pack is the learned procedure, Priority-generic.
+Simon asked to harvest all Priority reporting-hours skills Haitch learned into `priority-mcp`, and to add the harvest skill foundation for this repo. Earlier catalog work skipped the Medatech hours trio. Local Grok leaflets are gone; this pack is the learned procedure, Priority-generic.
 
 ## Skills harvested
 

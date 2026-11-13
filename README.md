@@ -1,8 +1,16 @@
-# agentic_fomprep (Priority Agent home; spelling: formprep)
+# priority-mcp (Priority Agent home; spelling: formprep)
+
+This GitHub repo used to be called **agentic_fomprep** (renamed to `SimonBarnett/priority-mcp` on 2026-11-13).
 
 **Priority-generic** skills and runners for Priority ERP (Form Prep, dictionary SQL,
 Version Revision shells, OData, procedure style, UAT WCF kernel). Not a customer
 product repo.
+
+### Compatibility aliases (FR #597)
+
+- Origin URL `SimonBarnett/agentic_fomprep` still matches (GitHub redirect); launcher accepts either origin.
+- AI-root folder `<AI>\agentic_fomprep` remains a usable clone path when `<AI>\priority-mcp` is absent.
+- Env `FOMPREP_DIR` / `PRIORITY_AGENT_ROOT` are unchanged.
 
 | Start here | |
 |------------|--|
@@ -27,11 +35,11 @@ Build plan (v1.0): `CE_Priority_Autonomous_Form_Prep_Build_Plan.pdf`.
 
 Peer reviews (build-agent handoff):
 
-- `reviews/agentic_fomprep_Build_Agent_Peer_Review.pdf` (v1, vs `e9516f4`)
-- `reviews/agentic_fomprep_Build_Agent_Peer_Review_v2.pdf` (v2 audit, vs `c1b2ebe`)
-- `reviews/agentic_fomprep_Build_Agent_Peer_Review_v3.pdf` (v3 post P0-W1, vs `1d10a6b`)
-- `reviews/agentic_fomprep_Agent_Capability_Gap_Analysis.pdf` (prepare-a-form + get-errors)
-- `reviews/agentic_fomprep_Agent_Working_Method.pdf` (**the method** — how an agent prepares a form and reads errors)
+- `reviews/priority_mcp_Build_Agent_Peer_Review.pdf` (v1, vs `e9516f4`)
+- `reviews/priority_mcp_Build_Agent_Peer_Review_v2.pdf` (v2 audit, vs `c1b2ebe`)
+- `reviews/priority_mcp_Build_Agent_Peer_Review_v3.pdf` (v3 post P0-W1, vs `1d10a6b`)
+- `reviews/priority_mcp_Agent_Capability_Gap_Analysis.pdf` (prepare-a-form + get-errors)
+- `reviews/priority_mcp_Agent_Working_Method.pdf` (**the method** — how an agent prepares a form and reads errors)
 
 **Hard rule:** never report a form prepared unless `EXECPREPLOCK.UPD='N'` **and** `LASTPREPDATE` moved. Never leave the unprepared estate marked prepared. Never embed passwords in this repo.
 
@@ -48,7 +56,7 @@ Uses Form Generator (`EFORM`) + **FORMPREPDRCT2** (Reprepare Form) over WCF. Suc
 On an unlocked DEV1 desktop, one name first. `SkipCli` is the CLI-wrapper default. If the probe says recapture cookies, **stop** and ask a human. Do not SQL-flip `UPD`. Do not click Ignore Duplicate. Do not `AllUnprepared`.
 
 ```powershell
-cd M:\py\agentic_fomprep
+cd M:\py\priority-mcp
 powershell -NoProfile -ExecutionPolicy Bypass -File src\Prepare-Forms.ps1 -Names ZCLA_PARTLONGDESC -Environment DEV -WhatIf
 powershell -NoProfile -ExecutionPolicy Bypass -File src\Prepare-Forms.ps1 -Names ZCLA_PARTLONGDESC -Environment DEV -TimeoutMinutes 15
 powershell -NoProfile -ExecutionPolicy Bypass -File tools\Get-LastFormPrepResult.ps1

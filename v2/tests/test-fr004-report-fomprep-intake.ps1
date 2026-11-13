@@ -8,8 +8,8 @@ if (-not (Test-Path -LiteralPath $script)) { throw "missing $script" }
 $fail = @()
 $src = Get-Content -LiteralPath $script -Raw -Encoding UTF8
 
-if ($src -notmatch "SimonBarnett/agentic_fomprep") {
-    $fail += 'script source missing default repo SimonBarnett/agentic_fomprep'
+if ($src -notmatch "SimonBarnett/priority-mcp") {
+    $fail += 'script source missing default repo SimonBarnett/priority-mcp'
 }
 if ($src -notmatch 'https://bob\.ntsa\.uk/bob/v1/intake') {
     $fail += 'script source missing default IntakeUrl'
@@ -36,8 +36,8 @@ Get-Content -LiteralPath $script -Encoding UTF8 | ForEach-Object {
 # DryRun default repo.
 $dryOut = & $script -Kind issue -Title 'fr004 dryrun' -Body 'acceptance body' -DryRun -NoDelegate 2>&1 |
     Out-String
-if ($dryOut -notmatch '"repo"\s*:\s*"SimonBarnett/agentic_fomprep"') {
-    $fail += 'DryRun JSON missing repo SimonBarnett/agentic_fomprep'
+if ($dryOut -notmatch '"repo"\s*:\s*"SimonBarnett/priority-mcp"') {
+    $fail += 'DryRun JSON missing repo SimonBarnett/priority-mcp'
 }
 
 # Empty title reject.
@@ -74,7 +74,7 @@ try {
         if (-not (Test-Path -LiteralPath $p0)) { $fail += "outbox file missing: $p0" }
         else {
             $qj = Get-Content -LiteralPath $p0 -Raw -Encoding UTF8
-            if ($qj -notmatch '"repo"\s*:\s*"SimonBarnett/agentic_fomprep"') {
+            if ($qj -notmatch '"repo"\s*:\s*"SimonBarnett/priority-mcp"') {
                 $fail += 'queued JSON missing default repo'
             }
         }

@@ -157,7 +157,7 @@ IncludeDba=False IncludeCustomer=False
 ## Harvest intake helpers (repo tools)
 
 CWD agents file issue|fr|skill|harvest via Bobiverse intake with default
-`-Repo SimonBarnett/agentic_fomprep`:
+`-Repo SimonBarnett/priority-mcp`:
 
 - `tools/Report-FomprepIntakeIssue.ps1`
 - `tools/Invoke-FomprepHarvest.ps1`

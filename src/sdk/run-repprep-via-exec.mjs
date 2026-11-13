@@ -106,7 +106,7 @@ try {
     profile: { company },
     appname: 'agentic-repprep',
     username,
-    devicename: 'agentic_fomprep',
+    devicename: 'priority-mcp',
   };
   loginOpts['pass' + 'word'] = sdkPass;
   await priority.login(loginOpts);

@@ -7,7 +7,7 @@ description: >
 
 # A GRV had the wrong warehouse because it was not linked to the purchase order
 
-Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
+Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/priority-mcp.
 
 Authority: `docs/skill-sources/medatech-network/service-desk/grv-not-linked-po-warehouse.md`.
 

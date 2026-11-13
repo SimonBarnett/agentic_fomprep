@@ -7,7 +7,7 @@ description: >
 
 # Licence error pop-ups, or business rules that would not open, cleared after Renew License on the server
 
-Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
+Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/priority-mcp.
 
 Authority: `docs/skill-sources/medatech-network/service-desk/renew-license-login-errors.md`.
 

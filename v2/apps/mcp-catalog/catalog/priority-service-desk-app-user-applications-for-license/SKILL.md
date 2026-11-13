@@ -7,7 +7,7 @@ description: >
 
 # App login said the user was not an API user until added to Applications for License
 
-Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
+Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/priority-mcp.
 
 Authority: `docs/skill-sources/medatech-network/service-desk/app-user-applications-for-license.md`.
 

@@ -7,7 +7,7 @@ description: >
 
 # Stock could not be zeroed because the inventory count was not prepared first
 
-Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
+Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/priority-mcp.
 
 Authority: `docs/skill-sources/medatech-network/service-desk/inventory-count-prepare-zero.md`.
 

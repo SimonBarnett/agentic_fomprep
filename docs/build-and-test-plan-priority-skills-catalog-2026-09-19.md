@@ -1,8 +1,8 @@
 # Build-and-test plan — Priority skills catalog (2026-09-19)
 
 **FR:** docs/feature-request-priority-skills-catalog-2026-09-19.md  
-**Repo:** SimonBarnett/agentic_fomprep  
-**GitHub (MRB home):** https://github.com/SimonBarnett/agentic_fomprep/issues/7  
+**Repo:** SimonBarnett/priority-mcp  
+**GitHub (MRB home):** https://github.com/SimonBarnett/priority-mcp/issues/7  
 
 ## Phases
 

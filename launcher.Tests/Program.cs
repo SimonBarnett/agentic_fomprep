@@ -114,7 +114,7 @@ static void TestSaasAllowlistAndRules()
             && rules.Contains("bob.ntsa.uk/bob/v1/intake", StringComparison.Ordinal)
             && rules.Contains("Report-FomprepIntakeIssue", StringComparison.Ordinal)
             && rules.Contains("Invoke-FomprepHarvest", StringComparison.Ordinal)
-            && rules.Contains("agentic_fomprep", StringComparison.Ordinal)
+            && rules.Contains("priority-mcp", StringComparison.Ordinal)
             && rules.Contains("SO/SC", StringComparison.Ordinal)
             && rules.Contains("gh issue create", StringComparison.Ordinal)
             && rules.Contains("Never", StringComparison.Ordinal)
@@ -247,19 +247,19 @@ static void TestDirtyClonePreferredOverStub()
 {
     var sightings = new[]
     {
-        new CloneSighting(@"D:\ai\agentic_fomprep", CloneKind.Stub),
-        new CloneSighting(@"C:\ai\agentic_fomprep", CloneKind.Dirty),
+        new CloneSighting(@"D:\ai\priority-mcp", CloneKind.Stub),
+        new CloneSighting(@"C:\ai\priority-mcp", CloneKind.Dirty),
     };
     string? chosen = CloneResolve.SelectUsable(sightings, out string? reason);
-    Assert(chosen == @"C:\ai\agentic_fomprep", "dirty real clone should win over an empty stub");
+    Assert(chosen == @"C:\ai\priority-mcp", "dirty real clone should win over an empty stub");
     Assert(reason != null && reason.Contains("dirty", StringComparison.OrdinalIgnoreCase), "reason should say dirty / skip pull");
 }
 
 static void TestDirtyCloneOnly()
 {
-    var sightings = new[] { new CloneSighting(@"C:\ai\agentic_fomprep", CloneKind.Dirty) };
+    var sightings = new[] { new CloneSighting(@"C:\ai\priority-mcp", CloneKind.Dirty) };
     string? chosen = CloneResolve.SelectUsable(sightings, out string? reason);
-    Assert(chosen == @"C:\ai\agentic_fomprep", "lone dirty clone must be usable");
+    Assert(chosen == @"C:\ai\priority-mcp", "lone dirty clone must be usable");
     Assert(reason != null && reason.Contains("skip pull", StringComparison.OrdinalIgnoreCase), "dirty clone must skip pull");
 }
 
@@ -267,17 +267,17 @@ static void TestNoRealCloneFatalListsCandidates()
 {
     var sightings = new[]
     {
-        new CloneSighting(@"D:\ai\agentic_fomprep", CloneKind.Stub),
-        new CloneSighting(@"C:\ai\agentic_fomprep", CloneKind.Missing),
-        new CloneSighting(@"D:\repos\agentic_fomprep", CloneKind.WrongOrigin),
+        new CloneSighting(@"D:\ai\priority-mcp", CloneKind.Stub),
+        new CloneSighting(@"C:\ai\priority-mcp", CloneKind.Missing),
+        new CloneSighting(@"D:\repos\priority-mcp", CloneKind.WrongOrigin),
     };
     Assert(CloneResolve.SelectUsable(sightings, out _) == null, "no usable clone should be selected");
-    string fatal = CloneResolve.FatalUnavailable("SimonBarnett/agentic_fomprep", sightings);
+    string fatal = CloneResolve.FatalUnavailable("SimonBarnett/priority-mcp", sightings);
     Assert(fatal.Contains("empty stub", StringComparison.OrdinalIgnoreCase)
         && fatal.Contains("missing", StringComparison.OrdinalIgnoreCase)
         && fatal.Contains("origin is not this repo", StringComparison.OrdinalIgnoreCase)
-        && fatal.Contains("D:\\ai\\agentic_fomprep", StringComparison.Ordinal)
-        && fatal.Contains("C:\\ai\\agentic_fomprep", StringComparison.Ordinal),
+        && fatal.Contains("D:\\ai\\priority-mcp", StringComparison.Ordinal)
+        && fatal.Contains("C:\\ai\\priority-mcp", StringComparison.Ordinal),
         "FATAL must name every candidate and why it was rejected");
 }
 

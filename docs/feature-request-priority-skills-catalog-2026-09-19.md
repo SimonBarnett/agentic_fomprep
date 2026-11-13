@@ -1,9 +1,9 @@
-# Feature request â€” CE Priority agent skills into agentic_fomprep v2 (2026-09-19)
+# Feature request â€” CE Priority agent skills into priority-mcp v2 (2026-09-19)
 
-**Intake issue / MRB home:** [GitHub issue #7](https://github.com/SimonBarnett/agentic_fomprep/issues/7)  
+**Intake issue / MRB home:** [GitHub issue #7](https://github.com/SimonBarnett/priority-mcp/issues/7)  
 **From:** Eshbel (Simon 2026-09-19)  
-**Repo:** SimonBarnett/agentic_fomprep  
-**GitHub (MRB home):** https://github.com/SimonBarnett/agentic_fomprep/issues/7  
+**Repo:** SimonBarnett/priority-mcp  
+**GitHub (MRB home):** https://github.com/SimonBarnett/priority-mcp/issues/7  
 **Status:** parked for build agent  
 **Standing order:** Eshbel UATs and hostile-MRBs back to Bob after implement.
 
@@ -66,7 +66,7 @@ Use when changing CE custom forms/triggers/shells on DEV.
 
 ### Named Form Prep (DEV)
 
-- Entry: `src\Prepare-NamedForm.ps1` (repo path; operators may use mapped `M:\py\agentic_fomprep\...`) â€” Web SDK EFORMâ†’FORMPREPDRCT2; success only `ok=true` AND EXECPREPLOCK UPD=N AND LASTPREPDATE advanced
+- Entry: `src\Prepare-NamedForm.ps1` (repo path; operators may use mapped `M:\py\priority-mcp\...`) â€” Web SDK EFORMâ†’FORMPREPDRCT2; success only `ok=true` AND EXECPREPLOCK UPD=N AND LASTPREPDATE advanced
 - Never fake UPD=N; Environment DEV only in current pin; Si may lack API licence on TEST â†’ client Form Prep
 - Re-prepare after FORMTRIGTEXT edits is normal at CE
 

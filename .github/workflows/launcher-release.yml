@@ -123,8 +123,9 @@ jobs:
             if (-not (($existing | ConvertFrom-Json).isPrerelease)) { throw "Refusing to overwrite a non-prerelease release" }
             gh release upload $tag .\launcher\out\PriorityAgent.exe .\launcher\out\PriorityAgent.exe.sha256 --clobber
           } else {
+            $ver = $tag -replace '^launcher-v',''
             gh release create $tag .\launcher\out\PriorityAgent.exe .\launcher\out\PriorityAgent.exe.sha256 `
-              --title $tag --notes "Priority Agent launcher pre-release. The loose exe stays. An MSI is an additional asset when packed (not published by this job). Verify PriorityAgent.exe.sha256 before use." `
+              --title "Priority Agent launcher v$ver" --notes "Priority Agent launcher pre-release. The loose exe stays. An MSI is an additional asset when packed (not published by this job). Verify PriorityAgent.exe.sha256 before use." `
               --prerelease --target $env:GITHUB_SHA
           }
           if ($LASTEXITCODE -ne 0) { throw "GitHub release upload failed" }

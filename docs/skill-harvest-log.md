@@ -217,3 +217,4 @@ Expanded `priority-uat-wcf` (skill-source + catalog meta **1.2.0**) from CE Day 
 - 2026-11-12: `priority-service-desk-inactive-user-login-error-500`. SC262976: one user got Error 500 at login; they had been marked inactive by another user. Marked active, login worked, customer confirmed.
 - 2026-11-12: `priority-service-desk-maxformlines-user-group` 1.1.0. SC262499 added: 2500-row cap came from the user's privilege group in that company (read-only group), not the constant; customer closed.
 - 2026-11-12: `priority-service-desk-renew-license-login-errors`. SC262447 + SC262456 + SC262592: licence error pop-ups and business rules not opening cleared after Renew License on the server (support-verified).
+- 2026-11-13: FR #600 copyps POST-FIELD gate + FORMCLTRIGTEXT Form Prep + Session 0 WINACTIV note -> priority-form-engineering / priority-form-prep-after-sql-change / priority-formprep (+ harvest-agent-skills pointer).

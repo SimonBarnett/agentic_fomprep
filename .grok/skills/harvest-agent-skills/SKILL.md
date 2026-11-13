@@ -151,6 +151,7 @@ books use `harvest-agent-skills` pointing at their home.)
 
 ## Harvested lessons (intake)
 
+- FORMCLTRIGTEXT / POST-FIELD: leftover `SQL.ENV <> 'copyps'` skips non-copy companies (key-alone empty related fields; Choose still works) — fix in **priority-form-engineering**; after edit Form Prep with LASTPREPDATE + prep artifact mtime — **priority-form-prep-after-sql-change**; Session 0 WINACTIV hangs — **priority-formprep** (interactive or Web/CredMan path).
 - Priority Agent home (this repo) needs a-search-style CAST IRON Bobiverse intake: always pass `-Repo SimonBarnett/agentic_fomprep` (or the matching intake payload `repo`), ship repo-local `Report-FomprepIntakeIssue.ps1` / `Invoke-FomprepHarvest.ps1` wrappers, document dual-mode CWD vs referred skillbook in `docs/skillbook-referral.md`, and pin CAT needles for the intake default-repo path. File many small Goal/Deliverables/Testable FRs (not one omnibus). Backlog: issues #109-#118; docs park PR #119.
 - Register priority-catalog as PriorityAgent.exe --mcp-catalog stdio from the fomprep clone; do not grok mcp add the hosted mcp-priority URL (no DNS).
 - Priority Agent lists customers from GitHub topic priority-customer; ff-only clean main for fomprep; new customer/project is Ask Haitch only; secrets stay in C:\passwords\<repo>-connections.txt unread by the launcher.

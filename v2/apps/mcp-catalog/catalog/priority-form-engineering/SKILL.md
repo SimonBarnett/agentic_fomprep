@@ -24,13 +24,21 @@ Entry: `src\Prepare-NamedForm.ps1` (repo path; operators may use mapped `M:\py\a
 
 Success only when `ok=true` **and** EXECPREPLOCK `UPD=N` **and** LASTPREPDATE advanced. Never fake UPD=N. Environment DEV only in the current pin. Si may lack API licence on TEST -- use client Form Prep there.
 
-Re-prepare after FORMTRIGTEXT edits is normal at CE.
+Re-prepare after FORMTRIGTEXT / FORMCLTRIGTEXT edits is normal at CE.
 
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File src\Prepare-NamedForm.ps1 -Name <ENAME>
 ```
 
 ENAME must match `^[A-Za-z][A-Za-z0-9_]*$`. One name per call. SDK "successfully completed" is not success.
+
+### POST-FIELD `copyps` gate
+
+Leftover `SQL.ENV <> 'copyps'` on POST-FIELD fill TRIG bodies skips non-copy companies. Symptom: related fields stay empty when the key is entered alone, while the Choose/browse path still fills. Strip or widen that ENV gate so interactive entry matches Choose. Then Form Prep (see **priority-form-prep-after-sql-change**).
+
+### Bins / warehouse location
+
+Bin lists via `WAREHOUSES.LOCNAME`; keep `BALANCE>0` and optional `:$SERIAL` filters aligned with sibling TRIG bodies on the same form.
 
 ## Generator / nav gotchas
 

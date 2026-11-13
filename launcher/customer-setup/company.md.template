@@ -1,0 +1,59 @@
+# <Customer name> — company knowledge
+
+Secret-free facts learned about this customer. Link this file from the repo
+README. Agents must keep adding what they learn about the company here (and in
+`connections.md` or the matching work folder when it is route- or
+work-specific). Never put passwords, tokens or other secrets in this file.
+
+## Customer record
+
+| Field | Value |
+|-------|-------|
+| Customer | |
+| Medatech customer code (`CUSTNAME`) | |
+| Account owner | |
+| Sales contact | |
+| Address | |
+| Website | |
+| Booking project | |
+| WBS | |
+
+Leave a value blank until it is confirmed. Do not invent codes.
+
+## People
+
+| Who | Role |
+|-----|------|
+
+## Priority product
+
+Version, product, hosting (self-hosted or Priority Cloud), Windows domain.
+
+## Servers, environments, companies and URLs
+
+| Environment | Host / address | Company | Web |
+|-------------|----------------|---------|-----|
+
+## Named users (no passwords)
+
+Passwords live only in `C:\passwords\<client>-connections.txt` on MarchHare,
+never here.
+
+| User | Where |
+|------|-------|
+
+## Access routes
+
+- **Primary agent route:** airc console `<HOST>_console` when one exists.
+- **Human route:** AnyDesk or TeamViewer.
+- **Fallback:** web.
+
+## Booking, service-call and sales-order history
+
+Record open and relevant closed SC/SO identifiers, subjects, status and
+contacts. The work folder name is the authoritative SC or SO id. Booking
+project and WBS stay in that folder's `project.md` as well.
+
+## Customisations
+
+Forms, triggers, reports and other custom work learned for this customer.

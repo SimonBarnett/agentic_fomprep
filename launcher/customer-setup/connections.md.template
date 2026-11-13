@@ -1,0 +1,35 @@
+# <Customer> connections (no secrets)
+
+Connection details and passwords live in `C:\passwords\<client>-connections.txt`
+on MarchHare. Never copy them into this repo, a commit, a PR, a log or a chat.
+Never dump that file to stdout or to agent tool logs, even when intending to
+print only keys for redaction. Read it into variables only; print lengths or
+boolean found flags. If a secret hits a log, stop and tell the operator
+immediately.
+
+Source connection data from the authorized Priority customer connections
+subform (`ZEMG_CUSTCONECT_SUBFORM` / `ZEMG_CUSTCONECTD_SUBFORM`) when needed.
+
+## Primary agent route: airc console
+
+When an airc console exists (for example `<HOST>_console`), it is the primary
+agent route. Record the console name, machine id and any verified read-only
+findings here. Live writes still need explicit approval.
+
+## Human route: AnyDesk or TeamViewer
+
+Record addresses or IDs and named Windows / Tabula users. Do not record
+passwords.
+
+## Fallback: web
+
+Record environment URLs. Note when a URL is only reachable from inside the
+customer network.
+
+## Named users (no passwords)
+
+| User | Where |
+|------|-------|
+
+More company facts (people, servers, service-call history, customisations)
+are in [`company.md`](company.md).

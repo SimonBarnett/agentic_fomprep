@@ -211,3 +211,4 @@ books use `harvest-agent-skills` pointing at their home.)
 - Priority-generic customer-setup skill belongs in priority-mcp (FR #4970); verify catalog/.grok byte mirror and password-file pointer rules before PASS.
 - FORMCLTRIGTEXT lives in system dictionary DB, not company DB
 - After GitHub repo rename, MRB assign may keep the old owner/repo id while Closes and intake use the new name; DONE/ACK keep the exact assign id; leftovers of the old leaf are OK only as documented launcher/folder/origin aliases gated by a rename test.
+- WinPS 5.1 Join-Path takes only 2 args: nest Join-Path when syncing .grok skills to mcp-catalog mirrors, or catalog mirrors stay stale and mirror pin gates FAIL

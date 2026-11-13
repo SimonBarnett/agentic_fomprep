@@ -209,3 +209,4 @@ books use `harvest-agent-skills` pointing at their home.)
 - CI Priority Agent CLI tests use in-memory fake installers; a guard fails any test line that irm/IWR/curl-calls x.ai, cursor.com/install, or opencode.ai.
 - Priority-generic customer-setup skill belongs in agentic_fomprep (FR #4970); verify catalog/.grok byte mirror and password-file pointer rules before PASS.
 - FORMCLTRIGTEXT lives in system dictionary DB, not company DB
+- WinPS 5.1 Join-Path takes only 2 args: nest Join-Path when syncing .grok skills to mcp-catalog mirrors, or catalog mirrors stay stale and mirror pin gates FAIL

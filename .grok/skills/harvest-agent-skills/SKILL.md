@@ -209,3 +209,4 @@ books use `harvest-agent-skills` pointing at their home.)
 - CI Priority Agent CLI tests use in-memory fake installers; a guard fails any test line that irm/IWR/curl-calls x.ai, cursor.com/install, or opencode.ai.
 - Priority-generic customer-setup skill belongs in priority-mcp (FR #4970); verify catalog/.grok byte mirror and password-file pointer rules before PASS.
 - FORMCLTRIGTEXT lives in system dictionary DB, not company DB
+- After GitHub repo rename, MRB assign may keep the old owner/repo id while Closes and intake use the new name; DONE/ACK keep the exact assign id; leftovers of the old leaf are OK only as documented launcher/folder/origin aliases gated by a rename test.

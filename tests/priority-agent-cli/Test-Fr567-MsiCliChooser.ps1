@@ -1,5 +1,5 @@
 #requires -Version 5.1
-# FR agentic_fomprep#567 / FR-002: MSI chooser for Grok, Cursor, OpenCode, Not now.
+# FR priority-mcp#567 / FR-002: MSI chooser for Grok, Cursor, OpenCode, Not now.
 $ErrorActionPreference = 'Stop'
 $repo = if ($env:FOMPREP_MRB_ROOT) { $env:FOMPREP_MRB_ROOT } else { Split-Path -Parent (Split-Path -Parent $PSScriptRoot) }
 $failed = 0

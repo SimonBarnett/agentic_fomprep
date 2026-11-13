@@ -2,16 +2,16 @@
 name: harvest-priority-skills
 description: >
   Promote repeatable Priority-generic formprep / hours / UAT / Priority MCP
-  playbooks into SimonBarnett/agentic_fomprep (catalog + docs/skill-sources +
+  playbooks into SimonBarnett/priority-mcp (catalog + docs/skill-sources +
   optional .grok/skills). Nothing that requires a Clarkson Evans Priority
   installation. Use when you learn a new Priority procedure, or the user says
   harvest skills, /harvest-priority-skills, CAST IRON harvest, honesty box.
   AUTOMATIC same-turn. Does not dispatch product builds.
 ---
 
-# Harvest Priority skills (`agentic_fomprep`)
+# Harvest Priority skills (`priority-mcp`)
 
-Remote: `https://github.com/SimonBarnett/agentic_fomprep`.
+Remote: `https://github.com/SimonBarnett/priority-mcp`.
 
 Foundation bargain (book-wide): see `harvest-agent-skills` (honesty box /
 Three Laws). This skill owns **Priority-generic** harvest paths in this repo.
@@ -26,7 +26,7 @@ learned a repeatable Priority procedure or hit a wrong skill.
 
 | Playbook | Repo | Harvest skill |
 |----------|------|----------------|
-| Priority-**generic** catalog, formprep, hours, UAT, OData, shell, Priority MCP (no CE install required) | `SimonBarnett/agentic_fomprep` | `harvest-priority-skills` (this file) |
+| Priority-**generic** catalog, formprep, hours, UAT, OData, shell, Priority MCP (no CE install required) | `SimonBarnett/priority-mcp` | `harvest-priority-skills` (this file) |
 | Clarkson Evans Priority instance / hardware / DBA / CE customisations | `SimonBarnett/ce-priority` | `.grok/skills/harvest-agent-skills` |
 | CE Day Works **product** only | `SimonBarnett/ce-priority`, folder `dayworks/` (was `SimonBarnett/ce-dayworks`) | `dayworks/.grok/skills/harvest-agent-skills` |
 | Fleet / build / MRB / Bob jobs | `SimonBarnett/agentic_build` | `harvest-agent-skills` |
@@ -52,8 +52,8 @@ patch, POST to Bobiverse intake in the **same turn** before idle (no GitHub
 account required; offline payloads queue and retry):
 
 `POST https://bob.ntsa.uk/bob/v1/intake` with payload
-`repo=SimonBarnett/agentic_fomprep` (and `kind` = `issue` | `fr` | `skill` |
-`harvest`). Always pass an explicit `-Repo SimonBarnett/agentic_fomprep` when
+`repo=SimonBarnett/priority-mcp` (and `kind` = `issue` | `fr` | `skill` |
+`harvest`). Always pass an explicit `-Repo SimonBarnett/priority-mcp` when
 using shared Bobiverse helpers (never omit `-Repo` so the filing lands on
 bobiverse by accident).
 
@@ -81,7 +81,7 @@ in filings. Dual-mode CWD vs referred skillbook: `docs/skillbook-referral.md`.
 - Priority-generic skill ids (`priority-*`). CE / Medatech hosts and project
   codes are **examples** in prose/config only - not the skill identity.
 - Every catalog leaflet includes:
-  `Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.`
+  `Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/priority-mcp.`
 - No secrets, passwords, or live OData bases hardcoded.
 - Do not invent ENAMEs or edit v1 Form Prep runners unless the FR says so.
 - Keep hours handoff (`priority-hours-handoff-haitch`) distinct from timesheet

@@ -7,7 +7,7 @@ description: >
 
 # A manual MRP run got stuck while the scheduler was running MRP
 
-Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
+Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/priority-mcp.
 
 Authority: `docs/skill-sources/medatech-network/service-desk/mrp-run-locked-by-scheduler.md`.
 

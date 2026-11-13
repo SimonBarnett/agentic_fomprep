@@ -9,7 +9,7 @@ description: >
 
 # A changed public IP blocked login until it was allowlisted
 
-Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
+Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/priority-mcp.
 
 Authority: `docs/skill-sources/medatech-network/service-desk/public-ip-allowlist.md`.
 

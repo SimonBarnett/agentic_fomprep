@@ -1,5 +1,5 @@
 #requires -Version 5.1
-# Pin for FR agentic_fomprep#225 + AI-root resolve: find/create X:\AI on C→D→E…Z; reject empty stubs.
+# Pin for FR priority-mcp#225 + AI-root resolve: find/create X:\AI on C→D→E…Z; reject empty stubs.
 $ErrorActionPreference = 'Stop'
 $repo = if ($env:FOMPREP_MRB_ROOT) { $env:FOMPREP_MRB_ROOT } else { Split-Path -Parent $PSScriptRoot }
 $cs = Join-Path $repo 'launcher\Program.cs'

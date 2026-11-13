@@ -26,7 +26,7 @@ foreach ($row in $ids) {
   $md = if (Test-Path $src) { [IO.File]::ReadAllText($src) } else { '' }
   $blob = $sk + $md
   Gate "$($row.Id)-name" ($sk -match [regex]::Escape($row.Id)) 'get_skill name'
-  Gate "$($row.Id)-foundation" ($sk -match 'Foundation: harvest-priority-skills' -and $sk -match 'SimonBarnett/agentic_fomprep') 'honesty-box'
+  Gate "$($row.Id)-foundation" ($sk -match 'Foundation: harvest-priority-skills' -and $sk -match 'SimonBarnett/priority-mcp') 'honesty-box'
   foreach ($n in $row.Need) {
     Gate "$($row.Id)-need-$n" ($blob -match [regex]::Escape($n)) $n
   }

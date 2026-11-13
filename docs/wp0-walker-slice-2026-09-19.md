@@ -1,6 +1,6 @@
 # WP0 walker slice — WCF + SQL gate (2026-09-19)
 
-**Repo:** SimonBarnett/agentic_fomprep  
+**Repo:** SimonBarnett/priority-mcp  
 **Machine:** ionos  
 **v1:** `src\Prepare-NamedForm.ps1` untouched  
 **Pins:** Medatech `ZEMG_TAKEUPGRADE` / `ZEMG_EXECUPGRADES`, `UPGRADES`, `INSTALLEDUPGRADES`, `ProofInstanceId=ce-priority-dev` (`docs/wp0-recon.md`). `DbiMarker` still empty. `WcfFileStepWorks` still null.

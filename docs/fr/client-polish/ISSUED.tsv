@@ -1,48 +1,48 @@
 id	number	url	title
-FR	383	https://github.com/SimonBarnett/agentic_fomprep/issues/383	FR-001: whoami returns the Priority USERLOGIN
-FR	384	https://github.com/SimonBarnett/agentic_fomprep/issues/384	FR-002: save the identified USERLOGIN for the next run
-FR	385	https://github.com/SimonBarnett/agentic_fomprep/issues/385	FR-003: launcher suggests the saved USERLOGIN
-FR	386	https://github.com/SimonBarnett/agentic_fomprep/issues/386	FR-004: non-interactive launch uses the saved USERLOGIN
-FR	387	https://github.com/SimonBarnett/agentic_fomprep/issues/387	FR-005: stop when the flag disagrees with whoami
-FR	388	https://github.com/SimonBarnett/agentic_fomprep/issues/388	FR-006: session metadata records where the login came from
-FR	389	https://github.com/SimonBarnett/agentic_fomprep/issues/389	FR-007: JSON request file for verb arguments
-FR	390	https://github.com/SimonBarnett/agentic_fomprep/issues/390	FR-008: per-verb help text
-FR	391	https://github.com/SimonBarnett/agentic_fomprep/issues/391	FR-009: dry-run resolves the instance and does not log in
-FR	392	https://github.com/SimonBarnett/agentic_fomprep/issues/392	FR-010: machine-readable retry hint on login failures
-FR	393	https://github.com/SimonBarnett/agentic_fomprep/issues/393	FR-011: stable process exit codes
-FR	394	https://github.com/SimonBarnett/agentic_fomprep/issues/394	FR-012: list companies for this login
-FR	395	https://github.com/SimonBarnett/agentic_fomprep/issues/395	FR-013: form columns without reading rows
-FR	396	https://github.com/SimonBarnett/agentic_fomprep/issues/396	FR-014: form rows accepts a filter
-FR	397	https://github.com/SimonBarnett/agentic_fomprep/issues/397	FR-015: insert one form row
-FR	398	https://github.com/SimonBarnett/agentic_fomprep/issues/398	FR-016: delete one positioned row only with confirm
-FR	399	https://github.com/SimonBarnett/agentic_fomprep/issues/399	FR-017: run one named form activation
-FR	400	https://github.com/SimonBarnett/agentic_fomprep/issues/400	FR-018: write one subform row
-FR	401	https://github.com/SimonBarnett/agentic_fomprep/issues/401	FR-019: do not auto-confirm error dialogs
-FR	402	https://github.com/SimonBarnett/agentic_fomprep/issues/402	FR-020: cap the fields file at 1 MiB and reject a BOM
-FR	403	https://github.com/SimonBarnett/agentic_fomprep/issues/403	FR-021: procedure inputs come from a file
-FR	404	https://github.com/SimonBarnett/agentic_fomprep/issues/404	FR-022: ambiguous procedure options return needs_input
-FR	405	https://github.com/SimonBarnett/agentic_fomprep/issues/405	FR-023: proc continue resumes with an explicit option
-FR	406	https://github.com/SimonBarnett/agentic_fomprep/issues/406	FR-024: proc and prepare results include report URLs
-FR	407	https://github.com/SimonBarnett/agentic_fomprep/issues/407	FR-025: report run is proc start with type R
-FR	408	https://github.com/SimonBarnett/agentic_fomprep/issues/408	FR-026: a report with no output is empty, not a failure
-FR	409	https://github.com/SimonBarnett/agentic_fomprep/issues/409	FR-027: read procedure body
-FR	410	https://github.com/SimonBarnett/agentic_fomprep/issues/410	FR-028: write procedure body through the form
-FR	411	https://github.com/SimonBarnett/agentic_fomprep/issues/411	FR-029: prepare interface refuses until the proc name is pinned
-FR	412	https://github.com/SimonBarnett/agentic_fomprep/issues/412	FR-030: read dictionary columns for one table
-FR	413	https://github.com/SimonBarnett/agentic_fomprep/issues/413	FR-031: table exists is a read
-FR	414	https://github.com/SimonBarnett/agentic_fomprep/issues/414	FR-032: dictionary titles longer than 20 characters are refused
-FR	415	https://github.com/SimonBarnett/agentic_fomprep/issues/415	FR-033: add one column or refuse on SaaS without SQL
-FR	416	https://github.com/SimonBarnett/agentic_fomprep/issues/416	FR-034: create table refuses without a SQL profile
-FR	417	https://github.com/SimonBarnett/agentic_fomprep/issues/417	FR-035: list interface names
-FR	418	https://github.com/SimonBarnett/agentic_fomprep/issues/418	FR-036: run one interface with an inputs file
-FR	419	https://github.com/SimonBarnett/agentic_fomprep/issues/419	FR-037: update one interface mapping row
-FR	420	https://github.com/SimonBarnett/agentic_fomprep/issues/420	FR-038: refuse an expired access token before login
-FR	421	https://github.com/SimonBarnett/agentic_fomprep/issues/421	FR-039: refresh an expired access token once
-FR	422	https://github.com/SimonBarnett/agentic_fomprep/issues/422	FR-040: retry login_connect once
-FR	423	https://github.com/SimonBarnett/agentic_fomprep/issues/423	FR-041: cache the tenant probe for one hour
-FR	424	https://github.com/SimonBarnett/agentic_fomprep/issues/424	FR-042: batch up to 8 reads on one login
-FR	425	https://github.com/SimonBarnett/agentic_fomprep/issues/425	FR-043: form rows stops at a limit
-FR	426	https://github.com/SimonBarnett/agentic_fomprep/issues/426	FR-044: login errors do not echo bearer tokens
-FR	427	https://github.com/SimonBarnett/agentic_fomprep/issues/427	FR-045: launcher rules show whoami and the saved-user prompt
-FR	428	https://github.com/SimonBarnett/agentic_fomprep/issues/428	FR-046: catalog skill lists the same verbs as the client help
-FR	429	https://github.com/SimonBarnett/agentic_fomprep/issues/429	FR-047: VISION.md records the last-user file and keeps the prep gate
+FR	383	https://github.com/SimonBarnett/priority-mcp/issues/383	FR-001: whoami returns the Priority USERLOGIN
+FR	384	https://github.com/SimonBarnett/priority-mcp/issues/384	FR-002: save the identified USERLOGIN for the next run
+FR	385	https://github.com/SimonBarnett/priority-mcp/issues/385	FR-003: launcher suggests the saved USERLOGIN
+FR	386	https://github.com/SimonBarnett/priority-mcp/issues/386	FR-004: non-interactive launch uses the saved USERLOGIN
+FR	387	https://github.com/SimonBarnett/priority-mcp/issues/387	FR-005: stop when the flag disagrees with whoami
+FR	388	https://github.com/SimonBarnett/priority-mcp/issues/388	FR-006: session metadata records where the login came from
+FR	389	https://github.com/SimonBarnett/priority-mcp/issues/389	FR-007: JSON request file for verb arguments
+FR	390	https://github.com/SimonBarnett/priority-mcp/issues/390	FR-008: per-verb help text
+FR	391	https://github.com/SimonBarnett/priority-mcp/issues/391	FR-009: dry-run resolves the instance and does not log in
+FR	392	https://github.com/SimonBarnett/priority-mcp/issues/392	FR-010: machine-readable retry hint on login failures
+FR	393	https://github.com/SimonBarnett/priority-mcp/issues/393	FR-011: stable process exit codes
+FR	394	https://github.com/SimonBarnett/priority-mcp/issues/394	FR-012: list companies for this login
+FR	395	https://github.com/SimonBarnett/priority-mcp/issues/395	FR-013: form columns without reading rows
+FR	396	https://github.com/SimonBarnett/priority-mcp/issues/396	FR-014: form rows accepts a filter
+FR	397	https://github.com/SimonBarnett/priority-mcp/issues/397	FR-015: insert one form row
+FR	398	https://github.com/SimonBarnett/priority-mcp/issues/398	FR-016: delete one positioned row only with confirm
+FR	399	https://github.com/SimonBarnett/priority-mcp/issues/399	FR-017: run one named form activation
+FR	400	https://github.com/SimonBarnett/priority-mcp/issues/400	FR-018: write one subform row
+FR	401	https://github.com/SimonBarnett/priority-mcp/issues/401	FR-019: do not auto-confirm error dialogs
+FR	402	https://github.com/SimonBarnett/priority-mcp/issues/402	FR-020: cap the fields file at 1 MiB and reject a BOM
+FR	403	https://github.com/SimonBarnett/priority-mcp/issues/403	FR-021: procedure inputs come from a file
+FR	404	https://github.com/SimonBarnett/priority-mcp/issues/404	FR-022: ambiguous procedure options return needs_input
+FR	405	https://github.com/SimonBarnett/priority-mcp/issues/405	FR-023: proc continue resumes with an explicit option
+FR	406	https://github.com/SimonBarnett/priority-mcp/issues/406	FR-024: proc and prepare results include report URLs
+FR	407	https://github.com/SimonBarnett/priority-mcp/issues/407	FR-025: report run is proc start with type R
+FR	408	https://github.com/SimonBarnett/priority-mcp/issues/408	FR-026: a report with no output is empty, not a failure
+FR	409	https://github.com/SimonBarnett/priority-mcp/issues/409	FR-027: read procedure body
+FR	410	https://github.com/SimonBarnett/priority-mcp/issues/410	FR-028: write procedure body through the form
+FR	411	https://github.com/SimonBarnett/priority-mcp/issues/411	FR-029: prepare interface refuses until the proc name is pinned
+FR	412	https://github.com/SimonBarnett/priority-mcp/issues/412	FR-030: read dictionary columns for one table
+FR	413	https://github.com/SimonBarnett/priority-mcp/issues/413	FR-031: table exists is a read
+FR	414	https://github.com/SimonBarnett/priority-mcp/issues/414	FR-032: dictionary titles longer than 20 characters are refused
+FR	415	https://github.com/SimonBarnett/priority-mcp/issues/415	FR-033: add one column or refuse on SaaS without SQL
+FR	416	https://github.com/SimonBarnett/priority-mcp/issues/416	FR-034: create table refuses without a SQL profile
+FR	417	https://github.com/SimonBarnett/priority-mcp/issues/417	FR-035: list interface names
+FR	418	https://github.com/SimonBarnett/priority-mcp/issues/418	FR-036: run one interface with an inputs file
+FR	419	https://github.com/SimonBarnett/priority-mcp/issues/419	FR-037: update one interface mapping row
+FR	420	https://github.com/SimonBarnett/priority-mcp/issues/420	FR-038: refuse an expired access token before login
+FR	421	https://github.com/SimonBarnett/priority-mcp/issues/421	FR-039: refresh an expired access token once
+FR	422	https://github.com/SimonBarnett/priority-mcp/issues/422	FR-040: retry login_connect once
+FR	423	https://github.com/SimonBarnett/priority-mcp/issues/423	FR-041: cache the tenant probe for one hour
+FR	424	https://github.com/SimonBarnett/priority-mcp/issues/424	FR-042: batch up to 8 reads on one login
+FR	425	https://github.com/SimonBarnett/priority-mcp/issues/425	FR-043: form rows stops at a limit
+FR	426	https://github.com/SimonBarnett/priority-mcp/issues/426	FR-044: login errors do not echo bearer tokens
+FR	427	https://github.com/SimonBarnett/priority-mcp/issues/427	FR-045: launcher rules show whoami and the saved-user prompt
+FR	428	https://github.com/SimonBarnett/priority-mcp/issues/428	FR-046: catalog skill lists the same verbs as the client help
+FR	429	https://github.com/SimonBarnett/priority-mcp/issues/429	FR-047: VISION.md records the last-user file and keeps the prep gate

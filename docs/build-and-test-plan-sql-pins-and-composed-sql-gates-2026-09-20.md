@@ -1,8 +1,8 @@
 # Build-and-test plan — SQL pins and composed SQL gates (2026-09-20)
 
 **FR:** docs/feature-request-sql-pins-and-composed-sql-gates-2026-09-20.md  
-**MRB:** https://github.com/SimonBarnett/agentic_fomprep/issues/22  
-**Repo:** SimonBarnett/agentic_fomprep  
+**MRB:** https://github.com/SimonBarnett/priority-mcp/issues/22  
+**Repo:** SimonBarnett/priority-mcp  
 
 ## Goal
 

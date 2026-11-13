@@ -1,5 +1,5 @@
 // Local stdio port of v2/apps/mcp-catalog (lib/mcp.ts + lib/catalog.ts): same tools, same results,
-// served from the agentic_fomprep clone so it works without the hosted catalog.
+// served from the priority-mcp clone so it works without the hosted catalog.
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
@@ -88,7 +88,7 @@ static class CatalogMcp
 
     static JsonNode Tools() => JsonNode.Parse("""
     [
-      {"name":"list_catalog","description":"List skills published on mcp-priority (local catalog from the agentic_fomprep clone). Adding a folder under catalog/ with meta.json registers a new skill. This server does not compile Priority forms.","inputSchema":{"type":"object","properties":{},"additionalProperties":false}},
+      {"name":"list_catalog","description":"List skills published on mcp-priority (local catalog from the priority-mcp clone). Adding a folder under catalog/ with meta.json registers a new skill. This server does not compile Priority forms.","inputSchema":{"type":"object","properties":{},"additionalProperties":false}},
       {"name":"get_skill","description":"Return SKILL.md for a catalog skill. Pass name when more than one skill exists.","inputSchema":{"type":"object","properties":{"name":{"type":"string","description":"Skill folder / meta.name"}},"additionalProperties":false}},
       {"name":"get_instance_schema","description":"JSON Schema for the user-owned instance allowlist (no secrets).","inputSchema":{"type":"object","properties":{"name":{"type":"string"}},"additionalProperties":false}},
       {"name":"get_runner_files","description":"Manifest of portable runner files for a skill. Optional path returns one file body. Does not execute prepare.","inputSchema":{"type":"object","properties":{"name":{"type":"string"},"path":{"type":"string","description":"Relative path under runner/"}},"additionalProperties":false}}

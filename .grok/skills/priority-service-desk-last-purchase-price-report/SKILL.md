@@ -9,7 +9,7 @@ description: >
 
 # Last purchase price report from Part Catalogue Report Generator
 
-Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
+Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/priority-mcp.
 
 Authority: `docs/skill-sources/medatech-network/service-desk/last-purchase-price-report.md`.
 

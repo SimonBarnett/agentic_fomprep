@@ -7,7 +7,7 @@ description: >
 
 # New-year document prefixes did not open because numeration followed the calendar year
 
-Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
+Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/priority-mcp.
 
 Authority: `docs/skill-sources/medatech-network/service-desk/numeration-fiscal-year-constant.md`.
 

@@ -7,7 +7,7 @@ description: >
 
 # A cloud user MFA method could only be changed by the Priority supplier
 
-Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
+Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/priority-mcp.
 
 Authority: `docs/skill-sources/medatech-network/service-desk/cloud-mfa-method-change.md`.
 

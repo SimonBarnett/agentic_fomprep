@@ -1,16 +1,16 @@
-﻿# Feature request: Rename ce-priority-* catalog to Priority-generic only
+# Feature request: Rename ce-priority-* catalog to Priority-generic only
 
-**Intake issue / MRB home:** [GitHub issue #4](https://github.com/SimonBarnett/agentic_fomprep/issues/4)  
+**Intake issue / MRB home:** [GitHub issue #4](https://github.com/SimonBarnett/priority-mcp/issues/4)  
 **Date:** 2026-09-19  
 **Status:** SHIPPED on main (catalog rename `6a929db`; durable gate `CAT-T44` on FR #4)  
-**Repo:** https://github.com/SimonBarnett/agentic_fomprep  
+**Repo:** https://github.com/SimonBarnett/priority-mcp  
 **Raised by:** Simon (via Bob)  
 **Build:** Bob Start-BobBuild on ionos  
 **UAT + hostile MRB:** Bob (Simon-raised FR) — Eshbel/Jester verify their UAT skills still resolve after rename  
 
 ## Ask
 
-`agentic_fomprep` must be a **generic Priority** tooling repo. Strip Clarkson Evans–branded skill ids and folder names. CE remains an **example deployment** in config/docs only.
+`priority-mcp` must be a **generic Priority** tooling repo. Strip Clarkson Evans–branded skill ids and folder names. CE remains an **example deployment** in config/docs only.
 
 ## Scope — rename (git mv) catalog folders + meta
 

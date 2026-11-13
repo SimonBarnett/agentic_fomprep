@@ -1,6 +1,6 @@
 # Feature request: Priority MCP server skills
 
-**Issue:** https://github.com/SimonBarnett/agentic_fomprep/issues/51  
+**Issue:** https://github.com/SimonBarnett/priority-mcp/issues/51  
 **Date:** 2026-09-28  
 **Source PDF:** none
 

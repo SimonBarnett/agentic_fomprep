@@ -7,7 +7,7 @@ description: >
 
 # Priority MCP search
 
-Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
+Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/priority-mcp.
 
 Grab from catalog MCP `https://mcp-priority.ntsa.uk/mcp` (`get_skill` with `name=priority-mcp-search`).
 Docs: https://prioritysoftware.github.io/mcp/search/ and tools reference.

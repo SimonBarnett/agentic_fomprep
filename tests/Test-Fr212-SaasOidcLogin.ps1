@@ -19,7 +19,7 @@ $sk = [IO.File]::ReadAllText($catSkill)
 $md = [IO.File]::ReadAllText($src)
 $blob = $sk + $md
 Gate 'get-skill-id' ($sk -match 'priority-saas-oidc-login') 'catalog list / get_skill name'
-Gate 'foundation' ($sk -match 'Foundation: harvest-priority-skills' -and $sk -match 'SimonBarnett/agentic_fomprep') 'honesty-box foundation line'
+Gate 'foundation' ($sk -match 'Foundation: harvest-priority-skills' -and $sk -match 'SimonBarnett/priority-mcp') 'honesty-box foundation line'
 Gate 'otp-single-use' ($blob -match 'single-use') 'OTP single-use'
 Gate 'prefer-pat' ($blob -match 'Prefer PAT') 'prefer PAT for unattended OData'
 Gate 'no-password-eq' ($blob -notmatch '(?i)password\s*=') 'no password= secret literal (FR #3304)'

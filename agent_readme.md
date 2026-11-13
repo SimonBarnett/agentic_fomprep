@@ -4,7 +4,7 @@
 `.grok/skills`). This file is the **CE DEV1 example pin** for Named Form Prep —
 hosts and CredMan targets here are allowlist examples, not the product identity.
 
-You run on **CE-PRIORITY-DEV1** (NetBIOS `CE-PRIORITY-DEV`) against Clarkson Evans **DEV only** when that instance is allowlisted. Repo: `M:\py\agentic_fomprep` (`\\10.220.0.5\dev\py\agentic_fomprep`) or `C:\ai\agentic_fomprep`.
+You run on **CE-PRIORITY-DEV1** (NetBIOS `CE-PRIORITY-DEV`) against Clarkson Evans **DEV only** when that instance is allowlisted. Repo: `M:\py\priority-mcp` (`\\10.220.0.5\dev\py\priority-mcp`) or `C:\ai\priority-mcp`.
 
 Entry point: **`src\Prepare-NamedForm.ps1`**. Headless Web SDK (`EFORM` → `FORMPREPDRCT2` over WCF). No Chrome. No Playwright. No park. Password from CredMan, never from git.
 
@@ -33,7 +33,7 @@ Cookies at `C:\Priority\tmp\agent-formprep\si-web-state.json` are for the Playwr
 ## The loop
 
 ```powershell
-cd M:\py\agentic_fomprep
+cd M:\py\priority-mcp
 
 powershell -NoProfile -ExecutionPolicy Bypass -File src\Prepare-NamedForm.ps1 -Name ZCLA_PARTLONGDESC
 
@@ -149,12 +149,12 @@ WHERE restored_at IS NULL;
 | `config\dev.psd1` | Pins (no passwords) |
 | `C:\Priority\tmp\agent-formprep\<guid>\` | Per-run dump: `result.json`, `errors.json`, `formprep-errs-rows.json` |
 | `C:\Priority\tmp\agent-formprep\last-named.json` | Latest named-form result |
-| `reviews\agentic_fomprep_Agent_Working_Method.pdf` | Old headed-loop method (history) |
+| `reviews\priority_mcp_Agent_Working_Method.pdf` | Old headed-loop method (history) |
 | `docs\OPERATOR_HOWTO_ESHBEL.md` | Operator notes; Playwright still described there — **this file overrides it for the agent** |
 
 ## First task
 
-1. `cd M:\py\agentic_fomprep`
+1. `cd M:\py\priority-mcp`
 2. Prepare **one** named form you were given (example `ZCLA_PARTLONGDESC`).
 3. `Get-LastFormPrepResult.ps1`
 4. Report `ok`, `reason`, `lastPrep` before→after, `upd` before→after, and every `errors[]` line.

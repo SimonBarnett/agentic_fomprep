@@ -128,7 +128,7 @@ foreach ($s in $PreserveAlways) { [void]$sb.AppendLine("- $s") }
 [void]$sb.AppendLine('## Harvest intake helpers (repo tools)')
 [void]$sb.AppendLine('')
 [void]$sb.AppendLine('CWD agents file issue|fr|skill|harvest via Bobiverse intake with default')
-[void]$sb.AppendLine('`-Repo SimonBarnett/agentic_fomprep`:')
+[void]$sb.AppendLine('`-Repo SimonBarnett/priority-mcp`:')
 [void]$sb.AppendLine('')
 [void]$sb.AppendLine('- `tools/Report-FomprepIntakeIssue.ps1`')
 [void]$sb.AppendLine('- `tools/Invoke-FomprepHarvest.ps1`')

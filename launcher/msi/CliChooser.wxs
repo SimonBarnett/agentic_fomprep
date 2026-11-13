@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-  FR-002 / agentic_fomprep#567: interactive MSI CLI chooser (Grok, Cursor, OpenCode, Not now).
+  FR-002 / priority-mcp#567: interactive MSI CLI chooser (Grok, Cursor, OpenCode, Not now).
   Product.wxs (FR-001) should UIRef Id="PriorityAgentCliChooserUI" and compile this fragment.
   msiexec /qn: no dialog (InstallUISequence skipped) and InstallChosenCli absent (UILevel > 3).
   Real installer downloads are FR-003; this action only records the pending choice.

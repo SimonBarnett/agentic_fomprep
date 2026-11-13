@@ -9,9 +9,9 @@ too, if they exist.
 ## Context
 
 - Level: **{{LEVEL}}** (general / customer / project)
-- General Priority knowledge: `{{FOMPREP_DIR}}` (SimonBarnett/agentic_fomprep, fast-forwarded at launch).
+- General Priority knowledge: `{{FOMPREP_DIR}}` (SimonBarnett/priority-mcp, fast-forwarded at launch).
   Skills come from `.grok/skills`. The `priority-catalog` MCP server (list_catalog, get_skill, get_instance_schema,
-  get_runner_files) runs locally over stdio from the agentic_fomprep clone (`node v2/apps/mcp-catalog/stdio.mjs`;
+  get_runner_files) runs locally over stdio from the priority-mcp clone (`node v2/apps/mcp-catalog/stdio.mjs`;
   fallback `PriorityAgent.exe --mcp-catalog`).
 - Customer: {{CUSTOMER}} ({{CUSTOMER_REPO}}, local clone `{{CUSTOMER_DIR}}`)
 - Project or service call: {{PROJECT}} (`{{PROJECT_DIR}}`)
@@ -23,7 +23,7 @@ too, if they exist.
 ## Harvest rule (where knowledge goes)
 
 1. **General Priority** skills and lessons that would help on any Priority installation go to
-   **SimonBarnett/agentic_fomprep** as a **branch + PR**. Never push to main. Use the
+   **SimonBarnett/priority-mcp** as a **branch + PR**. Never push to main. Use the
    harvest-priority-skills / `tools/Invoke-FomprepHarvest.ps1` flow or
    `tools/Report-FomprepIntakeIssue.ps1` as `{{FOMPREP_DIR}}\AGENTS.md` describes.
    Strip customer names, hosts, ENAMEs and data first.

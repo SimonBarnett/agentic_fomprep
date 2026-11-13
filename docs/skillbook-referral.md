@@ -1,13 +1,13 @@
 # Skillbook referral (CWD agent vs referred skillbook)
 
-How an agent loads the Priority Agent skillbook from `SimonBarnett/agentic_fomprep`
+How an agent loads the Priority Agent skillbook from `SimonBarnett/priority-mcp`
 and still files every issue / FR / skill / harvest to this product via Bobiverse
 intake.
 
 Intake (no secret required; offline payloads queue and retry):
 
 `POST https://bob.ntsa.uk/bob/v1/intake` with payload
-`repo=SimonBarnett/agentic_fomprep` and `kind` = `issue` | `fr` | `skill` |
+`repo=SimonBarnett/priority-mcp` and `kind` = `issue` | `fr` | `skill` |
 `harvest`.
 
 Repo-local wrappers (default `-Repo` is this product):
@@ -19,11 +19,11 @@ tools\Invoke-FomprepHarvest.ps1 -Flush
 ```
 
 When calling shared Bobiverse helpers instead, always pass an explicit
-`-Repo SimonBarnett/agentic_fomprep` (never omit `-Repo` so the filing lands on
+`-Repo SimonBarnett/priority-mcp` (never omit `-Repo` so the filing lands on
 bobiverse by accident). Never put secrets in filings.
 
 Promote Priority-generic playbooks as a **branch + PR** to
-`SimonBarnett/agentic_fomprep` (never `git push origin main` for harvest).
+`SimonBarnett/priority-mcp` (never `git push origin main` for harvest).
 
 ## Mode A - CWD is this repo
 
@@ -40,7 +40,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File tools\Sync-PriorityGrokSkill
 ```
 
 6. File gaps and session harvest with the wrappers above (or intake POST with
-   `repo=SimonBarnett/agentic_fomprep`).
+   `repo=SimonBarnett/priority-mcp`).
 
 ## Mode B - another agent is referred to this skillbook
 
@@ -56,12 +56,12 @@ skills.
    `tools\Sync-PriorityGrokSkills.ps1`.
 3. Optional note only: copying leaflets into the user global `~/.grok/skills`
    tree is allowed for discovery, but **filings still target**
-   `SimonBarnett/agentic_fomprep` (intake `repo` / `-Repo`), not the referrer
+   `SimonBarnett/priority-mcp` (intake `repo` / `-Repo`), not the referrer
    product.
 4. If this clone is on disk, prefer `tools\Report-FomprepIntakeIssue.ps1` /
    `tools\Invoke-FomprepHarvest.ps1` with `-NoDelegate` when the bob install
    must not rewrite the home repo. If scripts are unavailable, POST intake
-   directly with `repo=SimonBarnett/agentic_fomprep`.
+   directly with `repo=SimonBarnett/priority-mcp`.
 5. Open playbook PRs against **this** repo. Do not land Priority-generic tips
    under bobiverse harvest.
 
@@ -76,7 +76,7 @@ skills.
 | CE instance / hardware / DBA / backup packs | `SimonBarnett/ce-priority` |
 
 Priority-generic Form Prep, dictionary SQL, OData, UAT WCF kernel, hours
-patterns, and catalog harvest stay on `SimonBarnett/agentic_fomprep`.
+patterns, and catalog harvest stay on `SimonBarnett/priority-mcp`.
 
 ## Related
 

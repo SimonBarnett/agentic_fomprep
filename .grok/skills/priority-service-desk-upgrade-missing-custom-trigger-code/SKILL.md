@@ -7,7 +7,7 @@ description: >
 
 # After an upgrade, errors came back because custom code in a standard trigger was lost
 
-Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
+Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/priority-mcp.
 
 Authority: `docs/skill-sources/medatech-network/service-desk/upgrade-missing-custom-trigger-code.md`.
 

@@ -9,7 +9,7 @@ description: >
 
 # Refresh restores attachments after quote conversion
 
-Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
+Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/priority-mcp.
 
 Authority: `docs/skill-sources/medatech-network/service-desk/quote-so-attachment-refresh.md`.
 

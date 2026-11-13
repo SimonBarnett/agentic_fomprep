@@ -1,6 +1,6 @@
 # Skill harvest 2026-09-28 — Day Works History FORMJOINS vs FORMKEYS
 
-**Issue:** https://github.com/SimonBarnett/agentic_fomprep/issues/52  
+**Issue:** https://github.com/SimonBarnett/priority-mcp/issues/52  
 **Source:** ce-dayworks proving cycle on CE-PRIORITY-DEV1 (read-only SQL, DEV, company `base`, 2026-09-25).
 
 ## Change

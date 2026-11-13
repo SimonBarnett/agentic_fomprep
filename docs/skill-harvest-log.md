@@ -81,7 +81,7 @@
 
 - 2026-10-08 (DEV1 / Day Works WP4): New skill `priority-create-table` + `CREATE_TABLE.md`. Form Generator *Table ZCLA_ELEDITDW is missing column GUID* was CHAR `COLUMNS.SIZE=0`; Tabula *Ignore Duplicate Values* was bare `PK_*` with `IGNORE_DUP_KEY=OFF`. Rules: unique index `[T#1#COLâ€¦] WITH (IGNORE_DUP_KEY=ON)`; CHAR/DATE SIZE=WIDTH; REAL/INT SIZE=8. Updated `DICTIONARY_SQL.md` + catalog `priority-dictionary-sql` v1.1.0.
 
-- 2026-09-24: Added foundation honesty-box skill at `.grok/skills/harvest-agent-skills/SKILL.md` (home `https://github.com/SimonBarnett/agentic_fomprep`). Table row: Formprep / MSSQL fleet playbooks -> `SimonBarnett/agentic_fomprep`. Product playbooks remain under `v2/plugins/*/skills/` and `v2/apps/mcp-catalog/catalog/`.
+- 2026-09-24: Added foundation honesty-box skill at `.grok/skills/harvest-agent-skills/SKILL.md` (home `https://github.com/SimonBarnett/priority-mcp`). Table row: Formprep / MSSQL fleet playbooks -> `SimonBarnett/priority-mcp`. Product playbooks remain under `v2/plugins/*/skills/` and `v2/apps/mcp-catalog/catalog/`.
 
 - 2026-09-28 (DEV1 / Day Works WP3): New skill `priority-dictionary-sql` (.grok + catalog) and `docs/skill-sources/programming/DICTIONARY_SQL.md`. IDENTITY-safe CATALOG/COLUMNS/T$EXEC/INDEXES inserts; COLUMNS.CNAME; INDEXES.T$KEY; EXECPREPLOCK required before Named Form Prep (`name_missing`); EXECMODULE; shell DBI CREATE TABLE pattern; PowerShell Tee-Object return pollution. Clarified `priority-formprep` catalog `name_missing` / `still_unprepared` (FCLMN).
 
@@ -132,7 +132,7 @@ Expanded `priority-uat-wcf` (skill-source + catalog meta **1.2.0**) from CE Day 
 - ASCII-only punctuation in PowerShell 5.1 runner strings without UTF-8 BOM.
 ## 2026-10-08 - Bobiverse intake dual-mode (moved from bobiverse#3349)
 
-- Harvested lesson on CAST IRON `-Repo SimonBarnett/agentic_fomprep` + Report/Invoke wrappers + skillbook-referral + CAT needles; anti-omnibus small FRs. Refs #109-#118 / docs #119. Moved from SimonBarnett/bobiverse#3349.
+- Harvested lesson on CAST IRON `-Repo SimonBarnett/priority-mcp` + Report/Invoke wrappers + skillbook-referral + CAT needles; anti-omnibus small FRs. Refs #109-#118 / docs #119. Moved from SimonBarnett/bobiverse#3349.
 
 ## 2026-10-25 - Price quotation (PQ) create via OData
 
@@ -172,7 +172,7 @@ Expanded `priority-uat-wcf` (skill-source + catalog meta **1.2.0**) from CE Day 
 - Next error after fix: API License required on OIDC user for WCF; dictionary inventory path = REST PAT + OData (language `,3`) / Cloud MCP.
 - Also: strip UTF-8 BOM on token/allowlist JSON; `token_expired` from `expires_in`+`obtained_at`; Failure table in `SAAS_WCF_CLIENT.md`.
 - Evidence: `npm test` 20 pass; `Test-Fr-PrioritySaasWcf.ps1` PASS; Live `session` returns `api_licence` with `loginUrlSource=probe.wcf`.
-- PR: https://github.com/SimonBarnett/agentic_fomprep/pull/338
+- PR: https://github.com/SimonBarnett/priority-mcp/pull/338
 
 ## 2026-11-08 — API Licence Cloud form path + MCP root_records
 

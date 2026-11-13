@@ -1,5 +1,5 @@
 #requires -Version 5.1
-# Hostile pin for MRB agentic_fomprep#217: priority-price-quotation-create harvest + CAT-T51.
+# Hostile pin for MRB priority-mcp#217: priority-price-quotation-create harvest + CAT-T51.
 $ErrorActionPreference = 'Stop'
 $repo = if ($env:FOMPREP_MRB_ROOT) { $env:FOMPREP_MRB_ROOT } else { Split-Path -Parent $PSScriptRoot }
 $failed = 0

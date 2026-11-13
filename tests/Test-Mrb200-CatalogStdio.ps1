@@ -1,5 +1,5 @@
 #requires -Version 5.1
-# Hostile pin for MRB agentic_fomprep#200: local stdio catalog + rules v2.
+# Hostile pin for MRB priority-mcp#200: local stdio catalog + rules v2.
 $ErrorActionPreference = 'Stop'
 $repo = if ($env:FOMPREP_MRB_ROOT) { $env:FOMPREP_MRB_ROOT } else { Split-Path -Parent $PSScriptRoot }
 $cs = Join-Path $repo 'launcher\Program.cs'

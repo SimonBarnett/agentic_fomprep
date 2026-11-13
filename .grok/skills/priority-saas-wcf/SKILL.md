@@ -11,7 +11,7 @@ description: >
 
 # Priority SaaS WCF client
 
-Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
+Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/priority-mcp.
 
 Runner: `v2/apps/priority-saas-wcf/` (`bin/priority-wcf.mjs`).
 Long form: `docs/skill-sources/programming/SAAS_WCF_CLIENT.md`.

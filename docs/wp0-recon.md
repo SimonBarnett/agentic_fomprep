@@ -2,7 +2,7 @@
 
 **Date:** 2026-09-19  
 **Author:** Eshbel (Priority engineering)  
-**Repo:** SimonBarnett/agentic_fomprep  
+**Repo:** SimonBarnett/priority-mcp  
 **Scope:** dictionary evidence only — no invented ENAMEs  
 **v1:** `src/Prepare-NamedForm.ps1` untouched  
 

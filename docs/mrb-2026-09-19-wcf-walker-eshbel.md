@@ -1,10 +1,10 @@
 # Hostile MRB — WCF walker + skills catalog (Eshbel)
 
 **Date:** 2026-09-19  
-**Repo:** SimonBarnett/agentic_fomprep  
+**Repo:** SimonBarnett/priority-mcp  
 **Scope reviewed:** WCF walker + install SQL gate + Priority skills catalog at tip `23e7e64`  
 **Author:** Eshbel (Priority engineering)  
-**MRB issue:** [#9](https://github.com/SimonBarnett/agentic_fomprep/issues/9)  
+**MRB issue:** [#9](https://github.com/SimonBarnett/priority-mcp/issues/9)  
 **v1:** `src\Prepare-NamedForm.ps1` — no diff (WP0-T9)  
 
 Tip `23e7e64` = `v2: WCF walker + install SQL gate from Medatech pins`.  
@@ -44,7 +44,7 @@ Earlier draft text claimed live `formlimited_audit` on DEV1 and cited `Invalid c
 
 ## Required fixes (issue #9, ordered)
 
-1. **Fix `formlimited_audit` SQL** — `FORMLIMITED.[T$EXEC]` + `T$EXEC.ENAME` join; offline composed **CAT-T25** / **CAT-T26** (not source regex). **Partial** through `7db4bcc`; composed gate + pins tracked on [#10](https://github.com/SimonBarnett/agentic_fomprep/issues/10) / #7 acceptance 2.
+1. **Fix `formlimited_audit` SQL** — `FORMLIMITED.[T$EXEC]` + `T$EXEC.ENAME` join; offline composed **CAT-T25** / **CAT-T26** (not source regex). **Partial** through `7db4bcc`; composed gate + pins tracked on [#10](https://github.com/SimonBarnett/priority-mcp/issues/10) / #7 acceptance 2.
 2. **Withdraw false R1–R7 PASS claims**; committed WP0 evidence = `wp0-last.json` with WP0-R-SKIP when unset. **Addressed** in this doc.
 3. **De-dupe MRB docs** — keep this file; short duplicate is a pointer; no `docs/mrb-*.pdf`. **Addressed**; see `docs/README.md`.
 4. **Verdict vocabulary** — off-instance slice is **PASS-nits** (not PASS-with-nits). **Addressed** in this doc.

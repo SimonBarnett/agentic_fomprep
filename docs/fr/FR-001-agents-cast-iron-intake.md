@@ -1,11 +1,11 @@
 # FR-001: AGENTS.md CAST IRON Bobiverse intake
 
-**Repo:** SimonBarnett/agentic_fomprep  
+**Repo:** SimonBarnett/priority-mcp  
 **Labels:** feature-request
 
 ## Goal
 
-Root `AGENTS.md` opens with CAST IRON harvest/file rules that POST to Bobiverse intake with explicit `-Repo SimonBarnett/agentic_fomprep`.
+Root `AGENTS.md` opens with CAST IRON harvest/file rules that POST to Bobiverse intake with explicit `-Repo SimonBarnett/priority-mcp`.
 
 ## Deliverables
 
@@ -17,7 +17,7 @@ Root `AGENTS.md` opens with CAST IRON harvest/file rules that POST to Bobiverse 
 
 ## Testable
 
-- `AGENTS.md` contains the intake URL and the string `SimonBarnett/agentic_fomprep` in the CAST IRON filing command.
+- `AGENTS.md` contains the intake URL and the string `SimonBarnett/priority-mcp` in the CAST IRON filing command.
 - `AGENTS.md` does not tell agents to default `-Repo SimonBarnett/bobiverse` for Priority product filings.
 - ASCII-safe for PS 5.1 consumers where required by existing CAT gates.
 

@@ -1,7 +1,7 @@
 #Requires -Version 5.1
 <#
 .SYNOPSIS
-  Pack PriorityAgent.exe into a per-machine WiX v3 MSI + .sha256 (agentic_fomprep#566 / FR-001).
+  Pack PriorityAgent.exe into a per-machine WiX v3 MSI + .sha256 (priority-mcp#566 / FR-001).
 .NOTES
   Harvests the published exe only. No CLI dialog and no CLI custom action.
 #>

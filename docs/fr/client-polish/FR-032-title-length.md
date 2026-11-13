@@ -1,6 +1,6 @@
 # FR-032: dictionary titles longer than 20 characters are refused
 
-**Repo:** SimonBarnett/agentic_fomprep
+**Repo:** SimonBarnett/priority-mcp
 **Pack:** docs/feature-request-priority-client-polish-2026-11-12.md
 **Labels:** feature-request
 

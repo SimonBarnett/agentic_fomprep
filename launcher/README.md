@@ -10,13 +10,13 @@ and does not download a CLI.
 
 ## What it does on every start
 
-1. It **fast-forwards SimonBarnett/agentic_fomprep**.
+1. It **fast-forwards SimonBarnett/priority-mcp**.
    - **AI root:** unless `--root` / `PRIORITY_AGENT_ROOT` is set, the launcher looks for `X:\AI` on ready
      drives in order **C: → D: → E: … Z:**. If none exists, it **creates** `\AI` on the first ready drive
      in that same order (so a machine with only `C:` gets `C:\AI`; a missing `D:` is never chosen).
-   - Preferred clone path is `<AI root>\agentic_fomprep`. Search roots after that: every existing `X:\AI`
+   - Preferred clone path is `<AI root>\priority-mcp`. Search roots after that: every existing `X:\AI`
      and `X:\repos` on ready drives. A directory counts as a clone only when it has a `.git` folder and
-     `origin` matches `SimonBarnett/agentic_fomprep`.
+     `origin` matches `SimonBarnett/priority-mcp`.
    - **Empty stub:** if the preferred path exists but is **not** a git clone (for example only a `.grok`
      folder, no `.git`), the launcher skips it and uses another clean clone under a searched root.
      Agents must use the resolved `{{FOMPREP_DIR}}` / session cwd for `git pull` --- never hardcode a drive letter.
@@ -28,7 +28,7 @@ and does not download a CLI.
      (no `.git`) is skipped when another real clone exists. If no real clone exists, FATAL lists
      each candidate path and why it was rejected.
 2. It **loads the Priority MCP and skills** for every context. The registration is idempotent and user level:
-   - It registers the **`priority-catalog`** MCP as a **local stdio server run from the agentic_fomprep clone**:
+   - It registers the **`priority-catalog`** MCP as a **local stdio server run from the priority-mcp clone**:
      `grok mcp add priority-catalog -- node <clone>\v2\apps\mcp-catalog\stdio.mjs`.
      That is the repo's own zero-dependency stdio entry point (no npm install needed). It serves `list_catalog`,
      `get_skill`, `get_instance_schema` and `get_runner_files` from `v2/apps/mcp-catalog/catalog`, so it's always as
@@ -39,14 +39,14 @@ and does not download a CLI.
        (`PriorityAgent.exe --mcp-catalog`).
      - Any other registration, such as an old remote URL, is replaced.
      Then it runs `grok mcp doctor priority-catalog`.
-   - It adds `<agentic_fomprep>/.grok/skills` to `[skills] paths` in `%USERPROFILE%\.grok\config.toml`.
+   - It adds `<priority-mcp>/.grok/skills` to `[skills] paths` in `%USERPROFILE%\.grok\config.toml`.
      A timestamped `.bak-priorityagent-*` backup is written before any change.
    - This is needed because Grok only reads project skills from the cwd's own repo, and a
      customer repo is a different repo. This makes the Priority skills visible to **all** Grok sessions on the machine.
 3. It **lists the customer repos**: SimonBarnett repos tagged with the GitHub topic **`priority-customer`**.
    It uses the REST API through `gh api`, with no search-index lag.
 4. You pick one of three contexts:
-   - **General Priority**: cwd is the agentic_fomprep clone.
+   - **General Priority**: cwd is the priority-mcp clone.
    - **Customer**: cwd is the customer clone. A repo new to the machine is cloned into `<AI root>\<repo>`;
      an existing clone under any searched `X:\AI` or `X:\repos` is reused.
    - **Project / service call**: one of the customer repo's top-level folders, skipping dot-folders.
@@ -162,7 +162,7 @@ after every client session.
 ## Agent rules (summary; full text in `agent-rules.md`)
 
 - **Harvest rule**: knowledge goes to the level it belongs to.
-  - General Priority skills go to **agentic_fomprep as a branch + PR**.
+  - General Priority skills go to **priority-mcp as a branch + PR**.
   - Customer-installation skills and insights go to the **customer repo**.
   - Project and service-call specifics go to **that project folder** (including `log.md`).
 - **Secrets**:
@@ -212,7 +212,7 @@ Official installers run as the interactive user only (FR #568); tests fake those
 not hit the network.
 
 Optional execute plugins (formprep, compile, install, odata) need node and `instances.json`, so the launcher doesn't install them:
-`grok plugin marketplace add SimonBarnett/agentic_fomprep`, then `grok plugin install priority-formprep --trust` (and so on).
+`grok plugin marketplace add SimonBarnett/priority-mcp`, then `grok plugin install priority-formprep --trust` (and so on).
 
 ## Build
 
@@ -235,7 +235,7 @@ it publishes a GitHub **pre-release** with `PriorityAgent.exe` and its `.sha256`
 manual dispatch from `main`. When an MSI is packed, it is an **additional asset** beside that loose exe
 pre-release; the exe is not replaced. A `launcher-vX.Y.Z` tag stamps banner / FileVersion `X.Y.Z` / `X.Y.Z.0` and
 ProductVersion `X.Y.Z+<commit>` (FR #267). Local `launcher\build.ps1 -Install` defaults to `1.0.0` unless you pass `-Version`. Download
-it from [GitHub Releases](https://github.com/SimonBarnett/agentic_fomprep/releases) and verify the checksum
+it from [GitHub Releases](https://github.com/SimonBarnett/priority-mcp/releases) and verify the checksum
 before use. Releases remain pre-release until separately approved.
 
 ## Icon

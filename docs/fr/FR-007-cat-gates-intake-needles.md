@@ -1,6 +1,6 @@
 # FR-007: CAT gates for intake needles + default Repo
 
-**Repo:** SimonBarnett/agentic_fomprep  
+**Repo:** SimonBarnett/priority-mcp  
 **Labels:** feature-request
 
 ## Goal
@@ -11,7 +11,7 @@ Lock S1–S4 with new unique `Add-Gate` ids in `v2/tools/Test-PriorityCatalog.ps
 
 - Before coding: `Select-String Add-Gate` and take next free ids (expect CAT-T61+ after CAT-T60 on main @ 4dd00ab).
 - Gates asserting:
-  - `AGENTS.md` has intake URL + `SimonBarnett/agentic_fomprep`.
+  - `AGENTS.md` has intake URL + `SimonBarnett/priority-mcp`.
   - Both harvest `SKILL.md` files have intake URL + home repo.
   - `tools/Report-FomprepIntakeIssue.ps1` and `tools/Invoke-FomprepHarvest.ps1` exist and contain default repo string.
   - `docs/skillbook-referral.md` exists with intake + home repo needles.

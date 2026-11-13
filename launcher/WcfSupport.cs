@@ -338,7 +338,7 @@ public static class WcfSupport
         sb.AppendLine("  Never `gh issue create` / `gh pr create` for harvest; never push to main.");
         sb.AppendLine("- Bugs / failed calls: `-Kind issue`. Lessons / skill fixes: `-Kind skill` or `harvest`.");
         sb.AppendLine("  If nothing went wrong, still harvest an explicit \"no findings\" so silence is not a report.");
-        sb.AppendLine("- Destinations: generic Priority -> `repo=SimonBarnett/agentic_fomprep`;");
+        sb.AppendLine("- Destinations: generic Priority -> `repo=SimonBarnett/priority-mcp`;");
         sb.AppendLine("  customer-specific -> that customer's repo root; SO/SC facts -> that folder under the");
         sb.AppendLine("  customer repo (path in the body).");
         string section = sb.ToString();

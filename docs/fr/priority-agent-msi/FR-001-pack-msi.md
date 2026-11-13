@@ -1,7 +1,7 @@
 # FR-001: Pack the Priority Agent MSI
 
-**Repo:** SimonBarnett/agentic_fomprep
-**Issue:** https://github.com/SimonBarnett/agentic_fomprep/issues/566
+**Repo:** SimonBarnett/priority-mcp
+**Issue:** https://github.com/SimonBarnett/priority-mcp/issues/566
 **Labels:** feature-request
 
 ## Goal

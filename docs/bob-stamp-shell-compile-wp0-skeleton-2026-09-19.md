@@ -1,6 +1,6 @@
 # Bob stamp — shell compile/install WP0 skeleton (2026-09-19)
 
-**Repo:** SimonBarnett/agentic_fomprep  
+**Repo:** SimonBarnett/priority-mcp  
 **Tip:** `3bc079b`  
 **Upstream MRB:** docs/mrb-2026-09-19-v1.md (+ PDF) — PASS-with-nits (build agent, job c84219c8)  
 **Reviewer:** Bob  

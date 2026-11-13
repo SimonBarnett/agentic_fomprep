@@ -7,7 +7,7 @@ description: >-
 
 # Priority house-type DELETE smoke (HT-DL)
 
-Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/agentic_fomprep.
+Foundation: harvest-priority-skills -> report back to https://github.com/SimonBarnett/priority-mcp.
 
 Grab from catalog MCP `https://mcp-priority.ntsa.uk/mcp` (`get_skill` with `name=priority-ht-delete-smoke`).
 This catalog does not drive the UI or WCF.

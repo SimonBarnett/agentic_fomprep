@@ -1,6 +1,6 @@
 # FR-013: form columns without reading rows
 
-**Repo:** SimonBarnett/agentic_fomprep
+**Repo:** SimonBarnett/priority-mcp
 **Pack:** docs/feature-request-priority-client-polish-2026-11-12.md
 **Labels:** feature-request
 
